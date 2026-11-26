@@ -1,3 +1,9 @@
+# 回形夹 · HuiClip
+
+HuiClip 是基于 Paperclip 的独立中文社区版。社区分支的安装、使用和贡献入口见[简体中文说明](README.zh-CN.md)。
+
+以下保留 Paperclip 上游项目说明。
+
 <p align="center">
   <img src="doc/assets/banner.jpg" alt="Paperclip is the app people use to manage AI agents for work." width="720" />
 </p>
