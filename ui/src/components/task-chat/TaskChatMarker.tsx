@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useId, useState } from "react";
 import { cn } from "@/lib/utils";
 import { ChevronDown, CircleDot, FoldVertical, OctagonX, Square, Flag, KeyRound } from "lucide-react";
@@ -28,6 +29,7 @@ export function TaskChatMarker({
   onTryAgain?: () => Promise<void> | void;
   tryAgainPending?: boolean;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
   const detailsId = useId();
   const streamlined = useStreamlinedTaskChatPresentation();
@@ -57,7 +59,7 @@ export function TaskChatMarker({
           </p>
           <div className="flex flex-wrap items-center gap-2 pt-1">
             <Button asChild variant="outline" size="sm"><Link to={settingsHref}>Change AI connection</Link></Button>
-            {item.runHref && <Button asChild variant="ghost" size="sm"><Link to={item.runHref}>View run</Link></Button>}
+            {item.runHref && <Button asChild variant="ghost" size="sm"><Link to={item.runHref}>{translateUi("interfaceCopy.viewRun")}</Link></Button>}
           </div>
         </div>
       </div>
@@ -130,7 +132,7 @@ export function TaskChatMarker({
                 ) : null}
                 {item.runHref ? (
                   <Button asChild variant="ghost" size="xs">
-                    <Link to={item.runHref}>View run</Link>
+                    <Link to={item.runHref}>{translateUi("interfaceCopy.viewRun")}</Link>
                   </Button>
                 ) : null}
                 {onTryAgain ? (

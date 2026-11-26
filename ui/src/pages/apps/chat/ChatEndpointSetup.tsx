@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { SpekoProviderSetup } from "@/components/voice/SpekoProviderSetup";
 import { NativeVoiceConversation } from "@/components/voice/NativeVoiceConversation";
 import { buildSlackAppManifest, defaultSlackAppConfiguration } from "@paperclipai/shared";
@@ -179,6 +180,7 @@ export function ChatEndpointSetup() {
 }
 
 function ChatSdkEndpointSetup() {
+  const { t: translateUi } = useUiTranslation();
   const { userId, settled: identitySettled } = useAccountIdentity();
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
@@ -581,7 +583,7 @@ function ChatSdkEndpointSetup() {
               >Use your own app</Button>}
             </SlackSetupAdvanced>}
             {isSlack && !endpoint && !slackChoices.data && ((slackChoicesView.kind === "error")
-              ? <div role="alert" className="text-sm text-destructive">Couldn&apos;t load Slack setup. <Button variant="link" disabled={slackChoices.isFetching} onClick={() => void slackChoices.refetch()}>Retry</Button></div>
+              ? <div role="alert" className="text-sm text-destructive">Couldn&apos;t load Slack setup. <Button variant="link" disabled={slackChoices.isFetching} onClick={() => void slackChoices.refetch()}>{translateUi("interfaceCopy.retry")}</Button></div>
               : <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />Loading Slack…</p>)}
             {provider === "github" && <GitHubAgentTrustWarning agent={selectedAgent} />}
             <SetupWizardFooter disabled={agentStepBusy || isSlack && !endpoint && Boolean(agentId) && !slackChoices.data} onSaveExit={() => void continueFromAgent(true)}>
@@ -761,6 +763,7 @@ function ProviderConnectStep({
     values?: Record<string, string>,
   ) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const { userId, settled: identitySettled } = useAccountIdentity();
   const { pushToast } = useToast();
   const navigate = useNavigate();
@@ -1170,7 +1173,7 @@ function ProviderConnectStep({
               <strong>Directory (tenant) ID</strong>. Under{" "}
               <strong>Certificates &amp; secrets · Client secrets</strong>,
               select <strong>New client secret</strong> and copy its{" "}
-              <strong>Value</strong>, not its Secret ID.
+              <strong>{translateUi("interfaceCopy.value")}</strong>, not its Secret ID.
             </li>
             <li>
               <strong>Azure · Create Azure Bot</strong>: set{" "}
@@ -1191,7 +1194,7 @@ function ProviderConnectStep({
               <strong>Personal</strong>, <strong>Team</strong>, and{" "}
               <strong>Group chat</strong> scopes plus file support. Under{" "}
               <strong>Configure · Permissions</strong>, add the two RSC{" "}
-              <strong>Application</strong> permissions shown below. Complete the
+              <strong>{translateUi("interfaceCopy.application")}</strong> permissions shown below. Complete the
               required app details and icons, explain that the app can receive
               every message in an installed team or group chat, then download
               the app package.
@@ -1540,7 +1543,7 @@ function ProviderConnectStep({
   const slackRequestUrlInstructions = <ol className="list-decimal space-y-2 pl-5 text-sm">
       <li><a className="underline underline-offset-4" href={endpoint.setup?.slackRegistration?.appId ? `https://api.slack.com/apps/${encodeURIComponent(endpoint.setup.slackRegistration.appId)}/event-subscriptions` : "https://api.slack.com/apps"} target="_blank" rel="noopener noreferrer">Open Slack app Settings <ExternalLink className="inline size-3" /></a> and choose <strong>{slackApp.appName}</strong>.</li>
       <li>Choose <strong>Event Subscriptions</strong>.</li>
-      <li>Beside the prefilled <strong>Request URL</strong>, click <strong>Retry</strong> if it isn&apos;t verified. Save changes if Slack asks.</li>
+      <li>Beside the prefilled <strong>Request URL</strong>, click <strong>{translateUi("interfaceCopy.retry")}</strong> if it isn&apos;t verified. Save changes if Slack asks.</li>
     </ol>;
   if (slackStage === "finish")
     return (

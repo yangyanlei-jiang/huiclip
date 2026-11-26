@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { SUBSCRIPTION_CURRENCIES, centsToUsd, usdToCents, type SubscriptionAccountReport, type SubscriptionCostReport, type SubscriptionUsage } from "@paperclipai/shared";
@@ -25,6 +26,7 @@ export function SubscriptionTokenUsage({ usage }: { usage: SubscriptionUsage }) 
 function SubscriptionEditor({ account, accounts, companyId, onDone }: {
   account: SubscriptionAccountReport; accounts: SubscriptionAccountReport[]; companyId: string; onDone: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [plan, setPlan] = useState(account.price.plan);
   const [amount, setAmount] = useState(account.price.amountCents == null ? "" : centsToUsd(account.price.amountCents).replace(/\.?0+$/, ""));
   const [currency, setCurrency] = useState(account.price.currency);
@@ -51,7 +53,7 @@ function SubscriptionEditor({ account, accounts, companyId, onDone }: {
       </div>
       <p className="text-xs text-muted-foreground">Enter the full amount for one account or seat. Annual prices are divided by 12. Changes apply from now. Ending tracking here does not cancel your provider subscription.</p>
       {save.error && <p role="alert" className="text-sm text-destructive">Could not save this price. Check the amount, or reopen the account if another person updated it.</p>}
-      <div className="flex items-center justify-between"><Button type="button" variant="ghost" disabled={busy} onClick={onDone}>Cancel</Button><Button type="submit" disabled={busy}>{save.isPending ? "Saving…" : "Save price"}</Button></div>
+      <div className="flex items-center justify-between"><Button type="button" variant="ghost" disabled={busy} onClick={onDone}>{translateUi("interfaceCopy.cancel")}</Button><Button type="submit" disabled={busy}>{save.isPending ? "Saving…" : "Save price"}</Button></div>
     </form>
     {targets.length > 0 && <div className="space-y-2 border-t border-border pt-4">
       <Label htmlFor="subscription-link">Same subscription as another account?</Label>

@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useQueryView } from "@/components/QueryView";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { ArrowRight, ChevronRight } from "lucide-react";
@@ -41,6 +42,7 @@ export function CaseHandoffHistory({ caseId, task, agents }: { caseId: string; t
 }
 
 function HandoffRow({ handoff, task, agents }: { handoff: CaseHandoffView; task?: CaseWorkIssue | null; agents?: CaseAgentMap }) {
+  const { t: translateUi } = useUiTranslation();
   const createdAt = new Date(handoff.createdAt).toISOString();
   const terminal = handoff.destinationKind === "done";
   const settled = handoff.state === "delivered" || handoff.state === "completed";
@@ -62,7 +64,7 @@ function HandoffRow({ handoff, task, agents }: { handoff: CaseHandoffView; task?
           <span className="flex flex-wrap items-center gap-2 text-muted-foreground">
             <HandoffActor id={handoff.fromAgentId} name={handoff.fromAgentName} fallback={handoff.actorType === "user" ? "User" : "System"} agents={agents} />
             <ArrowRight aria-hidden className="size-3" />
-            {terminal ? <span className="text-xs">Done</span>
+            {terminal ? <span className="text-xs">{translateUi("interfaceCopy.done")}</span>
               : <HandoffActor id={handoff.toAgentId} name={handoff.toAgentName} fallback="Agent" agents={agents} />}
           </span>
         </span>

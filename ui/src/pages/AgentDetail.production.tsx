@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { describeError } from "../api/errors";
 import { useSelectedHeartbeatRun } from "../hooks/useSelectedHeartbeatRun";
 import { AgentCharacter } from "../components/AgentCharacter";
@@ -280,6 +281,7 @@ export function runDetailRefetchIntervalMs(status: HeartbeatRun["status"]): 5000
 }
 
 export function AgentDetail() {
+  const { t: translateUi } = useUiTranslation();
   const { companyPrefix, agentId, tab: urlTab, runId: urlRunId } = useParams<{
     companyPrefix?: string;
     agentId: string;
@@ -878,7 +880,7 @@ export function AgentDetail() {
                   <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
                 </span>
-                <span className="text-(length:--text-micro) font-medium text-blue-600 dark:text-blue-400">Live</span>
+                <span className="text-(length:--text-micro) font-medium text-blue-600 dark:text-blue-400">{translateUi("interfaceCopy.live")}</span>
               </Link>
             )}
           </AgentActionButtons>
@@ -971,9 +973,7 @@ export function AgentDetail() {
               size="sm"
               onClick={() => cancelConfigActionRef.current?.()}
               disabled={configSaving}
-            >
-              Cancel
-            </Button>
+            >{translateUi("interfaceCopy.cancel")}</Button>
             <Button
               size="sm"
               onClick={() => saveConfigActionRef.current?.()}
@@ -997,9 +997,7 @@ export function AgentDetail() {
               size="sm"
               onClick={() => cancelConfigActionRef.current?.()}
               disabled={configSaving}
-            >
-              Cancel
-            </Button>
+            >{translateUi("interfaceCopy.cancel")}</Button>
             <Button
               size="sm"
               onClick={() => saveConfigActionRef.current?.()}
@@ -1395,6 +1393,7 @@ function CostsSection({
   runtimeState?: AgentRuntimeState;
   runs: HeartbeatRun[];
 }) {
+  const { t: translateUi } = useUiTranslation();
   const runsWithCost = runs
     .filter((r) => {
       const metrics = runMetrics(r);
@@ -1432,10 +1431,10 @@ function CostsSection({
             <thead>
               <tr className="border-b border-border bg-accent/20">
                 <th scope="col" className="text-left px-3 py-2 font-medium text-muted-foreground">Date</th>
-                <th scope="col" className="text-left px-3 py-2 font-medium text-muted-foreground">Run</th>
-                <th scope="col" className="text-right px-3 py-2 font-medium text-muted-foreground">Input</th>
-                <th scope="col" className="text-right px-3 py-2 font-medium text-muted-foreground">Output</th>
-                <th scope="col" className="text-right px-3 py-2 font-medium text-muted-foreground">Cost</th>
+                <th scope="col" className="text-left px-3 py-2 font-medium text-muted-foreground">{translateUi("interfaceCopy.run")}</th>
+                <th scope="col" className="text-right px-3 py-2 font-medium text-muted-foreground">{translateUi("interfaceCopy.input")}</th>
+                <th scope="col" className="text-right px-3 py-2 font-medium text-muted-foreground">{translateUi("interfaceCopy.output")}</th>
+                <th scope="col" className="text-right px-3 py-2 font-medium text-muted-foreground">{translateUi("interfaceCopy.cost")}</th>
               </tr>
             </thead>
             <tbody>
@@ -1844,6 +1843,7 @@ export function PromptsTab({
   onCancelActionChange: (cancel: (() => void) | null) => void;
   onSavingChange: (saving: boolean) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { selectedCompanyId } = useCompany();
   const { isMobile } = useSidebar();
@@ -2358,7 +2358,7 @@ export function PromptsTab({
           isMobile && !showFilePanel && "hidden",
         )}>
           <div className="flex items-center justify-between">
-            <h4 className="text-sm font-medium">Files</h4>
+            <h4 className="text-sm font-medium">{translateUi("interfaceCopy.files")}</h4>
             <div className="flex items-center gap-1">
               {!showNewFileInput && (
                 <Button
@@ -2415,9 +2415,7 @@ export function PromptsTab({
                     setNewFilePath("");
                     setShowNewFileInput(false);
                   }}
-                >
-                  Create
-                </Button>
+                >{translateUi("interfaceCopy.create")}</Button>
                 <Button
                   type="button"
                   size="sm"
@@ -2427,9 +2425,7 @@ export function PromptsTab({
                     setShowNewFileInput(false);
                     setNewFilePath("");
                   }}
-                >
-                  Cancel
-                </Button>
+                >{translateUi("interfaceCopy.cancel")}</Button>
               </div>
             </div>
           )}
@@ -2539,9 +2535,7 @@ export function PromptsTab({
                     }
                   }}
                   disabled={deleteFile.isPending}
-                >
-                  Delete
-                </Button>
+                >{translateUi("interfaceCopy.delete")}</Button>
               )}
             </div>
           </div>
@@ -2701,6 +2695,7 @@ export function RunsTab({
   adapterType: string;
   adapterConfig: Record<string, unknown>;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const { isMobile } = useSidebar();
 
   // Sort by created descending
@@ -2716,7 +2711,7 @@ export function RunsTab({
     if (selection.loading) return <p className="text-sm text-muted-foreground">Loading run…</p>;
     return <div role="alert">
       <p className="text-sm text-destructive">{selection.error instanceof Error ? selection.error.message : "This run is unavailable for this agent."}</p>
-      {selection.error && <Button variant="outline" onClick={() => { void selection.retry(); }}>Try again</Button>}
+      {selection.error && <Button variant="outline" onClick={() => { void selection.retry(); }}>{translateUi("interfaceCopy.tryAgain")}</Button>}
     </div>;
   }
   if (runs.length === 0 && !selectedRun) return <p className="text-sm text-muted-foreground">No runs yet.</p>;
@@ -2774,6 +2769,7 @@ export function RunsTab({
 /* ---- Run Detail (expanded) ---- */
 
 function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }: { run: HeartbeatRun; agentRouteId: string; adapterType: string; adapterConfig: Record<string, unknown> }) {
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { data: hydratedRun } = useQuery({
@@ -3133,11 +3129,11 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
           {hasMetrics && (
             <div className="border-t sm:border-t-0 sm:border-l border-border p-4 grid grid-cols-2 gap-x-4 sm:gap-x-8 gap-y-3 content-center tabular-nums">
               <div>
-                <div className="text-xs text-muted-foreground">Input</div>
+                <div className="text-xs text-muted-foreground">{translateUi("interfaceCopy.input")}</div>
                 <div className="text-sm font-medium font-mono">{formatTokens(metrics.input)}</div>
               </div>
               <div>
-                <div className="text-xs text-muted-foreground">Output</div>
+                <div className="text-xs text-muted-foreground">{translateUi("interfaceCopy.output")}</div>
                 <div className="text-sm font-medium font-mono">{formatTokens(metrics.output)}</div>
               </div>
               <div>
@@ -3145,7 +3141,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                 <div className="text-sm font-medium font-mono">{formatTokens(metrics.cached)}</div>
               </div>
               <div>
-                <div className="text-xs text-muted-foreground">Cost</div>
+                <div className="text-xs text-muted-foreground">{translateUi("interfaceCopy.cost")}</div>
                 <div className="text-sm font-medium font-mono">{metrics.cost > 0 ? `$${metrics.cost.toFixed(4)}` : "-"}</div>
               </div>
             </div>
@@ -3266,6 +3262,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
 /* ---- Keys Tab ---- */
 
 function KeysTab({ agentId, companyId }: { agentId: string; companyId?: string }) {
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const [newKeyName, setNewKeyName] = useState("");
@@ -3338,7 +3335,7 @@ function KeysTab({ agentId, companyId }: { agentId: string; companyId?: string }
             >
               <Copy className="h-3.5 w-3.5" />
             </Button>
-            {copied && <span className="text-xs text-green-400">Copied!</span>}
+            {copied && <span className="text-xs text-green-400">{translateUi("interfaceCopy.copied")}</span>}
           </div>
           <Button
             variant="ghost"

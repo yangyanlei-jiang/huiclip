@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useQuery } from "@tanstack/react-query";
 import type { AiManagedConnectionSummary, ConnectionGrant } from "@paperclipai/shared";
 import { aiConnectionsApi } from "@/api/ai-connections";
@@ -11,6 +12,7 @@ export function AiConnectionAccountDetails({ account, grant }: {
   account: AiManagedConnectionSummary;
   grant: ConnectionGrant;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const canLookUp = account.provider === "anthropic" && account.method === "subscription" && account.status === "connected";
   const identity = useQuery({
     queryKey: ["ai-account-identity", account.companyId, account.id, grant.id, grant.updatedAt],
@@ -29,7 +31,7 @@ export function AiConnectionAccountDetails({ account, grant }: {
         <dt className="text-muted-foreground">{AI_PROVIDERS[account.provider].name} account</dt>
         <dd className="break-words">{accountLabel ?? "Not available"}</dd>
         {identity.data?.organizationLabel && <>
-          <dt className="text-muted-foreground">Organization</dt>
+          <dt className="text-muted-foreground">{translateUi("interfaceCopy.organization")}</dt>
           <dd className="break-words">{identity.data.organizationLabel}</dd>
         </>}
         <dt className="text-muted-foreground">Sign-in method</dt>

@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo } from "react";
 import { User, UserX } from "lucide-react";
 import {
@@ -148,6 +149,7 @@ export function SearchFilterBar({
   onSortChange: (next: CompanySearchSort) => void;
   data: SearchFilterDataProps;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const options = useMemo(() => buildSearchFilterOptions(data), [data]);
 
   function toggleMulti(dimension: "status" | "priority", value: string) {
@@ -163,7 +165,7 @@ export function SearchFilterBar({
   return (
     <div className="flex flex-wrap items-center gap-1.5" data-testid="search-filter-bar">
       <SearchFilterMenu
-        label="Status"
+        label={translateUi("interfaceCopy.status")}
         multi
         options={options.status}
         selected={filters.status ?? []}
@@ -181,7 +183,7 @@ export function SearchFilterBar({
         emptyMessage="No assignees"
       />
       <SearchFilterMenu
-        label="Project"
+        label={translateUi("interfaceCopy.project")}
         options={options.project}
         selected={filters.projectId ? [filters.projectId] : []}
         onSelect={(value) => onChange({ ...filters, projectId: value })}
@@ -201,7 +203,7 @@ export function SearchFilterBar({
       {/* PAP-411: Priority filter menu hidden behind SHOW_TASK_PRIORITY_UI (search DSL stays intact). */}
       {SHOW_TASK_PRIORITY_UI && (
       <SearchFilterMenu
-        label="Priority"
+        label={translateUi("interfaceCopy.priority")}
         multi
         options={options.priority}
         selected={filters.priority ?? []}
@@ -210,7 +212,7 @@ export function SearchFilterBar({
       />
       )}
       <SearchFilterMenu
-        label="Updated"
+        label={translateUi("interfaceCopy.updated")}
         options={options.updated}
         selected={filters.updatedWithin ? [filters.updatedWithin] : []}
         onSelect={(value) => onChange({ ...filters, updatedWithin: value })}

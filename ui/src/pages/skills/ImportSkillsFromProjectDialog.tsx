@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -279,6 +280,7 @@ export function ImportSkillsFromProjectDialog({
   companyId,
   onImportFromPath,
 }: ImportSkillsFromProjectDialogProps) {
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const toast = useToastActions();
 
@@ -624,14 +626,10 @@ export function ImportSkillsFromProjectDialog({
               </>
             )}
             {step === "pick" && (
-              <Button variant="ghost" size="sm" onClick={handleClose}>
-                Cancel
-              </Button>
+              <Button variant="ghost" size="sm" onClick={handleClose}>{translateUi("interfaceCopy.cancel")}</Button>
             )}
             {step === "result" && (
-              <Button size="sm" onClick={handleClose}>
-                Done
-              </Button>
+              <Button size="sm" onClick={handleClose}>{translateUi("interfaceCopy.done")}</Button>
             )}
           </div>
         </footer>
@@ -951,6 +949,7 @@ function SelectStep({
   onAddBrowsedSkill,
   browseAddingKey,
 }: SelectStepProps) {
+  const { t: translateUi } = useUiTranslation();
   if (scanError) {
     const grant = isGrantError(scanError);
     return (
@@ -972,9 +971,7 @@ function SelectStep({
               : readableErrorMessage(scanError)}
           </p>
           {!grant && (
-            <Button variant="outline" size="sm" className="mt-4" onClick={onRetry}>
-              Try again
-            </Button>
+            <Button variant="outline" size="sm" className="mt-4" onClick={onRetry}>{translateUi("interfaceCopy.tryAgain")}</Button>
           )}
         </div>
       </div>

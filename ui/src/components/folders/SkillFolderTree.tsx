@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import {
   useCallback,
   useEffect,
@@ -151,6 +152,7 @@ export function SkillFolderRail({
   onDeleteFolder: (folder: FolderListItem) => void;
   onEnsureMyFolder?: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const model = useMemo(() => treeFromResult(result), [result]);
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
   const [renamingId, setRenamingId] = useState<string | null>(null);
@@ -311,7 +313,7 @@ export function SkillFolderRail({
           ) : null}
 
           {/* Company — plain top-level company folders */}
-          <RailHeading label="Organization" onCreate={() => onCreateFolder(null)} />
+          <RailHeading label={translateUi("interfaceCopy.organization")} onCreate={() => onCreateFolder(null)} />
           {model.company.length > 0 ? (
             model.company.map((node) => (
               <TreeBranch
@@ -363,7 +365,7 @@ export function SkillFolderRail({
           ) : (
             <VirtualRow
               active={false}
-              label="Projects"
+              label={translateUi("interfaceCopy.projects")}
               count={0}
               icon={<Boxes className="h-3.5 w-3.5" />}
               muted
@@ -401,7 +403,7 @@ export function SkillFolderRail({
           </div>
           <VirtualRow
             active={selection === "unfiled"}
-            label="Unfiled"
+            label={translateUi("interfaceCopy.unfiled")}
             count={unfiledCount}
             icon={<FolderSwatch color={null} />}
             onSelect={() => onSelect("unfiled")}
@@ -706,6 +708,7 @@ export function FolderBreadcrumb({
   selection: FolderSelection;
   onSelect: (selection: FolderSelection) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const model = useMemo(() => treeFromResult(result), [result]);
   const trail = selection === "all" || selection === "unfiled"
     ? []
@@ -727,7 +730,7 @@ export function FolderBreadcrumb({
       {selection === "unfiled" ? (
         <>
           <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/60" />
-          <span className="rounded px-1.5 py-0.5 font-medium text-foreground">Unfiled</span>
+          <span className="rounded px-1.5 py-0.5 font-medium text-foreground">{translateUi("interfaceCopy.unfiled")}</span>
         </>
       ) : null}
       {trail.map((folder, index) => {
@@ -831,6 +834,7 @@ export function MoveToFolderDialog({
   /** Create a folder under `parentId` (null = top level); resolve to the new id. */
   onCreateFolder: (parentId: string | null, name: string) => Promise<string | null>;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const model = useMemo(() => treeFromResult(result), [result]);
   const [query, setQuery] = useState("");
   const [target, setTarget] = useState<string | null | undefined>(undefined);
@@ -964,7 +968,7 @@ export function MoveToFolderDialog({
             onClick={() => setTarget(null)}
           >
             <FolderSwatch color={null} />
-            <span className="min-w-0 flex-1 truncate">Unfiled</span>
+            <span className="min-w-0 flex-1 truncate">{translateUi("interfaceCopy.unfiled")}</span>
             {currentFolderId == null ? <span className="text-xs text-muted-foreground">current</span> : null}
             {chosen === null ? <Check className="h-3.5 w-3.5" /> : null}
           </div>
@@ -1006,9 +1010,7 @@ export function MoveToFolderDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={pending}>
-            Cancel
-          </Button>
+          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={pending}>{translateUi("interfaceCopy.cancel")}</Button>
           <Button
             disabled={pending || chosen === undefined || chosen === currentFolderId}
             onClick={() => chosen !== undefined && onMove(chosen)}
@@ -1041,6 +1043,7 @@ function InlineNewFolder({
   onSubmit: () => void;
   onCancel: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   return (
     <div className="flex items-center gap-2 py-1" style={{ paddingLeft: `${0.5 + depth * 0.9}rem` }}>
       <FolderPlus className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
@@ -1055,9 +1058,7 @@ function InlineNewFolder({
           if (event.key === "Escape") onCancel();
         }}
       />
-      <Button size="sm" variant="ghost" onClick={onCancel} disabled={pending}>
-        Cancel
-      </Button>
+      <Button size="sm" variant="ghost" onClick={onCancel} disabled={pending}>{translateUi("interfaceCopy.cancel")}</Button>
       <Button size="sm" onClick={onSubmit} disabled={pending || !value.trim()}>
         Add
       </Button>

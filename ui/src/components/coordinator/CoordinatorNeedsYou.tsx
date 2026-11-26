@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useQueryView } from "@/components/QueryView";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
@@ -34,6 +35,7 @@ import { CoordinatorTaskMotion } from "./CoordinatorTaskCommitment";
 type Group = "none" | "task" | "agent" | "project";
 
 function HistoryPanel({ companyId, agents, onClose, mobile = false }: { companyId: string; agents: Agent[]; onClose: () => void; mobile?: boolean }) {
+  const { t: translateUi } = useUiTranslation();
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [outcome, setOutcome] = useState("");
@@ -57,9 +59,9 @@ function HistoryPanel({ companyId, agents, onClose, mobile = false }: { companyI
     groups.set(label, [...(groups.get(label) ?? []), item]);
   }
   const slot = typeof document !== "undefined" ? document.getElementById(PROPERTIES_PANE_HEADER_SLOT_ID) : null;
-  const tab = <SidePanelTab id="decision-history" label="Decision history" active onSelect={() => {}} onClose={onClose} />;
+  const tab = <SidePanelTab id="decision-history" label={translateUi("interfaceCopy.decisionHistory")} active onSelect={() => {}} onClose={onClose} />;
   return <div className="space-y-5" data-coordinator-decision-history>
-    {!mobile ? <>{slot ? createPortal(tab, slot) : tab}<h2 className="text-lg font-medium">Decision history</h2></> : null}
+    {!mobile ? <>{slot ? createPortal(tab, slot) : tab}<h2 className="text-lg font-medium">{translateUi("interfaceCopy.decisionHistory")}</h2></> : null}
     <ToolbarSearch query={search} onQueryChange={setSearch} label="Search decision history" placeholder="Search decisions or task IDs…" />
     <div className="grid grid-cols-2 gap-2">
       <NativeSelect aria-label="Filter decision outcomes" value={outcome} onChange={(event) => setOutcome(event.target.value)}>
@@ -71,7 +73,7 @@ function HistoryPanel({ companyId, agents, onClose, mobile = false }: { companyI
       <NativeSelect aria-label="Group decision history" value={groupBy} onChange={(event) => setGroupBy(event.target.value as Group)} className="col-span-2"><option value="none">No grouping</option><option value="task">By task</option><option value="agent">By agent</option><option value="project">By project</option></NativeSelect>
     </div>
     {historyWaiting ? <p role="status" className="text-sm text-muted-foreground">Loading decisions…</p> : null}
-    {(historyView.kind === "error") ? <div role="alert" className="space-y-2 text-sm"><p>Decision history could not be loaded.</p><Button variant="outline" onClick={() => void history.refetch()}>Retry</Button></div> : null}
+    {(historyView.kind === "error") ? <div role="alert" className="space-y-2 text-sm"><p>Decision history could not be loaded.</p><Button variant="outline" onClick={() => void history.refetch()}>{translateUi("interfaceCopy.retry")}</Button></div> : null}
     {!historyWaiting && !(historyView.kind === "error") && !items.length ? <p className="text-sm text-muted-foreground">No decisions match these filters.</p> : null}
     <div className="space-y-4">{[...groups].map(([label, entries]) => <section key={label} className="space-y-3">{label ? <h3 className="text-sm font-medium text-muted-foreground">{label}</h3> : null}{entries.map((item) => <div key={item.id} className="space-y-1"><Receipt item={item} onOpen={navigate} /><p className="px-1 text-xs text-muted-foreground"><time dateTime={item.resolvedAt}>{new Date(item.resolvedAt).toLocaleString()}</time></p></div>)}</section>)}</div>
     {history.hasNextPage ? <Button variant="outline" disabled={history.isFetchingNextPage} onClick={() => void history.fetchNextPage()}>{history.isFetchingNextPage ? "Loading…" : "Load more decisions"}</Button> : null}
@@ -79,6 +81,7 @@ function HistoryPanel({ companyId, agents, onClose, mobile = false }: { companyI
 }
 
 export function CoordinatorNeedsYou() {
+  const { t: translateUi } = useUiTranslation();
   const { selectedCompanyId } = useCompany();
   const { userId } = useCoordinatorWorkspaceEnabled();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -201,7 +204,7 @@ export function CoordinatorNeedsYou() {
   return <LayoutGroup id="coordinator-decisions"><section className="coordinator-needs-you mx-auto w-full max-w-4xl space-y-6" aria-label="Inbox">
     {isMobile ? <Sheet open={historyOpen} onOpenChange={open => { if (!open) closeHistory(); }}>
       <SheetContent side="bottom" aria-describedby={undefined} className="mobile-task-side-panel inset-0 h-dvh max-h-dvh w-full max-w-none gap-0 border-0 p-0 pt-(--sz-safe-top) pb-(--sz-safe-bottom)">
-        <SheetHeader><SheetTitle>Decision history</SheetTitle></SheetHeader>
+        <SheetHeader><SheetTitle>{translateUi("interfaceCopy.decisionHistory")}</SheetTitle></SheetHeader>
         <div className="min-h-0 flex-1 overflow-y-auto p-4"><HistoryPanel companyId={selectedCompanyId} agents={agentQuery.data ?? []} onClose={closeHistory} mobile /></div>
       </SheetContent>
     </Sheet> : null}
@@ -214,7 +217,7 @@ export function CoordinatorNeedsYou() {
       <NativeSelect aria-label="Sort decisions" value={sort} onChange={(event) => setSort(event.target.value as typeof sort)} className="w-auto"><option value="newest">Newest first</option><option value="oldest">Oldest first</option></NativeSelect>
     </div>
     {feedWaiting ? <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />Loading decisions…</p> : null}
-    {(feedView.kind === "error") ? <div role="alert" className="space-y-2"><p className="text-sm">Decisions could not be loaded.</p><Button variant="outline" onClick={() => void feed.refetch()}>Retry</Button></div> : null}
+    {(feedView.kind === "error") ? <div role="alert" className="space-y-2"><p className="text-sm">Decisions could not be loaded.</p><Button variant="outline" onClick={() => void feed.refetch()}>{translateUi("interfaceCopy.retry")}</Button></div> : null}
     {!feedWaiting && !(feedView.kind === "error") && filtered.length === 0 ? <div className="space-y-3 py-8 text-center"><p className="text-sm text-muted-foreground">{filtersActive && !visibleRecentItems.length ? "No decisions match these filters." : pendingItems.length ? "No open decisions match these filters." : "You're caught up."}</p><Button variant="ghost" onClick={showHistory}>Open decision history<ArrowUpRight className="size-4" /></Button></div> : null}
     {groups.map(([label, items]) => <div key={label} className="space-y-4">{label ? <h2 className="text-sm font-medium text-muted-foreground">{label}</h2> : null}{items.map((item) => {
       const issueId = item.relatedIssue?.id ?? String(item.subject.metadata?.issueId ?? "");
@@ -244,6 +247,6 @@ export function CoordinatorNeedsYou() {
     })}</div>)}
     {filtered.length > renderLimit ? <Button variant="outline" onClick={() => setRenderLimit((value) => value + 40)}>Show more decisions</Button> : null}
     {visibleRecentItems.length ? <section className="space-y-3" aria-label="Recent Decisions"><h2 className="text-sm font-medium text-muted-foreground">Recent Decisions</h2>{recentGroups.map(([label, items]) => <div key={label} className="space-y-3">{label ? <h3 className="text-sm font-medium text-muted-foreground">{label}</h3> : null}{items.map((item) => <motion.div layout={!reducedMotion} layoutId={reducedMotion ? undefined : item.id} transition={{ duration }} key={item.id}><Receipt item={item} onOpen={navigate} /></motion.div>)}</div>)}</section> : null}
-    {(recentView.kind === "error") ? <p role="alert" className="text-sm text-muted-foreground">Recent decisions could not be loaded. <button className="underline" onClick={() => void recent.refetch()}>Retry</button></p> : null}
+    {(recentView.kind === "error") ? <p role="alert" className="text-sm text-muted-foreground">Recent decisions could not be loaded. <button className="underline" onClick={() => void recent.refetch()}>{translateUi("interfaceCopy.retry")}</button></p> : null}
   </section></LayoutGroup>;
 }

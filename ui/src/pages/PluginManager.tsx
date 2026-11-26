@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 /**
  * @fileoverview Plugin Manager page — admin UI for discovering,
  * installing, enabling/disabling, and uninstalling plugins.
@@ -87,6 +88,7 @@ function ExperimentalBadge() {
  * @see doc/plugins/PLUGIN_SPEC.md §3 — Plugin Lifecycle for status semantics.
  */
 export function PluginManager() {
+  const { t: translateUi } = useUiTranslation();
   const { selectedCompany } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const queryClient = useQueryClient();
@@ -238,7 +240,7 @@ export function PluginManager() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setInstallDialogOpen(false)}>Cancel</Button>
+              <Button variant="outline" onClick={() => setInstallDialogOpen(false)}>{translateUi("interfaceCopy.cancel")}</Button>
               <Button
                 onClick={() => installMutation.mutate({ packageName: installPackage })}
                 disabled={!installPackage || installMutation.isPending}
@@ -266,7 +268,7 @@ export function PluginManager() {
         <div className="flex items-center gap-2">
           <FlaskConical className="h-5 w-5 text-muted-foreground" />
           <h2 className="text-base font-semibold">Available Plugins</h2>
-          <Badge variant="outline">Bundled</Badge>
+          <Badge variant="outline">{translateUi("interfaceCopy.bundled")}</Badge>
         </div>
 
         {installErrorMessage && (
@@ -528,7 +530,7 @@ export function PluginManager() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setUninstallPluginId(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setUninstallPluginId(null)}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button
               variant="destructive"
               disabled={uninstallMutation.isPending}
@@ -579,9 +581,7 @@ export function PluginManager() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setErrorDetailsPlugin(null)}>
-              Close
-            </Button>
+            <Button variant="outline" onClick={() => setErrorDetailsPlugin(null)}>{translateUi("interfaceCopy.close")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

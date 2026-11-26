@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import type { ReactNode } from "react";
 import type { Issue, Project } from "@paperclipai/shared";
 import { ArrowUpRight, ChevronRight } from "lucide-react";
@@ -49,6 +50,7 @@ export interface TaskDetailTasksPanelProps {
 }
 
 export function TaskDetailTasksPanel({ ancestors = [], createdFrom = null, subtasks, createdTasks, projects, isLoading, hasError, onRetry, issueLinkState }: TaskDetailTasksPanelProps) {
+  const { t: translateUi } = useUiTranslation();
   const sortedSubtasks = sortTasks(subtasks);
   const groups = new Map<string, { name: string; path?: string; tasks: Issue[] }>();
   for (const item of sortTasks(createdTasks)) {
@@ -95,7 +97,7 @@ export function TaskDetailTasksPanel({ ancestors = [], createdFrom = null, subta
       {hasError && (
         <div role="alert" className="flex items-center gap-2 text-sm text-destructive">
           <span>Could not load all tasks.</span>
-          {onRetry && <Button variant="ghost" size="sm" onClick={onRetry}>Retry</Button>}
+          {onRetry && <Button variant="ghost" size="sm" onClick={onRetry}>{translateUi("interfaceCopy.retry")}</Button>}
         </div>
       )}
       {!isLoading && !hasError && !createdFrom && ancestors.length === 0 && subtasks.length === 0 && createdTasks.length === 0 && (

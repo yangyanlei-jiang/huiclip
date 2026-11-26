@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { goalsApi } from "../api/goals";
@@ -13,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Target, Plus } from "lucide-react";
 
 export function Goals() {
+  const { t: translateUi } = useUiTranslation();
   const { selectedCompanyId } = useCompany();
   const { openNewGoal } = useDialogActions();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -30,7 +32,7 @@ export function Goals() {
   const goalsView = useQueryView(goalsQuery);
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Target} message="Select an organization to view goals." />;
+    return <EmptyState icon={Target} message={translateUi("interfaceCopy.selectAnOrganizationToViewGoals")} />;
   }
 
   // Keep a loaded list on screen through a failed refetch; only a real
@@ -55,8 +57,8 @@ export function Goals() {
       {goals && goals.length === 0 && (
         <EmptyState
           icon={Target}
-          message="No goals yet."
-          action="Add Goal"
+          message={translateUi("interfaceCopy.noGoalsYet")}
+          action={translateUi("interfaceCopy.addGoal")}
           onAction={() => openNewGoal()}
         />
       )}

@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { PROJECT_COLORS, type ProjectRepository } from "@paperclipai/shared";
@@ -22,6 +23,7 @@ export function NewProjectDialog() {
 }
 
 export function NewProjectForm({ companyId, onClose }: { companyId: string; onClose: () => void }) {
+  const { t: translateUi } = useUiTranslation();
   const client = useQueryClient();
   const [name, setName] = useState("");
   const [color] = useState(() => PROJECT_COLORS[Math.floor(Math.random() * PROJECT_COLORS.length)]!);
@@ -41,7 +43,7 @@ export function NewProjectForm({ companyId, onClose }: { companyId: string; onCl
       className="flex max-h-(--sz-calc-18) flex-col gap-0 overflow-hidden p-0 shadow-sm sm:max-w-lg"
       onOpenAutoFocus={(event) => { event.preventDefault(); input.current?.focus(); }}>
       {connecting ? <div className="min-h-0 overflow-y-auto p-5">
-        <DialogTitle className="sr-only">Connect GitHub</DialogTitle>
+        <DialogTitle className="sr-only">{translateUi("interfaceCopy.connectGitHub")}</DialogTitle>
         <ConnectionSetupFlow host="dialog" serviceSlug="github" forceNewConnection onCancel={() => setConnecting(false)} onComplete={() => {
           void client.invalidateQueries({ queryKey: repositoryOptionsKey(companyId) });
           setConnecting(false);
@@ -63,7 +65,7 @@ export function NewProjectForm({ companyId, onClose }: { companyId: string; onCl
         </div>
         {create.status === "error" && <p role="alert" className="px-5 pt-3 text-sm text-destructive">{describeError(create.error).body}</p>}
         <div className="flex shrink-0 justify-end gap-2 px-5 py-5">
-          <Button type="button" variant="ghost" disabled={create.isPending} onClick={onClose}>Cancel</Button>
+          <Button type="button" variant="ghost" disabled={create.isPending} onClick={onClose}>{translateUi("interfaceCopy.cancel")}</Button>
           <Button type="submit" disabled={!name.trim() || create.isPending}>{create.isPending ? "Creating…" : "Create project"}</Button>
         </div>
       </form>}

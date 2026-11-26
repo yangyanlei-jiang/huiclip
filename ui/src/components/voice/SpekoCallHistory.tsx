@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
@@ -43,10 +44,11 @@ export function SpekoUnapprovedCallActivityItem({ call, presentation = "history"
 }
 export interface SpekoCallHistoryViewProps { entries?: VoiceCallHistoryEntry[]; unapprovedCalls?: VoiceUnapprovedCallHistoryEntry[]; loading?: boolean; error?: string; incomingError?: string; endError?: string; onRetry(): void; onEnd?(sessionId: string): void; endingSessionId?: string }
 export function SpekoCallHistoryView({ entries = [], unapprovedCalls = [], loading, error, incomingError, endError, onRetry, onEnd, endingSessionId }: SpekoCallHistoryViewProps) {
+  const { t: translateUi } = useUiTranslation();
   return <section className="max-w-xl space-y-3" aria-label="Your calls">
-    <div className="flex items-center justify-between gap-3"><h2 className="text-lg font-semibold">Your calls</h2><Button size="sm" variant="ghost" onClick={onRetry} disabled={loading}>Refresh</Button></div>
+    <div className="flex items-center justify-between gap-3"><h2 className="text-lg font-semibold">Your calls</h2><Button size="sm" variant="ghost" onClick={onRetry} disabled={loading}>{translateUi("interfaceCopy.refresh")}</Button></div>
     {loading && <p role="status" className="text-sm text-muted-foreground">Loading calls…</p>}
-    {error && <div className="space-y-2"><p role="alert" className="text-sm text-destructive">{error}</p><Button size="sm" variant="outline" onClick={onRetry}>Try again</Button></div>}
+    {error && <div className="space-y-2"><p role="alert" className="text-sm text-destructive">{error}</p><Button size="sm" variant="outline" onClick={onRetry}>{translateUi("interfaceCopy.tryAgain")}</Button></div>}
     {incomingError && <p role="alert" className="text-sm text-destructive">Unapproved calls could not be loaded. {incomingError}</p>}
     {endError && <p role="alert" className="text-sm text-destructive">The call could not be ended. {endError}</p>}
     {!loading && !error && !incomingError && !entries.length && !unapprovedCalls.length && <p className="text-sm text-muted-foreground">Your browser conversations and phone calls will appear here.</p>}

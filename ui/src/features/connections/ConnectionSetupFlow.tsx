@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { connectionIntentsApi } from "@/api/connection-intents";
 import { readOAuthWindowOutcome } from "@/lib/oauthWindowOutcome";
 import { bindAccount } from "@/lib/account-scope";
@@ -589,6 +590,7 @@ export interface ConnectionSetupFlowProps {
  * here so a provider can never drift between entry points.
  */
 export function ConnectionSetupFlow(props: ConnectionSetupFlowProps = {}) {
+  const { t: translateUi } = useUiTranslation();
   const [searchParams] = useSearchParams();
   const params = useParams<{ appKey?: string }>();
   const { selectedCompanyId } = useCompany();
@@ -620,7 +622,7 @@ export function ConnectionSetupFlow(props: ConnectionSetupFlowProps = {}) {
   const provider = source || existing.data?.config?.sourceTemplateKey;
   const method = searchParams.get("method") || existing.data?.config?.connectionMethodKey;
   if (lookup && (existingView.kind === "loading" || existingView.kind === "reconnecting")) return <p className="p-6 text-sm text-muted-foreground">Loading connection…</p>;
-  if (lookup && existingView.kind === "error") return <div role="alert" className="space-y-3 p-6"><p>Could not load this connection. Your saved access and credentials have not changed.</p><Button variant="outline" onClick={() => void existing.refetch()}>Try again</Button></div>;
+  if (lookup && existingView.kind === "error") return <div role="alert" className="space-y-3 p-6"><p>Could not load this connection. Your saved access and credentials have not changed.</p><Button variant="outline" onClick={() => void existing.refetch()}>{translateUi("interfaceCopy.tryAgain")}</Button></div>;
   if (gatedDefinitions.length) {
     if (!availability.loaded) return <p role="status" className="p-6 text-sm text-muted-foreground">Loading connection settings…</p>;
     if (availability.failed) return <p role="alert" className="p-6 text-destructive text-sm">Could not load connector availability. Refresh to try again.</p>;
@@ -662,6 +664,7 @@ function StandardConnectionSetupFlow({
   onCancel,
   renderCredentialStep,
 }: ConnectionSetupFlowProps = {}) {
+  const { t: translateUi } = useUiTranslation();
   const workspaceSelectionRef = useRef<GoogleWorkspaceServiceSelection | null>(null);
   const [workspaceConsent, setWorkspaceConsent] = useState<(() => void) | null>(null);
   const [workspaceConnection, setWorkspaceConnection] = useState<ToolConnection | undefined>();
@@ -2006,9 +2009,7 @@ function StandardConnectionSetupFlow({
                 setOAuthPhase("entry");
               }
             }}
-          >
-            Try again
-          </Button>
+          >{translateUi("interfaceCopy.tryAgain")}</Button>
           <Button type="button" variant="outline" onClick={() => navigate("/apps")}>
             Back to apps
           </Button>
@@ -2094,9 +2095,7 @@ function StandardConnectionSetupFlow({
           Paperclip couldn’t load the provider details needed to restore this connection. The retained connection was not changed.
         </p>
         <div className="mt-5 flex flex-wrap gap-2">
-          <Button type="button" onClick={galleryView.retry} disabled={galleryView.isFetching}>
-            Try again
-          </Button>
+          <Button type="button" onClick={galleryView.retry} disabled={galleryView.isFetching}>{translateUi("interfaceCopy.tryAgain")}</Button>
           <Button type="button" variant="outline" onClick={() => navigate("/apps")}>
             Back to apps
           </Button>
@@ -2181,7 +2180,7 @@ function StandardConnectionSetupFlow({
           <Button type="button" variant="outline" onClick={() => setShowConnectionChoice(false)}>
             {configuredConnection ? "Review connection setup" : "Connect new"}
           </Button>
-          {onCancel ? <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button> : null}
+          {onCancel ? <Button type="button" variant="ghost" onClick={onCancel}>{translateUi("interfaceCopy.cancel")}</Button> : null}
         </div>
       </div>
     );
@@ -2612,7 +2611,7 @@ function StandardConnectionSetupFlow({
             </Button>
           ) : null}
           <div className="mt-6 flex items-center justify-between gap-3">
-            <Button type="button" variant="ghost" onClick={backToGallery}>Back</Button>
+            <Button type="button" variant="ghost" onClick={backToGallery}>{translateUi("interfaceCopy.back")}</Button>
             <Button type="button" disabled={galleryQuery.isFetching} onClick={() => void galleryQuery.refetch()}>
               {galleryQuery.isFetching ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
               Try again
@@ -2658,9 +2657,7 @@ function StandardConnectionSetupFlow({
             ) : null}
             {connectionDefaults}
             <div className="mt-6 flex items-center justify-between gap-3">
-              <Button type="button" variant="ghost" onClick={backToGallery}>
-                Back
-              </Button>
+              <Button type="button" variant="ghost" onClick={backToGallery}>{translateUi("interfaceCopy.back")}</Button>
               <Button
                 type="button"
                 disabled={connectorEnrollmentQuery.isLoading || startConnectorEnrollment.isPending}
@@ -2920,6 +2917,7 @@ export function OAuthConnectStateScreen({
   onBack: () => void;
   onCancel: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const serverName = entry?.name ?? identity?.name ?? "this server";
   const unverifiedHost = entry ? null : identity?.unverifiedHost ?? null;
   const status = phase === "entry"
@@ -3014,7 +3012,7 @@ export function OAuthConnectStateScreen({
             </Button>
           )}
           {authorizationUrl ? <Button variant="outline" asChild><a href={authorizationUrl} target="_blank" rel="noopener noreferrer" onClick={onOpenAuthorization}>Open sign-in in a new tab</a></Button> : null}
-          <Button type="button" variant="ghost" onClick={onBack}>Back</Button>
+          <Button type="button" variant="ghost" onClick={onBack}>{translateUi("interfaceCopy.back")}</Button>
         </div>
       </div>
     </div>
@@ -3037,6 +3035,7 @@ function ZapierConnectStep({
   onBack: () => void;
   onConnect: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const normalizedLink = normalizeAppLink(link);
   const zapierHostname = normalizedLink ? new URL(normalizedLink).hostname : "";
   const isZapierLink = zapierHostname === "zapier.com" || zapierHostname.endsWith(".zapier.com");
@@ -3066,9 +3065,7 @@ function ZapierConnectStep({
       {defaults}
 
       <div className="mt-6 flex items-center justify-between">
-        <Button variant="ghost" onClick={onBack} disabled={submitting}>
-          Back
-        </Button>
+        <Button variant="ghost" onClick={onBack} disabled={submitting}>{translateUi("interfaceCopy.back")}</Button>
         <Button onClick={onConnect} disabled={submitting || !isZapierLink}>
           {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {submitting ? "Checking…" : "Check link"}
@@ -3108,6 +3105,7 @@ function GalleryStep({
   onPick: (entry: AppDefinition) => void;
   onUseLink: (link: string) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [search, setSearch] = useState("");
   const [linkInput, setLinkInput] = useState(initialLink);
   const linkInputEdited = useRef(false);
@@ -3322,9 +3320,7 @@ function GalleryStep({
               placeholder={zapierSource ? "https://mcp.zapier.com/api/v1/connect?token=…" : "https://example.com/actions"}
               className="h-10"
             />
-            <Button type="button" variant="outline" onClick={continueWithLink}>
-              Continue
-            </Button>
+            <Button type="button" variant="outline" onClick={continueWithLink}>{translateUi("interfaceCopy.continue")}</Button>
           </div>
           {linkError && <div className="text-xs text-destructive">{linkError}</div>}
         </div>
@@ -3406,6 +3402,7 @@ function LinkConnectStep({
   onBack: () => void;
   onConnect: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const host = endpointHost(link);
   const headerError = authMode === "custom_headers" ? customHeaderError(headers) : null;
   const draft: GenericConnectDraft = {
@@ -3516,7 +3513,7 @@ function LinkConnectStep({
                       autoComplete="off"
                       value={row.value}
                       onChange={(e) => updateHeader(row.id, { value: e.target.value })}
-                      placeholder="Value"
+                      placeholder={translateUi("interfaceCopy.value")}
                       aria-label={row.name.trim() ? `Value for ${row.name.trim()}` : "Header value"}
                       className="h-10 font-mono"
                     />
@@ -3527,9 +3524,7 @@ function LinkConnectStep({
                       className="h-10 shrink-0"
                       onClick={() => onHeadersChange(headers.filter((candidate) => candidate.id !== row.id))}
                       disabled={headers.length === 1}
-                    >
-                      Remove
-                    </Button>
+                    >{translateUi("interfaceCopy.remove")}</Button>
                   </div>
                 ))}
                 <Button
@@ -3559,7 +3554,7 @@ function LinkConnectStep({
                     value={oauthClientId}
                     onChange={(e) => onOAuthClientIdChange(e.target.value)}
                     autoComplete="off"
-                    placeholder="Optional"
+                    placeholder={translateUi("interfaceCopy.optional")}
                     className="mt-2 h-11 font-mono"
                   />
                 </div>
@@ -3573,7 +3568,7 @@ function LinkConnectStep({
                     autoComplete="off"
                     value={oauthClientSecret}
                     onChange={(e) => onOAuthClientSecretChange(e.target.value)}
-                    placeholder="Optional"
+                    placeholder={translateUi("interfaceCopy.optional")}
                     className="mt-2 h-11 font-mono"
                   />
                 </div>
@@ -3586,9 +3581,7 @@ function LinkConnectStep({
       {defaults}
 
       <div className="mt-8 flex items-center justify-between">
-        <Button variant="ghost" onClick={onBack} disabled={submitting}>
-          Back
-        </Button>
+        <Button variant="ghost" onClick={onBack} disabled={submitting}>{translateUi("interfaceCopy.back")}</Button>
         <Button onClick={onConnect} disabled={submitting || !canSubmit || Boolean(headerError)}>
           {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {submitting ? "Checking…" : "Check link"}
@@ -3721,6 +3714,7 @@ function KeyStep({
   onBack: () => void;
   onConnect: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const methods = useMemo(
     () => connectionMethodsForCredentialSource(entry, credentialSource),
     [credentialSource, entry],
@@ -3966,9 +3960,7 @@ function KeyStep({
         {defaults}
 
         <div className="mt-8 flex items-center justify-between">
-          <Button variant="ghost" onClick={onBack} disabled={submitting}>
-            Back
-          </Button>
+          <Button variant="ghost" onClick={onBack} disabled={submitting}>{translateUi("interfaceCopy.back")}</Button>
           <Button onClick={onConnect} disabled={submitting || !canConnect}>
             {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {submitting ? "Checking…" : "Connect"}
@@ -4107,9 +4099,7 @@ function KeyStep({
       {defaults}
 
       <div className="mt-8 flex items-center justify-between">
-        <Button variant="ghost" onClick={onBack} disabled={submitting}>
-          Back
-        </Button>
+        <Button variant="ghost" onClick={onBack} disabled={submitting}>{translateUi("interfaceCopy.back")}</Button>
         <Button onClick={onConnect} disabled={submitting || !settingsValid || !hasMethodSelection || !allFilled || !oauthClientFilled || !vercelConnectorFilled || !configFilled || !configRequirementMet}>
           {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {submitting
@@ -4370,6 +4360,7 @@ export function AccessStepContent({
   onBack: () => void;
   onContinue: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   // "Only agents I choose" / "Just agents I pick" means agents this person may actually edit. When the server
   // has not told us, fall back to every live agent rather than an empty list —
   // an empty picker would read as "you have no agents".
@@ -4587,9 +4578,7 @@ export function AccessStepContent({
       {/* Mobile stacks actions full-width with the primary action first in
           reading order; desktop keeps Back on the left. */}
       {hideFooter ? null : <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <Button variant="ghost" className="w-full sm:w-auto" onClick={onBack} disabled={pending}>
-          Back
-        </Button>
+        <Button variant="ghost" className="w-full sm:w-auto" onClick={onBack} disabled={pending}>{translateUi("interfaceCopy.back")}</Button>
         <Button
           className="w-full sm:w-auto"
           onClick={onContinue}

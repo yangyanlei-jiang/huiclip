@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { SecretStatus, UserSecretDefinition } from "@paperclipai/shared";
@@ -65,6 +66,7 @@ const emptyForm: DefinitionForm = {
  * only — never values — per the UX terminology decisions.
  */
 export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -247,7 +249,7 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
 
           <div className="space-y-3">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-foreground">Name</label>
+              <label className="text-xs font-medium text-foreground">{translateUi("interfaceCopy.name")}</label>
               <Input
                 value={form.name}
                 onChange={(event) => {
@@ -263,7 +265,7 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-foreground">Key</label>
+              <label className="text-xs font-medium text-foreground">{translateUi("interfaceCopy.key")}</label>
               <Input
                 value={form.key}
                 onChange={(event) => {
@@ -279,7 +281,7 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
               </p>
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-foreground">Description</label>
+              <label className="text-xs font-medium text-foreground">{translateUi("interfaceCopy.description")}</label>
               <Input
                 value={form.description}
                 onChange={(event) =>
@@ -303,7 +305,7 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
             </div>
             {editing ? (
               <div className="space-y-1">
-                <label className="text-xs font-medium text-foreground">Status</label>
+                <label className="text-xs font-medium text-foreground">{translateUi("interfaceCopy.status")}</label>
                 <Select
                   value={form.status}
                   onValueChange={(status) =>
@@ -314,8 +316,8 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="disabled">Disabled</SelectItem>
+                    <SelectItem value="active">{translateUi("interfaceCopy.active")}</SelectItem>
+                    <SelectItem value="disabled">{translateUi("interfaceCopy.disabled")}</SelectItem>
                     <SelectItem value="archived">Archived</SelectItem>
                   </SelectContent>
                 </Select>
@@ -325,9 +327,7 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
           </div>
 
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setDialogOpen(false)} disabled={save.isPending}>
-              Cancel
-            </Button>
+            <Button variant="ghost" onClick={() => setDialogOpen(false)} disabled={save.isPending}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button onClick={() => save.mutate()} disabled={!canSave || save.isPending}>
               {save.isPending ? "Saving…" : editing ? "Save changes" : "Create"}
             </Button>
@@ -346,9 +346,7 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setDeleteTarget(null)} disabled={remove.isPending}>
-              Cancel
-            </Button>
+            <Button variant="ghost" onClick={() => setDeleteTarget(null)} disabled={remove.isPending}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button
               variant="destructive"
               onClick={() => deleteTarget && remove.mutate(deleteTarget)}

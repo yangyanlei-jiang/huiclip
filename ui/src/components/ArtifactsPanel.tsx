@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { IssueWorkProduct } from "@paperclipai/shared";
@@ -259,6 +260,7 @@ function DocumentViewer({
   onApprove?: () => void;
   onReject?: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const { data: doc, isLoading, error } = useQuery({
     queryKey: queryKeys.issues.documents(taskId),
     queryFn: () => issuesApi.getDocument(taskId, docKey),
@@ -292,7 +294,7 @@ function DocumentViewer({
             <MarkdownBody>{doc.body}</MarkdownBody>
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">Document is empty.</p>
+          <p className="text-sm text-muted-foreground">{translateUi("interfaceCopy.documentIsEmpty")}</p>
         )}
       </div>
 

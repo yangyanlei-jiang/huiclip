@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { Button } from "@/components/ui/button";
 import { InlineBanner } from "@/components/InlineBanner";
 import { ConnectionChoiceList } from "../ConnectionChoiceList";
@@ -22,6 +23,7 @@ export function RemoteMcpAccountChoice({
   onCancel?: () => void;
   onConnectNew: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   return (
     <div className="space-y-5">
       <div>
@@ -61,9 +63,7 @@ export function RemoteMcpAccountChoice({
           variant="ghost"
           disabled={Boolean(pendingId)}
           onClick={onCancel}
-        >
-          Cancel
-        </Button>
+        >{translateUi("interfaceCopy.cancel")}</Button>
         <Button disabled={Boolean(pendingId)} onClick={onConnectNew}>
           Connect new
         </Button>

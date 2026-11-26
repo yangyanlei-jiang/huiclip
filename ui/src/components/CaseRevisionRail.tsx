@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@/lib/router";
@@ -57,6 +58,7 @@ function CaseDocumentDiffModal({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [leftRevisionId, setLeftRevisionId] = useState<string | null>(null);
   const [rightRevisionId, setRightRevisionId] = useState<string | null>(null);
 
@@ -91,7 +93,7 @@ function CaseDocumentDiffModal({
           </DialogHeader>
           <div className="grid min-w-0 gap-3 sm:grid-cols-2 lg:gap-4">
             <div className="flex min-w-0 items-center gap-2">
-              <span className="shrink-0 rounded-full border border-red-500/30 bg-red-500/10 px-2 py-0.5 text-(length:--text-nano) font-medium uppercase tracking-(--tracking-caps) text-red-400">Old</span>
+              <span className="shrink-0 rounded-full border border-red-500/30 bg-red-500/10 px-2 py-0.5 text-(length:--text-nano) font-medium uppercase tracking-(--tracking-caps) text-red-400">{translateUi("interfaceCopy.old")}</span>
               <Select value={effectiveLeftId ?? ""} onValueChange={setLeftRevisionId}>
                 <SelectTrigger aria-label="Old revision" className="min-w-0 w-full border-border/60 data-[size=default]:h-11 md:w-60 md:text-xs md:data-[size=default]:h-9">
                   <SelectValue className="min-w-0 truncate" placeholder="Select revision" />
@@ -106,7 +108,7 @@ function CaseDocumentDiffModal({
               </Select>
             </div>
             <div className="flex min-w-0 items-center gap-2">
-              <span className="shrink-0 rounded-full border border-green-500/30 bg-green-500/10 px-2 py-0.5 text-(length:--text-nano) font-medium uppercase tracking-(--tracking-caps) text-green-400">New</span>
+              <span className="shrink-0 rounded-full border border-green-500/30 bg-green-500/10 px-2 py-0.5 text-(length:--text-nano) font-medium uppercase tracking-(--tracking-caps) text-green-400">{translateUi("interfaceCopy.new")}</span>
               <Select value={effectiveRightId ?? ""} onValueChange={setRightRevisionId}>
                 <SelectTrigger aria-label="New revision" className="min-w-0 w-full border-border/60 data-[size=default]:h-11 md:w-60 md:text-xs md:data-[size=default]:h-9">
                   <SelectValue className="min-w-0 truncate" placeholder="Select revision" />
@@ -131,10 +133,10 @@ function CaseDocumentDiffModal({
           ) : (
             <div className="font-mono text-xs leading-6">
               <div className="grid grid-cols-(--gtc-1) border-b border-border/60 bg-muted/30 px-3 py-2 text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">
-                <span>Old</span>
-                <span>New</span>
+                <span>{translateUi("interfaceCopy.old")}</span>
+                <span>{translateUi("interfaceCopy.new")}</span>
                 <span />
-                <span>Content</span>
+                <span>{translateUi("interfaceCopy.content")}</span>
               </div>
               {diffRows.map((row, index) => (
                 <div

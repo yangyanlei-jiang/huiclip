@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
 import { assistantClientNames, mcpAuthorizationHandoffInstructions, mcpInvitation, mcpSetupSteps, type AssistantClient, type McpConnection } from "@paperclipai/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -92,6 +93,7 @@ function setupUnavailableCopy(errorKind: "auth" | "not_found"): string {
 }
 
 export function AssistantConnection({ initialAssistant = "codex" }: { initialAssistant?: Assistant } = {}) {
+  const { t: translateUi } = useUiTranslation();
   const { selectedCompany, selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const client = useQueryClient();
@@ -120,7 +122,7 @@ export function AssistantConnection({ initialAssistant = "codex" }: { initialAss
     </header>
     {(setup.isPending || setupView.kind === "reconnecting") && <p className="text-sm text-muted-foreground">Loading assistant setup…</p>}
     {setupView.kind === "error" && (setupView.errorKind === "auth" || setupView.errorKind === "not_found"
-      ? <div role="alert" className="space-y-3"><p className="text-sm text-destructive">{setupUnavailableCopy(setupView.errorKind)}</p><Button variant="outline" disabled={setupView.isFetching} onClick={setupView.retry}>Try again</Button></div>
+      ? <div role="alert" className="space-y-3"><p className="text-sm text-destructive">{setupUnavailableCopy(setupView.errorKind)}</p><Button variant="outline" disabled={setupView.isFetching} onClick={setupView.retry}>{translateUi("interfaceCopy.tryAgain")}</Button></div>
       : <QueryErrorState error={setup.error} action="load assistant setup" onRetry={setupView.retry} retrying={setupView.isFetching} />)}
     {setup.data && !setup.data.enabled && <section className="space-y-3 rounded-lg border border-border bg-muted/30 p-4">
       <h2 className="text-sm font-semibold">Enable assistant connections</h2>
@@ -149,7 +151,7 @@ export function AssistantConnection({ initialAssistant = "codex" }: { initialAss
     <section className="space-y-3" aria-labelledby="connected-assistants">
       <h2 id="connected-assistants" className="text-sm font-semibold">Your connected assistants</h2>
       {(connections.isPending || connections.view.kind === "reconnecting") && <p className="text-sm text-muted-foreground">Loading connections…</p>}
-      {revoke.error && <p role="alert" className="text-sm text-destructive">Couldn’t revoke this connection. Try again. <button type="button" className="underline" onClick={() => void connections.refetch()}>Refresh</button></p>}
+      {revoke.error && <p role="alert" className="text-sm text-destructive">Couldn’t revoke this connection. Try again. <button type="button" className="underline" onClick={() => void connections.refetch()}>{translateUi("interfaceCopy.refresh")}</button></p>}
       {connections.view.kind === "error" && <QueryErrorState error={connections.error} action="load your connections" onRetry={connections.view.retry} retrying={connections.view.isFetching} />}
       {connections.loaded && connections.rows.length === 0 && <p className="text-sm text-muted-foreground">No assistants connected to {selectedCompany.name} yet.</p>}
       <div className="divide-y divide-border">{connections.rows.map(row => <div key={row.id} className="flex flex-wrap items-center justify-between gap-3 py-3">

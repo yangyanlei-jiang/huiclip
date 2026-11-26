@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useQuery } from "@tanstack/react-query";
 import type { DecisionHistoryEntry } from "@paperclipai/shared";
 import { decisionModelsApi } from "@/api/decision-models";
@@ -26,8 +27,9 @@ export function DecisionHistoryTable({ entries, fastResponse = false, fastRespon
   </div>;
 }
 export function DecisionHistory({ companyId, from, to }: { companyId: string; from?: string | null; to?: string | null }) {
+  const { t: translateUi } = useUiTranslation();
   const query = useQuery({ queryKey: ["decision-history", companyId, from, to], queryFn: () => decisionModelsApi.history(companyId, from, to), refetchInterval: q => q.state.data?.some(row => row.status === "running") ? 5000 : false });
   if (query.isPending) return <p className="text-sm text-muted-foreground">Loading decision requests…</p>;
-  if (query.error) return <div role="alert" className="space-y-2"><p className="text-sm text-destructive">Could not load decision requests.</p><Button variant="outline" onClick={() => void query.refetch()}>Try again</Button></div>;
+  if (query.error) return <div role="alert" className="space-y-2"><p className="text-sm text-destructive">Could not load decision requests.</p><Button variant="outline" onClick={() => void query.refetch()}>{translateUi("interfaceCopy.tryAgain")}</Button></div>;
   return <DecisionHistoryTable entries={query.data ?? []} />;
 }

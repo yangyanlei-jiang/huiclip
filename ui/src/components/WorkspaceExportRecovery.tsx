@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useLayoutEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { IssueRecoveryAction, WorkspaceSourceInspection } from "@paperclipai/shared";
@@ -161,6 +162,7 @@ function PreviousServerStopConfirmation({ action, ownerToken, issueId, companyId
   confirmStop?: (stopEvidence: string) => Promise<unknown>;
   copy?: { waiting: string; question: string; placeholder: string; resuming: string };
 }) {
+  const { t: translateUi } = useUiTranslation();
   const runId = action.evidence.runId as string;
   const client = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -194,7 +196,7 @@ function PreviousServerStopConfirmation({ action, ownerToken, issueId, companyId
         <Textarea id={`previous-server-stop-${action.id}`} value={evidence} onChange={event => setEvidence(event.target.value)}
           placeholder={copy?.placeholder ?? "For example: the old server process exited and was not restarted."} maxLength={12000} rows={3} />
         <div className="flex items-center justify-between gap-2">
-          <Button type="button" variant="ghost" size="sm" disabled={confirm.isPending} onClick={() => setOpen(false)}>Cancel</Button>
+          <Button type="button" variant="ghost" size="sm" disabled={confirm.isPending} onClick={() => setOpen(false)}>{translateUi("interfaceCopy.cancel")}</Button>
           <Button type="submit" size="sm" disabled={!ready || confirm.isPending}>
             {confirm.isPending ? "Confirming…" : "Confirm and resume"}</Button>
         </div>

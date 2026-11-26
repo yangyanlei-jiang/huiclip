@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { describeError } from "@/api/errors";
 import { ShieldCheck, ShieldX, ArrowRight } from "lucide-react";
 import { Button } from "./ui/button";
@@ -16,6 +17,7 @@ export interface ProjectAccessNoticeProps {
 }
 
 export function ProjectAccessNotice({ agentName = "This agent", projectName, ready, canManage, canRetry, onManage, onRetry, error, className }: ProjectAccessNoticeProps) {
+  const { t: translateUi } = useUiTranslation();
   return <section role={ready ? "status" : "alert"} aria-label="Project access" className={cn("space-y-4 rounded-lg border border-border p-4", className)}>
     <div className="flex items-start gap-3">
       {ready ? <ShieldCheck className="mt-0.5 size-5 shrink-0 text-muted-foreground" aria-hidden /> : <ShieldX className="mt-0.5 size-5 shrink-0 text-destructive" aria-hidden />}
@@ -33,7 +35,7 @@ export function ProjectAccessNotice({ agentName = "This agent", projectName, rea
     </div>
     {error && <p role="alert" className="text-sm text-destructive">{describeError(error).body}</p>}
     {!ready && <details className="pl-8 text-xs text-muted-foreground"><summary className="cursor-pointer">Run details</summary>
-      <dl className="mt-3 grid grid-cols-2 gap-2"><dt>Stopped during</dt><dd>Workspace setup</dd><dt>Reason</dt><dd>Project outside allowed scope</dd><dt>Provider started</dt><dd>No</dd></dl>
+      <dl className="mt-3 grid grid-cols-2 gap-2"><dt>Stopped during</dt><dd>Workspace setup</dd><dt>{translateUi("interfaceCopy.reason")}</dt><dd>Project outside allowed scope</dd><dt>Provider started</dt><dd>No</dd></dl>
     </details>}
   </section>;
 }

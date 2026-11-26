@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArchiveRestore, MoreHorizontal, Plus, ShieldCheck, Users } from "lucide-react";
@@ -53,6 +54,7 @@ export function ProfilesIndex({
   initialStatusFilter?: "active" | "archived";
   initialResolverOpen?: boolean;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { pushToast } = useToast();
@@ -225,8 +227,8 @@ export function ProfilesIndex({
                 <th className="px-3 py-2 font-medium">Profile</th>
                 <th className="px-3 py-2 font-medium">Allows</th>
                 <th className="px-3 py-2 font-medium">Assigned to</th>
-                <th className="px-3 py-2 font-medium">Status</th>
-                <th className="px-3 py-2 font-medium">Updated</th>
+                <th className="px-3 py-2 font-medium">{translateUi("interfaceCopy.status")}</th>
+                <th className="px-3 py-2 font-medium">{translateUi("interfaceCopy.updated")}</th>
                 <th className="w-10 px-3 py-2" />
               </tr>
             </thead>
@@ -345,6 +347,7 @@ function RowMenu({
   onRestore?: () => void;
   onDelete: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -357,7 +360,7 @@ function RowMenu({
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onSelect={onEdit}>Edit</DropdownMenuItem>
+        <DropdownMenuItem onSelect={onEdit}>{translateUi("interfaceCopy.edit")}</DropdownMenuItem>
         <DropdownMenuItem onSelect={onDuplicate}>Duplicate</DropdownMenuItem>
         {onRestore ? (
           <DropdownMenuItem onSelect={onRestore}>
@@ -365,12 +368,10 @@ function RowMenu({
             Restore
           </DropdownMenuItem>
         ) : (
-          <DropdownMenuItem onSelect={onArchive}>Archive</DropdownMenuItem>
+          <DropdownMenuItem onSelect={onArchive}>{translateUi("interfaceCopy.archive")}</DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={onDelete} className="text-destructive focus:text-destructive">
-          Delete
-        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={onDelete} className="text-destructive focus:text-destructive">{translateUi("interfaceCopy.delete")}</DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );

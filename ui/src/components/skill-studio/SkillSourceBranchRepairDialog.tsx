@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useRef, useState } from 'react';
 import { LoaderCircle } from 'lucide-react';
 import { RepositoryBranchSelect, type RepositoryBranch } from '@/components/RepositoryBranchSelect';
@@ -16,6 +17,7 @@ export function SkillSourceBranchRepairDialog({ repository, currentBranch, branc
   onClose: () => void;
   onReturnFocus?: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [branch, setBranch] = useState('');
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -30,7 +32,7 @@ export function SkillSourceBranchRepairDialog({ repository, currentBranch, branc
     <DialogContent showCloseButton={!pending} onOpenAutoFocus={event => { event.preventDefault(); title.current?.focus(); }}
       onCloseAutoFocus={event => { if (onReturnFocus) { event.preventDefault(); onReturnFocus(); } }}>
       <DialogHeader>
-        <DialogTitle ref={title} tabIndex={-1} className="outline-none">Choose a new branch</DialogTitle>
+        <DialogTitle ref={title} tabIndex={-1} className="outline-none">{translateUi("interfaceCopy.chooseANewBranch")}</DialogTitle>
         <DialogDescription className="break-words">{repository} · Currently tracking {currentBranch === 'HEAD' ? 'the default branch' : currentBranch}</DialogDescription>
       </DialogHeader>
       <form className="flex min-w-0 flex-col gap-4" onSubmit={event => { event.preventDefault(); if (branch && !pending) void save(); }}>
@@ -38,7 +40,7 @@ export function SkillSourceBranchRepairDialog({ repository, currentBranch, branc
           onChange={value => { setBranch(value); setError(null); }} onRetry={onRetry} />
         {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
         <div className="flex items-center justify-between gap-3">
-          <Button type="button" variant="ghost" disabled={pending} onClick={onClose}>Cancel</Button>
+          <Button type="button" variant="ghost" disabled={pending} onClick={onClose}>{translateUi("interfaceCopy.cancel")}</Button>
           <Button type="submit" disabled={!branch || pending}>{pending && <LoaderCircle className="size-4 animate-spin motion-reduce:animate-none" />}{pending ? 'Changing branch…' : 'Change branch'}</Button>
         </div>
       </form>

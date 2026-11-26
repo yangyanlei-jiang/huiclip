@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { ProjectSkillRepositoryRow } from "@/components/skill-studio/ProjectSkillRepositoryRow";
 import { SkillSourceConnectionRepair } from "@/components/skill-studio/SkillSourceConnectionRepair";
 import { SkillSourceBranchRepair } from "@/components/skill-studio/SkillSourceBranchRepair";
@@ -34,6 +35,7 @@ import { groupProjectSkillRepositories } from '@/lib/project-skill-repositories'
 
 const sourceKey = (companyId: string) => queryKeys.skillSources.all(companyId);
 export function SkillSources() {
+  const { t: translateUi } = useUiTranslation();
   const sourceActionButtons = useRef<Record<string, HTMLButtonElement | null>>({});
   const { selectedCompanyId, selectedCompany } = useCompany();
   const { sourceId } = useParams<{ sourceId: string }>();
@@ -105,8 +107,8 @@ export function SkillSources() {
     <SkillsPageNavigation activeView="sources" />
     {(view.kind === 'loading' || view.kind === 'reconnecting') && <p role="status" className="text-sm text-muted-foreground">Loading sources…</p>}
     {view.kind === 'error' && <QueryErrorState error={query.error} action="load skill sources" onRetry={view.retry} retrying={view.isFetching} />}
-    {query.data?.length === 0 && availableProjects.length === 0 && <div className="flex flex-col items-start gap-3 py-8"><p className="text-sm text-muted-foreground">No repositories added yet. Import your skills to make them available in {selectedCompany?.name ?? 'this company'}.</p><Button variant="outline" onClick={() => navigate('/skills/sources/new')}>Import from GitHub</Button></div>}
-    {projectsView.kind === 'error' && <p role="alert" className="text-sm text-destructive">{describeError(projectRepositories.error).body} <Button variant="ghost" size="sm" onClick={() => void projectRepositories.refetch()}>Try again</Button></p>}
+    {query.data?.length === 0 && availableProjects.length === 0 && <div className="flex flex-col items-start gap-3 py-8"><p className="text-sm text-muted-foreground">No repositories added yet. Import your skills to make them available in {selectedCompany?.name ?? 'this company'}.</p><Button variant="outline" onClick={() => navigate('/skills/sources/new')}>{translateUi("interfaceCopy.importFromGitHub")}</Button></div>}
+    {projectsView.kind === 'error' && <p role="alert" className="text-sm text-destructive">{describeError(projectRepositories.error).body} <Button variant="ghost" size="sm" onClick={() => void projectRepositories.refetch()}>{translateUi("interfaceCopy.tryAgain")}</Button></p>}
     {adopt.error && <p role="alert" className="text-sm text-destructive">{describeError(adopt.error).body}</p>}
     {uninstalledProjects.length > 0 && <div className="divide-y divide-border" aria-label="Project repositories">
       {uninstalledProjects.map(group => <ProjectSkillRepositoryRow key={group.key} repository={group.repository} backgroundPending={group.hasPending} disabled={adopt.isPending}
@@ -149,7 +151,7 @@ export function SkillSources() {
                   {projectGroup.repository.status === 'error' ? 'Retry project import' : projectGroup.hasPending ? 'Import remaining project skills' : 'Import project skills'}
                 </DropdownMenuItem>}
                 <DropdownMenuItem onSelect={() => setRepairSourceId(source.id)}>Choose connection</DropdownMenuItem>
-                {source.accessScope !== 'projects' && !source.projects?.some(project => project.active) && <DropdownMenuItem onSelect={() => setBranchSourceId(source.id)}>Choose a new branch</DropdownMenuItem>}
+                {source.accessScope !== 'projects' && !source.projects?.some(project => project.active) && <DropdownMenuItem onSelect={() => setBranchSourceId(source.id)}>{translateUi("interfaceCopy.chooseANewBranch")}</DropdownMenuItem>}
                 <DropdownMenuItem variant="destructive" disabled={disconnect.isPending} onSelect={() => { disconnect.reset(); reloadRemoval.reset(); setDisconnectSource(source); }}>{source.enabled ? 'Disconnect source' : 'Remove source'}</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -176,7 +178,7 @@ export function SkillSources() {
           {source.lastError && (source.repairAction === 'connection' || (!source.repairAction && !source.connectionId)) && <Button variant="outline" size="sm" className="self-start" onClick={() => setRepairSourceId(source.id)}>Choose connection</Button>}
           {source.lastError && source.repairAction === 'branch' && (source.accessScope === 'projects' || source.projects?.some(project => project.active)
             ? <div className="flex flex-wrap gap-3">{source.projects?.filter(project => project.active).map(project => <Link key={project.id} to={`/projects/${project.id}`} className="text-sm underline">Update {project.name} repository</Link>)}</div>
-            : <Button variant="outline" size="sm" className="self-start" onClick={() => setBranchSourceId(source.id)}>Choose a new branch</Button>)}
+            : <Button variant="outline" size="sm" className="self-start" onClick={() => setBranchSourceId(source.id)}>{translateUi("interfaceCopy.chooseANewBranch")}</Button>)}
         </section>;
       })}
     </div>
@@ -214,6 +216,7 @@ function DisconnectSourceDialog({ source, pending, error, stale, onReload, onClo
   source: SkillSource; pending: boolean; error?: string; stale: boolean; onReload: () => void; onClose: () => void;
   onConfirm: (skills: SkillSourceDisconnectRequest['skills']) => void; onChoiceChange: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const count = new Set(source.entries.flatMap(entry => entry.skillId ? [entry.skillId] : [])).size;
   const [choice, setChoice] = useState<SkillSourceDisconnectRequest['skills'] | ''>('');
   const action = source.enabled ? 'Disconnect source' : 'Remove source';
@@ -234,7 +237,7 @@ function DisconnectSourceDialog({ source, pending, error, stale, onReload, onClo
         {stale && <Button variant="ghost" size="sm" disabled={pending} onClick={onReload}>Reload source</Button>}
       </div>}
       <div className="flex items-center justify-between gap-3">
-        <Button variant="outline" disabled={pending} onClick={onClose}>Cancel</Button>
+        <Button variant="outline" disabled={pending} onClick={onClose}>{translateUi("interfaceCopy.cancel")}</Button>
         <Button variant={choice === 'delete' ? 'destructive' : 'default'} disabled={pending || stale || Boolean(count && !choice)} onClick={() => onConfirm(choice || 'copy')}>
           {pending ? 'Removing…' : action}
         </Button>
@@ -246,6 +249,7 @@ function DisconnectSourceDialog({ source, pending, error, stale, onReload, onClo
 function SourceDialog({ companyId, source, onClose, onSaved }: {
   companyId: string; source?: SkillSource; onClose: () => void; onSaved: (result: SkillSourceRefreshResult) => Promise<void>;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const draftKey = `paperclip.skill-source-draft:${companyId}:${source?.id ?? 'new'}`;
   const [selectionRevision] = useState(source?.revision);
   const [draft] = useState(() => { try { const saved = JSON.parse(sessionStorage.getItem(draftKey) ?? '{}'); return !source || saved.revision === source.revision ? saved : {}; } catch { return {}; } });
@@ -351,7 +355,7 @@ function SourceDialog({ companyId, source, onClose, onSaved }: {
           </Command>}
           {(repositoriesView.kind === 'error' || Boolean(repositories.data?.failedConnectionCount)) && <p role="alert" className="text-xs text-destructive">
             {availableRepositories.length ? 'Some GitHub connections could not load repositories.' : 'Could not load GitHub repositories.'}{' '}
-            <Button variant="ghost" size="sm" disabled={repositories.isFetching} onClick={() => void repositories.refetch()}>Try again</Button>
+            <Button variant="ghost" size="sm" disabled={repositories.isFetching} onClick={() => void repositories.refetch()}>{translateUi("interfaceCopy.tryAgain")}</Button>
             <Link to="/apps" className="underline">Manage connections</Link>
           </p>}
           {!repositoriesLoading && availableRepositories.length === 0 && <Button asChild variant="outline" className="h-28 w-full flex-col gap-3 whitespace-normal text-center">

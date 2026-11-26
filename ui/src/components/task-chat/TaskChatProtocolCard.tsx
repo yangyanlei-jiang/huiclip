@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { TaskChatImageGrid } from "./TaskChatImageGrid";
 import { imageResourceSource } from "./image-resources";
@@ -745,6 +746,7 @@ function RuntimeRequestCard({
   imageUploadHandler?: (file: File) => Promise<string>;
   mentions?: MentionOption[];
 }) {
+  const { t: translateUi } = useUiTranslation();
   const historyIssueId = useContext(TaskChatRequestHistoryContext);
   const draftKey = requestedDraftKey ?? (historyIssueId
     ? `paperclip:task-input:${historyIssueId}:runtime:${item.runId}:${item.requestId}`
@@ -913,9 +915,7 @@ function RuntimeRequestCard({
                 variant="outline"
                 disabled={!onDecision || submitting}
                 onClick={() => void submit({ action: "cancel" })}
-              >
-                Cancel
-              </Button>
+              >{translateUi("interfaceCopy.cancel")}</Button>
             ) : null}
           </div>
         </form>

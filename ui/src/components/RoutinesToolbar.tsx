@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { ArrowUpDown, Check, Layers, Plus } from "lucide-react";
 import { Link } from "@/lib/router";
 import { ToolbarSearch } from "./ToolbarSearch";
@@ -22,13 +23,14 @@ export function RoutinesToolbar({ query, onQueryChange, sortField, sortDir, grou
   selectMode?: boolean;
   onToggleSelect?: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   return <div data-canonical-toolbar="routines" role="toolbar" aria-label="Routines controls" className="flex flex-wrap items-center gap-4">
     <ToolbarSearch query={query} onQueryChange={onQueryChange} label="Search routines" placeholder="Search routines…" />
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" title="Sort">
+        <Button variant="outline" size="sm" title={translateUi("interfaceCopy.sort")}>
           <ArrowUpDown className="h-3.5 w-3.5 sm:h-3 sm:w-3 sm:mr-1" />
-          <span >Sort</span>
+          <span >{translateUi("interfaceCopy.sort")}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-44 p-0">

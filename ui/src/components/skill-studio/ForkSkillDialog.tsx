@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { GitFork, Loader2, Users } from "lucide-react";
@@ -47,6 +48,7 @@ export function ForkSkillDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const toast = useOptionalToastActions();
@@ -232,9 +234,7 @@ export function ForkSkillDialog({
             variant="ghost"
             onClick={() => onOpenChange(false)}
             disabled={busy}
-          >
-            Cancel
-          </Button>
+          >{translateUi("interfaceCopy.cancel")}</Button>
           <Button
             type="button"
             variant={reusableFork ? "outline" : "default"}

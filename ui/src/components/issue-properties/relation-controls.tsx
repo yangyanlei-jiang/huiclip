@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState, type MouseEvent } from "react";
 import type { Issue, IssueLockedStub } from "@paperclipai/shared";
 import { Link } from "@/lib/router";
@@ -32,6 +33,7 @@ export function RemovableIssueReferencePill({
   onRemove: (issueId: string) => void;
   isMobile?: boolean;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const locked = isLockedIssueStub(issue);
   const issueLabel = locked
@@ -147,7 +149,7 @@ export function RemovableIssueReferencePill({
           </DialogHeader>
           <DialogFooter>
             <DialogClose asChild>
-              <Button type="button" variant="outline">Cancel</Button>
+              <Button type="button" variant="outline">{translateUi("interfaceCopy.cancel")}</Button>
             </DialogClose>
             <Button type="button" variant="destructive" onClick={confirmRemove}>
               Remove blocker

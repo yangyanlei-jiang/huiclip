@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo, useState, type ReactNode } from "react";
 import {
   AlertTriangle,
@@ -239,6 +240,7 @@ export function DecisionCard({
   onDismiss,
   className,
 }: DecisionCardProps) {
+  const { t: translateUi } = useUiTranslation();
   const [inputValues, setInputValues] = useState<Record<string, string>>({});
   const [confirmOptionId, setConfirmOptionId] = useState<string | null>(null);
   const [confirmText, setConfirmText] = useState("");
@@ -539,9 +541,7 @@ export function DecisionCard({
                           setConfirmOptionId(null);
                           setConfirmText("");
                         }}
-                      >
-                        Cancel
-                      </Button>
+                      >{translateUi("interfaceCopy.cancel")}</Button>
                       <Button
                         variant="destructive"
                         size="sm"

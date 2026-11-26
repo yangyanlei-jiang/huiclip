@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { Check, FolderOpen, Loader2, Plus, X } from "lucide-react";
 import { Button } from "./ui/button";
@@ -14,6 +15,7 @@ export interface AllowedProjectsEditorProps {
 }
 
 export function AllowedProjectsEditor({ projects, projectIds, canManage, agentName, onSave }: AllowedProjectsEditorProps) {
+  const { t: translateUi } = useUiTranslation();
   const [added, setAdded] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -47,7 +49,7 @@ export function AllowedProjectsEditor({ projects, projectIds, canManage, agentNa
           <span className="min-w-0 text-sm">{project.name}{projectIds.includes(project.id) && <span className="block text-xs text-muted-foreground">Already allowed</span>}</span>
         </label>)}</div>
         {!matches.length && <p className="text-sm text-muted-foreground">No projects found.</p>}
-        <Button variant="secondary" size="sm" className="w-full" onClick={() => setOpen(false)}>Done</Button>
+        <Button variant="secondary" size="sm" className="w-full" onClick={() => setOpen(false)}>{translateUi("interfaceCopy.done")}</Button>
       </PopoverContent></Popover>}
     </div>
     {visibleIds.length ? <ul aria-label="Allowed projects" className="divide-y divide-border rounded-lg border">
@@ -65,7 +67,7 @@ export function AllowedProjectsEditor({ projects, projectIds, canManage, agentNa
     {error && <p role="alert" className="text-sm text-destructive">Couldn’t save project access. Your selection is kept. {error}</p>}
     {saved && <p role="status" className="inline-flex items-center gap-2 text-sm"><Check className="size-4" aria-hidden />Project access saved. Return to your task to retry.</p>}
     {canManage && <div className="flex items-center justify-between gap-3 border-t pt-4">
-      <Button variant="ghost" disabled={saving || !pending.length} onClick={() => { setAdded([]); setError(null); setSaved(false); }}>Cancel</Button>
+      <Button variant="ghost" disabled={saving || !pending.length} onClick={() => { setAdded([]); setError(null); setSaved(false); }}>{translateUi("interfaceCopy.cancel")}</Button>
       <Button disabled={saving || !pending.length} onClick={() => void save()}>{saving && <Loader2 className="size-4 animate-spin" aria-hidden />}{saving ? "Saving access…" : error ? "Try saving again" : "Save project access"}</Button>
     </div>}
   </section>;

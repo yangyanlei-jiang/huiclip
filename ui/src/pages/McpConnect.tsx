@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Globe, Paperclip } from "lucide-react";
@@ -39,6 +40,7 @@ export function McpConnectPage({ agentPairingOnly = false }: { agentPairingOnly?
 }
 
 export function McpDevicePage({ initialCode }: { initialCode?: string } = {}) {
+  const { t: translateUi } = useUiTranslation();
   const [code, setCode] = useState(initialCode ?? new URLSearchParams(window.location.search).get("user_code") ?? "");
   const [submitted, setSubmitted] = useState(code);
   if (submitted) return <McpConnectRequest key={submitted} id={submitted} device onEditCode={() => setSubmitted("")} />;
@@ -46,11 +48,12 @@ export function McpDevicePage({ initialCode }: { initialCode?: string } = {}) {
     <form className="space-y-4" onSubmit={event => { event.preventDefault(); setSubmitted(code.trim()); }}>
       <label htmlFor="device-code" className="text-sm">Enter the code shown by your assistant</label>
       <Input id="device-code" autoComplete="off" value={code} onChange={event => setCode(event.target.value)} required maxLength={12} />
-      <div className="flex justify-end"><Button type="submit">Continue</Button></div>
+      <div className="flex justify-end"><Button type="submit">{translateUi("interfaceCopy.continue")}</Button></div>
     </form></Card></div>;
 }
 
 function McpConnectRequest({ id, device = false, agentPairingOnly = false, onEditCode }: { id: string; device?: boolean; agentPairingOnly?: boolean; onEditCode?: () => void }) {
+  const { t: translateUi } = useUiTranslation();
   const requestPrefix = agentPairingOnly ? "/dot-mcp/requests" : "/mcp/requests";
   const [companyId, setCompanyId] = useState("");
   const [pairingCode, setPairingCode] = useState("");
@@ -115,7 +118,7 @@ function McpConnectRequest({ id, device = false, agentPairingOnly = false, onEdi
         {pairingPreview?.providerKind === "grok_bot" && <p className="text-sm font-medium">Allow this connection to work as {pairingPreview.agent.name} in {pairingPreview.company.name}.</p>}
         {pairingPreview && <dl className="space-y-2 rounded-md border border-border p-3 text-sm">
           <div><dt className="text-muted-foreground">Company</dt><dd>{pairingPreview.company.name} <span className="text-xs text-muted-foreground">({pairingPreview.company.id})</span></dd></div>
-          <div><dt className="text-muted-foreground">Agent</dt><dd>{pairingPreview.agent.name} <span className="text-xs text-muted-foreground">({pairingPreview.agent.id})</span></dd></div>
+          <div><dt className="text-muted-foreground">{translateUi("interfaceCopy.agent")}</dt><dd>{pairingPreview.agent.name} <span className="text-xs text-muted-foreground">({pairingPreview.agent.id})</span></dd></div>
           <div><dt className="text-muted-foreground">Permissions</dt><dd>{pairingPreview.permissions}</dd></div>
           {pairingPreview.authorizingPerson && <div><dt className="text-muted-foreground">Authorized by</dt><dd>{pairingPreview.authorizingPerson}</dd></div>}
           <div><dt className="text-muted-foreground">Access duration</dt><dd>{pairingPreview.accessDuration}</dd></div>
@@ -129,11 +132,11 @@ function McpConnectRequest({ id, device = false, agentPairingOnly = false, onEdi
           {data.requestedCompanyId ? <div className="flex items-center gap-4 rounded-md border border-border p-4">
             {company && <CompanyPatternIcon companyName={company.name} logoUrl={company.logoUrl} className="size-14 shrink-0 rounded-lg text-xl" />}
             <div className="min-w-0 space-y-1">
-              <p className="text-xs text-muted-foreground">Organization</p>
+              <p className="text-xs text-muted-foreground">{translateUi("interfaceCopy.organization")}</p>
               {company ? <p className="break-words text-lg font-semibold">{company.name}</p> : <p className="text-sm text-destructive">The selected organization is no longer available to this account. Cancel and reconnect from your assistant to choose an organization you can access.</p>}
             </div>
           </div> : <fieldset className="space-y-2" disabled={consent.isPending}>
-            <legend className="mb-2 text-sm font-medium">Organization</legend>
+            <legend className="mb-2 text-sm font-medium">{translateUi("interfaceCopy.organization")}</legend>
             {data.companies.map((item) => <label key={item.id} className="flex items-center gap-3 rounded-md border border-border p-3 text-sm">
               <input type="radio" name="company" aria-label={item.name} value={item.id} checked={selectedCompanyId === item.id} onChange={() => setCompanyId(item.id)} />
               <CompanyPatternIcon companyName={item.name} logoUrl={item.logoUrl} className="size-12 shrink-0 rounded-lg" />
@@ -151,7 +154,7 @@ function McpConnectRequest({ id, device = false, agentPairingOnly = false, onEdi
           {company && !company.canWrite && <p className="text-sm text-muted-foreground">Your role in this organization is read-only.</p>}
           {consent.error && <p role="alert" className="text-sm text-destructive">{describeError(consent.error).body}</p>}
           <div className="flex items-center justify-between gap-3">
-            <Button variant="outline" disabled={consent.isPending} onClick={() => consent.mutate("deny")}>Cancel</Button>
+            <Button variant="outline" disabled={consent.isPending} onClick={() => consent.mutate("deny")}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button className="h-auto min-h-10 min-w-0 shrink whitespace-normal" disabled={!company || (data.agentConnection && !company.canWrite) || consent.isPending} onClick={() => consent.mutate("approve")}>{consent.isPending ? "Connecting…" : data.agentConnection ? "Connect Dot agent" : "Connect organization"}</Button>
           </div>
         </>}

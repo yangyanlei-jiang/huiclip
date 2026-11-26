@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { KeyRound, Plus, ServerCog, Trash2, Variable } from "lucide-react";
 import type {
@@ -201,6 +202,7 @@ export function AgentSecretAccessEditor({
   onApproveProposal,
   onRejectProposal,
 }: AgentSecretAccessEditorProps) {
+  const { t: translateUi } = useUiTranslation();
   const bindingProposals = useMemo(
     () => (proposals ?? []).filter((proposal) => proposal.kind === "binding"),
     [proposals],
@@ -450,7 +452,7 @@ export function AgentSecretAccessEditor({
                           });
                         }}
                         disabled={disabled || !selectedSecret}
-                        aria-label="Version"
+                        aria-label={translateUi("interfaceCopy.version")}
                       >
                         <option value="latest">latest</option>
                         {selectedSecret

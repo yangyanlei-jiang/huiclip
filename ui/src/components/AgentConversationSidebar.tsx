@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { Plus, Search, Users, X } from "lucide-react";
 import { Badge } from "./ui/badge";
@@ -34,6 +35,7 @@ export interface AgentConversationSidebarProps {
 
 /** Searchable navigation for one conversation per agent. */
 export function AgentConversationSidebar({ agents, existingChatAgentIds, availableAgents = agents, activeId, previews = {}, unreadAgentIds = [], unreadMessageCounts, loading = false, error, onRetry, initialSearch = "", onSelect, onBrowse, onAddChat, historyLoading, historyError, onRetryHistory, onCreateAgent, renderAgentAction }: AgentConversationSidebarProps) {
+  const { t: translateUi } = useUiTranslation();
   const navigate = useNavigate();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [search, setSearch] = useState(initialSearch);
@@ -54,7 +56,7 @@ export function AgentConversationSidebar({ agents, existingChatAgentIds, availab
         <Input ref={searchRef} aria-label="Search chats" placeholder="Search chats" value={search} onChange={event => setSearch(event.target.value)}
           onKeyDown={event => { if (event.key === "Escape") { event.stopPropagation(); setSearch(""); } }}
           className="h-9 pl-8 pr-8 text-xs md:text-xs" />
-        {search && <Button variant="ghost" size="icon-xs" aria-label="Clear search" className="absolute right-1 top-1/2 -translate-y-1/2" onClick={focusSearch}><X className="size-3" /></Button>}
+        {search && <Button variant="ghost" size="icon-xs" aria-label={translateUi("interfaceCopy.clearSearch")} className="absolute right-1 top-1/2 -translate-y-1/2" onClick={focusSearch}><X className="size-3" /></Button>}
       </div>
     </div>
     <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-3 pb-3 scrollbar-auto-hide">
@@ -64,7 +66,7 @@ export function AgentConversationSidebar({ agents, existingChatAgentIds, availab
         <p className="text-xs text-muted-foreground">Some chat history couldn’t load.</p>
         <Button variant="outline" size="sm" onClick={onRetryHistory}>Retry chat history</Button>
       </div>}
-      {error ? <div role="alert" className="flex flex-col items-start gap-2 px-2 py-6"><p className="text-sm">Couldn’t load your chats.</p><Button variant="outline" size="sm" onClick={onRetry}>Try again</Button></div> : loading ? <div aria-hidden="true" className="flex flex-col gap-1">
+      {error ? <div role="alert" className="flex flex-col items-start gap-2 px-2 py-6"><p className="text-sm">Couldn’t load your chats.</p><Button variant="outline" size="sm" onClick={onRetry}>{translateUi("interfaceCopy.tryAgain")}</Button></div> : loading ? <div aria-hidden="true" className="flex flex-col gap-1">
         {[0, 1, 2, 3].map(index => <div key={index} className="flex items-center gap-3 rounded-md px-2 py-3 motion-safe:animate-pulse">
           <div className="size-8 shrink-0 rounded-lg bg-muted" />
           <div className="flex flex-1 flex-col gap-2"><div className="h-3 w-2/3 rounded-sm bg-muted" /><div className="h-2 w-full rounded-sm bg-muted" /></div>
@@ -91,7 +93,7 @@ export function AgentConversationSidebar({ agents, existingChatAgentIds, availab
         <p className="text-sm font-medium">{agents.length ? "No agents found" : "No chats yet"}</p>
         <p className="text-xs leading-relaxed text-muted-foreground">{agents.length ? "Try another name or role." : "Choose an agent to start a conversation."}</p>
         {!agents.length && <Button variant="outline" size="sm" onClick={() => setPickerOpen(true)}>Choose an agent</Button>}
-        {agents.length > 0 && <Button variant="outline" size="sm" onClick={focusSearch}>Clear search</Button>}
+        {agents.length > 0 && <Button variant="outline" size="sm" onClick={focusSearch}>{translateUi("interfaceCopy.clearSearch")}</Button>}
       </div>}
       {onCreateAgent && !loading && !error && <button type="button" onClick={onCreateAgent}
         className="flex min-w-0 items-center gap-3 rounded-md px-2.5 py-3 text-left hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring">

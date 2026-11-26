@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { describeError } from "../api/errors";
 import { useSelectedHeartbeatRun } from "../hooks/useSelectedHeartbeatRun";
 import { grokBotApi } from "@/api/grokBot";
@@ -352,6 +353,7 @@ function agentViewDescription(view: AgentDetailView, name: string): string | nul
 }
 
 export function AgentDetail() {
+  const { t: translateUi } = useUiTranslation();
   const { companyPrefix, agentId, tab: urlTab, runId: urlRunId } = useParams<{
     companyPrefix?: string;
     agentId: string;
@@ -916,7 +918,7 @@ export function AgentDetail() {
             <InlineEditor
               fitContent
               value={agent.name}
-              placeholder="Agent name"
+              placeholder={translateUi("interfaceCopy.agentName")}
               className="min-w-0 truncate text-sm leading-5 text-muted-foreground"
               onSave={(name) => saveHeaderField({ name })}
             />
@@ -965,7 +967,7 @@ export function AgentDetail() {
                 <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
               </span>
-              <span className="text-(length:--text-micro) font-medium text-blue-600 dark:text-blue-400">Live</span>
+              <span className="text-(length:--text-micro) font-medium text-blue-600 dark:text-blue-400">{translateUi("interfaceCopy.live")}</span>
             </Link>
           )}
         </AgentActionButtons>
@@ -1439,6 +1441,7 @@ export function AgentOverview({
   skillNames: string[];
   agentRouteId: string;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const agentRef = agentRouteRef(agent);
   const hasHumanCreator = Boolean(humanAgentCreatorUserId(agent.createdByUserId));
   const userDirectory = useQuery({
@@ -1467,14 +1470,14 @@ export function AgentOverview({
         <AgentMetricTile
           icon={ActivityIcon}
           value={activity.isLoading ? "–" : formatWindowCount(activityThisWeek)}
-          label="Activity"
+          label={translateUi("interfaceCopy.activity")}
           description="Events this week"
           to={agentDetailHref(agentRef, "activity")}
         />
         <AgentMetricTile
           icon={PlayCircle}
           value={formatWindowCount(runsThisWeek)}
-          label="Runs"
+          label={translateUi("interfaceCopy.runs")}
           description={`${formatWindowCount(recentFailures)} failed in the last 2 days`}
           to={agentDetailHref(agentRef, "runs")}
         />
@@ -1639,6 +1642,7 @@ export function ConfigurationTab({
   content?: "runtime" | "permissions" | "secrets";
   canConfigureProviderTrace?: boolean;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { tab: urlTab } = useParams<{ tab?: string }>();
@@ -1786,7 +1790,7 @@ export function ConfigurationTab({
         }
       /> : null}
 
-      {content === "permissions" ? <AgentPanel title="Capabilities" aria-label="Capabilities">
+      {content === "permissions" ? <AgentPanel title={translateUi("interfaceCopy.capabilities")} aria-label={translateUi("interfaceCopy.capabilities")}>
         <div className="flex flex-col pb-3">
           <div className="flex min-h-11 items-center justify-between gap-4 px-(--agent-detail-module-inset) py-2 text-sm">
             <div className="space-y-1">
@@ -1872,6 +1876,7 @@ export function PromptsTab({
   onCancelActionChange: (cancel: (() => void) | null) => void;
   onSavingChange: (saving: boolean) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { selectedCompanyId } = useCompany();
   const { isMobile } = useSidebar();
@@ -2380,7 +2385,7 @@ export function PromptsTab({
           isMobile && !showFilePanel && "hidden",
         )}>
           <div className="flex items-center justify-between">
-            <h4 className="text-sm font-semibold text-foreground">Files</h4>
+            <h4 className="text-sm font-semibold text-foreground">{translateUi("interfaceCopy.files")}</h4>
             <div className="flex items-center gap-1">
               {!showNewFileInput && (
                 <Button
@@ -2446,9 +2451,7 @@ export function PromptsTab({
                     setNewFilePath("");
                     setShowNewFileInput(false);
                   }}
-                >
-                  Create
-                </Button>
+                >{translateUi("interfaceCopy.create")}</Button>
                 <Button
                   type="button"
                   size="sm"
@@ -2458,9 +2461,7 @@ export function PromptsTab({
                     setShowNewFileInput(false);
                     setNewFilePath("");
                   }}
-                >
-                  Cancel
-                </Button>
+                >{translateUi("interfaceCopy.cancel")}</Button>
               </div>
             </div>
           )}
@@ -2835,6 +2836,7 @@ export function RunsTab({
   adapterType: string;
   adapterConfig: Record<string, unknown>;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const { isMobile } = useSidebar();
 
   // Sort by created descending
@@ -2850,7 +2852,7 @@ export function RunsTab({
     if (selection.loading) return <p className="text-sm text-muted-foreground">Loading run…</p>;
     return <div role="alert">
       <p className="text-sm text-destructive">{selection.error instanceof Error ? selection.error.message : "This run is unavailable for this agent."}</p>
-      {selection.error && <Button variant="outline" onClick={() => { void selection.retry(); }}>Try again</Button>}
+      {selection.error && <Button variant="outline" onClick={() => { void selection.retry(); }}>{translateUi("interfaceCopy.tryAgain")}</Button>}
     </div>;
   }
   if (runs.length === 0 && !selectedRun) return <p className="text-sm text-muted-foreground">No runs yet.</p>;
@@ -3518,6 +3520,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
 /* ---- Keys Tab ---- */
 
 export function KeysTab({ agentId, companyId }: { agentId: string; companyId?: string }) {
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const [newKeyName, setNewKeyName] = useState("");
@@ -3590,7 +3593,7 @@ export function KeysTab({ agentId, companyId }: { agentId: string; companyId?: s
             >
               <Copy className="h-3.5 w-3.5" />
             </Button>
-            {copied && <span className="text-xs text-green-400">Copied!</span>}
+            {copied && <span className="text-xs text-green-400">{translateUi("interfaceCopy.copied")}</span>}
           </div>
           <Button
             variant="ghost"

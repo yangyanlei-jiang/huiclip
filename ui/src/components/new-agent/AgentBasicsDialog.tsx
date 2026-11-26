@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCompany } from "@/context/CompanyContext";
 import { PAPERCLIP_RUNNER_ACPX_PROFILES } from "@paperclipai/adapter-utils";
 import { useAgentAppearanceDraft } from "@/hooks/useAgentAppearanceDraft";
@@ -59,6 +60,7 @@ export function AgentBasicsDialog({
   setupAgentId?: string;
   onInvite?: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const id = useId();
   const { selectedCompanyId: companyId } = useCompany();
   const cache = useQueryClient();
@@ -235,9 +237,7 @@ export function AgentBasicsDialog({
             </div>
             {step === "name" ? (
               <div className="space-y-2">
-                <label htmlFor={id} className="text-sm font-medium">
-                  Agent name
-                </label>
+                <label htmlFor={id} className="text-sm font-medium">{translateUi("interfaceCopy.agentName")}</label>
                 <Input
                   id={id}
                   autoFocus
@@ -261,7 +261,7 @@ export function AgentBasicsDialog({
               </div>
             ) : (
               <fieldset className="space-y-4">
-                <legend className="sr-only">Adapter</legend>
+                <legend className="sr-only">{translateUi("interfaceCopy.adapter")}</legend>
                 {adaptersView.kind === "loading" || adaptersView.kind === "reconnecting" ? (
                   <p role="status" className="text-sm text-muted-foreground">
                     Loading adapters…
@@ -317,7 +317,7 @@ export function AgentBasicsDialog({
                   })}
                 </div>
                 {experimentalRunnerAvailable && <details className="space-y-3">
-                  <summary className="cursor-pointer text-sm text-muted-foreground">Advanced</summary>
+                  <summary className="cursor-pointer text-sm text-muted-foreground">{translateUi("interfaceCopy.advanced")}</summary>
                   <div className="space-y-2">
                     <label className="text-sm text-muted-foreground">Experimental harness</label>
                     <SelectPopover aria-label="Experimental harness"

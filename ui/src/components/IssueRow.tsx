@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { requiresExecutionReconciliation } from "@paperclipai/shared";
 import { useState, type CSSProperties, type ReactNode } from "react";
 import type { ExternalObjectSummary, Issue, IssueRecoveryAction } from "@paperclipai/shared";
@@ -104,6 +105,7 @@ export function InboxArchiveButton({
   disabled?: boolean;
   compact?: boolean;
 }) {
+  const { t: translateUi } = useUiTranslation();
   return (
     <button
       type="button"
@@ -124,7 +126,7 @@ export function InboxArchiveButton({
         "inline-flex shrink-0 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100 disabled:pointer-events-none disabled:opacity-30",
         compact ? "h-5 py-0" : "py-1",
       )}
-      aria-label="Archive"
+      aria-label={translateUi("interfaceCopy.archive")}
     >
       <Archive className="h-3.5 w-3.5" />
       Archive

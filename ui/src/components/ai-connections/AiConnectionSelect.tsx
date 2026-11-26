@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useId } from "react";
 import { Plus, UserRound } from "lucide-react";
 import {
@@ -43,6 +44,7 @@ export function AiConnectionSelect({
   adapterType,
   model,
 }: AiConnectionPickerProps & { adapterType: string; model?: string }) {
+  const { t: translateUi } = useUiTranslation();
   const selectId = useId();
   const personal = personalAiDefault(connections, requirement, currentUserId);
   const selected =
@@ -107,9 +109,7 @@ export function AiConnectionSelect({
   };
   return (
     <div className="space-y-2">
-      <label className="text-xs text-muted-foreground" htmlFor={selectId}>
-        Connection
-      </label>
+      <label className="text-xs text-muted-foreground" htmlFor={selectId}>{translateUi("interfaceCopy.connection")}</label>
       <Select
         value={
           value?.mode === "responsible_user"
@@ -119,7 +119,7 @@ export function AiConnectionSelect({
         onValueChange={change}
         disabled={readOnly || loading || Boolean(error)}
       >
-        <SelectTrigger id={selectId} aria-label="Connection" title={selected ? aiConnectionDisplayLabel(selected) : undefined} className="w-full">
+        <SelectTrigger id={selectId} aria-label={translateUi("interfaceCopy.connection")} title={selected ? aiConnectionDisplayLabel(selected) : undefined} className="w-full">
           <SelectValue
             placeholder={
               loading ? "Loading connections…" : "Choose a connection"

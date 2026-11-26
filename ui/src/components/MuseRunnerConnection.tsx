@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { describeError } from "@/api/errors";
 import { Bot } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -30,6 +31,7 @@ export interface MuseConnectionDetailsProps {
 
 /** The settings view uses the same connection evidence as the invitation. */
 export function MuseConnectionDetails({ connection, pairing, busy, error, offline = false, onTest, onRepair, onPause, onDisconnect, onRefresh, onAttest, onAttestDetectorCleanup }: MuseConnectionDetailsProps) {
+  const { t: translateUi } = useUiTranslation();
   const b = connection.binding;
   const [attestation, setAttestation] = useState<MuseAttestStopInput | null>(null);
   const [confirmed, setConfirmed] = useState(false);
@@ -105,7 +107,7 @@ export function MuseConnectionDetails({ connection, pairing, busy, error, offlin
       <label className="block space-y-2 text-sm">Observed at (UTC)<Input aria-label="Detector removal observed at (UTC)" value={detectorObservedAt} onChange={event => { setDetectorObservedAt(event.target.value); setDetectorConfirmed(false); }} placeholder="YYYY-MM-DDTHH:mm:ss.sssZ" autoComplete="off" /></label>
       <p className="text-xs text-muted-foreground">Enter the actual runtime listing time, not the time you submit this form. Paperclip checks it against revocation and the qualification deadline.</p>
       <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={detectorConfirmed} onChange={event => setDetectorConfirmed(event.target.checked)} className="mt-1 accent-primary" /><span>I observed this exact hook absent in the supported runtime listing after revocation. This attests detector removal only, not worker stopping or private effects.</span></label>
-      <div className="flex items-center justify-between gap-3"><Button type="button" variant="ghost" onClick={() => setDetectorSnapshot(null)}>Cancel</Button><Button type="button" disabled={!detectorConfirmed || !detectorObservedAtValid || !/^[a-z0-9][a-z0-9_-]{0,63}$/.test(detectorHookId) || !/^[a-f0-9]{64}$/.test(observationDigest) || busy || offline} onClick={() => onAttestDetectorCleanup?.({ ...detectorSnapshot, detectorRemoved: true, observation: { method: "hooks.list", includeDisabled: true, hookId: detectorHookId, outcome: "exact_hook_absent", observedAt: detectorObservedAt, sha256: observationDigest } })}>Confirm detector observation</Button></div>
+      <div className="flex items-center justify-between gap-3"><Button type="button" variant="ghost" onClick={() => setDetectorSnapshot(null)}>{translateUi("interfaceCopy.cancel")}</Button><Button type="button" disabled={!detectorConfirmed || !detectorObservedAtValid || !/^[a-z0-9][a-z0-9_-]{0,63}$/.test(detectorHookId) || !/^[a-f0-9]{64}$/.test(observationDigest) || busy || offline} onClick={() => onAttestDetectorCleanup?.({ ...detectorSnapshot, detectorRemoved: true, observation: { method: "hooks.list", includeDisabled: true, hookId: detectorHookId, outcome: "exact_hook_absent", observedAt: detectorObservedAt, sha256: observationDigest } })}>Confirm detector observation</Button></div>
     </section>}
     {attestation && <section aria-label="Attest this Muse worker stopped" className="space-y-3 rounded-md border border-border p-3">
       <p className="text-sm font-medium">Confirm the worker for this exact assignment stopped</p>
@@ -114,7 +116,7 @@ export function MuseConnectionDetails({ connection, pairing, busy, error, offlin
       </dl>
       <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={confirmed} onChange={event => setConfirmed(event.target.checked)} className="mt-1 accent-primary" /><span>I have stopped this Muse worker for the named assignment and run. This does not certify independent private tools or unknown native effects.</span></label>
       <div className="flex items-center justify-between gap-3">
-        <Button type="button" variant="ghost" onClick={() => setAttestation(null)}>Cancel</Button>
+        <Button type="button" variant="ghost" onClick={() => setAttestation(null)}>{translateUi("interfaceCopy.cancel")}</Button>
         <Button type="button" disabled={!confirmed || busy} onClick={() => onAttest(attestation)}>Confirm worker stopped</Button>
       </div>
     </section>}
@@ -127,7 +129,7 @@ export function MuseConnectionDetails({ connection, pairing, busy, error, offlin
       <Button type="button" variant="outline" disabled={!configure || busy} onClick={onRepair}>{b?.credentialState === "expired" ? "Reconnect Muse" : live ? "Repair connection" : "Connect Muse"}</Button>
       {connection.agentStatus !== "paused" && connection.agentStatus !== "terminated" && <Button type="button" variant="outline" disabled={busy} onClick={onPause}>Pause agent</Button>}
       {live && <Button type="button" variant="outline" disabled={busy} onClick={onDisconnect}>Disconnect</Button>}
-      <Button type="button" variant="ghost" disabled={busy} onClick={onRefresh}>Refresh</Button>
+      <Button type="button" variant="ghost" disabled={busy} onClick={onRefresh}>{translateUi("interfaceCopy.refresh")}</Button>
       <Button type="button" asChild variant="ghost"><a href="https://muse.ai" target="_blank" rel="noopener noreferrer">Open Muse</a></Button>
     </div>
     {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
@@ -135,6 +137,7 @@ export function MuseConnectionDetails({ connection, pairing, busy, error, offlin
 }
 
 export function MuseRunnerConnection({ companyId, agentId }: { companyId?: string; agentId?: string }) {
+  const { t: translateUi } = useUiTranslation();
   const cache = useQueryClient();
   const muse = useMuseConnection(companyId, agentId);
   const pause = useMutation({ mutationFn: () => agentsApi.pause(agentId!, companyId), onSuccess: () => {
@@ -143,8 +146,8 @@ export function MuseRunnerConnection({ companyId, agentId }: { companyId?: strin
   } });
   if (!agentId) return <p className="text-sm text-muted-foreground">Save the agent, then connect your personal Muse here.</p>;
   const error = muse.state.error ?? muse.pair.error ?? muse.verify.error ?? muse.revoke.error ?? muse.attest.error ?? muse.attestDetector.error ?? pause.error;
-  if (muse.identity.failed) return <div className="space-y-3"><p role="alert" className="text-sm text-destructive">Unable to confirm your account. Refresh to inspect this Muse connection.</p><Button type="button" variant="outline" onClick={() => { void cache.invalidateQueries({ queryKey: queryKeys.auth.session }); }}>Refresh</Button></div>;
-  if (!muse.state.data) return <div className="space-y-3"><p role="status" className="text-sm text-muted-foreground">{muse.state.error ? "Unable to load the Muse connection." : "Loading Muse connection…"}</p>{error && <p role="alert" className="text-sm text-destructive">{describeError(error).body}</p>}<Button type="button" variant="outline" onClick={() => { void muse.state.refetch(); }}>Refresh</Button></div>;
+  if (muse.identity.failed) return <div className="space-y-3"><p role="alert" className="text-sm text-destructive">Unable to confirm your account. Refresh to inspect this Muse connection.</p><Button type="button" variant="outline" onClick={() => { void cache.invalidateQueries({ queryKey: queryKeys.auth.session }); }}>{translateUi("interfaceCopy.refresh")}</Button></div>;
+  if (!muse.state.data) return <div className="space-y-3"><p role="status" className="text-sm text-muted-foreground">{muse.state.error ? "Unable to load the Muse connection." : "Loading Muse connection…"}</p>{error && <p role="alert" className="text-sm text-destructive">{describeError(error).body}</p>}<Button type="button" variant="outline" onClick={() => { void muse.state.refetch(); }}>{translateUi("interfaceCopy.refresh")}</Button></div>;
   return <MuseConnectionDetails key={muse.identity.userId} connection={muse.state.data} pairing={muse.pairing} offline={muse.state.isError}
     busy={muse.pair.isPending || muse.verify.isPending || muse.revoke.isPending || muse.attest.isPending || muse.attestDetector.isPending || pause.isPending}
     error={error ? describeError(error).body : undefined} onTest={() => { if (muse.binding) muse.verify.mutate(muse.binding); }} onRepair={muse.repair}

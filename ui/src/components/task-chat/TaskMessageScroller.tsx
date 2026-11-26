@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { readThreadScrollAnchor, threadScrollAnchorDelta, type ThreadScrollAnchor } from "./scroll-anchor";
 import { cn } from "@/lib/utils";
@@ -53,6 +54,7 @@ interface TaskMessageScrollerProps {
  * while pinned stays instant, so no reflow/jump happens during streaming.
  */
 export function TaskMessageScroller({ children, contentKey, className, scrollingHistory }: TaskMessageScrollerProps) {
+  const { t: translateUi } = useUiTranslation();
   const streamlined = useStreamlinedTaskChatPresentation();
   const navigation = useTaskChatScrollNavigation();
   const initialPositionApplied = useRef(false);
@@ -377,7 +379,7 @@ export function TaskMessageScroller({ children, contentKey, className, scrolling
           <div role="status" className="flex h-8 items-center justify-center gap-2 text-xs text-muted-foreground" data-testid="chat-history-status">
             {scrollingHistory.error ? <>
               <span>Earlier messages couldn’t load.</span>
-              <button type="button" className="underline underline-offset-4" onClick={() => scrollingHistory.load()}>Retry</button>
+              <button type="button" className="underline underline-offset-4" onClick={() => scrollingHistory.load()}>{translateUi("interfaceCopy.retry")}</button>
             </> : scrollingHistory.loading ? "Loading earlier messages…" : "Scroll up for earlier messages"}
           </div>
         ) : null}

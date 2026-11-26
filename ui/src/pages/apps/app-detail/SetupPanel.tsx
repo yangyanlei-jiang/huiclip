@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState, type ReactNode } from "react";
 import { ChevronRight } from "lucide-react";
 import type { ToolCatalogEntry, ToolConnection } from "@paperclipai/shared";
@@ -34,10 +35,11 @@ export function SetupPanel({
   permissionsLoading: boolean;
   onOpenPermissions: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   return (
     <div className="space-y-10">
       {identities}
-      <SetupLinkSection title="Agents" summary={agentsSummary} onClick={onOpenPermissions} />
+      <SetupLinkSection title={translateUi("interfaceCopy.agents")} summary={agentsSummary} onClick={onOpenPermissions} />
       <SetupLinkSection
         title="Actions"
         summary={permissionsLoading ? "Loading permissions…" : permissionsSummary ?? "Manage permissions"}
@@ -155,6 +157,7 @@ function GoogleSheetsAllowlistSection({
   disabled: boolean;
   onUpdateConfig: (config: Record<string, unknown>) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [draft, setDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
   const ids = currentSpreadsheetIds(connection);
@@ -199,9 +202,7 @@ function GoogleSheetsAllowlistSection({
                   disabled={disabled || ids.length <= 1}
                   title={ids.length <= 1 ? "Add another sheet before removing this one." : undefined}
                   onClick={() => saveIds(ids.filter((current) => current !== id))}
-                >
-                  Remove
-                </Button>
+                >{translateUi("interfaceCopy.remove")}</Button>
               </div>
             );
           })

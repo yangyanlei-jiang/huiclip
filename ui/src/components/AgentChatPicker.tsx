@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { Agent } from "@paperclipai/shared";
 import { AgentAvatar } from "@/components/AgentAvatar";
@@ -37,6 +38,7 @@ export function AgentChatPicker({ open, onOpenChange, trigger, ...props }: Agent
 }
 
 function AgentChatPickerResults({ agents, onSelect, onComplete, loading, error, onRetry, existingChatAgentIds, unreadMessageCounts, renderAgentIcon }: Omit<AgentChatPickerProps, "open" | "onOpenChange"> & { onComplete: () => void }) {
+  const { t: translateUi } = useUiTranslation();
   const existingIds = useMemo(() => new Set(existingChatAgentIds), [existingChatAgentIds]);
   const mounted = useRef(false);
   const selection = useRef<AbortController | null>(null);
@@ -75,7 +77,7 @@ function AgentChatPickerResults({ agents, onSelect, onComplete, loading, error, 
       {error ? (
         <div role="alert" className="flex flex-col items-start gap-2 p-4 text-sm">
           <p>Couldn’t load agents. Try again.</p>
-          {onRetry && <Button variant="outline" size="sm" onClick={onRetry}>Retry</Button>}
+          {onRetry && <Button variant="outline" size="sm" onClick={onRetry}>{translateUi("interfaceCopy.retry")}</Button>}
         </div>
       ) : loading ? (
         <p role="status" className="p-4 text-sm text-muted-foreground">Loading agents…</p>
@@ -86,7 +88,7 @@ function AgentChatPickerResults({ agents, onSelect, onComplete, loading, error, 
               <span>{agents.length ? `No agents match “${search}”` : "No agents yet."}</span>
               {agents.length ? <>
                 <span className="text-xs text-muted-foreground">Try another name or role.</span>
-                <Button variant="ghost" size="sm" onClick={() => setSearch("")}>Clear search</Button>
+                <Button variant="ghost" size="sm" onClick={() => setSearch("")}>{translateUi("interfaceCopy.clearSearch")}</Button>
               </> : <span className="text-xs text-muted-foreground">Create an agent from the Agents page to start chatting.</span>}
             </div>
           </CommandEmpty>

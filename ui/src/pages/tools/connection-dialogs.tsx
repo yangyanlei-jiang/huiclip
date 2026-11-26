@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { KeyRound, Stethoscope, Trash2, Vault } from "lucide-react";
@@ -141,6 +142,7 @@ export function AddConnectionDialog({
   defaultApplicationId?: string | null;
   onClose: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const qc = useQueryClient();
   const { pushToast } = useToast();
 
@@ -302,7 +304,7 @@ export function AddConnectionDialog({
           {step === 1 && !locked ? (
             <>
               <div className="space-y-1.5">
-                <Label>Application</Label>
+                <Label>{translateUi("interfaceCopy.application")}</Label>
                 <Select value={applicationMode} onValueChange={(v) => setApplicationMode(v as "existing" | "new")}>
                   <SelectTrigger>
                     <SelectValue />
@@ -357,7 +359,7 @@ export function AddConnectionDialog({
               ) : null}
 
               <div className="space-y-1.5">
-                <Label htmlFor="conn-name">Connection name</Label>
+                <Label htmlFor="conn-name">{translateUi("interfaceCopy.connectionName")}</Label>
                 <Input
                   id="conn-name"
                   value={name}
@@ -543,18 +545,12 @@ export function AddConnectionDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
+          <Button variant="outline" onClick={onClose}>{translateUi("interfaceCopy.cancel")}</Button>
           {step === 1 && !locked ? (
-            <Button disabled={!appChoiceValid} onClick={() => setStep(2)}>
-              Continue
-            </Button>
+            <Button disabled={!appChoiceValid} onClick={() => setStep(2)}>{translateUi("interfaceCopy.continue")}</Button>
           ) : !locked ? (
             <>
-              <Button variant="outline" onClick={() => setStep(1)}>
-                Back
-              </Button>
+              <Button variant="outline" onClick={() => setStep(1)}>{translateUi("interfaceCopy.back")}</Button>
               <Button disabled={!canCreate} onClick={() => create.mutate()}>
                 {create.isPending ? "Creating draft…" : "Create & probe"}
               </Button>

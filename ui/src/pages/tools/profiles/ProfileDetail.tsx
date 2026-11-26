@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArchiveRestore, Copy, Pencil, PlugZap, ShieldCheck, Trash2, UserMinus } from "lucide-react";
@@ -58,6 +59,7 @@ export function ProfileDetail({
   initialCreated?: boolean;
   initialReviewOpen?: boolean;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const queryClient = useQueryClient();
@@ -210,7 +212,7 @@ export function ProfileDetail({
                 Restore
               </Button>
             ) : (
-              <Button variant="outline" onClick={() => setDialog("archive")}>Archive</Button>
+              <Button variant="outline" onClick={() => setDialog("archive")}>{translateUi("interfaceCopy.archive")}</Button>
             )}
             <Button variant="outline" className="text-destructive hover:text-destructive" onClick={() => setDialog("delete")}>
               <Trash2 className="mr-1.5 h-4 w-4" />
@@ -351,6 +353,7 @@ function NewToolsReviewBanner({
   loading: boolean;
   onReview: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const appLabel = newToolsAppLabel(tools);
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
@@ -360,7 +363,7 @@ function NewToolsReviewBanner({
         </p>
         <p className="text-amber-900/80">Choose which ones this profile should allow.</p>
       </div>
-      <Button size="sm" onClick={onReview}>Review</Button>
+      <Button size="sm" onClick={onReview}>{translateUi("interfaceCopy.review")}</Button>
     </div>
   );
 }
@@ -391,6 +394,7 @@ function NewToolsReviewDialog({
   onDecision: (catalogEntryId: string, decision: ToolProfileNewToolReviewDecision) => void;
   onSubmit: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
       <DialogContent className="max-w-2xl">
@@ -451,7 +455,7 @@ function NewToolsReviewDialog({
           </div>
         )}
         <DialogFooter>
-          <Button variant="ghost" onClick={onClose}>Cancel</Button>
+          <Button variant="ghost" onClick={onClose}>{translateUi("interfaceCopy.cancel")}</Button>
           <Button disabled={pending || loading || tools.length === 0} onClick={onSubmit}>
             Submit review
           </Button>
@@ -462,6 +466,7 @@ function NewToolsReviewDialog({
 }
 
 function AllowList({ rows, total }: { rows: AllowRow[]; total: number }) {
+  const { t: translateUi } = useUiTranslation();
   if (rows.length === 0) {
     return (
       <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
@@ -474,10 +479,10 @@ function AllowList({ rows, total }: { rows: AllowRow[]; total: number }) {
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-border bg-muted/40 text-left text-xs font-medium text-muted-foreground">
-            <th className="px-3 py-2 font-medium">Tool</th>
+            <th className="px-3 py-2 font-medium">{translateUi("interfaceCopy.tool")}</th>
             <th className="px-3 py-2 font-medium">App</th>
-            <th className="px-3 py-2 font-medium">Capabilities</th>
-            <th className="px-3 py-2 font-medium">Source</th>
+            <th className="px-3 py-2 font-medium">{translateUi("interfaceCopy.capabilities")}</th>
+            <th className="px-3 py-2 font-medium">{translateUi("interfaceCopy.source")}</th>
           </tr>
         </thead>
         <tbody>
@@ -636,6 +641,7 @@ function ProfileDialogs({
   onRestore: () => void;
   onDelete: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [name, setName] = useState(profile.name);
   const [description, setDescription] = useState(profile.description ?? "");
   const [profileKey, setProfileKey] = useState(profile.profileKey);
@@ -659,17 +665,15 @@ function ProfileDialogs({
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label htmlFor="edit-profile-name">Name</Label>
+              <Label htmlFor="edit-profile-name">{translateUi("interfaceCopy.name")}</Label>
               <Input id="edit-profile-name" value={name} onChange={(e) => setName(e.target.value)} />
               {duplicateName ? <p className="text-xs text-destructive">Another profile already uses this name.</p> : null}
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="edit-profile-description">Description</Label>
+              <Label htmlFor="edit-profile-description">{translateUi("interfaceCopy.description")}</Label>
               <Textarea id="edit-profile-description" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
             </div>
-            <button type="button" className="text-sm font-medium text-muted-foreground hover:text-foreground" onClick={() => setAdvancedOpen((v) => !v)}>
-              Advanced
-            </button>
+            <button type="button" className="text-sm font-medium text-muted-foreground hover:text-foreground" onClick={() => setAdvancedOpen((v) => !v)}>{translateUi("interfaceCopy.advanced")}</button>
             {advancedOpen ? (
               <div className="space-y-1.5">
                 <Label htmlFor="edit-profile-key">Identifier</Label>
@@ -678,10 +682,8 @@ function ProfileDialogs({
             ) : null}
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={onClose}>Cancel</Button>
-            <Button disabled={!name.trim() || duplicateName || pending} onClick={() => onUpdate({ name: name.trim(), description: description.trim() || null, profileKey: profileKey.trim() })}>
-              Save
-            </Button>
+            <Button variant="ghost" onClick={onClose}>{translateUi("interfaceCopy.cancel")}</Button>
+            <Button disabled={!name.trim() || duplicateName || pending} onClick={() => onUpdate({ name: name.trim(), description: description.trim() || null, profileKey: profileKey.trim() })}>{translateUi("interfaceCopy.save")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -698,7 +700,7 @@ function ProfileDialogs({
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label htmlFor="copy-profile-name">Name</Label>
+              <Label htmlFor="copy-profile-name">{translateUi("interfaceCopy.name")}</Label>
               <Input id="copy-profile-name" value={copyName} onChange={(e) => setCopyName(e.target.value)} />
               {duplicateCopyName ? <p className="text-xs text-destructive">Another profile already uses this name.</p> : null}
             </div>
@@ -708,7 +710,7 @@ function ProfileDialogs({
             </label>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={onClose}>Cancel</Button>
+            <Button variant="ghost" onClick={onClose}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button disabled={!copyName.trim() || duplicateCopyName || pending} onClick={() => onDuplicate({ name: copyName.trim(), includeAssignments: copyAssignments })}>
               Duplicate
             </Button>
@@ -744,6 +746,7 @@ function RemoveAssignmentDialog({
   onClose: () => void;
   onConfirm: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   return (
     <Dialog open={Boolean(binding)} onOpenChange={(next) => !next && onClose()}>
       <DialogContent>
@@ -756,8 +759,8 @@ function RemoveAssignmentDialog({
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant="ghost" onClick={onClose}>Cancel</Button>
-          <Button disabled={pending} onClick={onConfirm}>Remove</Button>
+          <Button variant="ghost" onClick={onClose}>{translateUi("interfaceCopy.cancel")}</Button>
+          <Button disabled={pending} onClick={onConfirm}>{translateUi("interfaceCopy.remove")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

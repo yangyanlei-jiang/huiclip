@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { SkillsPageNavigation } from "@/components/skill-studio/SkillsNavigationTabs";
 import { interactionReadinessRefetchInterval } from "@/lib/issue-thread-interactions";
 import { SkillBinaryFile } from "../components/SkillBinaryFile";
@@ -457,6 +458,7 @@ function StudioNewSkillPanel({
   forkLoading: boolean;
   forkError: boolean;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const toast = useOptionalToastActions();
@@ -562,7 +564,7 @@ function StudioNewSkillPanel({
         </div>
         <div className="grid gap-3 md:grid-cols-2">
           <div className="space-y-1.5">
-            <Label htmlFor="skill-name">Name</Label>
+            <Label htmlFor="skill-name">{translateUi("interfaceCopy.name")}</Label>
             <Input
               id="skill-name"
               value={draft.name}
@@ -628,7 +630,7 @@ function StudioNewSkillPanel({
           </div>
         </div>
         <div className="space-y-2">
-          <Label>Color</Label>
+          <Label>{translateUi("interfaceCopy.color")}</Label>
           <div className="flex flex-wrap items-center gap-2">
             {SKILL_CREATE_ACCENTS.map((color) => (
               <button
@@ -652,7 +654,7 @@ function StudioNewSkillPanel({
           </div>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="skill-categories">Categories</Label>
+          <Label htmlFor="skill-categories">{translateUi("interfaceCopy.categories")}</Label>
           <Input
             id="skill-categories"
             value={categoryDraft}
@@ -664,7 +666,7 @@ function StudioNewSkillPanel({
 
       <section className="space-y-3">
         <div>
-          <h2 className="text-sm font-medium text-foreground">Sharing</h2>
+          <h2 className="text-sm font-medium text-foreground">{translateUi("interfaceCopy.sharing")}</h2>
           <p className="text-xs text-muted-foreground">Choose who can discover this skill inside Paperclip.</p>
         </div>
         <div className="grid gap-2 sm:grid-cols-3">
@@ -705,9 +707,7 @@ function StudioNewSkillPanel({
       </details>
 
       <div className="flex items-center justify-end gap-2 border-t border-border pt-4">
-        <Button variant="ghost" onClick={() => navigate("/skills/studio")} disabled={createSkill.isPending}>
-          Cancel
-        </Button>
+        <Button variant="ghost" onClick={() => navigate("/skills/studio")} disabled={createSkill.isPending}>{translateUi("interfaceCopy.cancel")}</Button>
         <Button onClick={() => createSkill.mutate()} disabled={createSkill.isPending || !nameValid}>
           <FilePlus className="h-4 w-4" />
           {createSkill.isPending ? "Creating..." : draft.forkedFromSkillId ? "Create fork" : "Create skill"}
@@ -1153,6 +1153,7 @@ function StudioHeader({
   onSelectSkill: (skillId: string) => void;
   onOpenVersions: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const version = skill.currentVersion?.revisionNumber ?? null;
   const toast = useOptionalToastActions();
   const copyShareLink = useCallback(() => {
@@ -1181,7 +1182,7 @@ function StudioHeader({
         <Badge variant="secondary">Unsaved edits</Badge>
       ) : null}
       {!skill.editable ? (
-        <Badge variant="secondary">Read-only</Badge>
+        <Badge variant="secondary">{translateUi("interfaceCopy.readonly")}</Badge>
       ) : null}
       {skill.forkedFromSkillId ? (
         <SkillLineageChip
@@ -1292,6 +1293,7 @@ function SkillPane({
   onDirtyChange: (dirty: boolean) => void;
   onEditACopy: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const skillId = skill.id;
   const queryClient = useQueryClient();
   const onError = useMutationErrorToast();
@@ -1570,7 +1572,7 @@ function SkillPane({
           </span>
           <div className="flex items-center gap-2">
             {readOnly ? (
-              <Badge variant="secondary">Read-only</Badge>
+              <Badge variant="secondary">{translateUi("interfaceCopy.readonly")}</Badge>
             ) : (
               <>
                 {dirty && <Badge variant="secondary">Unsaved</Badge>}
@@ -1718,6 +1720,7 @@ function SkillFileActions({
   onDeleteFile: () => void;
   onDeleteFolder: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const disabled = readOnly || pending;
   const deleteDisabled = disabled || !canDeleteFile;
   return (
@@ -1765,12 +1768,12 @@ function SkillFileActions({
       <Tooltip>
         <TooltipTrigger asChild>
           <span>
-            <Button variant="ghost" size="icon-sm" disabled={disabled} onClick={onDeleteFolder} aria-label="Delete folder">
+            <Button variant="ghost" size="icon-sm" disabled={disabled} onClick={onDeleteFolder} aria-label={translateUi("interfaceCopy.deleteFolder")}>
               <FolderMinus className="h-4 w-4" />
             </Button>
           </span>
         </TooltipTrigger>
-        <TooltipContent>Delete folder</TooltipContent>
+        <TooltipContent>{translateUi("interfaceCopy.deleteFolder")}</TooltipContent>
       </Tooltip>
     </div>
   );
@@ -1793,6 +1796,7 @@ function SkillPathDialog({
   pending: boolean;
   onSubmit: (path: string, content: string) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [pathValue, setPathValue] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -1857,12 +1861,8 @@ function SkillPathDialog({
           {error ? <p className="text-xs text-destructive">{error}</p> : null}
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button disabled={pending} onClick={submit}>
-            Create
-          </Button>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>{translateUi("interfaceCopy.cancel")}</Button>
+          <Button disabled={pending} onClick={submit}>{translateUi("interfaceCopy.create")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -1884,6 +1884,7 @@ function DeleteFolderDialog({
   pending: boolean;
   onSubmit: (path: string) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [pathValue, setPathValue] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -1915,7 +1916,7 @@ function DeleteFolderDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Delete folder</DialogTitle>
+          <DialogTitle>{translateUi("interfaceCopy.deleteFolder")}</DialogTitle>
           <DialogDescription>
             This removes every skill file under the folder and saves the result as the next version.
           </DialogDescription>
@@ -1934,12 +1935,8 @@ function DeleteFolderDialog({
           {error ? <p className="text-xs text-destructive">{error}</p> : null}
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button variant="destructive" disabled={pending} onClick={submit}>
-            Delete
-          </Button>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>{translateUi("interfaceCopy.cancel")}</Button>
+          <Button variant="destructive" disabled={pending} onClick={submit}>{translateUi("interfaceCopy.delete")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -1973,6 +1970,7 @@ function InputPane({
   onSelectInput: (id: string) => void;
   onSelectAdHoc: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const onError = useMutationErrorToast();
   // The row's menu closes on click, so its copy confirmation goes to a toast.
@@ -2096,7 +2094,7 @@ function InputPane({
             </TooltipTrigger>
             <TooltipContent>{collapsed ? "Expand input" : "Collapse input"}</TooltipContent>
           </Tooltip>
-          <span>Input</span>
+          <span>{translateUi("interfaceCopy.input")}</span>
         </span>
       }
       action={
@@ -2271,6 +2269,7 @@ function SaveInputDialog({
   initialContent: string;
   onSaved: (input: CompanySkillTestInput) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const [name, setName] = useState("");
   const [content, setContent] = useState(initialContent);
@@ -2312,7 +2311,7 @@ function SaveInputDialog({
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1">
-            <Label htmlFor="input-name">Name</Label>
+            <Label htmlFor="input-name">{translateUi("interfaceCopy.name")}</Label>
             <Input
               id="input-name"
               value={name}
@@ -2322,7 +2321,7 @@ function SaveInputDialog({
             <p className="text-xs text-muted-foreground">Use “/” for folders, e.g. onboarding/happy-path</p>
           </div>
           <div className="space-y-1">
-            <Label htmlFor="input-content">Content</Label>
+            <Label htmlFor="input-content">{translateUi("interfaceCopy.content")}</Label>
             <Textarea
               id="input-content"
               value={content}
@@ -2332,15 +2331,11 @@ function SaveInputDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>{translateUi("interfaceCopy.cancel")}</Button>
           <Button
             disabled={!name.trim() || !content.trim() || createMutation.isPending}
             onClick={() => createMutation.mutate()}
-          >
-            Save
-          </Button>
+          >{translateUi("interfaceCopy.save")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -2720,6 +2715,7 @@ function RunTemplateAdvancedPanel({
   deletingTemplateId: string | null;
   actionPending: boolean;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const templateGroups = useMemo<readonly SearchableSelectGroup<string, RunTemplateOption>[]>(() => {
     const noTemplateOption: RunTemplateOption = {
       key: "no-template",
@@ -2765,7 +2761,7 @@ function RunTemplateAdvancedPanel({
         ) : (
           <ChevronRight className="h-3.5 w-3.5" />
         )}
-        <span className="font-semibold uppercase tracking-wide">Advanced</span>
+        <span className="font-semibold uppercase tracking-wide">{translateUi("interfaceCopy.advanced")}</span>
         <span className="ml-auto truncate">{selectedTemplateName}</span>
       </button>
       {open ? (
@@ -2901,6 +2897,7 @@ function RunTemplateDialog({
   onOpenChange: (open: boolean) => void;
   onSubmit: (payload: CompanySkillTestRunTemplateCreateRequest) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const source = state?.source ?? null;
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -2931,7 +2928,7 @@ function RunTemplateDialog({
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1">
-            <Label htmlFor="run-template-name">Name</Label>
+            <Label htmlFor="run-template-name">{translateUi("interfaceCopy.name")}</Label>
             <Input
               id="run-template-name"
               value={name}
@@ -2940,7 +2937,7 @@ function RunTemplateDialog({
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="run-template-description">Description</Label>
+            <Label htmlFor="run-template-description">{translateUi("interfaceCopy.description")}</Label>
             <Input
               id="run-template-description"
               value={description}
@@ -2962,9 +2959,7 @@ function RunTemplateDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>{translateUi("interfaceCopy.cancel")}</Button>
           <Button
             disabled={!name.trim() || !body.trim() || pending}
             onClick={() =>
@@ -3097,6 +3092,7 @@ function RunDetailView({
   onBack: () => void;
   onSelectRun: (id: string | null) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const skillId = skill.id;
   const queryClient = useQueryClient();
   const onError = useMutationErrorToast();
@@ -3162,14 +3158,14 @@ function RunDetailView({
 
   if (detailQuery.isLoading) {
     return (
-      <PaneScaffold title="Run" action={<BackButton onBack={onBack} />}>
+      <PaneScaffold title={translateUi("interfaceCopy.run")} action={<BackButton onBack={onBack} />}>
         <div className="p-3 text-xs text-muted-foreground">Loading run…</div>
       </PaneScaffold>
     );
   }
   if (!detail) {
     return (
-      <PaneScaffold title="Run" action={<BackButton onBack={onBack} />}>
+      <PaneScaffold title={translateUi("interfaceCopy.run")} action={<BackButton onBack={onBack} />}>
         <div className="p-3 text-xs text-muted-foreground">Run not found.</div>
       </PaneScaffold>
     );
@@ -3184,7 +3180,7 @@ function RunDetailView({
   const taskLink = testTaskLinkState(detail);
 
   return (
-    <PaneScaffold title="Run" action={<BackButton onBack={onBack} />}>
+    <PaneScaffold title={translateUi("interfaceCopy.run")} action={<BackButton onBack={onBack} />}>
       <div className="min-h-0 flex-1 space-y-3 overflow-auto p-3">
         <div className="flex flex-wrap items-center gap-2">
           <StatusBadge status={runBadgeStatus(detail.status)} />
@@ -3200,10 +3196,10 @@ function RunDetailView({
 
         {/* snapshot property block */}
         <div className="rounded-md border border-border text-xs">
-          <PropRow label="Input" value={detail.inputId ? "saved input" : "ad-hoc paste"} />
+          <PropRow label={translateUi("interfaceCopy.input")} value={detail.inputId ? "saved input" : "ad-hoc paste"} />
           <PropRow label="Template" value={detail.templateName ?? "No template"} />
           <PropRow label="Skill version" value={`v${detail.skillVersion.revisionNumber}`} />
-          <PropRow label="Created" value={relativeTime(detail.createdAt)} />
+          <PropRow label={translateUi("interfaceCopy.created")} value={relativeTime(detail.createdAt)} />
         </div>
 
         {showRunErrorCard(detail.status) && (
@@ -3298,9 +3294,7 @@ function RunDetailView({
               size="sm"
               disabled={cancelMutation.isPending}
               onClick={() => cancelMutation.mutate()}
-            >
-              Cancel
-            </Button>
+            >{translateUi("interfaceCopy.cancel")}</Button>
           ) : (
             <Button
               variant="ghost"
@@ -3356,11 +3350,12 @@ function RunHarnessUnavailableNotice({
 }
 
 function RunDocumentsSection({ documents }: { documents: IssueDocument[] }) {
+  const { t: translateUi } = useUiTranslation();
   return (
     <section className="space-y-2">
       <div className="flex items-center gap-2">
         <FileText className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
-        <h3 className="text-sm font-medium text-muted-foreground">Documents</h3>
+        <h3 className="text-sm font-medium text-muted-foreground">{translateUi("interfaceCopy.documents")}</h3>
         <span className="text-xs text-muted-foreground">{documents.length}</span>
       </div>
       <div className="space-y-2">
@@ -3685,12 +3680,13 @@ function MobileTabs({
   input: React.ReactNode;
   runs: React.ReactNode;
 }) {
+  const { t: translateUi } = useUiTranslation();
   return (
     <Tabs defaultValue="skill" className="flex flex-1 flex-col">
       <TabsList variant="line" className="px-3">
         <TabsTrigger value="skill">Skill</TabsTrigger>
-        <TabsTrigger value="input">Input</TabsTrigger>
-        <TabsTrigger value="runs">Runs</TabsTrigger>
+        <TabsTrigger value="input">{translateUi("interfaceCopy.input")}</TabsTrigger>
+        <TabsTrigger value="runs">{translateUi("interfaceCopy.runs")}</TabsTrigger>
       </TabsList>
       <TabsContent value="skill" className="min-h-0 flex-1">
         {skill}

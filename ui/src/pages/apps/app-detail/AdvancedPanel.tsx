@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { ArrowUpRight, ChevronRight, Loader2, Lock } from "lucide-react";
@@ -108,6 +109,7 @@ function KeySection({
   canReplace: boolean;
   unavailableMessage: string;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
   return (
     <section>
@@ -115,16 +117,14 @@ function KeySection({
         <div className="flex items-start gap-3">
           <Lock className="mt-0.5 h-4 w-4 text-muted-foreground" />
           <div>
-            <h2 className="text-sm font-medium text-foreground">Reconnect</h2>
+            <h2 className="text-sm font-medium text-foreground">{translateUi("interfaceCopy.reconnect")}</h2>
             <p className="mt-0.5 text-xs text-muted-foreground">
               {canReplace ? "Replace the stored credential." : unavailableMessage}
             </p>
           </div>
         </div>
         {canReplace && !open && (
-          <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
-            Reconnect
-          </Button>
+          <Button size="sm" variant="outline" onClick={() => setOpen(true)}>{translateUi("interfaceCopy.reconnect")}</Button>
         )}
       </div>
       {open && (
@@ -159,6 +159,7 @@ export function ReconnectCard({
   canReconnect?: boolean;
   reconnectUnavailableMessage?: string;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const { pushToast } = useToast();
   const authorization = useAuthorizationWindow();
   const reconnectOAuth = useMutation({
@@ -235,7 +236,7 @@ export function ReconnectCard({
             </Link>
           </Button>
         ) : onReconnect ? (
-          <Button size="sm" variant="outline" onClick={onReconnect}>Reconnect</Button>
+          <Button size="sm" variant="outline" onClick={onReconnect}>{translateUi("interfaceCopy.reconnect")}</Button>
         ) : managedByVercel && !oauth ? (
           <div className="flex items-center gap-2">
             <Button type="button" size="sm" variant="outline" asChild>
@@ -282,6 +283,7 @@ function ReconnectForm({
   onCancel?: () => void;
   onReconnected: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const { pushToast } = useToast();
   const methodKey = typeof connection.config?.connectionMethodKey === "string"
     ? connection.config.connectionMethodKey
@@ -395,9 +397,7 @@ function ReconnectForm({
           {reconnect.isPending ? "Checking..." : "Check & reconnect"}
         </Button>
         {onCancel && (
-          <Button size="sm" variant="ghost" onClick={onCancel} disabled={reconnect.isPending}>
-            Cancel
-          </Button>
+          <Button size="sm" variant="ghost" onClick={onCancel} disabled={reconnect.isPending}>{translateUi("interfaceCopy.cancel")}</Button>
         )}
       </div>
     </div>
@@ -405,6 +405,7 @@ function ReconnectForm({
 }
 
 function TechnicalDetails({ connection }: { connection: ToolConnection }) {
+  const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
   return (
     <Collapsible open={open} onOpenChange={setOpen} asChild>
@@ -421,7 +422,7 @@ function TechnicalDetails({ connection }: { connection: ToolConnection }) {
           <dl className="mt-4 grid gap-2 pb-2 text-xs sm:grid-cols-(--gtc-59)">
             <dt className="text-muted-foreground">Address</dt>
             <dd className="break-all font-mono text-foreground">{connectionAddress(connection)}</dd>
-            <dt className="text-muted-foreground">Type</dt>
+            <dt className="text-muted-foreground">{translateUi("interfaceCopy.type")}</dt>
             <dd className="text-foreground">{connectionTransportLabel(connection.transport)}</dd>
           </dl>
         </CollapsibleContent>
@@ -467,6 +468,7 @@ export function DangerZone({
   onReconnectIdentity?: () => void;
   onRevokeIdentity?: (grant: ConnectionGrant) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [revokeTarget, setRevokeTarget] = useState<ConnectionGrant | null>(null);
@@ -490,7 +492,7 @@ export function DangerZone({
             type="button"
             className="flex w-full items-center gap-3 py-1 text-left"
           >
-            <span className="min-w-0 flex-1 text-sm font-medium text-destructive">Danger zone</span>
+            <span className="min-w-0 flex-1 text-sm font-medium text-destructive">{translateUi("interfaceCopy.dangerZone")}</span>
             <ChevronRight
               className={cn("h-4 w-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-90")}
             />
@@ -527,7 +529,7 @@ export function DangerZone({
             {connection?.authKind === "oauth" && !methodUnavailable && (onReconnectIdentity || !canReplaceCredential) ? (
               <div className="flex flex-wrap items-center justify-between gap-3 py-4">
                 <div>
-                  <p className="text-sm font-medium text-foreground">Reconnect</p>
+                  <p className="text-sm font-medium text-foreground">{translateUi("interfaceCopy.reconnect")}</p>
                   <p className="text-xs text-muted-foreground">
                     {canReplaceCredential
                       ? `Sign in to ${identityProviderName} again.`
@@ -577,9 +579,7 @@ export function DangerZone({
               </div>
               {confirming ? (
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="sm" onClick={() => setConfirming(false)} disabled={removing}>
-                    Cancel
-                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setConfirming(false)} disabled={removing}>{translateUi("interfaceCopy.cancel")}</Button>
                   <Button variant="destructive" size="sm" onClick={onRemove} disabled={removing}>
                     {removing && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
                     Yes, remove it

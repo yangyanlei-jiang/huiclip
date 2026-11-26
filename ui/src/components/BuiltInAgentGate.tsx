@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -34,6 +35,7 @@ export interface BuiltInAgentGateProps {
  * - ready → children
  */
 export function BuiltInAgentGate({ agentKey, companyId, featureLabel, children }: BuiltInAgentGateProps) {
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const [configureOpen, setConfigureOpen] = useState(false);
 
@@ -106,7 +108,7 @@ export function BuiltInAgentGate({ agentKey, companyId, featureLabel, children }
           actions={
             <>
               <Button variant="ghost" size="sm" asChild>
-                <Link to={agentUrl(state.agent)}>View agent</Link>
+                <Link to={agentUrl(state.agent)}>{translateUi("interfaceCopy.viewAgent")}</Link>
               </Button>
               <Button
                 size="sm"

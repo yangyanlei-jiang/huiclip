@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect } from "react";
 import { Wrench } from "lucide-react";
 import { Link, Navigate, useParams } from "@/lib/router";
@@ -31,6 +32,7 @@ function renderTab(tab: ToolTabKey, companyId: string) {
 }
 
 export function ToolsAccess() {
+  const { t: translateUi } = useUiTranslation();
   const { selectedCompany, selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const params = useParams<{ tab?: string }>();
@@ -87,9 +89,7 @@ export function ToolsAccess() {
         <header>
           <div className="flex items-center gap-2.5">
             <h1 className="text-xl font-bold text-foreground">Advanced setup</h1>
-            <span className="inline-flex items-center rounded-full bg-foreground px-2.5 py-0.5 text-(length:--text-micro) font-bold text-background">
-              Advanced
-            </span>
+            <span className="inline-flex items-center rounded-full bg-foreground px-2.5 py-0.5 text-(length:--text-micro) font-bold text-background">{translateUi("interfaceCopy.advanced")}</span>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
             For tools that aren't in the gallery. You'll need details from the tool's documentation.

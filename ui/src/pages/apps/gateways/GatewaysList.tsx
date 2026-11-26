@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus, Search } from "lucide-react";
@@ -31,6 +32,7 @@ import {
 import { describeError } from "@/api/errors";
 
 export function GatewaysList() {
+  const { t: translateUi } = useUiTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { pushToast } = useToast();
@@ -136,7 +138,7 @@ export function GatewaysList() {
   return (
     <div className="max-w-5xl space-y-5">
       <header className="space-y-1">
-        <h1 className="text-2xl font-bold tracking-tight">Apps</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{translateUi("interfaceCopy.apps")}</h1>
         <p className="text-sm text-muted-foreground">
           A gateway is one safe MCP endpoint that exposes only the apps you assign. Hand it to a client
           like Cursor or Claude Desktop.
@@ -219,10 +221,10 @@ export function GatewaysList() {
                     <thead>
                       <tr className="border-b border-border bg-muted/40 text-left text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
                         <th className="whitespace-nowrap px-4 py-2.5">Gateway</th>
-                        <th className="whitespace-nowrap px-4 py-2.5">Scope</th>
-                        <th className="whitespace-nowrap px-4 py-2.5">Apps</th>
+                        <th className="whitespace-nowrap px-4 py-2.5">{translateUi("interfaceCopy.scope")}</th>
+                        <th className="whitespace-nowrap px-4 py-2.5">{translateUi("interfaceCopy.apps")}</th>
                         <th className="whitespace-nowrap px-4 py-2.5">Tokens</th>
-                        <th className="whitespace-nowrap px-4 py-2.5">Last used</th>
+                        <th className="whitespace-nowrap px-4 py-2.5">{translateUi("interfaceCopy.lastUsed")}</th>
                         <th className="whitespace-nowrap px-4 py-2.5 text-right">On</th>
                       </tr>
                     </thead>
@@ -275,14 +277,14 @@ export function GatewaysList() {
                         <div className="shrink-0">{toggle(gateway)}</div>
                       </div>
                       <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                        <MobileField label="Scope" value={scope} />
-                        <MobileField label="Apps" value={appsLabel} />
+                        <MobileField label={translateUi("interfaceCopy.scope")} value={scope} />
+                        <MobileField label={translateUi("interfaceCopy.apps")} value={appsLabel} />
                         <MobileField
                           label="Tokens"
                           value={`${active} active${expiring > 0 ? ` · ${expiring} expiring` : ""}`}
                         />
                         <MobileField
-                          label="Last used"
+                          label={translateUi("interfaceCopy.lastUsed")}
                           value={lastUsed ? <RelativeTime value={lastUsed} /> : "—"}
                         />
                       </dl>

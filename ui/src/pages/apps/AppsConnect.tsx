@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { describeError } from "@/api/errors";
 import { useQuery } from "@tanstack/react-query";
 import { aiConnectionsApi } from "@/api/ai-connections";
@@ -24,6 +25,7 @@ export function AppsConnect({ byoOnly = false, credentialSource = "paperclip_vau
   byoOnly?: boolean;
   credentialSource?: ToolConnectionCredentialSource;
 } = {}) {
+  const { t: translateUi } = useUiTranslation();
   const { selectedCompanyId } = useCompany();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -58,7 +60,7 @@ export function AppsConnect({ byoOnly = false, credentialSource = "paperclip_vau
   if (reuseComposio && selectedCompanyId && (saved.isPending || savedView.kind === "reconnecting" || hasSavedComposio)) return <p role="status" className="text-sm text-muted-foreground">Checking saved Composio accounts…</p>;
   if (reuseComposio && savedView.kind === "error") return <div className="space-y-3">
     <QueryErrorState error={saved.error} action="load your Composio accounts" onRetry={savedView.retry} retrying={savedView.isFetching} />
-    <Button variant="ghost" onClick={() => navigate("/apps")}>Cancel</Button>
+    <Button variant="ghost" onClick={() => navigate("/apps")}>{translateUi("interfaceCopy.cancel")}</Button>
   </div>;
   const returningToSkills = source === "github" && selectedCompanyId && skillSourceReturnPath(selectedCompanyId);
   function returnToSkills() {

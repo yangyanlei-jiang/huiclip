@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useRef, useState } from "react";
 import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
 import { QueryErrorState, useQueryView } from "@/components/QueryView";
@@ -57,6 +58,7 @@ export function GitHubRepositoryAccess({
   onChange: (id: string, enabled: boolean) => void;
   onToggleAll: (enabled: boolean) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const client = useQueryClient();
   const [search, setSearch] = useState("");
   const scroller = useRef<HTMLDivElement>(null);
@@ -152,7 +154,7 @@ export function GitHubRepositoryAccess({
               onChange={(enabled) => onChange(resource.id, enabled)}
             />
             <details className="text-sm">
-              <summary className="cursor-pointer text-muted-foreground">Task defaults</summary>
+              <summary className="cursor-pointer text-muted-foreground">{translateUi("interfaceCopy.taskDefaults")}</summary>
               <div className="pt-3">
                 <ChatExecutionDefaults
                   companyId={companyId}

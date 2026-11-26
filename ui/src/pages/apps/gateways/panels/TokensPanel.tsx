@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { type FormEvent, type ReactNode, useEffect, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Copy, KeyRound, Plus } from "lucide-react";
@@ -84,6 +85,7 @@ export function TokensPanel({
   gateway: ToolMcpGatewayWithTokens;
   onTokenCreated?: (token: ToolMcpGatewayTokenCreated) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToast();
   const [minting, setMinting] = useState(false);
@@ -214,7 +216,7 @@ export function TokensPanel({
               <span className="text-xs text-muted-foreground">Also used as the client label.</span>
             </label>
             <label className="space-y-1.5 text-sm">
-              <span className="text-xs font-medium text-muted-foreground">Expires</span>
+              <span className="text-xs font-medium text-muted-foreground">{translateUi("interfaceCopy.expires")}</span>
               <Input type="date" value={expiresAt} onChange={(event) => setExpiresAt(event.target.value)} required />
             </label>
           </div>
@@ -227,9 +229,7 @@ export function TokensPanel({
             />
           </label>
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="ghost" size="sm" onClick={() => setMinting(false)}>
-              Cancel
-            </Button>
+            <Button type="button" variant="ghost" size="sm" onClick={() => setMinting(false)}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button type="submit" size="sm" disabled={createMutation.isPending || !name.trim()}>
               {createMutation.isPending ? "Issuing…" : "Issue token"}
             </Button>
@@ -287,11 +287,11 @@ export function TokensPanel({
                   <thead>
                     <tr className="border-b border-border bg-muted/40 text-left text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
                       <th className="px-4 py-2.5">Token</th>
-                      <th className="px-4 py-2.5">Owner</th>
-                      <th className="px-4 py-2.5">Created</th>
-                      <th className="px-4 py-2.5">Last used</th>
+                      <th className="px-4 py-2.5">{translateUi("interfaceCopy.owner")}</th>
+                      <th className="px-4 py-2.5">{translateUi("interfaceCopy.created")}</th>
+                      <th className="px-4 py-2.5">{translateUi("interfaceCopy.lastUsed")}</th>
                       <th className="px-4 py-2.5">Expiry</th>
-                      <th className="px-4 py-2.5">Status</th>
+                      <th className="px-4 py-2.5">{translateUi("interfaceCopy.status")}</th>
                       <th className="px-4 py-2.5 text-right" />
                     </tr>
                   </thead>
@@ -343,9 +343,9 @@ export function TokensPanel({
                         <StatusBadge status={status} />
                       </div>
                       <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                        <TokenField label="Owner" value={token.clientLabel || token.ownerNote || "—"} />
-                        <TokenField label="Created" value={<RelativeTime value={token.createdAt} />} />
-                        <TokenField label="Last used" value={token.lastUsedAt ? <RelativeTime value={token.lastUsedAt} /> : "—"} />
+                        <TokenField label={translateUi("interfaceCopy.owner")} value={token.clientLabel || token.ownerNote || "—"} />
+                        <TokenField label={translateUi("interfaceCopy.created")} value={<RelativeTime value={token.createdAt} />} />
+                        <TokenField label={translateUi("interfaceCopy.lastUsed")} value={token.lastUsedAt ? <RelativeTime value={token.lastUsedAt} /> : "—"} />
                         <TokenField label="Expiry" value={<ExpiryValue token={token} />} />
                       </dl>
                       {status !== "revoked" ? (
@@ -420,9 +420,7 @@ export function TokensPanel({
                   setConfirmToken(null);
                   setRevokeName("");
                 }}
-              >
-                Cancel
-              </Button>
+              >{translateUi("interfaceCopy.cancel")}</Button>
               <Button
                 variant="destructive"
                 size="sm"

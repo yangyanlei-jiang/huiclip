@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, ChevronDown, Loader2 } from "lucide-react";
@@ -54,6 +55,7 @@ export function ProfileWizard({
   initialTemplate?: TemplateKey;
   initialStep?: WizardStep;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { pushToast } = useToast();
@@ -305,13 +307,9 @@ export function ProfileWizard({
 
           <div className="flex items-center gap-2">
             {step > 1 ? (
-              <Button variant="outline" disabled={busy} onClick={() => setStep((s) => (s - 1) as WizardStep)}>
-                Back
-              </Button>
+              <Button variant="outline" disabled={busy} onClick={() => setStep((s) => (s - 1) as WizardStep)}>{translateUi("interfaceCopy.back")}</Button>
             ) : (
-              <Button variant="ghost" disabled={busy} onClick={() => navigate("/apps/advanced/profiles")}>
-                Cancel
-              </Button>
+              <Button variant="ghost" disabled={busy} onClick={() => navigate("/apps/advanced/profiles")}>{translateUi("interfaceCopy.cancel")}</Button>
             )}
 
             {step === 1 ? (
@@ -453,6 +451,7 @@ export function StepName({
   profileKey: string;
   onProfileKey: (v: string) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [advancedOpen, setAdvancedOpen] = useState(false);
   return (
     <div className="space-y-6">
@@ -506,7 +505,7 @@ export function StepName({
 
       <div className="space-y-3">
         <div className="space-y-1.5">
-          <Label htmlFor="profile-name">Name</Label>
+          <Label htmlFor="profile-name">{translateUi("interfaceCopy.name")}</Label>
           <Input
             id="profile-name"
             value={name}
@@ -582,6 +581,7 @@ export function StepAssign({
   companyDefault: boolean;
   onCompanyDefault: (v: boolean) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [moreOpen, setMoreOpen] = useState(false);
   // Per-agent overlap context from already-loaded bindings — no extra fetch.
   const contextByAgent = useMemo(() => {
@@ -652,7 +652,7 @@ export function StepAssign({
               individual agents.
             </p>
             <TargetChecklist
-              label="Projects"
+              label={translateUi("interfaceCopy.projects")}
               options={projects}
               selected={selectedProjectIds ?? new Set()}
               onToggle={onToggleProject}

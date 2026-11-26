@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { TaskVoiceLauncher } from "@/components/voice/TaskVoiceLauncher";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -166,6 +167,7 @@ function ConnectedTaskComposer({
   binding,
   draftOwner,
 }: ConnectedTaskProps & { binding: ExternalChannelBindingSummary; draftOwner: string }) {
+  const { t: translateUi } = useUiTranslation();
   const readOwner = useDraftOwnerReader();
   const { pushToast } = useToast();
   const queryClient = useQueryClient();
@@ -581,9 +583,7 @@ function ConnectedTaskComposer({
             Send to channel
           </Button>
           <Button asChild size="sm" variant="ghost">
-            <Link to={`/apps/chat/${binding.endpointId}/conversations`}>
-              Connection
-            </Link>
+            <Link to={`/apps/chat/${binding.endpointId}/conversations`}>{translateUi("interfaceCopy.connection")}</Link>
           </Button>
         </div>
       </div>

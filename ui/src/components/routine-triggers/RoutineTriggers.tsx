@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { CalendarClock, Plus, Webhook } from "lucide-react";
@@ -63,6 +64,7 @@ function scheduleCron(draft: TriggerDraft) {
 }
 
 export function RoutineTriggers() {
+  const { t: translateUi } = useUiTranslation();
   const ctx = useRoutineDetail();
   const [params, setParams] = useSearchParams();
   const setupId = params.get("triggerSetup");
@@ -197,9 +199,7 @@ export function RoutineTriggers() {
               <CopyField label="Secret key" value={entry.webhookSecret} />
             </div>
           ))}
-          <Button variant="outline" onClick={() => ctx.setSecretMessage(null)}>
-            Done
-          </Button>
+          <Button variant="outline" onClick={() => ctx.setSecretMessage(null)}>{translateUi("interfaceCopy.done")}</Button>
         </div>
       )}
       {routine.triggers.length === 0 && (
@@ -448,6 +448,7 @@ function ScheduleSettings({
   onSave: (patch: Record<string, unknown>) => Promise<void>;
   onCancel: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [cronExpression, setCron] = useState(
     trigger.cronExpression ?? "0 9 * * *",
   );
@@ -495,9 +496,7 @@ function ScheduleSettings({
         >
           Save schedule
         </Button>
-        <Button variant="outline" onClick={onCancel}>
-          Cancel
-        </Button>
+        <Button variant="outline" onClick={onCancel}>{translateUi("interfaceCopy.cancel")}</Button>
       </div>
     </fieldset>
   );

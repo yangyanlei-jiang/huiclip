@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useRef, useState } from "react";
 import { FoldVertical, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -117,6 +118,7 @@ function CompactAction({ compact, level }: { compact: ContextCompactState; level
 
 /** The hover card body; exported for Storybook galleries. */
 export function ContextUsageCard({ usage, compact }: { usage: ContextUsage; compact?: ContextCompactState | null }) {
+  const { t: translateUi } = useUiTranslation();
   const percent = Math.min(100, Math.round((usage.usedTokens / usage.contextWindow) * 100));
   const level = contextUsageLevel(usage);
   const totals = usage.totals;
@@ -142,13 +144,13 @@ export function ContextUsageCard({ usage, compact }: { usage: ContextUsage; comp
         <dl className="mt-3 flex flex-col gap-1 border-t border-border pt-2">
           {totals?.inputTokens != null ? (
             <Row
-              label="Input"
+              label={translateUi("interfaceCopy.input")}
               value={totals.cachedInputTokens
                 ? `${formatContextTokens(totals.inputTokens)} · ${formatContextTokens(totals.cachedInputTokens)} cached`
                 : formatContextTokens(totals.inputTokens)}
             />
           ) : null}
-          {totals?.outputTokens != null ? <Row label="Output" value={formatContextTokens(totals.outputTokens)} /> : null}
+          {totals?.outputTokens != null ? <Row label={translateUi("interfaceCopy.output")} value={formatContextTokens(totals.outputTokens)} /> : null}
           {totals?.reasoningOutputTokens ? (
             <Row label="Reasoning" value={formatContextTokens(totals.reasoningOutputTokens)} muted />
           ) : null}
@@ -159,7 +161,7 @@ export function ContextUsageCard({ usage, compact }: { usage: ContextUsage; comp
               muted
             />
           ) : null}
-          {usage.costUsd != null ? <Row label="Cost" value={`$${usage.costUsd.toFixed(2)}`} /> : null}
+          {usage.costUsd != null ? <Row label={translateUi("interfaceCopy.cost")} value={`$${usage.costUsd.toFixed(2)}`} /> : null}
           {usage.compactions ? <Row label="Compactions" value={String(usage.compactions)} muted /> : null}
         </dl>
       ) : null}

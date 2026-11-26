@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { authApi } from "@/api/auth";
 import { accessApi } from "@/api/access";
 import { canManageProjectPrivacy } from "@/lib/issuePrivacy";
@@ -158,6 +159,7 @@ function ArchiveDangerZone({
   onArchive: (archived: boolean) => void;
   archivePending?: boolean;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [confirming, setConfirming] = useState(false);
   const isArchive = !project.archivedAt;
   const action = isArchive ? "Archive" : "Unarchive";
@@ -193,9 +195,7 @@ function ArchiveDangerZone({
             size="sm"
             variant="outline"
             onClick={() => setConfirming(false)}
-          >
-            Cancel
-          </Button>
+          >{translateUi("interfaceCopy.cancel")}</Button>
         </div>
       ) : (
         <Button
@@ -215,6 +215,7 @@ function ArchiveDangerZone({
 }
 
 export function ProjectProperties({ project, repositories, onUpdate, onFieldUpdate, getFieldSaveState, onArchive, archivePending }: ProjectPropertiesProps) {
+  const { t: translateUi } = useUiTranslation();
   const { visible: workspaceIsolationControlsVisible } = useWorkspaceIsolationControls();
   const { selectedCompanyId } = useCompany();
   const { data: privacySession } = useQuery({ queryKey: queryKeys.auth.session, queryFn: () => authApi.getSession() });
@@ -449,7 +450,7 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
         </AlertDialogContent>
       </AlertDialog>
       <div className="space-y-1 pb-4">
-        <PropertyRow label={<FieldLabel label="Name" state={fieldState("name")} />}>
+        <PropertyRow label={<FieldLabel label={translateUi("interfaceCopy.name")} state={fieldState("name")} />}>
           {onUpdate || onFieldUpdate ? (
             <DraftInput
               value={project.name}
@@ -463,7 +464,7 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
           )}
         </PropertyRow>
         <PropertyRow
-          label={<FieldLabel label="Description" state={fieldState("description")} />}
+          label={<FieldLabel label={translateUi("interfaceCopy.description")} state={fieldState("description")} />}
           alignStart
           valueClassName="space-y-0.5"
         >
@@ -530,7 +531,7 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
 
           </div>
         </PropertyRow>
-        <PropertyRow label={<FieldLabel label="Updated" state="idle" />}>
+        <PropertyRow label={<FieldLabel label={translateUi("interfaceCopy.updated")} state="idle" />}>
           <span className="text-sm">{formatDate(project.updatedAt)}</span>
         </PropertyRow>
         {project.targetDate && (
@@ -698,9 +699,7 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
                   className="h-6 px-2"
                   disabled={(!workspaceCwd.trim() && !primaryCodebaseWorkspace) || createWorkspace.isPending || updateWorkspace.isPending}
                   onClick={submitLocalWorkspace}
-                >
-                  Save
-                </Button>
+                >{translateUi("interfaceCopy.save")}</Button>
                 <Button
                   variant="ghost"
                   size="xs"
@@ -710,9 +709,7 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
                     setWorkspaceCwd("");
                     setWorkspaceError(null);
                   }}
-                >
-                  Cancel
-                </Button>
+                >{translateUi("interfaceCopy.cancel")}</Button>
               </div>
             </div>
           )}
@@ -905,7 +902,7 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
                           <div>
                             <div className="mb-1 flex items-center gap-1.5">
                               <label className="flex items-center gap-2 text-xs text-muted-foreground">
-                                <span>Environment</span>
+                                <span>{translateUi("interfaceCopy.environment")}</span>
                                 <SaveIndicator state={fieldState("execution_workspace_environment")} />
                               </label>
                             </div>
@@ -1106,7 +1103,7 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
           </div>
         </>
       )}
-        <PropertyRow label={<FieldLabel label="Created" state="idle" />}>
+        <PropertyRow label={<FieldLabel label={translateUi("interfaceCopy.created")} state="idle" />}>
           <span className="text-sm">{formatDate(project.createdAt)}</span>
         </PropertyRow>
     </div>

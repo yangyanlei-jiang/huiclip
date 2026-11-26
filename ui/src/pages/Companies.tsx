@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCompany } from "../context/CompanyContext";
@@ -34,6 +35,7 @@ import {
 } from "lucide-react";
 
 export function Companies() {
+  const { t: translateUi } = useUiTranslation();
   const {
     companies,
     selectedCompanyId,
@@ -308,9 +310,7 @@ export function Companies() {
                       size="sm"
                       onClick={() => setConfirmDeleteId(null)}
                       disabled={deleteMutation.isPending}
-                    >
-                      Cancel
-                    </Button>
+                    >{translateUi("interfaceCopy.cancel")}</Button>
                     <Button
                       variant="destructive"
                       size="sm"

@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
 import { Dialog as DialogPrimitive } from "radix-ui";
 import { ChevronLeft, ChevronRight, Download, ExternalLink, X } from "lucide-react";
@@ -30,6 +31,7 @@ export function ImageGalleryModal({
   onIndexChange,
   returnFocusRef,
 }: ImageGalleryModalProps) {
+  const { t: translateUi } = useUiTranslation();
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const mediaRef = useRef<HTMLImageElement | HTMLVideoElement | null>(null);
   const setMediaRef = useCallback((node: HTMLImageElement | HTMLVideoElement | null) => {
@@ -140,7 +142,7 @@ export function ImageGalleryModal({
                 type="button"
                 onClick={() => onOpenChange(false)}
                 className="text-white/50 hover:text-white transition-colors"
-                title="Close"
+                title={translateUi("interfaceCopy.close")}
               >
                 <X className="h-5 w-5" />
               </button>
@@ -156,7 +158,7 @@ export function ImageGalleryModal({
                   type="button"
                   onClick={goPrev}
                   className="rounded-full bg-white/10 p-3 text-white/60 hover:text-white hover:bg-white/20 transition-colors"
-                  title="Previous"
+                  title={translateUi("interfaceCopy.previous")}
                 >
                   <ChevronLeft className="h-7 w-7" />
                 </button>
@@ -191,7 +193,7 @@ export function ImageGalleryModal({
                   type="button"
                   onClick={goNext}
                   className="rounded-full bg-white/10 p-3 text-white/60 hover:text-white hover:bg-white/20 transition-colors"
-                  title="Next"
+                  title={translateUi("interfaceCopy.next")}
                 >
                   <ChevronRight className="h-7 w-7" />
                 </button>

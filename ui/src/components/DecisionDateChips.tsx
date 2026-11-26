@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { cloneElement, isValidElement, useState } from "react";
 import { CalendarRange } from "lucide-react";
 import {
@@ -26,6 +27,7 @@ interface DecisionDateChipsProps {
  * filter on the client. "Custom" opens a from/to range picker.
  */
 export function DecisionDateChips({ value, custom, onChange }: DecisionDateChipsProps) {
+  const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
 
   return (
@@ -80,9 +82,7 @@ export function DecisionDateChips({ value, custom, onChange }: DecisionDateChips
                 onChange("all", { from: null, to: null });
                 setOpen(false);
               }}
-            >
-              Clear
-            </Button>
+            >{translateUi("interfaceCopy.clear")}</Button>
           </div>
         </PopoverContent>
       </Popover>

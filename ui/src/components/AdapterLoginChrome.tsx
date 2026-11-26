@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Copy, Check, Loader2 } from "lucide-react";
@@ -225,6 +226,7 @@ export function OnboardingLoginCodeRow({
   code: string;
   autoCopy?: boolean;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [copied, setCopied] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoCopiedRef = useRef(false);
@@ -304,9 +306,7 @@ export function OnboardingLoginCodeRow({
             initial={{ opacity: 0, y: COPIED_REVEAL_TRAVEL }}
             animate={{ opacity: 1, y: 0, transition: COPIED_REVEAL }}
             exit={{ opacity: 0, transition: COPIED_REVEAL }}
-          >
-            Copied!
-          </motion.span>
+          >{translateUi("interfaceCopy.copied")}</motion.span>
         )}
       </AnimatePresence>
       <LoginCardCopyButton

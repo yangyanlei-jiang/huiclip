@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Check, Copy } from "lucide-react";
@@ -48,6 +49,7 @@ function isInviteHistoryRow(value: unknown): value is Awaited<ReturnType<typeof 
 
 /** The Invites tab of the Members page (extracted from the former standalone Invites page). */
 export function InvitesSection() {
+  const { t: translateUi } = useUiTranslation();
   const { selectedCompanyId } = useCompany();
   const { pushToast } = useToast();
   const queryClient = useQueryClient();
@@ -212,9 +214,7 @@ export function InvitesSection() {
                     <span className="flex flex-wrap items-center gap-2">
                       <span className="text-sm font-medium">{option.label}</span>
                       {option.value === "operator" ? (
-                        <Badge variant="outline" className="border-border text-muted-foreground">
-                          Default
-                        </Badge>
+                        <Badge variant="outline" className="border-border text-muted-foreground">{translateUi("interfaceCopy.default")}</Badge>
                       ) : null}
                     </span>
                     <span className="block max-w-2xl text-sm text-muted-foreground">{option.description}</span>
@@ -306,12 +306,12 @@ export function InvitesSection() {
               <table className="min-w-full text-left text-sm">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="px-5 py-3 font-medium text-muted-foreground">State</th>
+                    <th className="px-5 py-3 font-medium text-muted-foreground">{translateUi("interfaceCopy.state")}</th>
                     <th className="px-5 py-3 font-medium text-muted-foreground">For</th>
-                    <th className="px-5 py-3 font-medium text-muted-foreground">Invited by</th>
-                    <th className="px-5 py-3 font-medium text-muted-foreground">Created</th>
+                    <th className="px-5 py-3 font-medium text-muted-foreground">{translateUi("interfaceCopy.invitedBy")}</th>
+                    <th className="px-5 py-3 font-medium text-muted-foreground">{translateUi("interfaceCopy.created")}</th>
                     <th className="px-5 py-3 font-medium text-muted-foreground">Join request</th>
-                    <th className="px-5 py-3 text-right font-medium text-muted-foreground">Action</th>
+                    <th className="px-5 py-3 text-right font-medium text-muted-foreground">{translateUi("interfaceCopy.action")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -352,7 +352,7 @@ export function InvitesSection() {
                             Revoke
                           </Button>
                         ) : (
-                          <span className="text-xs text-muted-foreground">Inactive</span>
+                          <span className="text-xs text-muted-foreground">{translateUi("interfaceCopy.inactive")}</span>
                         )}
                       </td>
                     </tr>

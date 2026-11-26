@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Coins, DollarSign, PlayCircle, ReceiptText } from "lucide-react";
@@ -23,6 +24,7 @@ export function agentModelCostRows(rows: readonly CostByAgentModel[] | undefined
 }
 
 export function AgentCostsPanel({ agentId, agentName, companyId }: { agentId: string; agentName: string; companyId: string }) {
+  const { t: translateUi } = useUiTranslation();
   const { preset, setPreset, customFrom, setCustomFrom, customTo, setCustomTo, from, to, customReady } = useDateRange();
   const reportFrom = ["custom", "mtd", "ytd"].includes(preset) ? from || undefined : undefined;
   const reportTo = preset === "custom" ? to || undefined : preset;
@@ -74,7 +76,7 @@ export function AgentCostsPanel({ agentId, agentName, companyId }: { agentId: st
           <div className="grid gap-3 sm:grid-cols-3">
             <MetricCard appearance="card" icon={ReceiptText} value={formatCents(row.costCents)} label="Spend" description={`${row.eventCount} ledger events`} />
             <MetricCard appearance="card" icon={Coins} value={formatTokens(totalTokens)} label="Tokens" description={`in ${formatTokens(row.inputTokens + row.cachedInputTokens)} (${formatTokens(row.cachedInputTokens)} cached) · out ${formatTokens(row.outputTokens)}`} />
-            <MetricCard appearance="card" icon={PlayCircle} value={row.apiRunCount + row.subscriptionRunCount} label="Runs" description={`${row.apiRunCount} api · ${row.subscriptionRunCount} subscription`} />
+            <MetricCard appearance="card" icon={PlayCircle} value={row.apiRunCount + row.subscriptionRunCount} label={translateUi("interfaceCopy.runs")} description={`${row.apiRunCount} api · ${row.subscriptionRunCount} subscription`} />
           </div>
           <section className="space-y-3" aria-labelledby="agent-cost-models-heading">
             <h3 id="agent-cost-models-heading" className="text-sm font-medium text-foreground">By model</h3>

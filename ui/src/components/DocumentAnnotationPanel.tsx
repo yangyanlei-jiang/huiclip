@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { AgentAvatar } from "./AgentAvatar";
 import { useCallback, useMemo, useRef, useState, useEffect } from "react";
 import type {
@@ -103,6 +104,7 @@ export function DocumentAnnotationPanel(props: AnnotationPanelProps) {
 }
 
 export function AnnotationPanelBody(props: AnnotationPanelProps) {
+  const { t: translateUi } = useUiTranslation();
   const copyAnnotationLink = useCopyAnnotationLink();
   const [composerValue, setComposerValue] = useState("");
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
@@ -290,9 +292,7 @@ export function AnnotationPanelBody(props: AnnotationPanelProps) {
                 props.onClearPendingAnchor();
                 setComposerValue("");
               }}
-            >
-              Cancel
-            </Button>
+            >{translateUi("interfaceCopy.cancel")}</Button>
             <Button
               type="button"
               size="sm"

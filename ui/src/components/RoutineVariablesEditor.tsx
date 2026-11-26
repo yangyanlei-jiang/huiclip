@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, HelpCircle } from "lucide-react";
 import { isValidRoutineDateString, syncRoutineVariablesWithTemplate, type RoutineVariable } from "@paperclipai/shared";
@@ -61,6 +62,7 @@ export function RoutineVariablesEditor({
   value: RoutineVariable[];
   onChange: (value: RoutineVariable[]) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(true);
   const syncedVariables = useMemo(
     () => syncRoutineVariablesWithTemplate([title, description], value),
@@ -116,7 +118,7 @@ export function RoutineVariablesEditor({
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs">Type</Label>
+                <Label className="text-xs">{translateUi("interfaceCopy.type")}</Label>
                 <Select
                   value={variable.type}
                   onValueChange={(type) => onChange(updateVariableList(syncedVariables, variable.name, (current) => ({
@@ -269,6 +271,7 @@ const BUILTIN_VARIABLE_DOCS: BuiltinVariableDoc[] = [
 ];
 
 export function RoutineVariablesHint() {
+  const { t: translateUi } = useUiTranslation();
   const [helpOpen, setHelpOpen] = useState(false);
 
   return (
@@ -332,7 +335,7 @@ export function RoutineVariablesHint() {
                     <tr>
                       <th className="px-3 py-2 font-medium">Placeholder</th>
                       <th className="px-3 py-2 font-medium">Example</th>
-                      <th className="px-3 py-2 font-medium">Description</th>
+                      <th className="px-3 py-2 font-medium">{translateUi("interfaceCopy.description")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/70">

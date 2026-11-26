@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { imagePreparationReceiptIds } from "./task-chat/image-resources";
 import type { ScrollingHistory } from "@/components/task-chat/TaskMessageScroller";
 import { TaskChatShimmerScope } from "@/components/task-chat/TaskChatShimmer";
@@ -513,6 +514,7 @@ function durableInputLabel(
  * folded row. flag-OFF remains byte-for-byte IssueChatThread.
  */
 export function TaskChatThread(props: TaskChatThreadProps) {
+  const { t: translateUi } = useUiTranslation();
   const coordinatorEnabled = useCoordinatorPresentation();
   const { status: connectionStatus } = useConnectivity();
   const { enabled: streamlinedPreference } = useStreamlinedUiEnabled();
@@ -3329,9 +3331,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
                 >
                   {historyError ? "Some task history could not be loaded." : "Some task history is still loading."}
                   {historyError ? (
-                    <Button variant="ghost" size="sm" onClick={retryHistory}>
-                      Retry
-                    </Button>
+                    <Button variant="ghost" size="sm" onClick={retryHistory}>{translateUi("interfaceCopy.retry")}</Button>
                   ) : null}
                 </div>
               ) : null}

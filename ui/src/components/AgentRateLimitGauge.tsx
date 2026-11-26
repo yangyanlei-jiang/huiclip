@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { ChevronRight, Clock } from "lucide-react";
 import {
   summarizeProviderRateLimits,
@@ -99,6 +100,7 @@ export function AgentRateLimitPropertyValue({ snapshot, now = Date.now(), defaul
   detailsHref?: string;
   className?: string;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const summary = summarizeProviderRateLimits(snapshot, now);
   if (!snapshot || !summary) return null;
   const { window, tone } = summary;
@@ -131,7 +133,7 @@ export function AgentRateLimitPropertyValue({ snapshot, now = Date.now(), defaul
         <AgentRateLimitPanel snapshot={snapshot} summary={summary} now={now} />
         <div className="flex items-center justify-between gap-3 text-(length:--text-micro) text-muted-foreground">
           <span>Reported {formatRateLimitClock(snapshot.observedAt, now)}</span>
-          {detailsHref && <Link to={detailsHref} className="hover:text-foreground hover:underline">View agent</Link>}
+          {detailsHref && <Link to={detailsHref} className="hover:text-foreground hover:underline">{translateUi("interfaceCopy.viewAgent")}</Link>}
         </div>
       </PopoverContent>
     </Popover>

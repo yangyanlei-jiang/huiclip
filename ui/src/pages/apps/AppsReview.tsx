@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect } from "react";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { useCompany } from "@/context/CompanyContext";
@@ -14,6 +15,7 @@ import { ReviewQueueCard } from "./ReviewQueueCard";
  * "Needs attention"; decisions live here.
  */
 export function AppsReview() {
+  const { t: translateUi } = useUiTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
 
@@ -32,7 +34,7 @@ export function AppsReview() {
   return (
     <div className="max-w-3xl space-y-6 pb-12">
       <header>
-        <h1 className="text-2xl font-bold tracking-tight">Review</h1>
+        <h1 className="text-2xl font-bold tracking-tight">{translateUi("interfaceCopy.review")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Actions your agents want to run that need your OK first. Approve, always-allow, or decline.
         </p>

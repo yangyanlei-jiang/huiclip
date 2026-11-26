@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import type { ReactNode } from "react";
 import { Clock, Pencil, ShieldCheck } from "lucide-react";
 import type { ToolRiskLevel } from "@paperclipai/shared";
@@ -190,6 +191,7 @@ export function ActionCard({
   onEditResign,
   className,
 }: ActionCardProps) {
+  const { t: translateUi } = useUiTranslation();
   const isStale = variant === "stale";
   const json = typeof input === "string" ? input : JSON.stringify(input, null, 2);
 
@@ -266,7 +268,7 @@ export function ActionCard({
 
         {/* JSON input */}
         <div className="space-y-1">
-          <p className="text-xs font-medium uppercase tracking-normal text-muted-foreground">Input</p>
+          <p className="text-xs font-medium uppercase tracking-normal text-muted-foreground">{translateUi("interfaceCopy.input")}</p>
           <pre className="overflow-x-auto rounded-md border border-border bg-muted/40 p-3 font-mono text-xs leading-relaxed text-foreground">
             {json}
           </pre>

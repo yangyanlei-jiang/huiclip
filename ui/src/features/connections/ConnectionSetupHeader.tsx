@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import type { Ref } from "react";
 import { AppLogo } from "@/pages/apps/AppLogo";
 import { UnverifiedServerBadge } from "@/pages/apps/UnverifiedServerBadge";
@@ -30,6 +31,7 @@ export function StepHeader({
   unverifiedHost?: string | null;
   onCancel?: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   return (
     <div className="mb-6">
       <div className="flex items-start justify-between gap-4">
@@ -45,9 +47,7 @@ export function StepHeader({
             {unverifiedHost ? <UnverifiedServerBadge host={unverifiedHost} className="mt-2" /> : null}
           </div>
         </div>
-        {onCancel && <Button variant="ghost" size="sm" onClick={onCancel}>
-          Cancel
-        </Button>}
+        {onCancel && <Button variant="ghost" size="sm" onClick={onCancel}>{translateUi("interfaceCopy.cancel")}</Button>}
       </div>
       {step !== "gallery" && labels.length > 1 && (
         // A landmark with stable hooks, so the step model can be read without

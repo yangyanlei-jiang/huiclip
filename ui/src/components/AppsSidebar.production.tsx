@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useLocation } from "@/lib/router";
 import { ChatDetailSidebar } from "./chat/ChatDetailSidebar";
 import { ChatSetupSidebar } from "./chat/ChatSetupNavigation";
@@ -28,6 +29,7 @@ import { SidebarNavItem } from "./SidebarNavItem.production";
  * (PAP-10922).
  */
 export function AppsSidebar() {
+  const { t: translateUi } = useUiTranslation();
   const { pathname } = useLocation();
   const { selectedCompany } = useCompany();
   const { isMobile, setSidebarOpen } = useSidebar();
@@ -69,7 +71,7 @@ export function AppsSidebar() {
           <SidebarNavItem to="/apps" label="Browse" icon={Store} end />
           <SidebarNavItem
             to="/apps/review"
-            label="Review"
+            label={translateUi("interfaceCopy.review")}
             icon={ShieldQuestion}
             badge={reviewCount > 0 ? reviewCount : undefined}
             badgeTone="warning"
@@ -83,7 +85,7 @@ export function AppsSidebar() {
           Advanced setup for developers. Most teams never open this.
         </p>
         <div className="flex flex-col gap-0.5">
-          <SidebarNavItem to="/apps/connections" label="Connections" icon={AppWindow} end />
+          <SidebarNavItem to="/apps/connections" label={translateUi("interfaceCopy.connections")} icon={AppWindow} end />
           {developerTabs.map((tab) => (
             <SidebarNavItem
               key={tab.key}

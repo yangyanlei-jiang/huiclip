@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { AgentIdentity } from "@/components/AgentIdentity";
 import type { AvatarAgent } from "./AgentAvatar";
 import type { ReactNode } from "react";
@@ -199,6 +200,7 @@ export function InboxIssueMetaLeading({
   statusSlot?: ReactNode;
   checklistStepNumber?: number | string | null;
 }) {
+  const { t: translateUi } = useUiTranslation();
   return (
     <>
       {showStatus ? (
@@ -237,9 +239,7 @@ export function InboxIssueMetaLeading({
               "hidden text-(length:--text-micro) font-medium sm:inline",
               "text-blue-600 dark:text-blue-400",
             )}
-          >
-            Live
-          </span>
+          >{translateUi("interfaceCopy.live")}</span>
         </Badge>
       )}
       {showSubtreeLiveChip && !isLive && subtreeLiveCount > 0 && (
@@ -309,6 +309,7 @@ export function InboxIssueTrailingColumns({
   assigneeContent?: ReactNode;
   onFilterWorkspace?: (workspaceId: string) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const activityText = issueActivityTimestamp(issue);
   const userLabel = assigneeUserName ?? formatAssigneeUserLabel(issue.assigneeUserId, currentUserId) ?? "User";
   const originatingActor = deriveOriginatingActor(issue);
@@ -352,9 +353,7 @@ export function InboxIssueTrailingColumns({
           }
 
           return (
-            <span key={column} className="min-w-0 truncate text-xs text-muted-foreground">
-              Unassigned
-            </span>
+            <span key={column} className="min-w-0 truncate text-xs text-muted-foreground">{translateUi("interfaceCopy.unassigned")}</span>
           );
         }
 

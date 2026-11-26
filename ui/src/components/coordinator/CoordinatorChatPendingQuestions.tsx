@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useQuery } from "@tanstack/react-query";
 import type { AttentionItem } from "@paperclipai/shared";
 import { ArrowUpRight } from "lucide-react";
@@ -43,8 +44,9 @@ export function CoordinatorChatPendingQuestion({ item }: { item: AttentionItem }
 }
 
 export function CoordinatorChatQuestionStatus({ query }: { query: ReturnType<typeof useCoordinatorChatPendingQuestions> }) {
+  const { t: translateUi } = useUiTranslation();
   if (!query.enabled || !query.isError) return null;
   return <div role="status" className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-    <span>Task questions couldn’t load.</span><Button size="sm" variant="ghost" onClick={() => void query.refetch()}>Retry</Button>
+    <span>Task questions couldn’t load.</span><Button size="sm" variant="ghost" onClick={() => void query.refetch()}>{translateUi("interfaceCopy.retry")}</Button>
   </div>;
 }

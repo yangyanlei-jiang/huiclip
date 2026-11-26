@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { ChangeEvent, useEffect, useState } from "react";
 import { AgentObservabilitySettingsSection } from "../components/observability/AgentObservabilitySettings";
 import { useNavigate } from "react-router-dom";
@@ -33,6 +34,7 @@ import {
 import { InstanceGeneralSettings } from "./InstanceGeneralSettings";
 
 export function CompanySettings() {
+  const { t: translateUi } = useUiTranslation();
   const {
     companies,
     selectedCompany,
@@ -218,14 +220,12 @@ export function CompanySettings() {
     <div className="max-w-6xl space-y-8">
       <div className="flex items-center gap-2">
         <SlidersHorizontal className="h-5 w-5 text-muted-foreground" />
-        <h1 className="text-lg font-semibold">General</h1>
+        <h1 className="text-lg font-semibold">{translateUi("interfaceCopy.general")}</h1>
       </div>
 
       {/* General */}
       <div className="max-w-2xl space-y-4">
-        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          General
-        </div>
+        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{translateUi("interfaceCopy.general")}</div>
         <div className="space-y-3">
           <Field label="Organization name" hint="The display name for your organization.">
             <input
@@ -242,7 +242,7 @@ export function CompanySettings() {
             )}
           </Field>
           <Field
-            label="Description"
+            label={translateUi("interfaceCopy.description")}
             hint="Optional description shown in the organization profile."
           >
             <input
@@ -325,7 +325,7 @@ export function CompanySettings() {
             {generalMutation.isPending ? "Saving..." : "Save changes"}
           </Button>
           {generalMutation.isSuccess && (
-            <span className="text-xs text-muted-foreground">Saved</span>
+            <span className="text-xs text-muted-foreground">{translateUi("interfaceCopy.saved")}</span>
           )}
           {generalMutation.error && (
             <span className="text-xs text-destructive">

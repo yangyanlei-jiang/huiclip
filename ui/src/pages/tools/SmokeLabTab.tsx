@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -68,6 +69,7 @@ const HEALTH_STYLES: Record<string, string> = {
 };
 
 export function SmokeLabTab({ companyId }: { companyId: string }) {
+  const { t: translateUi } = useUiTranslation();
   const { enabled, loaded } = useSmokeLabEnabled();
   const qc = useQueryClient();
   const { pushToast } = useToast();
@@ -384,7 +386,7 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
       <section className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-semibold text-foreground">Runs</h2>
+            <h2 className="text-sm font-semibold text-foreground">{translateUi("interfaceCopy.runs")}</h2>
             <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
               <span className={cn("h-2 w-2 rounded-full", HEALTH_STYLES[health])} />
               {health === "unknown" ? "no runs yet" : health}

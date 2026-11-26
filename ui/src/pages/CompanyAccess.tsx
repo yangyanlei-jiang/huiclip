@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -40,6 +41,7 @@ const reassignmentIssueStatuses = "backlog,todo,in_progress,in_review,blocked,fa
 type EditableMemberStatus = "pending" | "active" | "suspended";
 
 export function CompanyAccess() {
+  const { t: translateUi } = useUiTranslation();
   const { selectedCompany, selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { pushToast } = useToast();
@@ -368,11 +370,11 @@ export function CompanyAccess() {
           <table className="w-full min-w-(--sz-44rem) text-left text-sm">
             <thead>
               <tr className="border-b border-border text-muted-foreground">
-                <th className="px-3 py-2 font-medium">Name</th>
-                <th className="px-3 py-2 font-medium">Email</th>
-                <th className="px-3 py-2 font-medium">Role</th>
-                <th className="px-3 py-2 font-medium">Status</th>
-                <th className="px-3 py-2 text-right font-medium">Action</th>
+                <th className="px-3 py-2 font-medium">{translateUi("interfaceCopy.name")}</th>
+                <th className="px-3 py-2 font-medium">{translateUi("interfaceCopy.email")}</th>
+                <th className="px-3 py-2 font-medium">{translateUi("interfaceCopy.role")}</th>
+                <th className="px-3 py-2 font-medium">{translateUi("interfaceCopy.status")}</th>
+                <th className="px-3 py-2 text-right font-medium">{translateUi("interfaceCopy.action")}</th>
               </tr>
             </thead>
             <tbody>
@@ -412,9 +414,7 @@ export function CompanyAccess() {
                     </td>
                     <td className="px-3 py-3 text-right">
                       <div className="flex justify-end gap-2">
-                        <Button size="sm" variant="outline" onClick={() => setEditingMemberId(member.id)}>
-                          Edit
-                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => setEditingMemberId(member.id)}>{translateUi("interfaceCopy.edit")}</Button>
                         <span
                           className="inline-flex"
                           title={!canArchive ? removalReason ?? undefined : undefined}
@@ -486,9 +486,7 @@ export function CompanyAccess() {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingMemberId(null)}>
-              Cancel
-            </Button>
+            <Button variant="outline" onClick={() => setEditingMemberId(null)}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button
               onClick={() => {
                 if (!editingMember) return;
@@ -545,7 +543,7 @@ export function CompanyAccess() {
                       </optgroup>
                     ) : null}
                     {activeReassignmentAgents.length > 0 ? (
-                      <optgroup label="Agents">
+                      <optgroup label={translateUi("interfaceCopy.agents")}>
                         {activeReassignmentAgents.map((agent) => (
                           <option key={agent.id} value={`agent:${agent.id}`}>
                             {agent.name} ({agent.role})
@@ -572,9 +570,7 @@ export function CompanyAccess() {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRemovingMemberId(null)}>
-              Cancel
-            </Button>
+            <Button variant="outline" onClick={() => setRemovingMemberId(null)}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button
               variant="destructive"
               onClick={() => {

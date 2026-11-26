@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { createContext, useContext, useRef, useState, type CSSProperties } from "react";
 import { ArrowRight, Crown } from "lucide-react";
 import type { Agent } from "@paperclipai/shared";
@@ -56,6 +57,7 @@ function crownBubbles(): CrownPop["bubbles"] {
 export function PrimaryAgentCrownButton({ agent }: {
   agent: Agent;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const primary = usePrimaryAgentPresentation(agent.companyId);
   const [confirming, setConfirming] = useState(false);
   const [replacing, setReplacing] = useState<Agent | null>(null);
@@ -157,7 +159,7 @@ export function PrimaryAgentCrownButton({ agent }: {
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex-row justify-between sm:justify-between">
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogCancel>{translateUi("interfaceCopy.cancel")}</AlertDialogCancel>
           <AlertDialogAction disabled={busy} onClick={() => choose("after-dialog")}>Set as my primary</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

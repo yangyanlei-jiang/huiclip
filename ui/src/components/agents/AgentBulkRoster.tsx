@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode, type SetStateAction } from "react";
 import { createPortal } from "react-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -24,6 +25,7 @@ export function AgentBulkRoster({ companyId, agents, visibleAgents, renderAgent,
   renderChat?: (agent: Agent) => ReactNode;
   renderStatus?: (agent: Agent) => ReactNode;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const client = useQueryClient();
   const openingRef = useRef(false);
   const [opening, setOpening] = useState(false);
@@ -87,8 +89,8 @@ export function AgentBulkRoster({ companyId, agents, visibleAgents, renderAgent,
         </PopoverTrigger>
         <PopoverContent aria-label="Agent filters" align="start" className="w-64 space-y-3 p-3">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">Filters</span>
-            {filter !== "all" && <button type="button" className="text-xs text-muted-foreground hover:text-foreground" onClick={() => setFilter("all")}>Clear</button>}
+            <span className="text-sm font-medium">{translateUi("interfaceCopy.filters")}</span>
+            {filter !== "all" && <button type="button" className="text-xs text-muted-foreground hover:text-foreground" onClick={() => setFilter("all")}>{translateUi("interfaceCopy.clear")}</button>}
           </div>
           <div role="group" aria-label="Harness" className="space-y-1">
             <div className="px-2 text-xs font-medium text-muted-foreground">Harness</div>
@@ -113,11 +115,11 @@ export function AgentBulkRoster({ companyId, agents, visibleAgents, renderAgent,
     {opening && <p role="status" className="text-sm text-muted-foreground">Loading current agent settings…</p>}
     {openError && <p role="alert" className="text-sm text-destructive">{openError}</p>}
     {notice && <p role="status" className="flex items-center gap-2 text-sm"><Check className="size-4" aria-hidden />{notice}</p>}
-    {accounts.error && <p className="text-xs text-destructive">Connection names couldn’t be loaded. <Button variant="link" size="sm" onClick={() => void accounts.refetch()}>Retry</Button></p>}
+    {accounts.error && <p className="text-xs text-destructive">Connection names couldn’t be loaded. <Button variant="link" size="sm" onClick={() => void accounts.refetch()}>{translateUi("interfaceCopy.retry")}</Button></p>}
     <div className="overflow-x-auto"><table aria-label="Agent roster" className="agent-roster w-full text-left text-sm">
       <thead className="text-xs text-muted-foreground [&_th]:px-3 [&_th]:py-3 [&_th]:font-normal"><tr>
         <th className="w-10"><Checkbox aria-label="Select all visible editable agents" checked={all ? true : some ? "indeterminate" : false} disabled={!selectable.length} onCheckedChange={toggleAll} /></th>
-        <th scope="col">Agent</th>{renderChat && <th scope="col"><span className="sr-only">Chat</span></th>}<th scope="col">Status</th><th scope="col">Harness</th><th scope="col">Connection</th><th scope="col">Default model</th>
+        <th scope="col">{translateUi("interfaceCopy.agent")}</th>{renderChat && <th scope="col"><span className="sr-only">Chat</span></th>}<th scope="col">{translateUi("interfaceCopy.status")}</th><th scope="col">Harness</th><th scope="col">{translateUi("interfaceCopy.connection")}</th><th scope="col">Default model</th>
       </tr></thead>
       <tbody>{visible.map(agent => {
         const pendingSetup = pendingAgentSetupDisplayAdapter(agent);

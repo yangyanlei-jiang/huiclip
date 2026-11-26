@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Download } from "lucide-react";
@@ -53,6 +54,7 @@ export function TextAttachmentPreview({ title, text, markdown, html = false, csv
 }
 
 export function TaskAttachmentPanel({ issueId, attachmentId }: { issueId: string; attachmentId: string }) {
+  const { t: translateUi } = useUiTranslation();
   const attachments = useQuery({
     queryKey: queryKeys.issues.attachments(issueId),
     queryFn: () => issuesApi.listAttachments(issueId),
@@ -88,7 +90,7 @@ export function TaskAttachmentPanel({ issueId, attachmentId }: { issueId: string
     return (
       <div className="space-y-3 p-4" role="alert">
         <p className="text-sm">{contentView.kind === "error" ? "Could not preview this file. Retry or download it." : "This file is too large or is not supported for text preview. Download it instead."}</p>
-        {eligible ? <Button onClick={() => void content.refetch()}>Retry</Button> : null}
+        {eligible ? <Button onClick={() => void content.refetch()}>{translateUi("interfaceCopy.retry")}</Button> : null}
         <Button asChild variant="outline"><a href={downloadUrl} download>Download file</a></Button>
       </div>
     );

@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { FILE_DROP_TARGET_ATTRIBUTE } from "@/lib/file-drop-target";
 import { TextAttachmentContext } from "@/context/TextAttachmentContext";
 import { isTextAttachment } from "@/lib/issue-attachments";
@@ -238,6 +239,7 @@ export function IssueAttachmentsSection({
   onDragLeave,
   onDrop,
 }: IssueAttachmentsSectionProps) {
+  const { t: translateUi } = useUiTranslation();
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const { imageAttachments, markdownAttachments, videoAttachments, genericAttachments } = useMemo(() => {
     const images: IssueAttachment[] = [];
@@ -400,9 +402,7 @@ export function IssueAttachmentsSection({
         <div className="flex items-center justify-between gap-3 rounded-md border border-destructive/20 bg-destructive/5 px-4 py-3">
           <p className="text-sm font-medium text-destructive">Delete this attachment? This cannot be undone.</p>
           <div className="flex shrink-0 items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={() => setConfirmDeleteId(null)} disabled={deletePending}>
-              Cancel
-            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setConfirmDeleteId(null)} disabled={deletePending}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button variant="destructive" size="sm" onClick={() => confirmDelete(confirmDeleteId)} disabled={deletePending}>
               {deletePending ? "Deleting..." : "Delete"}
             </Button>

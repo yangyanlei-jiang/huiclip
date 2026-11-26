@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { ACCOUNT_BOUND_MODEL_DISCOVERY_QUERY_OPTIONS } from "@/lib/native-model-catalog";
 import { PAPERCLIP_RUNNER_ACPX_PROFILES } from "@paperclipai/adapter-utils";
 import { ExternalAgentInviteDialog } from "./ExternalAgentInviteDialog";
@@ -131,6 +132,7 @@ function Setup({
   createdAgentId: string | null;
   setupAgentId: string | null;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const navigate = useNavigate();
   const cache = useQueryClient();
   const { openNewIssue } = useDialogActions();
@@ -890,7 +892,7 @@ function Setup({
     );
   if (!created && connectionSettingsReady && !pendingAntigravity) return <div className="space-y-4">
     <p role={error ? "alert" : "status"}>{error ?? "Creating your agent…"}</p>
-    {error && <Button onClick={() => setCreationAttempt(value => value + 1)}>Retry</Button>}
+    {error && <Button onClick={() => setCreationAttempt(value => value + 1)}>{translateUi("interfaceCopy.retry")}</Button>}
   </div>;
   const steps = [
     ...(connectionAdapter ? ["connect" as const] : []),
@@ -1129,17 +1131,17 @@ function Setup({
                             : finishingSetup ? "Finishing agent setup" : runtimeReady ? "Your agent is ready" : "Your agent is paused"}
                       </h2>
                       <dl className="grid grid-cols-2 gap-4 text-sm">
-                        <dt className="text-muted-foreground">Adapter</dt>
+                        <dt className="text-muted-foreground">{translateUi("interfaceCopy.adapter")}</dt>
                         <dd>{getAdapterDisplay(isDot ? "openai_dot" : adapterType).label}</dd>
                         {showModel && (
                           <>
-                            <dt className="text-muted-foreground">Model</dt>
+                            <dt className="text-muted-foreground">{translateUi("interfaceCopy.model")}</dt>
                             <dd className="break-all">
                               {String(confirmationModel)}
                             </dd>
                           </>
                         )}
-                        <dt className="text-muted-foreground">Environment</dt>
+                        <dt className="text-muted-foreground">{translateUi("interfaceCopy.environment")}</dt>
                         <dd>{environmentLabel}</dd>
                       </dl>
                       <p className="text-sm text-muted-foreground">
@@ -1472,9 +1474,9 @@ function Setup({
                       </section>
                       {adapterType !== "hermes_gateway" && adapterType !== "cursor_cloud" && (
                         <section className="space-y-5">
-                          <h3 className="text-sm font-semibold">Environment</h3>
+                          <h3 className="text-sm font-semibold">{translateUi("interfaceCopy.environment")}</h3>
                           <select
-                            aria-label="Environment"
+                            aria-label={translateUi("interfaceCopy.environment")}
                             className={controlClass}
                             value={environmentOverride}
                             disabled={forced.forced}

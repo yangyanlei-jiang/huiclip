@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useId } from "react";
 import { AGENT_ROLES, AGENT_ROLE_LABELS } from "@paperclipai/shared";
 import type { MuseInvitationDraft } from "@/lib/muse-invitation-draft";
@@ -158,6 +159,7 @@ export function ExternalAgentInviteContent({
   onRetry: () => void;
   onNewPrompt: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const detailsId = useId();
   const muse = preset === "muse";
   const museDetails = muse && !!museDraft;
@@ -197,7 +199,7 @@ export function ExternalAgentInviteContent({
           </DialogDescription>
         </div>
       </div>
-      {error && <div role="alert" className="space-y-3 text-sm text-destructive"><p>{error}</p>{!museAwaitingInvitation && <Button variant="outline" disabled={busy} onClick={onRetry}>Try again</Button>}</div>}
+      {error && <div role="alert" className="space-y-3 text-sm text-destructive"><p>{error}</p>{!museAwaitingInvitation && <Button variant="outline" disabled={busy} onClick={onRetry}>{translateUi("interfaceCopy.tryAgain")}</Button>}</div>}
       {!provider ? <><ExternalAgentPresetPicker onSelect={onSelect} dotDisabledReason={dotDisabledReason} grokDisabledReason={grokDisabledReason} museEnabled={museEnabled} />
         {dotDisabledReason && <p className="text-sm text-muted-foreground">{dotDisabledReason}</p>}{grokDisabledReason && grokDisabledReason !== dotDisabledReason && <p className="text-sm text-muted-foreground">{grokDisabledReason}</p>}</>
         : approvalHref ? <p className="text-sm text-muted-foreground">An organization admin needs to approve this agent before {muse ? "Muse" : "Dot"} can connect. This page will update after approval.</p>
@@ -205,11 +207,11 @@ export function ExternalAgentInviteContent({
         : muse && busy && !museDetails && !prompt && !museConnection?.paired ? <p role="status" className="text-sm text-muted-foreground">Loading Muse setup…</p>
         : museDetails ? <form id={detailsId} className="space-y-4" onSubmit={event => { event.preventDefault(); if (museDraft.name.trim() && !busy) onMuseContinue?.(); }}>
           <div className="space-y-2">
-            <label htmlFor={`${detailsId}-name`} className="text-sm font-medium">Agent name</label>
+            <label htmlFor={`${detailsId}-name`} className="text-sm font-medium">{translateUi("interfaceCopy.agentName")}</label>
             <Input id={`${detailsId}-name`} disabled={busy} autoFocus maxLength={100} value={museDraft.name} placeholder="Muse" onChange={event => onMuseDraftChange?.({ ...museDraft, name: event.target.value })} />
           </div>
           <div className="space-y-2">
-            <label htmlFor={`${detailsId}-role`} className="text-sm font-medium">Role</label>
+            <label htmlFor={`${detailsId}-role`} className="text-sm font-medium">{translateUi("interfaceCopy.role")}</label>
             <select id={`${detailsId}-role`} disabled={busy} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm" value={museDraft.role} onChange={event => {
               const role = AGENT_ROLES.find(value => value === event.target.value);
               if (role) onMuseDraftChange?.({ ...museDraft, role });
@@ -239,7 +241,7 @@ export function ExternalAgentInviteContent({
       </div>
       {provider && (approvalHref ? <Button asChild><Link to={approvalHref} onClick={onClose}>Review approval</Link></Button>
         : museDetails ? <Button type="submit" form={detailsId} disabled={busy || !museDraft.name.trim()}>{busy ? "Preparing…" : "Continue"}</Button>
-        : ready ? <Button onClick={onClose}>Done</Button>
+        : ready ? <Button onClick={onClose}>{translateUi("interfaceCopy.done")}</Button>
         : museAwaitingInvitation ? <Button disabled={busy} onClick={onRetry}>{busy ? "Loading setup…" : "Refresh setup"}</Button>
         : muse ? museConnection?.problem === "disconnected" || museConnection?.problem === "connection_expired" ? <Button disabled={busy} onClick={onNewPrompt}>Reconnect Muse</Button>
           : museConnection?.problem === "prompt_unavailable" ? <Button disabled={busy} onClick={onNewPrompt}>Create a new prompt</Button>

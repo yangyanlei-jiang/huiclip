@@ -10,7 +10,7 @@
 git clone --branch community/zh-cn-v1 --single-branch https://github.com/yangyanlei-jiang/huiclip.git
 cd huiclip
 node community/huiclip/pack.mjs ../huiclip-packages
-npm install --global --prefix ../huiclip-cli ../huiclip-packages/huiclip-0.1.0.tgz
+npm install --global --prefix ../huiclip-cli ../huiclip-packages/huiclip-0.1.2.tgz
 ../huiclip-cli/bin/huiclip setup
 ../huiclip-cli/bin/huiclip run
 ```

@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { QueryClient, QueryKey } from "@tanstack/react-query";
@@ -366,6 +367,7 @@ function AccountIssueDocumentsSection({
   forceEditDocumentKey?: string | null;
   externalReferences?: MarkdownExternalReferenceMap;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const location = useLocation();
   const documentSubject = useMemo(() => {
@@ -1125,18 +1127,18 @@ function AccountIssueDocumentsSection({
           <Button variant="outline" size="sm" onClick={beginNewDocument} className="shrink-0">
             <Plus className="mr-1.5 h-3.5 w-3.5" />
             <span className="hidden sm:inline">New document</span>
-            <span className="sm:hidden">New</span>
+            <span className="sm:hidden">{translateUi("interfaceCopy.new")}</span>
           </Button>
         </div>
       ) : (
         <div className="flex flex-wrap items-center gap-2 min-w-0">
-          <h3 className="w-full text-sm font-medium text-muted-foreground shrink-0 sm:w-auto">Documents</h3>
+          <h3 className="w-full text-sm font-medium text-muted-foreground shrink-0 sm:w-auto">{translateUi("interfaceCopy.documents")}</h3>
           <div className="flex flex-wrap items-center gap-2 min-w-0 sm:ml-auto">
             {extraActions}
             <Button variant="outline" size="sm" onClick={beginNewDocument} className="shrink-0">
               <Plus className="mr-1.5 h-3.5 w-3.5" />
               <span className="hidden sm:inline">New document</span>
-              <span className="sm:hidden">New</span>
+              <span className="sm:hidden">{translateUi("interfaceCopy.new")}</span>
             </Button>
           </div>
         </div>
@@ -1588,7 +1590,7 @@ function AccountIssueDocumentsSection({
                             : ""
                           : ""}
                     </span>
-                    {activeDraft && autosaveDocumentKey === doc.key && autosaveState === "stalled" ? <Button type="button" size="sm" variant="ghost" onClick={autosave.resendNow}>Retry saving</Button> : null}
+                    {activeDraft && autosaveDocumentKey === doc.key && autosaveState === "stalled" ? <Button type="button" size="sm" variant="ghost" onClick={autosave.resendNow}>{translateUi("interfaceCopy.retrySaving")}</Button> : null}
                   </div>
                   {canVoteOnDocument && doc.latestRevisionId ? (
                     <OutputFeedbackButtons
@@ -1614,9 +1616,7 @@ function AccountIssueDocumentsSection({
                       size="sm"
                       onClick={() => setConfirmDeleteKey(null)}
                       disabled={deleteDocument.isPending}
-                    >
-                      Cancel
-                    </Button>
+                    >{translateUi("interfaceCopy.cancel")}</Button>
                     <Button
                       variant="destructive"
                       size="sm"

@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { isTransientError } from "@/api/errors";
 import { useQueryView } from "@/components/QueryView";
 import { useCoordinatorPresentation } from "@/components/coordinator/CoordinatorPresentation";
@@ -847,6 +848,7 @@ function StreamlinedInbox({
   toolbarContext,
   surfaceLabel = "Inbox",
 }: InboxSurfaceProps) {
+  const { t: translateUi } = useUiTranslation();
   const streamlinedUiEnabled = true;
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -2722,7 +2724,7 @@ function StreamlinedInbox({
                     variant="outline"
                     size="icon"
                     className="h-8 w-8 shrink-0"
-                    title="Sort"
+                    title={translateUi("interfaceCopy.sort")}
                   >
                     <ArrowUpDown className="h-3.5 w-3.5" />
                   </Button>
@@ -2862,9 +2864,7 @@ function StreamlinedInbox({
                         </DialogDescription>
                       </DialogHeader>
                       <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowMarkAllReadConfirm(false)}>
-                          Cancel
-                        </Button>
+                        <Button variant="outline" onClick={() => setShowMarkAllReadConfirm(false)}>{translateUi("interfaceCopy.cancel")}</Button>
                         <Button
                           onClick={() => {
                             setShowMarkAllReadConfirm(false);
@@ -2892,7 +2892,7 @@ function StreamlinedInbox({
       {listError && (
         <div role="alert" className="flex items-center gap-2 text-sm text-destructive">
           <p>Unable to load the inbox: {describeError(listError).body}</p>
-          <Button variant="outline" size="sm" onClick={() => { retryFailedSources(); if (externalObjectSummariesError) retryExternalObjectSummaries(); }}>Retry</Button>
+          <Button variant="outline" size="sm" onClick={() => { retryFailedSources(); if (externalObjectSummariesError) retryExternalObjectSummaries(); }}>{translateUi("interfaceCopy.retry")}</Button>
         </div>
       )}
       {actionError && <p className="text-sm text-destructive">{actionError}</p>}

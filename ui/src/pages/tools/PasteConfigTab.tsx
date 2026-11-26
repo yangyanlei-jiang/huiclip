@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
@@ -517,6 +518,7 @@ function CatalogReview({
   activatedName: string | null;
   onFinish: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const askFirstLevels = askFirstLevelsFrom(result);
   const enabledCount = Object.values(enabled).filter(Boolean).length;
   const total = result.actions.readOnly.length + result.actions.canMakeChanges.length;
@@ -538,7 +540,7 @@ function CatalogReview({
         </Button>
       </div>
       <ActionGroup
-        title="Read-only"
+        title={translateUi("interfaceCopy.readonly")}
         actions={result.actions.readOnly}
         enabled={enabled}
         onToggle={onToggle}

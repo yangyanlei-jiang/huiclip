@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useEffect, useState } from "react";
 import {
   CalendarClock,
@@ -126,6 +127,7 @@ export function RoutineTriggerWizard({
   onFinish: (draft: TriggerDraft) => void | Promise<void>;
   checkResult?: "waiting" | "received" | "rejected" | "no_event";
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [draft, setDraft] = useState(initialDraft);
   const [busy, setBusy] = useState(false);
   const [saveError, setSaveError] = useState("");
@@ -217,9 +219,7 @@ export function RoutineTriggerWizard({
   const selectClass =
     "w-full rounded-md border border-input bg-background px-3 py-2 text-sm";
   const goBack = (
-    <Button variant="outline" onClick={() => patch({ step: draft.step - 1 })}>
-      Back
-    </Button>
+    <Button variant="outline" onClick={() => patch({ step: draft.step - 1 })}>{translateUi("interfaceCopy.back")}</Button>
   );
   return (
     <div className="min-w-0 w-full max-w-2xl space-y-6">
@@ -568,9 +568,7 @@ export function RoutineTriggerWizard({
         <SetupWizardFooter onSaveExit={saveAndExit}>
           {draft.step > 0 && goBack}
           {draft.step === 0 ? (
-            <Button disabled={draft.kind === "choose"} onClick={advance}>
-              Continue
-            </Button>
+            <Button disabled={draft.kind === "choose"} onClick={advance}>{translateUi("interfaceCopy.continue")}</Button>
           ) : schedule ? (
             draft.step === 1 ? (
               <Button disabled={!draft.time} onClick={advance}>

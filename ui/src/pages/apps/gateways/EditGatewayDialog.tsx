@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { type FormEvent, useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ToolMcpGatewayWithTokens, ToolProfileWithDetails } from "@paperclipai/shared";
@@ -30,6 +31,7 @@ export function EditGatewayDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToast();
   const [name, setName] = useState(gateway.name);
@@ -82,7 +84,7 @@ export function EditGatewayDialog({
         </DialogHeader>
         <form className="space-y-4" onSubmit={submit}>
           <label className="block space-y-1.5">
-            <span className="text-xs font-medium text-muted-foreground">Name</span>
+            <span className="text-xs font-medium text-muted-foreground">{translateUi("interfaceCopy.name")}</span>
             <Input value={name} onChange={(event) => setName(event.target.value)} required autoFocus />
           </label>
           <label className="block space-y-1.5">
@@ -110,9 +112,7 @@ export function EditGatewayDialog({
             />
           </label>
           <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button type="submit" disabled={updateMutation.isPending || !name.trim() || !profileId}>
               {updateMutation.isPending ? "Saving…" : "Save changes"}
             </Button>

@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useTranslation } from "@/i18n";
 import { usePrimaryAgentPresentation } from "./primary-agent/PrimaryAgentPresentation";
 import { useWorkspaceIsolationControls } from "@/hooks/useWorkspaceIsolationControls";
@@ -447,6 +448,7 @@ export function NewIssueDialog() {
 }
 
 function AccountNewIssueDialog({ ignoreDefaults }: { ignoreDefaults: boolean }) {
+  const { t: translateUi } = useUiTranslation();
   const { t } = useTranslation();
   const { visible: workspaceIsolationControlsVisible } = useWorkspaceIsolationControls();
   const { newIssueOpen, newIssueDefaults: sharedDefaults, closeNewIssue } = useDialog();
@@ -1634,7 +1636,7 @@ function AccountNewIssueDialog({ ignoreDefaults }: { ignoreDefaults: boolean }) 
                           Assigning implies executable intent - leave status as{" "}
                           <span className="font-medium">Backlog</span> only to deliberately park this. The assignee will
                           not be woken until status moves to <span className="font-medium">Todo</span> or{" "}
-                          <span className="font-medium">In Progress</span>.
+                          <span className="font-medium">{translateUi("interfaceCopy.inProgress")}</span>.
                         </span>
                       </div>
                     ) : null}

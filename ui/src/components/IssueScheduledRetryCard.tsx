@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { Clock, RotateCcw, AlertCircle, Loader2, CheckCircle2 } from "lucide-react";
 import { Link } from "@/lib/router";
 import { Button } from "@/components/ui/button";
@@ -176,6 +177,7 @@ interface RetryErrorBandProps {
 }
 
 export function RetryErrorBand({ error, onRetry, className }: RetryErrorBandProps) {
+  const { t: translateUi } = useUiTranslation();
   if (!error) return null;
   return (
     <div
@@ -195,9 +197,7 @@ export function RetryErrorBand({ error, onRetry, className }: RetryErrorBandProp
         type="button"
         onClick={onRetry}
         className="shrink-0 font-medium text-rose-700 hover:underline dark:text-rose-300"
-      >
-        Try again
-      </button>
+      >{translateUi("interfaceCopy.tryAgain")}</button>
     </div>
   );
 }

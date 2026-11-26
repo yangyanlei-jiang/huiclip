@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useQuery } from "@tanstack/react-query";
 import type { ProjectRepository } from "@paperclipai/shared";
 import { projectsApi } from "@/api/projects";
@@ -14,6 +15,7 @@ export function ProjectRepositoryInput({ companyId, selected, onChange, onConnec
   onConnect: () => void;
   disabled?: boolean;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const query = useQuery({ queryKey: repositoryOptionsKey(companyId), queryFn: () => projectsApi.repositoryOptions(companyId), staleTime: 30_000 });
   // Read through the shared view so cached options stay visible while a transient
   // refetch fails; only a no-data failure lands in the error state with Retry.
@@ -28,7 +30,7 @@ export function ProjectRepositoryInput({ companyId, selected, onChange, onConnec
       onRetry={() => view.retry()} onConnect={onConnect} disabled={disabled} />
     {!!query.data?.failedConnectionCount && query.data.repositories.length > 0 && <div role="alert" className="flex flex-wrap items-center gap-2 text-xs text-destructive">
       Some GitHub connections could not load. Reconnect them in Apps or try again.
-      <Button type="button" variant="ghost" size="sm" disabled={view.isFetching} onClick={() => view.retry()}>Try again</Button>
+      <Button type="button" variant="ghost" size="sm" disabled={view.isFetching} onClick={() => view.retry()}>{translateUi("interfaceCopy.tryAgain")}</Button>
     </div>}
   </div>;
 }

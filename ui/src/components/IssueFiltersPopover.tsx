@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -136,6 +137,7 @@ export function IssueFiltersPopover({
   presentation?: "legacy" | "streamlined" | "refreshed";
   inboxScopeFilters?: InboxScopeFilters;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const streamlined = presentation === "streamlined";
   const refreshed = presentation === "refreshed";
   const [creatorSearch, setCreatorSearch] = useState("");
@@ -208,7 +210,7 @@ export function IssueFiltersPopover({
         </Button>
       </PopoverTrigger>
       <PopoverContent
-        aria-label="Filters"
+        aria-label={translateUi("interfaceCopy.filters")}
         align="end"
         className={refreshed ? "task-filters-popover" : streamlined
           ? "w-(--sz-calc-10) max-h-(--sz-calc-9) overflow-y-auto overscroll-contain p-0"
@@ -216,15 +218,13 @@ export function IssueFiltersPopover({
       >
         {refreshed ? <IssueFilterPanel enableLiveRunsFilter={enableLiveRunsFilter} enableAgentCreatedVisibilityFilter={enableAgentCreatedVisibilityFilter} enableRoutineTasksFilter={enableRoutineTasksFilter} state={state} onChange={onChange} activeFilterCount={activeFilterCount} agents={agents} projects={projects} labels={labels} creators={creators} currentUserId={currentUserId} onClear={clearFilters} /> : <div className="space-y-3 p-3">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">Filters</span>
+            <span className="text-sm font-medium">{translateUi("interfaceCopy.filters")}</span>
             {activeFilterCount > 0 ? (
               <button
                 type="button"
                 className="text-xs text-muted-foreground hover:text-foreground"
                 onClick={clearFilters}
-              >
-                Clear
-              </button>
+              >{translateUi("interfaceCopy.clear")}</button>
             ) : null}
           </div>
 
@@ -232,7 +232,7 @@ export function IssueFiltersPopover({
             <>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-1" data-filter-options="inbox-category">
-                  <span className="text-xs text-muted-foreground">Category</span>
+                  <span className="text-xs text-muted-foreground">{translateUi("interfaceCopy.category")}</span>
                   <div className="space-y-0.5">
                     {INBOX_CATEGORY_OPTIONS.map(([value, label]) => {
                       const selected = inboxScopeFilters.category === value;
@@ -318,7 +318,7 @@ export function IssueFiltersPopover({
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             <div className="min-w-0 space-y-3">
               <div className="space-y-1">
-                <span className="text-xs text-muted-foreground">Status</span>
+                <span className="text-xs text-muted-foreground">{translateUi("interfaceCopy.status")}</span>
                 <div className="space-y-0.5">
                   {issueStatusOrder.map((status) => (
                     <label key={status} className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1 hover:bg-accent/50">
@@ -336,7 +336,7 @@ export function IssueFiltersPopover({
               {/* PAP-411: Priority filter section hidden behind SHOW_TASK_PRIORITY_UI (filter state stays intact). */}
               {SHOW_TASK_PRIORITY_UI && (
               <div className="space-y-1">
-                <span className="text-xs text-muted-foreground">Priority</span>
+                <span className="text-xs text-muted-foreground">{translateUi("interfaceCopy.priority")}</span>
                 <div className="space-y-0.5">
                   {issuePriorityOrder.map((priority) => (
                     <label key={priority} className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1 hover:bg-accent/50">
@@ -355,9 +355,9 @@ export function IssueFiltersPopover({
 
             <div className="min-w-0 space-y-3">
               <div className="space-y-1">
-                <span className="text-xs text-muted-foreground">Responsible</span>
+                <span className="text-xs text-muted-foreground">{translateUi("interfaceCopy.responsible")}</span>
                 {streamlined && (agents?.length ?? 0) + (currentUserId ? 2 : 1) > SEARCHABLE_FILTER_THRESHOLD ? (
-                  <FilterOptionSearch value={assigneeSearch} onChange={setAssigneeSearch} label="Responsible" />
+                  <FilterOptionSearch value={assigneeSearch} onChange={setAssigneeSearch} label={translateUi("interfaceCopy.responsible")} />
                 ) : null}
                 <div data-filter-options="responsible" className={streamlined ? "space-y-0.5" : "max-h-32 space-y-0.5 overflow-y-auto"}>
                   <label className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1 hover:bg-accent/50">
@@ -374,7 +374,7 @@ export function IssueFiltersPopover({
                         onCheckedChange={() => onChange({ assignees: toggleIssueFilterValue(state.assignees, "__me") })}
                       />
                       <User className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span className="text-sm">Me</span>
+                      <span className="text-sm">{translateUi("interfaceCopy.me")}</span>
                     </label>
                   ) : null}
                   {(streamlined ? visibleAgents : agents ?? []).map((agent) => (
@@ -445,9 +445,9 @@ export function IssueFiltersPopover({
 
               {projects && projects.length > 0 ? (
                 <div className="space-y-1">
-                  <span className="text-xs text-muted-foreground">Project</span>
+                  <span className="text-xs text-muted-foreground">{translateUi("interfaceCopy.project")}</span>
                   {streamlined && projects.length > SEARCHABLE_FILTER_THRESHOLD ? (
-                    <FilterOptionSearch value={projectSearch} onChange={setProjectSearch} label="Projects" />
+                    <FilterOptionSearch value={projectSearch} onChange={setProjectSearch} label={translateUi("interfaceCopy.projects")} />
                   ) : null}
                   <div data-filter-options="projects" className={streamlined ? "space-y-0.5" : "max-h-32 space-y-0.5 overflow-y-auto"}>
                     {(streamlined ? visibleProjects : projects).map((project) => (

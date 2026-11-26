@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useIssueIdBatches } from "@/hooks/useIssueIdBatches";
 import { TaskChatLoadingShell } from "@/components/task-chat/TaskChatLoadingShell";
 import { useConversationHistoryPages, type ConversationHistoryPage } from "@/hooks/useConversationHistoryPages";
@@ -3198,6 +3199,7 @@ export function IssueDetail({ tasksTab }: { tasksTab?: TaskSidePanelProps["tasks
 export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskSidePanelProps["tasksTab"]; conversation?: {
   agent: Agent; issue: Issue | null; ensureIssue: () => Promise<Issue>;
 } }) {
+  const { t: translateUi } = useUiTranslation();
   const { issueId: routeIssueId, companyPrefix } = useParams<{ issueId: string; companyPrefix: string }>();
   const issueId = conversation ? conversation.issue?.id : routeIssueId;
   const [loadingTitleIssueId, setLoadingTitleIssueId] = useState<string | null>(null);
@@ -8165,7 +8167,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           {error && coreIssueQuery.data && !isTransientError(error) ? (
             <div role="status" className="flex items-center gap-2 text-sm text-muted-foreground">
               Some task details could not be loaded.
-              <Button type="button" variant="ghost" size="sm" onClick={() => void refetchIssueDetail()}>Retry</Button>
+              <Button type="button" variant="ghost" size="sm" onClick={() => void refetchIssueDetail()}>{translateUi("interfaceCopy.retry")}</Button>
             </div>
           ) : null}
           {/* Parent chain breadcrumb (redesign: rendered inside the thread viewport) */}
@@ -8515,7 +8517,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                         <Button variant="ghost" size="sm" onClick={() => {
                           void refetchChildIssues();
                           void createdTasksQuery.refetch();
-                        }}>Retry</Button>
+                        }}>{translateUi("interfaceCopy.retry")}</Button>
                       </div>
                     )}
                   </>}

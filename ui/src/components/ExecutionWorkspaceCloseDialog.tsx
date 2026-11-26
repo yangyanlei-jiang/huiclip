@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ExecutionWorkspace } from "@paperclipai/shared";
 import { Link } from "@/lib/router";
@@ -45,6 +46,7 @@ export function ExecutionWorkspaceCloseDialog({
   onOpenChange,
   onClosed,
 }: ExecutionWorkspaceCloseDialogProps) {
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const actionLabel = currentStatus === "cleanup_failed" ? "Retry close" : "Close workspace";
@@ -312,9 +314,7 @@ export function ExecutionWorkspaceCloseDialog({
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={closeWorkspace.isPending}
-          >
-            Cancel
-          </Button>
+          >{translateUi("interfaceCopy.cancel")}</Button>
           <Button
             variant={currentStatus === "cleanup_failed" ? "default" : "destructive"}
             onClick={() => closeWorkspace.mutate()}

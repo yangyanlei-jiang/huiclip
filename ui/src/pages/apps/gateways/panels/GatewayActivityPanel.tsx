@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { ChevronDown, ChevronRight } from "lucide-react";
@@ -64,6 +65,7 @@ function Fact({ label, value, mono = false }: { label: string; value: string; mo
 }
 
 function ActivityRow({ event }: { event: ToolGatewayActivityEvent }) {
+  const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
   const outcome = OUTCOME_META[event.normalizedOutcome] ?? OUTCOME_META.unknown;
   const actor = event.agentDisplayName ?? "Client";
@@ -108,10 +110,10 @@ function ActivityRow({ event }: { event: ToolGatewayActivityEvent }) {
       {open ? (
         <div className="border-t border-border bg-muted/30 px-4 py-3 pl-10 text-xs">
           <dl>
-            {rawTool ? <Fact label="Tool" value={rawTool} mono /> : null}
+            {rawTool ? <Fact label={translateUi("interfaceCopy.tool")} value={rawTool} mono /> : null}
             {event.invocation?.status ? <Fact label="Call status" value={event.invocation.status} /> : null}
             {event.invocation?.policyDecision ? <Fact label="Decision" value={event.invocation.policyDecision} /> : null}
-            {reason ? <Fact label="Reason" value={reason} mono /> : null}
+            {reason ? <Fact label={translateUi("interfaceCopy.reason")} value={reason} mono /> : null}
             {duration ? <Fact label="Duration" value={duration} /> : null}
             {event.invocation?.id ? <Fact label="Invocation ID" value={event.invocation.id} mono /> : null}
             {event.invocation?.errorCode ? <Fact label="Error code" value={event.invocation.errorCode} mono /> : null}

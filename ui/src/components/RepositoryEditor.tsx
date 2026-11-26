@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useRef, useState } from "react";
 import type { ProjectRepository } from "@paperclipai/shared";
 import { GitBranch, LockKeyhole, Plus, X } from "lucide-react";
@@ -32,6 +33,7 @@ export function RepositoryEditor({ selected, onChange, state = "ready", availabl
   disabled?: boolean;
   onConnect: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [showPicker, setShowPicker] = useState(false);
   const picker = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -75,7 +77,7 @@ export function RepositoryEditor({ selected, onChange, state = "ready", availabl
           />
           <div className="flex items-center justify-between gap-2">
             <p className="text-xs text-muted-foreground">{"All GitHub connections you can use."}</p>
-            <Button type="button" variant="ghost" size="sm" onClick={() => setShowPicker(false)}>Cancel</Button>
+            <Button type="button" variant="ghost" size="sm" onClick={() => setShowPicker(false)}>{translateUi("interfaceCopy.cancel")}</Button>
           </div>
         </div>
       ) : <Button type="button" variant="outline" className={addClassName} onClick={() => setShowPicker(true)}><GithubIcon className="size-4" />{addLabel}</Button>}

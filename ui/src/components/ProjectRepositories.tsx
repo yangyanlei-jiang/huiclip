@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { LegacyProjectRepository } from "./LegacyProjectRepository";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -11,6 +12,7 @@ import { Dialog, DialogContent, DialogTitle } from "./ui/dialog";
 import { Button } from "./ui/button";
 
 export function ProjectRepositories({ project }: { project: Project }) {
+  const { t: translateUi } = useUiTranslation();
   const client = useQueryClient();
   const saved: ProjectRepository[] = project.workspaces.flatMap((workspace) => {
     const id = workspace.metadata?.githubRepositoryId;
@@ -40,7 +42,7 @@ export function ProjectRepositories({ project }: { project: Project }) {
       <Button type="button" disabled={!draft || save.isPending} onClick={() => save.mutate()}>{save.isPending ? "Saving…" : "Save changes"}</Button>
     </div>
     <Dialog open={connecting} onOpenChange={setConnecting}><DialogContent showCloseButton={false} aria-describedby={undefined} className="max-h-(--sz-calc-18) overflow-y-auto sm:max-w-2xl">
-      <DialogTitle className="sr-only">Connect GitHub</DialogTitle>
+      <DialogTitle className="sr-only">{translateUi("interfaceCopy.connectGitHub")}</DialogTitle>
       <ConnectionSetupFlow host="dialog" serviceSlug="github" forceNewConnection onCancel={() => setConnecting(false)} onComplete={() => {
         void client.invalidateQueries({ queryKey: repositoryOptionsKey(project.companyId) });
         setConnecting(false);

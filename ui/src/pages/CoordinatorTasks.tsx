@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useTranslation } from "@/i18n";
 import { readTaskListSortParams, taskListOrderToIssueSort, type TaskListSort } from "@/lib/task-list";
 import { useDeferredValue, useEffect, useRef, useState, type ReactNode } from "react";
@@ -41,6 +42,7 @@ const pageSize = 200;
 /** Coordinator's existing IA and attention feed, rendered with the production
  * components reviewed in Design proposals / Pages / Tasks. */
 export function CoordinatorTasks({ viewControl }: { viewControl?: ReactNode } = {}) {
+  const { t: translateUi } = useUiTranslation();
   const { t } = useTranslation();
   const { selectedCompanyId: companyId } = useCompany();
   const { userId, loaded: identitySettled } = useCoordinatorWorkspaceEnabled();
@@ -287,8 +289,8 @@ export function CoordinatorTasks({ viewControl }: { viewControl?: ReactNode } = 
       allExpanded={collection.allExpanded} onToggleExpanded={collection.toggleExpanded} onNewTask={() => openNewIssue()}
       filters={{ enableRoutineTasksFilter: true, state: collection.filters, onChange: updateFilters, activeFilterCount: collection.activeFilterCount,
         agents: agents.data ?? [], projects: projects.data ?? [], labels: labels.data ?? [], currentUserId: userId, creators: collection.creators }} />
-    {error ? <div role="alert" className="flex items-center gap-2 text-sm text-destructive"><span>{error instanceof Error ? error.message : "Could not load tasks"}</span><Button variant="outline" size="sm" onClick={retry}>Retry</Button></div> : null}
-    {rowDetailsError ? <div role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><span>Task details couldn’t load.</span><Button variant="ghost" size="sm" onClick={() => void retryRowDetails()}>Retry</Button></div> : null}
+    {error ? <div role="alert" className="flex items-center gap-2 text-sm text-destructive"><span>{error instanceof Error ? error.message : "Could not load tasks"}</span><Button variant="outline" size="sm" onClick={retry}>{translateUi("interfaceCopy.retry")}</Button></div> : null}
+    {rowDetailsError ? <div role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><span>Task details couldn’t load.</span><Button variant="ghost" size="sm" onClick={() => void retryRowDetails()}>{translateUi("interfaceCopy.retry")}</Button></div> : null}
     {pending ? <p role="status" className="text-sm text-muted-foreground">Loading tasks…</p> : !error && <>
       <div hidden={collection.layout !== "list"} className="design-task-list-panel">{collection.matchingItems.length ? <TaskList key={companyId}
         items={(needsAttention ? collection.matchingItems : collection.visibleItems).map(enrichItem)} allItems={collection.companyItems.map(enrichItem)}

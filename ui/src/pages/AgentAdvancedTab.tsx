@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { describeError } from "@/api/errors";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -34,6 +35,7 @@ export interface AgentAdvancedTabProps {
 }
 
 export function AgentAdvancedTab(props: AgentAdvancedTabProps) {
+  const { t: translateUi } = useUiTranslation();
   const [initial, setInitial] = useState<AgentConfigurationSnapshot | null>(null);
   const query = useQuery({
     queryKey: ["agent-configuration-yaml", props.agent.companyId, props.agent.id],
@@ -46,7 +48,7 @@ export function AgentAdvancedTab(props: AgentAdvancedTabProps) {
   if (!initial) {
     if (query.error) return <div role="alert" className="space-y-3 text-sm">
       <p>{describeError(query.error).body}</p>
-      <Button variant="outline" onClick={() => query.refetch()}>Retry</Button>
+      <Button variant="outline" onClick={() => query.refetch()}>{translateUi("interfaceCopy.retry")}</Button>
     </div>;
     return <p role="status" className="text-sm text-muted-foreground">Loading configuration…</p>;
   }

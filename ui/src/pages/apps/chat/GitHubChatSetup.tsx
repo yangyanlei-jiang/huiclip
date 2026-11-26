@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useAuthorizationWindow } from "@/hooks/useAuthorizationWindow";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -76,6 +77,7 @@ function GitHubAppManifestForm({
   );
 }
 export function GitHubChatSetup() {
+  const { t: translateUi } = useUiTranslation();
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
   const { selectedCompanyId } = useCompany();
@@ -636,7 +638,7 @@ export function GitHubChatSetup() {
           </div>
           {accountChoice === "organization" && (
             <div className="space-y-2">
-              <Label htmlFor="github-owner-login">Organization</Label>
+              <Label htmlFor="github-owner-login">{translateUi("interfaceCopy.organization")}</Label>
               <Input
                 id="github-owner-login"
                 disabled={busy || !!state?.registration}

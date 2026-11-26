@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   DndContext,
@@ -120,6 +121,7 @@ function SortableQueuedMessage({
   onDiscard: () => void;
   onCancelAutoSteer: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const immutableResponse = entry.source?.kind === "interaction";
   const label = queuedMessageLabel(entry);
   const sortable = useSortable({
@@ -182,18 +184,14 @@ function SortableQueuedMessage({
             title="Edit before it is sent"
             className="flex h-7 shrink-0 items-center rounded-md px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
             data-testid={`task-chat-queued-auto-steer-edit-${entry.comment.id}`}
-          >
-            Edit
-          </button>
+          >{translateUi("interfaceCopy.edit")}</button>
           <button
             type="button"
             onClick={onCancelAutoSteer}
             title="Keep this message in the queue"
             className="flex h-7 shrink-0 items-center rounded-md px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             data-testid={`task-chat-queued-auto-steer-cancel-${entry.comment.id}`}
-          >
-            Cancel
-          </button>
+          >{translateUi("interfaceCopy.cancel")}</button>
         </span>
       ) : (queue.targetRunId || queue.state === "deferred") && (!queue.targetRunId || queue.protocol === "legacy" || entry.source?.requiresFreshSession ||
         (queue.steeringDisposition !== "available" && onInterrupt) ? (

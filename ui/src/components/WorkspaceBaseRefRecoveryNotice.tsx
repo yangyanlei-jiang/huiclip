@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useId, useRef, useState } from "react";
 import { isValidExistingBranchName } from "@paperclipai/shared";
 import { Check, ChevronDown, GitBranch, Loader2, TriangleAlert } from "lucide-react";
@@ -27,6 +28,7 @@ export function WorkspaceBaseRefRecoveryNotice({
   requestedRef, repository, defaultBranch, agentName, configuredBy,
   taskOverride = true, failureKind = "unresolved_ref", unavailableReason, onRepair,
 }: WorkspaceBaseRefRecoveryNoticeProps) {
+  const { t: translateUi } = useUiTranslation();
   const id = useId();
   const [editing, setEditing] = useState(!defaultBranch);
   const [branch, setBranch] = useState(defaultBranch ?? "");
@@ -87,7 +89,7 @@ export function WorkspaceBaseRefRecoveryNotice({
                   <Input id={`${id}-branch`} autoFocus value={branch} disabled={pending || Boolean(unavailableReason)} onChange={event => setBranch(event.target.value)} placeholder="Branch name" className="font-mono" aria-describedby={error ? `${id}-error` : undefined} autoComplete="off" spellCheck={false} />
                 </div>
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  {defaultBranch ? <Button type="button" variant="ghost" size="sm" disabled={pending} onClick={() => { setEditing(false); setError(null); }}>Cancel</Button> : <span />}
+                  {defaultBranch ? <Button type="button" variant="ghost" size="sm" disabled={pending} onClick={() => { setEditing(false); setError(null); }}>{translateUi("interfaceCopy.cancel")}</Button> : <span />}
                   <Button type="submit" size="sm" disabled={pending || !changed || Boolean(unavailableReason)} aria-describedby={unavailableReason ? `${id}-unavailable` : undefined}>
                     {pending && <Loader2 aria-hidden className="size-3.5 animate-spin motion-reduce:animate-none" />}{pending ? "Saving & requesting retry…" : "Save branch & retry"}
                   </Button>

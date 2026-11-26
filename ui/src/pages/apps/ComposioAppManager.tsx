@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ExternalLink } from "lucide-react";
@@ -29,6 +30,7 @@ export function ComposioAppManager({ app, connections, initialConnectionId, onCl
 }
 
 function ComposioAccountObservations({ app, connection, onClose }: { app: AggregatorAppCatalogEntry; connection: ToolConnection; onClose: () => void }) {
+  const { t: translateUi } = useUiTranslation();
   const queries = useQueryClient();
   const key = queryKeys.tools.composioApps(connection.id);
   const accountsQuery = useQuery({ queryKey: key, queryFn: () => toolsApi.listComposioApps(connection.id), staleTime: Infinity, refetchOnWindowFocus: false });
@@ -62,7 +64,7 @@ function ComposioAccountObservations({ app, connection, onClose }: { app: Aggreg
       <p>Via <Link to={`/apps/${connection.id}/permissions`} onClick={onClose} className="underline underline-offset-2">“{connection.name}”</Link></p>
       <p>Composio permissions apply to all apps on this connection.</p>
     </div>
-    <DialogFooter className="sm:items-center sm:justify-between"><Button variant="ghost" onClick={onClose}>Close</Button>
+    <DialogFooter className="sm:items-center sm:justify-between"><Button variant="ghost" onClick={onClose}>{translateUi("interfaceCopy.close")}</Button>
       <div className="flex items-center gap-2"><Button variant="ghost" disabled={busy} onClick={() => void refresh()}>{busy ? "Checking…" : "Refresh"}</Button>
         <Button asChild><a href={COMPOSIO_APP_MANAGEMENT_URL} target="_blank" rel="noopener noreferrer">Open in Composio<ExternalLink className="size-4" /></a></Button></div>
     </DialogFooter>

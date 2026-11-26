@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -319,6 +320,7 @@ function RoutineSectionHeader({
 }
 
 export function Routines() {
+  const { t: translateUi } = useUiTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const queryClient = useQueryClient();
@@ -846,9 +848,9 @@ export function Routines() {
             <div className="flex items-center gap-1">
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="ghost" size="sm" className="text-xs" title="Sort">
+                  <Button variant="ghost" size="sm" className="text-xs" title={translateUi("interfaceCopy.sort")}>
                     <ArrowUpDown className="h-3.5 w-3.5 sm:h-3 sm:w-3 sm:mr-1" />
-                    <span className="hidden sm:inline">Sort</span>
+                    <span className="hidden sm:inline">{translateUi("interfaceCopy.sort")}</span>
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align="end" className="w-44 p-0">
@@ -984,9 +986,7 @@ export function Routines() {
                 setAdvancedOpen(false);
               }}
               disabled={createRoutine.isPending}
-            >
-              Cancel
-            </Button>
+            >{translateUi("interfaceCopy.cancel")}</Button>
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto">
@@ -1033,7 +1033,7 @@ export function Routines() {
                     value={draft.assigneeAgentId}
                     options={assigneeOptions}
                     recentOptionIds={recentAssigneeIds}
-                    placeholder="Responsible"
+                    placeholder={translateUi("interfaceCopy.responsible")}
                     noneLabel="No responsible"
                     searchPlaceholder="Search responsible..."
                     emptyMessage="No responsible found."
@@ -1059,7 +1059,7 @@ export function Routines() {
                           <span className="truncate">{option.label}</span>
                         )
                       ) : (
-                        <span className="text-muted-foreground">Responsible</span>
+                        <span className="text-muted-foreground">{translateUi("interfaceCopy.responsible")}</span>
                       )
                     }
                     renderOption={(option) => {
@@ -1079,7 +1079,7 @@ export function Routines() {
                     value={draft.projectId}
                     options={projectOptions}
                     recentOptionIds={recentProjectIds}
-                    placeholder="Project"
+                    placeholder={translateUi("interfaceCopy.project")}
                     noneLabel="No project"
                     searchPlaceholder="Search projects..."
                     emptyMessage="No projects found."
@@ -1098,7 +1098,7 @@ export function Routines() {
                           <span className="truncate">{option.label}</span>
                         </>
                       ) : (
-                        <span className="text-muted-foreground">Project</span>
+                        <span className="text-muted-foreground">{translateUi("interfaceCopy.project")}</span>
                       )
                     }
                     renderOption={(option) => {
@@ -1127,7 +1127,7 @@ export function Routines() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="__unfiled">Unfiled</SelectItem>
+                      <SelectItem value="__unfiled">{translateUi("interfaceCopy.unfiled")}</SelectItem>
                       {(routineFolders?.folders ?? []).map((folder) => (
                         <SelectItem key={folder.id} value={folder.id}>
                           {folder.name}

@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { CheckCircle2, Copy } from "lucide-react";
 import { useQueryView } from "@/components/QueryView";
@@ -33,6 +34,7 @@ export function GitHubConnectionComplete({
   onClose: () => void;
   onCloseAutoFocus?: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const repositories = useQuery({
     queryKey: ["github-connected-repositories", endpoint.id],
     queryFn: () => githubChatApi.repositories(endpoint.id, { limit: 1 }),
@@ -115,7 +117,7 @@ export function GitHubConnectionComplete({
             avatarUrl={agentAvatarUrl(resolveAgentAppearance(avatar.appearance, endpoint.assignedAgentId), 512, 1, "rest")}
           />
           <DialogFooter>
-            <Button onClick={onClose}>Done</Button>
+            <Button onClick={onClose}>{translateUi("interfaceCopy.done")}</Button>
           </DialogFooter>
         </div>
       </DialogContent>

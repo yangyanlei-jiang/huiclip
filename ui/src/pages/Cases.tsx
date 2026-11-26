@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useQueryView } from "@/components/QueryView";
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -40,6 +41,7 @@ function CaseFilter({ label, value, options, onChange, disabled }: {
 }
 
 export function Cases() {
+  const { t: translateUi } = useUiTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const [params, setParams] = useSearchParams();
@@ -159,16 +161,16 @@ export function Cases() {
         onSortChange={(field, dir) => setView({ sort: field === "updated" ? "" : field, dir: dir === "desc" ? "" : dir })}
         groupBy={view.groupBy} onGroupChange={group => setView({ group: group === "none" ? "" : group })}
         filters={<>
-        <CaseFilter label="Status" value={status} onChange={value => setFilter("status", value)} options={[
+        <CaseFilter label={translateUi("interfaceCopy.status")} value={status} onChange={value => setFilter("status", value)} options={[
           { value: ALL, label: "All statuses" },
           ...CASE_STATUSES.map(value => ({ value, label: CASE_STATUS_LABELS[value] })),
         ]} />
-        <CaseFilter label="Type" value={type} disabled={typesQuery.isPending || (typesQueryView.kind === "error")}
+        <CaseFilter label={translateUi("interfaceCopy.type")} value={type} disabled={typesQuery.isPending || (typesQueryView.kind === "error")}
           onChange={value => setFilter("type", value)} options={[
             { value: ALL, label: "All types" },
             ...typeOptions.map(value => ({ value, label: value })),
           ]} />
-        <CaseFilter label="Project" value={project} disabled={projectsQuery.isPending || (projectsQueryView.kind === "error")}
+        <CaseFilter label={translateUi("interfaceCopy.project")} value={project} disabled={projectsQuery.isPending || (projectsQueryView.kind === "error")}
           onChange={value => setFilter("project", value)} options={[
             { value: ALL, label: "All projects" },
             { value: "none", label: "No project" },
@@ -191,7 +193,7 @@ export function Cases() {
         {Array.from({ length: 6 }, (_, index) => <Skeleton key={index} className="h-16 w-full rounded-none" />)}
       </div> : (casesQueryView.kind === "error") ? <div role="alert" className="flex flex-wrap items-center gap-3 py-6 text-sm">
         <p>Cases couldn’t be loaded.</p>
-        <Button variant="outline" size="sm" onClick={() => void casesQuery.refetch()}>Try again</Button>
+        <Button variant="outline" size="sm" onClick={() => void casesQuery.refetch()}>{translateUi("interfaceCopy.tryAgain")}</Button>
       </div> : records.length === 0 ? (
         <EmptyState icon={hasFilters ? Search : FolderOpen}
           message={page > 1 ? "No cases on this page" : hasFilters ? "No cases match these filters" : "No cases yet"}
@@ -207,8 +209,8 @@ export function Cases() {
       </section>}
 
       {page > 1 || hasNext ? <nav aria-label="Case list pages" className="flex items-center justify-end gap-2">
-        <Button variant="outline" size="sm" disabled={page === 1 || casesQuery.isFetching} onClick={() => setPage(page - 1)}>Previous</Button>
-        <Button variant="outline" size="sm" disabled={!hasNext || casesQuery.isFetching} onClick={() => setPage(page + 1)}>Next</Button>
+        <Button variant="outline" size="sm" disabled={page === 1 || casesQuery.isFetching} onClick={() => setPage(page - 1)}>{translateUi("interfaceCopy.previous")}</Button>
+        <Button variant="outline" size="sm" disabled={!hasNext || casesQuery.isFetching} onClick={() => setPage(page + 1)}>{translateUi("interfaceCopy.next")}</Button>
       </nav> : null}
     </div>
   );

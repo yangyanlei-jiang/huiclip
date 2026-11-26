@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect } from "react";
 import { Link2 } from "lucide-react";
 import { useCompany } from "../context/CompanyContext";
@@ -8,6 +9,7 @@ import { useFastResponsesEnabled } from "../hooks/useFastResponsesEnabled";
 import { PromptInjectionPreventionSettingsSection } from "../components/prompt-injection-prevention/PromptInjectionPreventionSettings";
 
 export function CompanyConnections() {
+  const { t: translateUi } = useUiTranslation();
   const { selectedCompany, selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { enabled } = useFastResponsesEnabled();
@@ -32,7 +34,7 @@ export function CompanyConnections() {
     <div className="max-w-6xl space-y-8">
       <div className="flex items-center gap-2">
         <Link2 className="h-5 w-5 text-muted-foreground" />
-        <h1 className="text-lg font-semibold">Connections</h1>
+        <h1 className="text-lg font-semibold">{translateUi("interfaceCopy.connections")}</h1>
       </div>
       <DecisionModelSettingsSection key={selectedCompanyId} companyId={selectedCompanyId} />
       <div className="max-w-2xl border-t border-border pt-8">

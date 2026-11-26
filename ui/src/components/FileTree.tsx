@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import type { CSSProperties, KeyboardEvent, ReactNode } from "react";
 import { useMemo, useRef, useState } from "react";
 import { cn } from "../lib/utils";
@@ -294,6 +295,7 @@ export function FileTree({
   empty,
   ariaLabel = "Files",
 }: FileTreeProps) {
+  const { t: translateUi } = useUiTranslation();
   const effectiveCheckedFiles = checkedFiles ?? new Set<string>();
   const visibleNodes = useMemo(
     () => flattenVisibleNodes(nodes, expandedDirs).filter(({ node }) => !visiblePaths || visiblePaths.has(node.path)),
@@ -389,9 +391,7 @@ export function FileTree({
             <span className="min-w-0 text-destructive">{describeError(new Error(error.message)).body}</span>
           </div>
           {error.retry && (
-            <Button type="button" size="xs" variant="outline" onClick={error.retry}>
-              Retry
-            </Button>
+            <Button type="button" size="xs" variant="outline" onClick={error.retry}>{translateUi("interfaceCopy.retry")}</Button>
           )}
         </div>
       </div>

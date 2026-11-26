@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -72,6 +73,7 @@ export function AiConnectionField({
   preferAdvanced?: boolean;
   routerAdapterType?: string;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const provider = aiProviderForAdapter(adapterType);
   const returnFocus = useRef<HTMLElement | null>(null);
   const restoreFocus = (event: Event) => { event.preventDefault(); returnFocus.current?.focus(); };
@@ -198,9 +200,7 @@ export function AiConnectionField({
             <Button
               variant="ghost"
               onClick={() => setPendingAdoption(undefined)}
-            >
-              Cancel
-            </Button>
+            >{translateUi("interfaceCopy.cancel")}</Button>
             <Button
               onClick={() => {
                 if (pendingAdoption) onChange(pendingAdoption);

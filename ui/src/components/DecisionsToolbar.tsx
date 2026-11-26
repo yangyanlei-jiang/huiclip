@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { type ReactNode } from "react";
 import { ArrowUpDown, Check, Layers, ListFilter } from "lucide-react";
 import {
@@ -58,6 +59,7 @@ export function DecisionsToolbar({
   sortOrder,
   onSortOrderChange,
 }: DecisionsToolbarProps) {
+  const { t: translateUi } = useUiTranslation();
   const activeFilterCount = countActiveAttentionFilters(filters);
   return (
     <div data-canonical-toolbar="decisions" role="toolbar" aria-label="Decisions controls" className="flex flex-wrap items-center gap-2">
@@ -123,8 +125,8 @@ export function DecisionsToolbar({
             variant="outline"
             size="icon"
             className="h-8 w-8 shrink-0"
-            title="Sort"
-            aria-label="Sort"
+            title={translateUi("interfaceCopy.sort")}
+            aria-label={translateUi("interfaceCopy.sort")}
           >
             <ArrowUpDown className="h-3.5 w-3.5" />
           </Button>
@@ -162,6 +164,7 @@ function FilterMenu({
   filters: AttentionFilterState;
   onChange: (next: AttentionFilterState) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const toggle = (key: keyof AttentionFilterState, value: string) => {
     const list = filters[key] as string[];
     const nextList = list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
@@ -178,14 +181,12 @@ function FilterMenu({
             type="button"
             className="text-xs text-muted-foreground hover:text-foreground"
             onClick={() => onChange(defaultAttentionFilterState)}
-          >
-            Clear
-          </button>
+          >{translateUi("interfaceCopy.clear")}</button>
         )}
       </div>
 
       {options.sourceKinds.length > 1 && (
-        <FilterSection title="Type">
+        <FilterSection title={translateUi("interfaceCopy.type")}>
           {options.sourceKinds.map((kind) => (
             <FilterRow
               key={kind}
@@ -211,7 +212,7 @@ function FilterMenu({
       )}
 
       {(options.projects.length > 0 || options.hasNoProject) && (
-        <FilterSection title="Project">
+        <FilterSection title={translateUi("interfaceCopy.project")}>
           {options.projects.map((project) => (
             <FilterRow
               key={project.id}

@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { RotateCcw } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -76,6 +77,7 @@ export function AgentHistoryDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [pending, setPending] = useState<AgentConfigRevision | null>(null);
@@ -118,7 +120,7 @@ export function AgentHistoryDialog({
         ) : (
           <div className="min-h-0 overflow-y-auto rounded-lg border border-border">
             <div className={`${agentTableHeadClass} grid-cols-(--agent-detail-history-cols)`}>
-              <span>Configuration</span>
+              <span>{translateUi("interfaceCopy.configuration")}</span>
               <span>Team member</span>
               <span>Date configured</span>
               <span aria-hidden />
@@ -191,7 +193,7 @@ export function AgentHistoryDialog({
             <p role="alert" className="text-sm text-destructive">{restoreError}</p>
           ) : null}
           <AlertDialogFooter className="sm:justify-between">
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{translateUi("interfaceCopy.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               disabled={rollback.isPending}
               onClick={(event) => {

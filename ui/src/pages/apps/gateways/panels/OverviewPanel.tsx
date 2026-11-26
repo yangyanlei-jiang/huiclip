@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { Copy } from "lucide-react";
 import type { ToolMcpGatewayWithTokens, ToolProfileWithDetails } from "@paperclipai/shared";
 import { Link } from "@/lib/router";
@@ -33,6 +34,7 @@ export function OverviewPanel({
   toggleDisabled: boolean;
   onToggle: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const { pushToast } = useToast();
   const endpoint = `${typeof window !== "undefined" ? window.location.origin : ""}${gateway.endpointPath}`;
   const active = activeTokenCount(gateway);
@@ -70,7 +72,7 @@ export function OverviewPanel({
           </div>
           <p className="mt-2 text-xs text-muted-foreground">Toggle the whole gateway off here.</p>
         </div>
-        <StatCard label="Apps">
+        <StatCard label={translateUi("interfaceCopy.apps")}>
           {apps.length} {apps.length === 1 ? "app" : "apps"}
           {profile ? ` · ${allowedToolsLabel(profile)}` : ""}
         </StatCard>

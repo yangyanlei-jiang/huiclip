@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import type { AgentPermissions, TrustPreset } from "@paperclipai/shared";
 import { Check, Lock, ShieldAlert } from "lucide-react";
@@ -76,6 +77,7 @@ export function TrustPresetSection({
   layout?: "select" | "cards";
   aside?: ReactNode;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [policyOpen, setPolicyOpen] = useState(false);
   const preset = getTrustPreset(permissions);
   const boundary = getLowTrustBoundary(permissions);
@@ -220,7 +222,7 @@ export function TrustPresetSection({
                 <div className="divide-y divide-border/60 text-foreground">
                   <PolicyRow label="Preset" value="Low-trust review v1" />
                   <PolicyRow label="Raw output" value="Quarantined from higher-trust agents" />
-                  <PolicyRow label="Projects" value={formatCount(boundary?.projectIds, "project", "projects")} />
+                  <PolicyRow label={translateUi("interfaceCopy.projects")} value={formatCount(boundary?.projectIds, "project", "projects")} />
                   <PolicyRow label="Root issue" value={boundary?.rootIssueId ? boundary.rootIssueId.slice(0, 8) : "-"} />
                   <PolicyRow label="Explicit issues" value={formatCount(boundary?.issueIds, "issue", "issues")} />
                   <PolicyRow label="Allowed agents" value={formatCount(boundary?.allowedAgentIds, "agent", "agents")} />
@@ -284,7 +286,7 @@ export function TrustPresetSection({
 
   return (
     <div>
-      <h3 className="mb-3 text-sm font-medium">Trust</h3>
+      <h3 className="mb-3 text-sm font-medium">{translateUi("interfaceCopy.trust")}</h3>
       <div className="rounded-lg border border-border p-4 space-y-3">
         <Field label="Trust preset" hint="Choose how broadly this agent can read and act on Paperclip work objects.">
           <select

@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useId, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -54,6 +55,7 @@ export function ConnectionInstructionsSettings({ connection, provider, template,
   template: ConnectionInstructionTemplate;
   canConfigure: boolean;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const client = useQueryClient();
   const [draft, setDraft] = useState<ConnectionAgentInstructions | null>(null);
   // A deliberately cleared setting stays off. Defaults are persisted by the server.
@@ -71,7 +73,7 @@ export function ConnectionInstructionsSettings({ connection, provider, template,
     <ConnectionInstructionsEditor provider={provider} template={template} value={value} onChange={setDraft} disabled={!canConfigure || mutation.isPending} />
     {mutation.error && <div role="alert"><InlineBanner tone="danger">{describeError(mutation.error).body}</InlineBanner></div>}
     {dirty && <div className="flex items-center justify-between">
-      <Button variant="ghost" disabled={mutation.isPending} onClick={() => { setDraft(null); mutation.reset(); }}>Cancel</Button>
+      <Button variant="ghost" disabled={mutation.isPending} onClick={() => { setDraft(null); mutation.reset(); }}>{translateUi("interfaceCopy.cancel")}</Button>
       <Button disabled={!canConfigure || mutation.isPending || !value.text.trim()} onClick={() => mutation.mutate()}>{mutation.isPending ? "Saving…" : "Save instructions"}</Button>
     </div>}
   </div>;

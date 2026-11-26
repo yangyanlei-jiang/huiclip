@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useId, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -59,6 +60,7 @@ export function FastResponseSettingsView({
   onTest: () => void;
   onConnectionChange?: (id: string | null) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [draft, setDraft] = useState<UpdateFastResponse>(() =>
     editable(settings),
   );
@@ -166,9 +168,7 @@ export function FastResponseSettingsView({
             <label
               htmlFor={`${modelListId}-input`}
               className="text-sm font-medium"
-            >
-              Model
-            </label>
+            >{translateUi("interfaceCopy.model")}</label>
             <Input
               id={`${modelListId}-input`}
               list={modelListId}
@@ -268,6 +268,7 @@ export function FastResponseSettingsSection({
 }: {
   companyId: string;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const client = useQueryClient(),
     key = ["fast-response", companyId];
   const query = useQuery({
@@ -319,9 +320,7 @@ export function FastResponseSettingsSection({
         <p className="text-sm text-destructive">
           Could not load fast response settings.
         </p>
-        <Button variant="outline" onClick={() => void query.refetch()}>
-          Try again
-        </Button>
+        <Button variant="outline" onClick={() => void query.refetch()}>{translateUi("interfaceCopy.tryAgain")}</Button>
       </div>
     );
   if (!query.data?.canManage || !query.data.settings) return null;

@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { CheckCircle2, ExternalLink, HelpCircle, Loader2, Plus, Trash2 } from "lucide-react";
 import { InlineBanner } from "@/components/InlineBanner";
@@ -53,6 +54,7 @@ export function RemoteMcpConnectionSetup({ provider, state: s, actions: a, agent
   actions: RemoteMcpSetupActions;
   agents: { id: string; name: string }[];
 }) {
+  const { t: translateUi } = useUiTranslation();
   const uid = useId();
   const heading = useRef<HTMLHeadingElement>(null);
   const previousStep = useRef(s.step);
@@ -191,7 +193,7 @@ export function RemoteMcpConnectionSetup({ provider, state: s, actions: a, agent
             </fieldset>
             {additionalSettings}
             {busy && <p role="status" className="flex items-center gap-2 text-sm"><Loader2 className="size-4 animate-spin motion-reduce:animate-none" />Connecting and discovering tools…</p>}
-            {footer(<>{s.setupComplete ? <Button type="button" variant="outline" disabled={busy} onClick={a.finish}>Back</Button> : <span />}<Button type="submit" disabled={busy || !s.url.trim() || !settingsValid}>{busy ? "Connecting…" : error || s.connectStatus === "cancelled" ? "Try again" : `Connect ${provider.name}`}</Button></>)}
+            {footer(<>{s.setupComplete ? <Button type="button" variant="outline" disabled={busy} onClick={a.finish}>{translateUi("interfaceCopy.back")}</Button> : <span />}<Button type="submit" disabled={busy || !s.url.trim() || !settingsValid}>{busy ? "Connecting…" : error || s.connectStatus === "cancelled" ? "Try again" : `Connect ${provider.name}`}</Button></>)}
           </form>}
         </>}
 

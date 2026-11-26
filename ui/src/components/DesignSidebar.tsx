@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import type { Issue } from "@paperclipai/shared";
 import { Boxes, CircleCheck, CirclePlus, FolderOpen, History, LayoutDashboard, MessageCircle, Package, Repeat, Search, Unplug, Users } from "lucide-react";
 import { useCompany } from "@/context/CompanyContext";
@@ -15,6 +16,7 @@ export type DesignSidebarRecentTask = Pick<Issue, "id" | "companyId" | "identifi
 
 /** Shared staged sidebar. The caller supplies company-scoped recent tasks and actions. */
 export function DesignSidebar({ onNewTask, recentTasks = [] }: { onNewTask: () => void; recentTasks?: readonly DesignSidebarRecentTask[] }) {
+  const { t: translateUi } = useUiTranslation();
   const { selectedCompany } = useCompany();
   const root = `/${selectedCompany?.issuePrefix ?? "PAP"}`;
   const companyRecentTasks = recentTasks.filter(task => task.companyId === selectedCompany?.id);
@@ -33,13 +35,13 @@ export function DesignSidebar({ onNewTask, recentTasks = [] }: { onNewTask: () =
             <SidebarNavItem className="design-sidebar-item" to={`${root}/chats`} label="Chat" icon={MessageCircle} />
           </div>
           <SidebarSection label="Work">
-            <SidebarNavItem className="design-sidebar-item" to={`${root}/issues`} label="Tasks" icon={CircleCheck} />
-            <SidebarNavItem className="design-sidebar-item" to={`${root}/projects`} label="Projects" icon={FolderOpen} />
+            <SidebarNavItem className="design-sidebar-item" to={`${root}/issues`} label={translateUi("interfaceCopy.tasks")} icon={CircleCheck} />
+            <SidebarNavItem className="design-sidebar-item" to={`${root}/projects`} label={translateUi("interfaceCopy.projects")} icon={FolderOpen} />
             <SidebarNavItem className="design-sidebar-item" to={`${root}/routines`} label="Routines" icon={Repeat} />
             <SidebarNavItem className="design-sidebar-item" to={`${root}/artifacts`} label="Artifacts" icon={Package} />
           </SidebarSection>
           <SidebarSection label="Org">
-            <SidebarNavItem className="design-sidebar-item" to={`${root}/agents`} label="Agents" icon={Users} />
+            <SidebarNavItem className="design-sidebar-item" to={`${root}/agents`} label={translateUi("interfaceCopy.agents")} icon={Users} />
             <SidebarNavItem className="design-sidebar-item" to={`${root}/skills`} label="Skills" icon={Boxes} />
             <SidebarNavItem className="design-sidebar-item" to={`${root}/apps`} label="Connectors" icon={Unplug} />
             <SidebarNavItem className="design-sidebar-item" to={`${root}/activity`} label="Audit" icon={History} />

@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useQueryView } from "@/components/QueryView";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -44,6 +45,7 @@ type DialogProps = {
 };
 
 export function GoogleWorkspaceServicesDialog(props: DialogProps) {
+  const { t: translateUi } = useUiTranslation();
   const existing = props.connection ?? null;
   const oauth = props.connection?.config?.oauth as { pendingWorkspaceServiceRequests?: Record<string, { requestedScopes?: unknown; requestedAt?: string }> } | undefined;
   const pendingRequests = oauth?.pendingWorkspaceServiceRequests;
@@ -51,7 +53,7 @@ export function GoogleWorkspaceServicesDialog(props: DialogProps) {
   const grantsView = useQueryView(grants);
   if (existing && !grants.data) return <Dialog open onOpenChange={open => { if (!open) props.onCancel(); }}><DialogContent>
     <DialogTitle>Connect Google Workspace</DialogTitle><DialogDescription>{(grantsView.kind === "error") ? "Could not load your saved service access. Your connection has not changed." : "Loading your saved service access…"}</DialogDescription>
-    <footer className="flex items-center justify-between gap-3"><Button variant="ghost" onClick={() => props.onCancel()}>Cancel</Button>{(grantsView.kind === "error") && <Button onClick={() => void grants.refetch()}>Try again</Button>}</footer>
+    <footer className="flex items-center justify-between gap-3"><Button variant="ghost" onClick={() => props.onCancel()}>{translateUi("interfaceCopy.cancel")}</Button>{(grantsView.kind === "error") && <Button onClick={() => void grants.refetch()}>{translateUi("interfaceCopy.tryAgain")}</Button>}</footer>
   </DialogContent></Dialog>;
   const grant = grants.data?.grants.find(grant => existing?.credentialPolicy === "per_user"
     ? grant.kind === "user" && grant.subjectUserId === grants.data?.currentUserId
@@ -78,6 +80,7 @@ export function GoogleWorkspaceServicesDialog(props: DialogProps) {
 }
 
 function ServicePicker({ onContinue, onCancel, initial = GOOGLE_WORKSPACE_DEFAULT_SELECTION }: DialogProps) {
+  const { t: translateUi } = useUiTranslation();
   const [selection, setSelection] = useState(initial);
   const empty = Object.keys(selection).length === 0;
   return <Dialog open onOpenChange={open => { if (!open) onCancel(selection); }}>
@@ -89,8 +92,8 @@ function ServicePicker({ onContinue, onCancel, initial = GOOGLE_WORKSPACE_DEFAUL
       <GoogleWorkspaceServiceFields value={selection} onChange={setSelection} />
       {empty && <p role="status" className="text-xs text-muted-foreground">Select at least one service to continue.</p>}
       <footer className="flex items-center justify-between gap-3 pt-4">
-        <Button variant="ghost" onClick={() => onCancel(selection)}>Cancel</Button>
-        <Button disabled={empty} onClick={() => onContinue(selection)}>Continue</Button>
+        <Button variant="ghost" onClick={() => onCancel(selection)}>{translateUi("interfaceCopy.cancel")}</Button>
+        <Button disabled={empty} onClick={() => onContinue(selection)}>{translateUi("interfaceCopy.continue")}</Button>
       </footer>
     </DialogContent>
   </Dialog>;

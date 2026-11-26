@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useWorkspaceIsolationControls } from "@/hooks/useWorkspaceIsolationControls";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@/lib/router";
@@ -194,6 +195,7 @@ export function IssueWorkspaceCard({
   onBrowseFiles,
   onOpenFileByPath,
 }: IssueWorkspaceCardProps) {
+  const { t: translateUi } = useUiTranslation();
   const { visible: workspaceIsolationControlsVisible } = useWorkspaceIsolationControls();
   const { selectedCompanyId } = useCompany();
   const companyId = issue.companyId ?? selectedCompanyId;
@@ -366,9 +368,7 @@ export function IssueWorkspaceCard({
                   className="h-6 px-2 text-xs"
                   onClick={handleSave}
                   disabled={!canSaveWorkspaceConfig}
-                >
-                  Save
-                </Button>
+                >{translateUi("interfaceCopy.save")}</Button>
               </>
             ) : (
               <Button

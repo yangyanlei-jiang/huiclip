@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { HelpCircle, PackageCheck } from "lucide-react";
@@ -52,6 +53,7 @@ function GitHubIdentitySection({
   loadError: boolean;
   onRetry: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const dedicatedLogin = dedicatedIdentity?.grant.providerTenant?.github?.login;
   const personalLogin = personalIdentity?.grant.providerTenant?.github?.login;
 
@@ -101,7 +103,7 @@ function GitHubIdentitySection({
         {!loading ? (
           <div className="flex flex-wrap items-center gap-2">
             {loadError ? (
-              <Button variant="outline" size="sm" onClick={onRetry}>Retry</Button>
+              <Button variant="outline" size="sm" onClick={onRetry}>{translateUi("interfaceCopy.retry")}</Button>
             ) : dedicatedIdentity ? (
               <Button variant="outline" size="sm" asChild>
                 <Link to={`/apps/${dedicatedIdentity.connection.id}/permissions`}>Manage GitHub identity</Link>
@@ -308,10 +310,11 @@ function InstallSaveStatusChip({
   unsaved: boolean;
   error: boolean;
 }) {
+  const { t: translateUi } = useUiTranslation();
   if (pending) return <span className="text-xs text-muted-foreground">Saving...</span>;
   if (error) return <span className="text-xs text-destructive">Could not save</span>;
-  if (unsaved) return <span className="text-xs text-muted-foreground">Unsaved changes</span>;
-  return <span className="text-xs text-muted-foreground">Saved</span>;
+  if (unsaved) return <span className="text-xs text-muted-foreground">{translateUi("interfaceCopy.unsavedChanges")}</span>;
+  return <span className="text-xs text-muted-foreground">{translateUi("interfaceCopy.saved")}</span>;
 }
 
 const POLICY_EFFECT_LABEL: Record<string, string> = {
@@ -333,6 +336,7 @@ const DENIED_TOOLS_DISPLAY_LIMIT = 30;
  * which access profiles and rules shape the final list.
  */
 export function AgentToolsTab({ agent, companyId }: { agent: AgentDetailRecord; companyId: string }) {
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const [installDraft, setInstallDraft] = useState<Record<string, boolean>>({});
   const lastSavedInstallRef = useRef<Record<string, boolean>>({});
@@ -623,10 +627,10 @@ export function AgentToolsTab({ agent, companyId }: { agent: AgentDetailRecord; 
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-border text-left text-xs text-muted-foreground">
-                    <th className="px-3 py-2 font-medium">Tool</th>
+                    <th className="px-3 py-2 font-medium">{translateUi("interfaceCopy.tool")}</th>
                     <th className="px-3 py-2 font-medium">Capability</th>
-                    <th className="px-3 py-2 font-medium">Risk</th>
-                    <th className="px-3 py-2 font-medium">Source</th>
+                    <th className="px-3 py-2 font-medium">{translateUi("interfaceCopy.risk")}</th>
+                    <th className="px-3 py-2 font-medium">{translateUi("interfaceCopy.source")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">

@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo, type MouseEvent } from "react";
 import { Link } from "react-router-dom";
 import type { SummarySlotIssueRef } from "@paperclipai/shared";
@@ -60,6 +61,7 @@ export function StatusCardTile({
   refreshPending,
   recompilePending,
 }: StatusCardTileProps) {
+  const { t: translateUi } = useUiTranslation();
   const lifecycle = deriveStatusCardLifecycle(card);
   const presentation = STATUS_CARD_LIFECYCLE_PRESENTATION[lifecycle];
   // A setup run is actually in flight when the card is compiling AND has a
@@ -134,9 +136,7 @@ export function StatusCardTile({
               <DropdownMenuItem onSelect={onEditInterest}>Edit interest &amp; settings</DropdownMenuItem>
               <DropdownMenuItem onSelect={onOpenDebug}>Query debug</DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onSelect={onArchive} variant="destructive">
-                Archive
-              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={onArchive} variant="destructive">{translateUi("interfaceCopy.archive")}</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -218,7 +218,7 @@ export function StatusCardTile({
             <span>
               {card.pendingChangeCount} {card.pendingChangeCount === 1 ? "change" : "changes"} since last update
             </span>
-            <span className="shrink-0 font-medium text-amber-700 dark:text-amber-400">Refresh</span>
+            <span className="shrink-0 font-medium text-amber-700 dark:text-amber-400">{translateUi("interfaceCopy.refresh")}</span>
           </button>
         ) : null}
 
@@ -229,12 +229,8 @@ export function StatusCardTile({
               Last update failed
             </span>
             <span className="flex shrink-0 items-center gap-3">
-              <button type="button" onClick={stopClick(onRefresh)} disabled={refreshPending} className="font-medium text-destructive hover:underline disabled:opacity-60">
-                Retry
-              </button>
-              <button type="button" onClick={stopClick(onOpen)} className="text-muted-foreground hover:underline">
-                Details
-              </button>
+              <button type="button" onClick={stopClick(onRefresh)} disabled={refreshPending} className="font-medium text-destructive hover:underline disabled:opacity-60">{translateUi("interfaceCopy.retry")}</button>
+              <button type="button" onClick={stopClick(onOpen)} className="text-muted-foreground hover:underline">{translateUi("interfaceCopy.details")}</button>
             </span>
           </div>
         ) : null}

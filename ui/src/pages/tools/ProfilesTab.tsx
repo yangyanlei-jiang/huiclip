@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo, useState } from "react";
 import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, Layers, Plus, Pencil, Trash2, Link2, ShieldCheck } from "lucide-react";
@@ -375,6 +376,7 @@ function EntryFields({
   applications: Array<{ id: string; name: string }>;
   connections: Array<{ id: string; name: string }>;
 }) {
+  const { t: translateUi } = useUiTranslation();
   return (
     <div className="grid gap-3 sm:grid-cols-(--gtc-60)">
       <div className="space-y-1.5">
@@ -406,7 +408,7 @@ function EntryFields({
       </div>
       {selectorType === "application" ? (
         <div className="space-y-1.5 sm:col-span-2">
-          <Label>Application</Label>
+          <Label>{translateUi("interfaceCopy.application")}</Label>
           <Select value={applicationId} onValueChange={setApplicationId}>
             <SelectTrigger>
               <SelectValue placeholder="Select an application" />
@@ -423,7 +425,7 @@ function EntryFields({
       ) : null}
       {selectorType === "connection" ? (
         <div className="space-y-1.5 sm:col-span-2">
-          <Label>Connection</Label>
+          <Label>{translateUi("interfaceCopy.connection")}</Label>
           <Select value={connectionId} onValueChange={setConnectionId}>
             <SelectTrigger>
               <SelectValue placeholder="Select a connection" />
@@ -472,6 +474,7 @@ function EntryFields({
 }
 
 export function EffectiveAgentPanel({ companyId, agentOptions }: { companyId: string; agentOptions: Array<{ id: string; name: string }> }) {
+  const { t: translateUi } = useUiTranslation();
   const [agentId, setAgentId] = useState("");
   const effective = useQuery({
     queryKey: agentId
@@ -485,7 +488,7 @@ export function EffectiveAgentPanel({ companyId, agentOptions }: { companyId: st
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
       <div className="space-y-1.5">
-        <Label>Agent</Label>
+        <Label>{translateUi("interfaceCopy.agent")}</Label>
         <AgentSelect agents={agentOptions} value={agentId} onChange={setAgentId} />
       </div>
       {!agentId ? (
@@ -564,6 +567,7 @@ function SourceBadge({ source }: { source: AllowSource }) {
 }
 
 function AllowList({ rows, catalogLoading }: { rows: AllowListRow[]; catalogLoading: boolean }) {
+  const { t: translateUi } = useUiTranslation();
   const patternCount = rows.filter((r) => r.source.kind === "pattern").length;
   const explicitCount = rows.filter((r) => r.source.kind === "explicit").length;
   const defaultCount = rows.filter((r) => r.source.kind === "default").length;
@@ -591,11 +595,11 @@ function AllowList({ rows, catalogLoading }: { rows: AllowListRow[]; catalogLoad
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-left text-xs text-muted-foreground">
-                  <th className="px-3 py-2.5 font-medium">Tool</th>
-                  <th className="px-3 py-2.5 font-medium">Application</th>
-                  <th className="px-3 py-2.5 font-medium">Capabilities</th>
-                  <th className="px-3 py-2.5 font-medium">Risk</th>
-                  <th className="px-3 py-2.5 font-medium">Source</th>
+                  <th className="px-3 py-2.5 font-medium">{translateUi("interfaceCopy.tool")}</th>
+                  <th className="px-3 py-2.5 font-medium">{translateUi("interfaceCopy.application")}</th>
+                  <th className="px-3 py-2.5 font-medium">{translateUi("interfaceCopy.capabilities")}</th>
+                  <th className="px-3 py-2.5 font-medium">{translateUi("interfaceCopy.risk")}</th>
+                  <th className="px-3 py-2.5 font-medium">{translateUi("interfaceCopy.source")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -643,6 +647,7 @@ function AllowList({ rows, catalogLoading }: { rows: AllowListRow[]; catalogLoad
 }
 
 export function ProfilesTab({ companyId }: { companyId: string }) {
+  const { t: translateUi } = useUiTranslation();
   const qc = useQueryClient();
   const { pushToast } = useToast();
   const [createOpen, setCreateOpen] = useState(false);
@@ -1034,7 +1039,7 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
           <div className="space-y-3">
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <Label htmlFor="profile-name">Name</Label>
+                <Label htmlFor="profile-name">{translateUi("interfaceCopy.name")}</Label>
                 <Input
                   id="profile-name"
                   value={name}
@@ -1046,12 +1051,12 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="profile-key">Key</Label>
+                <Label htmlFor="profile-key">{translateUi("interfaceCopy.key")}</Label>
                 <Input id="profile-key" value={profileKey} onChange={(event) => setProfileKey(event.target.value)} />
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="profile-description">Description</Label>
+              <Label htmlFor="profile-description">{translateUi("interfaceCopy.description")}</Label>
               <Textarea
                 id="profile-description"
                 value={description}
@@ -1073,14 +1078,14 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
                 </Select>
               </div>
               <div className="space-y-1.5">
-                <Label>Status</Label>
+                <Label>{translateUi("interfaceCopy.status")}</Label>
                 <Select value={status} onValueChange={(value) => setStatus(value as ToolProfileStatus)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="disabled">Disabled</SelectItem>
+                    <SelectItem value="active">{translateUi("interfaceCopy.active")}</SelectItem>
+                    <SelectItem value="disabled">{translateUi("interfaceCopy.disabled")}</SelectItem>
                     <SelectItem value="archived">Archived</SelectItem>
                   </SelectContent>
                 </Select>
@@ -1113,9 +1118,7 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
               setEditProfile(null);
               resetProfileForm();
               resetEntryForm();
-            }}>
-              Cancel
-            </Button>
+            }}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button disabled={!name.trim() || createProfile.isPending || updateProfile.isPending} onClick={saveProfile}>
               {editProfile ? "Save" : createProfile.isPending ? "Creating..." : "Create"}
             </Button>
@@ -1153,7 +1156,7 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
             connections={connectionOptions}
           />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEntryProfile(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setEntryProfile(null)}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button disabled={addEntry.isPending} onClick={saveEntry}>
               Add entry
             </Button>
@@ -1187,13 +1190,13 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
             </div>
             {targetType === "agent" ? (
               <div className="space-y-1.5">
-                <Label>Agent</Label>
+                <Label>{translateUi("interfaceCopy.agent")}</Label>
                 <AgentSelect agents={agentOptions} value={targetAgentId} onChange={setTargetAgentId} />
               </div>
             ) : null}
             {targetType === "project" ? (
               <div className="space-y-1.5">
-                <Label>Project</Label>
+                <Label>{translateUi("interfaceCopy.project")}</Label>
                 <Select value={targetProjectId} onValueChange={setTargetProjectId}>
                   <SelectTrigger><SelectValue placeholder="Select a project" /></SelectTrigger>
                   <SelectContent>
@@ -1220,12 +1223,12 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
               </div>
             ) : null}
             <div className="space-y-1.5">
-              <Label htmlFor="profile-priority">Priority</Label>
+              <Label htmlFor="profile-priority">{translateUi("interfaceCopy.priority")}</Label>
               <Input id="profile-priority" type="number" min={0} max={10000} value={priority} onChange={(event) => setPriority(event.target.value)} />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setBindProfileFor(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setBindProfileFor(null)}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button disabled={bind.isPending} onClick={saveBinding}>
               Bind
             </Button>

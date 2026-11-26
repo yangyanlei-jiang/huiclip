@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import type { IssueRelatedWorkItem, IssueRelatedWorkSummary } from "@paperclipai/shared";
 import { IssueReferencePill } from "./IssueReferencePill";
 import { ExternalObjectPill } from "./ExternalObjectPill";
@@ -98,6 +99,7 @@ function ExternalObjectsSection({
   isError: boolean;
   onRetry?: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   // Severity-first sort with most-recently-changed as the secondary sort.
   const sorted = [...groups].sort((a, b) => {
     const aTone = externalObjectToneSeverity(a.pill.statusCategory ? a.group.object?.statusTone ?? null : null);
@@ -125,9 +127,7 @@ function ExternalObjectsSection({
               type="button"
               onClick={onRetry}
               className="text-primary underline-offset-2 hover:underline"
-            >
-              Retry
-            </button>
+            >{translateUi("interfaceCopy.retry")}</button>
           ) : null}
         </p>
       ) : isLoading ? (

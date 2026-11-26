@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { AlertTriangle, Info, PauseCircle, User, X } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { AgentAvatar, type AvatarAgent } from "../AgentAvatar";
@@ -56,10 +57,11 @@ export function AssigneeChip({
   resolvers: HandoffChipResolvers;
   className?: string;
 }) {
+  const { t: translateUi } = useUiTranslation();
   if (assignee.agentId) {
     return (
       <span className={cn(CHIP_CLASS, className)} data-testid="handoff-assignee-chip" data-kind="agent">
-        <span className="sr-only">Agent </span>
+        <span className="sr-only">{translateUi("interfaceCopy.agent")}</span>
         <AgentAvatar agent={{ ...resolvers.agentMap?.get(assignee.agentId), id: assignee.agentId }} size={16} />
         <span className="max-w-(--sz-12rem) truncate">{agentName(assignee.agentId, resolvers)}</span>
       </span>

@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { type FormEvent, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
@@ -115,6 +116,7 @@ function buildTokenExpiresAt(value: string) {
 }
 
 export function GatewaysTab({ companyId }: { companyId: string }) {
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToast();
   const [creating, setCreating] = useState(false);
@@ -326,7 +328,7 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
             </label>
           </div>
           <label className="space-y-1.5 text-sm">
-            <span className="text-xs font-medium text-muted-foreground">Description</span>
+            <span className="text-xs font-medium text-muted-foreground">{translateUi("interfaceCopy.description")}</span>
             <textarea
               className="min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               value={createDraft.description}
@@ -338,9 +340,7 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
             <p className="text-xs text-muted-foreground">Create an access profile before adding a gateway.</p>
           ) : null}
           <div className="flex flex-wrap justify-end gap-2">
-            <Button type="button" variant="ghost" size="sm" onClick={() => setCreating(false)}>
-              Cancel
-            </Button>
+            <Button type="button" variant="ghost" size="sm" onClick={() => setCreating(false)}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button type="submit" size="sm" disabled={createDisabled || !createDraft.name.trim() || !createDraft.profileId}>
               {createGatewayMutation.isPending ? "Creating..." : "Create gateway"}
             </Button>
@@ -392,11 +392,11 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
 
                 <dl className="grid gap-x-4 gap-y-2 text-sm sm:grid-cols-2 lg:grid-cols-4">
                   <div>
-                    <dt className="text-xs font-medium text-muted-foreground">Owner</dt>
+                    <dt className="text-xs font-medium text-muted-foreground">{translateUi("interfaceCopy.owner")}</dt>
                     <dd className="mt-0.5 text-foreground">{formatOwner(gateway, agentNames)}</dd>
                   </div>
                   <div>
-                    <dt className="text-xs font-medium text-muted-foreground">Scope</dt>
+                    <dt className="text-xs font-medium text-muted-foreground">{translateUi("interfaceCopy.scope")}</dt>
                     <dd className="mt-0.5 text-foreground">{formatScope(gateway, projectNames, agentNames)}</dd>
                   </div>
                   <div>
@@ -464,7 +464,7 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
                         />
                       </label>
                       <label className="space-y-1.5 text-sm">
-                        <span className="text-xs font-medium text-muted-foreground">Expires</span>
+                        <span className="text-xs font-medium text-muted-foreground">{translateUi("interfaceCopy.expires")}</span>
                         <input
                           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                           type="date"
@@ -497,9 +497,7 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
                       ))}
                     </div>
                     <div className="flex flex-wrap justify-end gap-2">
-                      <Button type="button" variant="ghost" size="sm" onClick={() => setIssuingGatewayId(null)}>
-                        Cancel
-                      </Button>
+                      <Button type="button" variant="ghost" size="sm" onClick={() => setIssuingGatewayId(null)}>{translateUi("interfaceCopy.cancel")}</Button>
                       <Button
                         type="submit"
                         size="sm"

@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { AppNotFound, AppReadError } from "./app-detail/AppReadError";
 import { AiConnectionPoolConnector } from "@/components/ai-connections/AiConnectionPoolConnector";
 import { aiConnectionRouterPluginKey } from "@paperclipai/shared";
@@ -102,6 +103,7 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
   renderConnectionSettings?: (connection: ToolConnection) => ReactNode;
   onReconnect?: (connection: ToolConnection) => void;
 } = {}) {
+  const { t: translateUi } = useUiTranslation();
   const { connectionId = "", tab } = useParams<{ connectionId: string; tab?: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -532,7 +534,7 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
   }
 
   if (!selectedCompanyId) {
-    return <div className="p-6 text-sm text-muted-foreground">Select an organization to manage apps.</div>;
+    return <div className="p-6 text-sm text-muted-foreground">{translateUi("interfaceCopy.selectAnOrganizationToManageApps")}</div>;
   }
   if (connectionQuery.isLoading || connectionView.kind === "reconnecting") {
     return (
@@ -793,6 +795,7 @@ export function AppDetailHeader({
   onRenameCancel: () => void;
   onRenameSubmit: (value: string) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const unverifiedHost = unverifiedRemoteHost(connection);
   return (
     <header>
@@ -824,9 +827,7 @@ export function AppDetailHeader({
               <Button type="submit" size="sm" disabled={renamePending || !nameDraft.trim()}>
                 {renamePending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Save"}
               </Button>
-              <Button type="button" size="sm" variant="ghost" onClick={onRenameCancel} disabled={renamePending}>
-                Cancel
-              </Button>
+              <Button type="button" size="sm" variant="ghost" onClick={onRenameCancel} disabled={renamePending}>{translateUi("interfaceCopy.cancel")}</Button>
             </form>
           ) : (
             <div className="flex items-center gap-1.5">

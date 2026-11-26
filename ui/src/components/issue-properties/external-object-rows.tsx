@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useState, type ReactNode } from "react";
 import type { IssueExternalObjectGroup } from "../../hooks/useIssueExternalObjects";
 import {
@@ -167,6 +168,7 @@ export function ExternalObjectRows({
   externalObjectsError?: boolean;
   onRetryExternalObjects?: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
@@ -185,9 +187,7 @@ export function ExternalObjectRows({
                 type="button"
                 className="text-primary underline-offset-2 hover:underline"
                 onClick={onRetryExternalObjects}
-              >
-                Retry
-              </button>
+              >{translateUi("interfaceCopy.retry")}</button>
             </>
           ) : null}
         </span>

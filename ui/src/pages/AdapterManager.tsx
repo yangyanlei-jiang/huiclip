@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 /**
  * @fileoverview Adapter Manager page — install, view, and manage external adapters.
  *
@@ -188,6 +189,7 @@ function ReinstallDialog({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const { data: latestVersion, isLoading: isFetchingVersion } = useQuery({
     queryKey: ["npm-latest-version", adapter?.packageName],
     queryFn: () => {
@@ -242,9 +244,7 @@ function ReinstallDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onCancel} disabled={isReinstalling}>
-            Cancel
-          </Button>
+          <Button variant="outline" onClick={onCancel} disabled={isReinstalling}>{translateUi("interfaceCopy.cancel")}</Button>
           <Button disabled={isReinstalling} onClick={onConfirm}>
             {isReinstalling ? "Reinstalling..." : "Reinstall"}
           </Button>
@@ -255,6 +255,7 @@ function ReinstallDialog({
 }
 
 export function AdapterManager() {
+  const { t: translateUi } = useUiTranslation();
   const { selectedCompany } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const queryClient = useQueryClient();
@@ -495,7 +496,7 @@ export function AdapterManager() {
               )}
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setInstallDialogOpen(false)}>Cancel</Button>
+              <Button variant="outline" onClick={() => setInstallDialogOpen(false)}>{translateUi("interfaceCopy.cancel")}</Button>
               <Button
                 onClick={() =>
                   installMutation.mutate({
@@ -654,7 +655,7 @@ export function AdapterManager() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRemoveType(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setRemoveType(null)}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button
               variant="destructive"
               disabled={removeMutation.isPending}

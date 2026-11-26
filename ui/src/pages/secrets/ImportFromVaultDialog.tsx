@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -335,6 +336,7 @@ export function ImportFromVaultDialog({
   onImportComplete,
   onManageVaults,
 }: ImportFromVaultDialogProps) {
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const toast = useToastActions();
   const awsVaults = useMemo(() => awsVaultOptions(providerConfigs), [providerConfigs]);
@@ -726,9 +728,7 @@ export function ImportFromVaultDialog({
           />
           <div className="flex items-center gap-2">
             {step !== "result" && (
-              <Button variant="ghost" size="sm" onClick={() => handleClose()}>
-                Cancel
-              </Button>
+              <Button variant="ghost" size="sm" onClick={() => handleClose()}>{translateUi("interfaceCopy.cancel")}</Button>
             )}
             {step === "review" && (
               <Button
@@ -736,9 +736,7 @@ export function ImportFromVaultDialog({
                 size="sm"
                 onClick={() => setStep("select")}
                 disabled={importMutation.isPending}
-              >
-                Back
-              </Button>
+              >{translateUi("interfaceCopy.back")}</Button>
             )}
             {step === "select" && (
               <Button
@@ -769,9 +767,7 @@ export function ImportFromVaultDialog({
               </Button>
             )}
             {step === "result" && (
-              <Button size="sm" onClick={() => handleClose(true)}>
-                Done
-              </Button>
+              <Button size="sm" onClick={() => handleClose(true)}>{translateUi("interfaceCopy.done")}</Button>
             )}
           </div>
         </footer>
@@ -848,6 +844,7 @@ interface SelectStepProps {
 }
 
 function SelectStep(props: SelectStepProps) {
+  const { t: translateUi } = useUiTranslation();
   const {
     awsVaults,
     eligible,
@@ -1003,7 +1000,7 @@ function SelectStep(props: SelectStepProps) {
                 <th className="px-2 py-2 text-left font-medium">Reference</th>
                 <th className="px-2 py-2 text-left font-medium">Last changed</th>
                 <th className="px-2 py-2 text-left font-medium">Suggested name</th>
-                <th className="px-2 py-2 text-left font-medium">State</th>
+                <th className="px-2 py-2 text-left font-medium">{translateUi("interfaceCopy.state")}</th>
               </tr>
             </thead>
             <tbody data-testid="vault-table-body">
@@ -1193,6 +1190,7 @@ interface ReviewStepProps {
 }
 
 function ReviewStep({ drafts, reviewErrors, updateDraft, removeDraft, importing }: ReviewStepProps) {
+  const { t: translateUi } = useUiTranslation();
   if (drafts.length === 0) {
     return (
       <div className="flex min-h-0 flex-1 items-center justify-center p-6">
@@ -1255,7 +1253,7 @@ function ReviewStep({ drafts, reviewErrors, updateDraft, removeDraft, importing 
                       />
                     </label>
                     <label className="flex flex-col gap-1 text-xs">
-                      <span className="text-muted-foreground">Key</span>
+                      <span className="text-muted-foreground">{translateUi("interfaceCopy.key")}</span>
                       <Input
                         value={draft.key}
                         onChange={(e) =>
@@ -1323,6 +1321,7 @@ interface ResultStepProps {
 }
 
 function ResultStep({ result, draftList }: ResultStepProps) {
+  const { t: translateUi } = useUiTranslation();
   const grouped = useMemo(() => {
     const created: RemoteSecretImportRowResult[] = [];
     const skipped: RemoteSecretImportRowResult[] = [];
@@ -1360,7 +1359,7 @@ function ResultStep({ result, draftList }: ResultStepProps) {
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
         {grouped.created.length > 0 && (
-          <ResultGroup label="Created" rows={grouped.created} draftLookup={draftLookup} />
+          <ResultGroup label={translateUi("interfaceCopy.created")} rows={grouped.created} draftLookup={draftLookup} />
         )}
         {grouped.skipped.length > 0 && (
           <ResultGroup label="Skipped" rows={grouped.skipped} draftLookup={draftLookup} />

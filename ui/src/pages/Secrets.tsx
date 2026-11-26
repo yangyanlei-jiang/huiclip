@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -650,6 +651,7 @@ export function getAwsManagedPathPreview(input: {
 }
 
 export function Secrets() {
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -1954,9 +1956,7 @@ export function Secrets() {
               <Button type="button" size="sm" onClick={stageNewFolder}>
                 Create folder
               </Button>
-              <Button type="button" variant="ghost" size="sm" onClick={closeNewFolder}>
-                Cancel
-              </Button>
+              <Button type="button" variant="ghost" size="sm" onClick={closeNewFolder}>{translateUi("interfaceCopy.cancel")}</Button>
             </div>
           ) : null}
           <div>
@@ -2032,10 +2032,10 @@ export function Secrets() {
                     role="row"
                     className="grid grid-cols-(--gtc-54) items-center gap-3 bg-muted/40 px-3 py-2 text-xs uppercase tracking-wide text-muted-foreground"
                   >
-                    <div role="columnheader" className="font-medium">Secret</div>
-                    <div role="columnheader" className="font-medium">Status</div>
+                    <div role="columnheader" className="font-medium">{translateUi("interfaceCopy.secret")}</div>
+                    <div role="columnheader" className="font-medium">{translateUi("interfaceCopy.status")}</div>
                     <div role="columnheader" className="font-medium">Version / coverage</div>
-                    <div role="columnheader" className="font-medium">Updated</div>
+                    <div role="columnheader" className="font-medium">{translateUi("interfaceCopy.updated")}</div>
                     <div role="columnheader" className="sr-only">Actions</div>
                   </div>
                   <div role="rowgroup">
@@ -2609,7 +2609,7 @@ export function Secrets() {
                   }}
                 >
                   <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="company">Organization</TabsTrigger>
+                    <TabsTrigger value="company">{translateUi("interfaceCopy.organization")}</TabsTrigger>
                     <TabsTrigger value="user">Each user</TabsTrigger>
                   </TabsList>
                 </Tabs>
@@ -2623,13 +2623,13 @@ export function Secrets() {
               <Tabs value={createMode} onValueChange={(value) => setCreateMode(value as CreateMode)}>
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="managed">Managed value</TabsTrigger>
-                  <TabsTrigger value="external">External reference</TabsTrigger>
+                  <TabsTrigger value="external">{translateUi("interfaceCopy.externalReference")}</TabsTrigger>
                 </TabsList>
               </Tabs>
             ) : null}
 
             <div>
-              <label className="text-xs font-medium" htmlFor="new-secret-name">Name</label>
+              <label className="text-xs font-medium" htmlFor="new-secret-name">{translateUi("interfaceCopy.name")}</label>
               {createNamePrefix && !editingDefinition ? (
                 <div className="flex h-9 w-full min-w-0 items-center gap-1.5 rounded-md border border-input bg-transparent px-2 shadow-xs transition-[color,box-shadow] focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-3">
                   <span
@@ -2695,7 +2695,7 @@ export function Secrets() {
 
             {secretValueProvider === "company" && createMode === "managed" ? (
               <div>
-                <label className="text-xs font-medium" htmlFor="new-secret-value">Value</label>
+                <label className="text-xs font-medium" htmlFor="new-secret-value">{translateUi("interfaceCopy.value")}</label>
                 <Textarea
                   id="new-secret-value"
                   value={createForm.value}
@@ -2710,7 +2710,7 @@ export function Secrets() {
             ) : null}
             {secretValueProvider === "company" && createMode === "external" ? (
               <div>
-                <label className="text-xs font-medium" htmlFor="new-secret-ref">External reference</label>
+                <label className="text-xs font-medium" htmlFor="new-secret-ref">{translateUi("interfaceCopy.externalReference")}</label>
                 <Input
                   id="new-secret-ref"
                   value={createForm.externalRef}
@@ -2751,7 +2751,7 @@ export function Secrets() {
 
             <div>
               <div className="flex items-center justify-between">
-                <label className="text-xs font-medium" htmlFor="new-secret-key">Key</label>
+                <label className="text-xs font-medium" htmlFor="new-secret-key">{translateUi("interfaceCopy.key")}</label>
                 {!createKeyEditable && !editingDefinition ? (
                   <Button
                     type="button"
@@ -2810,7 +2810,7 @@ export function Secrets() {
               <>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
-                  <label className="text-xs font-medium" htmlFor="new-secret-provider">Provider</label>
+                  <label className="text-xs font-medium" htmlFor="new-secret-provider">{translateUi("interfaceCopy.provider")}</label>
                   <select
                     id="new-secret-provider"
                     className="h-9 w-full rounded-md border border-border bg-background px-2 text-sm outline-none"
@@ -2859,7 +2859,7 @@ export function Secrets() {
                   ) : null}
                 </div>
                 <div>
-                  <label className="text-xs font-medium" htmlFor="new-secret-vault">Provider vault</label>
+                  <label className="text-xs font-medium" htmlFor="new-secret-vault">{translateUi("interfaceCopy.providerVault")}</label>
                   <select
                     id="new-secret-vault"
                     className="h-9 w-full rounded-md border border-border bg-background px-2 text-sm outline-none"
@@ -2910,9 +2910,7 @@ export function Secrets() {
             ) : null}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateOpen(false)}>
-              Cancel
-            </Button>
+            <Button variant="outline" onClick={() => setCreateOpen(false)}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button
               onClick={() => {
                 setCreateError(null);
@@ -2951,7 +2949,7 @@ export function Secrets() {
           <div className="space-y-4">
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
-                <label className="text-xs font-medium" htmlFor="vault-provider">Provider</label>
+                <label className="text-xs font-medium" htmlFor="vault-provider">{translateUi("interfaceCopy.provider")}</label>
                 <select
                   id="vault-provider"
                   className="h-9 w-full rounded-md border border-border bg-background px-2 text-sm outline-none disabled:opacity-60"
@@ -2983,7 +2981,7 @@ export function Secrets() {
                 />
               </div>
               <div>
-                <label className="text-xs font-medium" htmlFor="vault-status">Status</label>
+                <label className="text-xs font-medium" htmlFor="vault-status">{translateUi("interfaceCopy.status")}</label>
                 <select
                   id="vault-status"
                   className="h-9 w-full rounded-md border border-border bg-background px-2 text-sm outline-none"
@@ -3048,9 +3046,7 @@ export function Secrets() {
             {vaultError ? <p className="text-xs text-destructive">{vaultError}</p> : null}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setVaultDialogOpen(false)}>
-              Cancel
-            </Button>
+            <Button variant="outline" onClick={() => setVaultDialogOpen(false)}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button
               onClick={() => {
                 setVaultError(null);
@@ -3094,7 +3090,7 @@ export function Secrets() {
             </Tabs>
           ) : null}
           <div>
-            <label className="text-xs font-medium" htmlFor="rotate-secret-vault">Provider vault</label>
+            <label className="text-xs font-medium" htmlFor="rotate-secret-vault">{translateUi("interfaceCopy.providerVault")}</label>
             <select
               id="rotate-secret-vault"
               className="h-9 w-full rounded-md border border-border bg-background px-2 text-sm outline-none"
@@ -3123,7 +3119,7 @@ export function Secrets() {
           </div>
           {selectedSecret?.managedMode === "external_reference" && rotateMode === "reference" ? (
             <div>
-              <label className="text-xs font-medium" htmlFor="rotate-ref">External reference</label>
+              <label className="text-xs font-medium" htmlFor="rotate-ref">{translateUi("interfaceCopy.externalReference")}</label>
               <Input
                 id="rotate-ref"
                 value={rotateExternalRef}
@@ -3155,9 +3151,7 @@ export function Secrets() {
           )}
           {rotateError ? <p className="text-xs text-destructive">{rotateError}</p> : null}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRotateOpen(false)}>
-              Cancel
-            </Button>
+            <Button variant="outline" onClick={() => setRotateOpen(false)}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button
               onClick={() => {
                 setRotateError(null);
@@ -3189,7 +3183,7 @@ export function Secrets() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteConfirm(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setDeleteConfirm(null)}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button
               variant="destructive"
               onClick={() => deleteConfirm && deleteMutation.mutate(deleteConfirm.id)}
@@ -3215,7 +3209,7 @@ export function Secrets() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDefinitionDeleteConfirm(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setDefinitionDeleteConfirm(null)}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button
               variant="destructive"
               onClick={() =>
@@ -3253,7 +3247,7 @@ export function Secrets() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRemoveVaultConfirm(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setRemoveVaultConfirm(null)}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button
               variant="destructive"
               onClick={() => removeVaultConfirm && removeVaultMutation.mutate(removeVaultConfirm.id)}
@@ -3271,6 +3265,7 @@ export function Secrets() {
 }
 
 function SecretsHowToUse() {
+  const { t: translateUi } = useUiTranslation();
   return (
     <div className="flex items-start gap-2 rounded-md border border-border bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
       <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
@@ -3279,7 +3274,7 @@ function SecretsHowToUse() {
         <p>
           Create or link a secret here, then open an agent&apos;s Environment variables or a project&apos;s Env field.
           Add the env key the process expects, for example <code className="font-mono">GH_TOKEN</code>, choose{" "}
-          <span className="font-medium text-foreground">Secret</span>, and select the stored secret version.
+          <span className="font-medium text-foreground">{translateUi("interfaceCopy.secret")}</span>, and select the stored secret version.
         </p>
         <p>
           Paperclip resolves the value server-side when the run starts and injects it as that env var. Project env
@@ -3309,6 +3304,7 @@ function SecretsFiltersPopover({
   onProviderChange: (value: SecretProvider | "all") => void;
   onProvidedByChange: (value: ProvidedByFilter) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const resetFilters = () => {
     onStatusChange("active");
     onProviderChange("all");
@@ -3345,7 +3341,7 @@ function SecretsFiltersPopover({
       >
         <div className="space-y-3 p-3">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">Filters</span>
+            <span className="text-sm font-medium">{translateUi("interfaceCopy.filters")}</span>
             {activeFilterCount > 0 ? (
               <button
                 type="button"
@@ -3360,7 +3356,7 @@ function SecretsFiltersPopover({
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div className="space-y-1">
-              <span className="text-xs text-muted-foreground">Status</span>
+              <span className="text-xs text-muted-foreground">{translateUi("interfaceCopy.status")}</span>
               <div className="space-y-0.5">
                 {statusOptions.map((option) => (
                   <label key={option.value} className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1 hover:bg-accent/50">
@@ -3394,7 +3390,7 @@ function SecretsFiltersPopover({
             </div>
 
             <div className="space-y-1">
-              <span className="text-xs text-muted-foreground">Provider</span>
+              <span className="text-xs text-muted-foreground">{translateUi("interfaceCopy.provider")}</span>
               <div className="max-h-48 space-y-0.5 overflow-y-auto pr-1">
                 <label className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1 hover:bg-accent/50">
                   <Checkbox
@@ -3941,6 +3937,7 @@ function AwsProviderVaultDiscoveryError({
   form: ProviderVaultForm;
   error: unknown;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const details = apiErrorDetails(error);
   const isAccessDenied = isAwsDiscoveryAccessDenied(error);
   const region = (details?.region ?? form.region.trim()) || "unspecified";
@@ -3995,7 +3992,7 @@ function AwsProviderVaultDiscoveryError({
               <dd>{details?.operation ?? "secret_provider_config.discovery.preview"}</dd>
             </div>
             <div>
-              <dt className="font-medium">Provider</dt>
+              <dt className="font-medium">{translateUi("interfaceCopy.provider")}</dt>
               <dd>{details?.provider ?? "aws_secrets_manager"}</dd>
             </div>
             <div>
@@ -4027,6 +4024,7 @@ function SecretCreateError({
   provider: SecretProvider;
   providerConfigId: string | null;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const details = apiErrorDetails(error);
   const message = readableErrorMessage(error);
   const isAwsCreateError =
@@ -4088,7 +4086,7 @@ function SecretCreateError({
               </div>
             ) : null}
             <div>
-              <dt className="font-medium">Provider vault</dt>
+              <dt className="font-medium">{translateUi("interfaceCopy.providerVault")}</dt>
               <dd className="break-all">{details?.providerConfigId ?? providerConfigId ?? "Deployment default"}</dd>
             </div>
             <div>
@@ -4232,16 +4230,17 @@ function UserSecretDetailsTab({
   definition: UserSecretDefinition;
   onViewCoverage: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   return (
     <dl className="divide-y divide-border/60 text-xs">
-      <DetailRow label="Description">
+      <DetailRow label={translateUi("interfaceCopy.description")}>
         <span>{definition.description ?? <span className="text-muted-foreground">—</span>}</span>
       </DetailRow>
       <DetailRow label="Provided by">Each user</DetailRow>
-      <DetailRow label="Key">
+      <DetailRow label={translateUi("interfaceCopy.key")}>
         <code>{definition.key}</code>
       </DetailRow>
-      <DetailRow label="Status"><StatusBadge status={definition.status} /></DetailRow>
+      <DetailRow label={translateUi("interfaceCopy.status")}><StatusBadge status={definition.status} /></DetailRow>
       <DetailRow label="Coverage">
         <button
           type="button"
@@ -4252,8 +4251,8 @@ function UserSecretDetailsTab({
           <span className="shrink-0 text-muted-foreground">· View in Coverage</span>
         </button>
       </DetailRow>
-      <DetailRow label="Created">{formatRelative(definition.createdAt)}</DetailRow>
-      <DetailRow label="Updated">{formatRelative(definition.updatedAt)}</DetailRow>
+      <DetailRow label={translateUi("interfaceCopy.created")}>{formatRelative(definition.createdAt)}</DetailRow>
+      <DetailRow label={translateUi("interfaceCopy.updated")}>{formatRelative(definition.updatedAt)}</DetailRow>
       <DetailRow label="Usage guidance">
         {definition.usageGuidance ?? <span className="text-muted-foreground">—</span>}
       </DetailRow>
@@ -4271,6 +4270,7 @@ function UserSecretCoverageTab({
   companyId: string;
   definitionId: string;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const coverageQuery = useQuery({
     queryKey: queryKeys.secrets.userDefinitionCoverage(companyId, definitionId),
     queryFn: () => secretsApi.userSecretDefinitionCoverage(companyId, definitionId),
@@ -4308,7 +4308,7 @@ function UserSecretCoverageTab({
           <div className="text-lg font-semibold text-muted-foreground">
             {summary.inactiveCount}
           </div>
-          <div className="text-muted-foreground">Inactive</div>
+          <div className="text-muted-foreground">{translateUi("interfaceCopy.inactive")}</div>
         </div>
       </div>
       <p className="text-xs text-muted-foreground">
@@ -4391,6 +4391,7 @@ function AgentAccessSection({
   companyId: string;
   reference: AgentAccessReference;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const [selectedAgentId, setSelectedAgentId] = useState("");
@@ -4575,9 +4576,7 @@ function AgentAccessSection({
               <label
                 className="text-(length:--text-micro) font-medium text-muted-foreground"
                 htmlFor="agent-access-agent"
-              >
-                Agent
-              </label>
+              >{translateUi("interfaceCopy.agent")}</label>
               <AgentSelect
                 id="agent-access-agent"
                 agents={grantableAgents}
@@ -4645,19 +4644,20 @@ function SecretDetailsTab({
   providerConfigs: CompanySecretProviderConfig[];
   onViewUsage: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const bindingLabel = (secret.referenceCount ?? 0) === 1
     ? "1 binding"
     : `${secret.referenceCount ?? 0} bindings`;
 
   return (
     <dl className="divide-y divide-border/60 text-xs">
-      <DetailRow label="Description">
+      <DetailRow label={translateUi("interfaceCopy.description")}>
         <span>{secret.description ?? <span className="text-muted-foreground">—</span>}</span>
       </DetailRow>
-      <DetailRow label="Provided by">Organization</DetailRow>
+      <DetailRow label="Provided by">{translateUi("interfaceCopy.organization")}</DetailRow>
       <DetailRow label="Custody">{modeLabel(secret.managedMode)}</DetailRow>
-      <DetailRow label="Provider">{providerLabel(providers, secret.provider)}</DetailRow>
-      <DetailRow label="Provider vault">{providerVaultLabel(providerConfigs, secret.providerConfigId)}</DetailRow>
+      <DetailRow label={translateUi("interfaceCopy.provider")}>{providerLabel(providers, secret.provider)}</DetailRow>
+      <DetailRow label={translateUi("interfaceCopy.providerVault")}>{providerVaultLabel(providerConfigs, secret.providerConfigId)}</DetailRow>
       <DetailRow label="External ARN">
         {secret.externalRef ? (
           <span className="break-all font-mono">{secret.externalRef}</span>
@@ -4676,8 +4676,8 @@ function SecretDetailsTab({
           <span className="text-muted-foreground">· View in Usage</span>
         </button>
       </DetailRow>
-      <DetailRow label="Created">{formatRelative(secret.createdAt)}</DetailRow>
-      <DetailRow label="Updated">{formatRelative(secret.updatedAt)}</DetailRow>
+      <DetailRow label={translateUi("interfaceCopy.created")}>{formatRelative(secret.createdAt)}</DetailRow>
+      <DetailRow label={translateUi("interfaceCopy.updated")}>{formatRelative(secret.updatedAt)}</DetailRow>
       <DetailRow label="Last rotated">{formatRelative(secret.lastRotatedAt)}</DetailRow>
       <DetailRow label="Last resolved">{formatRelative(secret.lastResolvedAt)}</DetailRow>
       <div className="mt-3 rounded-md border border-amber-500/30 bg-amber-500/5 p-2 text-(length:--text-micro) text-amber-700 dark:text-amber-300">

@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useId, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { PROMPT_INJECTION_DEFAULT_MODEL, updatePromptInjectionPreventionSchema,
@@ -25,6 +26,7 @@ export function PromptInjectionPreventionSettingsView({ settings, choices, model
   onSave: (settings: UpdatePromptInjectionPrevention) => void; onTest: () => void; onAdd?: () => void;
   onConnectionChange?: (id: string | null) => void; onDraftChange?: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [draft, setDraft] = useState(() => editable(settings));
   const modelId = useId();
   const revision = JSON.stringify(editable(settings)), draftRevision = JSON.stringify(draft);
@@ -61,7 +63,7 @@ export function PromptInjectionPreventionSettingsView({ settings, choices, model
     {draft.connectionId && <fieldset disabled={saving || testing} className="space-y-4">
       {(!selected || selected.status !== "connected") && <p role="status" className="text-sm text-muted-foreground">The saved connection is unavailable. Choose a replacement, disable model checks, or clear the selection. Built-in detection stays active.</p>}
       <div className="space-y-2">
-        <label htmlFor={`${modelId}-input`} className="text-sm font-medium">Model</label>
+        <label htmlFor={`${modelId}-input`} className="text-sm font-medium">{translateUi("interfaceCopy.model")}</label>
         <Input id={`${modelId}-input`} list={modelId} value={draft.model} placeholder={PROMPT_INJECTION_DEFAULT_MODEL}
           onChange={e => setDraft(d => ({ ...d, model: e.target.value }))} />
         <datalist id={modelId}>{models.map(m => <option key={m.id} value={m.id}>{m.label ?? m.id}</option>)}</datalist>
@@ -87,6 +89,7 @@ export function PromptInjectionPreventionSettingsView({ settings, choices, model
   </section>;
 }
 export function PromptInjectionPreventionSettingsSection({ companyId }: { companyId: string }) {
+  const { t: translateUi } = useUiTranslation();
   const client = useQueryClient(), key = ["prompt-injection-prevention", companyId];
   const query = useQuery({ queryKey: key, queryFn: () => promptInjectionPreventionApi.settings(companyId) });
   const [adding, setAdding] = useState(false), [newlyConnectedId, setNewlyConnectedId] = useState<string | null>(null), [connectionId, setConnectionId] = useState<string | null>(null);
@@ -101,7 +104,7 @@ export function PromptInjectionPreventionSettingsSection({ companyId }: { compan
   const save = useMutation({ mutationFn: (data: UpdatePromptInjectionPrevention) => promptInjectionPreventionApi.update(companyId, data),
     onSuccess: settings => { test.reset(); client.setQueryData(key, { ...query.data, settings }); } });
   if (query.isPending) return <p className="text-sm text-muted-foreground">Loading prompt injection settings…</p>;
-  if (query.error) return <div role="alert" className="space-y-2"><p className="text-sm text-destructive">Could not load prompt injection settings.</p><Button variant="outline" onClick={() => void query.refetch()}>Try again</Button></div>;
+  if (query.error) return <div role="alert" className="space-y-2"><p className="text-sm text-destructive">Could not load prompt injection settings.</p><Button variant="outline" onClick={() => void query.refetch()}>{translateUi("interfaceCopy.tryAgain")}</Button></div>;
   if (!query.data?.canManage || !query.data.settings) return null;
   return <>
     <PromptInjectionPreventionSettingsView key={companyId} settings={query.data.settings} choices={query.data.choices} models={models.data}

@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { SpekoPhoneLine } from "@/components/voice/SpekoPhoneLine";
 import { SpekoIncomingCalls } from "@/components/voice/SpekoIncomingCalls";
 import { SpekoCallActivityItem, SpekoUnapprovedCallActivityItem, useSpekoCallHistory } from "@/components/voice/SpekoCallHistory";
@@ -479,6 +480,7 @@ function Settings({
   endpointId: string;
   endpoint: Awaited<ReturnType<typeof chatEndpointsApi.get>>;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToast();
   const resourcesQuery = useQuery({
@@ -583,7 +585,7 @@ function Settings({
                 />
               </div>
               <details className="text-sm">
-                <summary className="cursor-pointer text-muted-foreground">Task defaults</summary>
+                <summary className="cursor-pointer text-muted-foreground">{translateUi("interfaceCopy.taskDefaults")}</summary>
                 <div className="pt-3"><ChatExecutionDefaults
                   companyId={endpoint.companyId}
                   value={resource.executionDefaults}
@@ -894,6 +896,7 @@ function Activity({
   endpointId: string;
   endpoint: Awaited<ReturnType<typeof chatEndpointsApi.get>>;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { pushToast } = useToast();
@@ -1197,8 +1200,8 @@ function Activity({
       </details>
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-3">
-          <h3 className="text-sm font-semibold">Recent activity</h3>
-          {endpoint.provider === "speko" && !cursor && <Button size="sm" variant="ghost" onClick={() => { void query.refetch(); calls.onRetry(); }} disabled={query.isFetching || calls.loading}>Refresh</Button>}
+          <h3 className="text-sm font-semibold">{translateUi("interfaceCopy.recentActivity")}</h3>
+          {endpoint.provider === "speko" && !cursor && <Button size="sm" variant="ghost" onClick={() => { void query.refetch(); calls.onRetry(); }} disabled={query.isFetching || calls.loading}>{translateUi("interfaceCopy.refresh")}</Button>}
         </div>
         {endpoint.provider === "agentmail" && rows.some((item) => item.kind === "publication" && item.status === "delivery_unknown") && (
           <p className="text-sm text-muted-foreground">
@@ -1303,8 +1306,8 @@ function Activity({
       <nav aria-label="Activity pagination" className="flex items-center justify-between gap-3">
         <span className="text-xs text-muted-foreground">Page {cursors.length}</span>
         <div className="flex items-center gap-2">
-          <Button size="sm" variant="outline" disabled={cursors.length === 1 || query.isFetching} onClick={() => setCursors((pages) => pages.slice(0, -1))}>Previous</Button>
-          <Button size="sm" variant="outline" disabled={!query.data?.nextCursor || query.isFetching || view.kind === "error"} onClick={() => { if (query.data?.nextCursor) setCursors((pages) => [...pages, query.data.nextCursor!]); }}>Next</Button>
+          <Button size="sm" variant="outline" disabled={cursors.length === 1 || query.isFetching} onClick={() => setCursors((pages) => pages.slice(0, -1))}>{translateUi("interfaceCopy.previous")}</Button>
+          <Button size="sm" variant="outline" disabled={!query.data?.nextCursor || query.isFetching || view.kind === "error"} onClick={() => { if (query.data?.nextCursor) setCursors((pages) => [...pages, query.data.nextCursor!]); }}>{translateUi("interfaceCopy.next")}</Button>
         </div>
       </nav>
       <AlertDialog
@@ -1418,7 +1421,7 @@ function Activity({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{translateUi("interfaceCopy.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               disabled={lifecycle.isPending}

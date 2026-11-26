@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { ChevronDown, ChevronRight, ScrollText } from "lucide-react";
@@ -164,6 +165,7 @@ function ActivityRow({
   event: ToolGatewayActivityEvent;
   ruleNamesById: Map<string, string>;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
@@ -260,9 +262,7 @@ function ActivityRow({
               </Link>
             ) : null}
             {runId && agentId ? (
-              <Link to={`/agents/${agentId}/runs/${runId}`} className="text-primary hover:underline">
-                View run
-              </Link>
+              <Link to={`/agents/${agentId}/runs/${runId}`} className="text-primary hover:underline">{translateUi("interfaceCopy.viewRun")}</Link>
             ) : null}
           </div>
 
@@ -325,6 +325,7 @@ function ActivityRow({
 }
 
 export function AuditTab({ companyId }: { companyId: string }) {
+  const { t: translateUi } = useUiTranslation();
   const [app, setApp] = useState<string>(ALL);
   const [agent, setAgent] = useState<string>(ALL);
   const [outcome, setOutcome] = useState<string>(ALL);
@@ -399,7 +400,7 @@ export function AuditTab({ companyId }: { companyId: string }) {
   return (
     <div className="space-y-4">
       <ToolsPageHeader
-        title="Activity"
+        title={translateUi("interfaceCopy.activity")}
         description="What your agents actually did with your apps, newest first. Each line is one decision — allowed, blocked, asked first, waiting, or failed."
       />
 

@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import type { CostByUserReport } from "@paperclipai/shared";
 import { CostAmount } from "./CostAmount";
 import { Identity } from "./Identity";
@@ -5,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { formatTokens } from "../lib/utils";
 
 export function CostByUserTable({ report }: { report: CostByUserReport }) {
+  const { t: translateUi } = useUiTranslation();
   return (
     <Card className="gap-3 py-4">
       <CardHeader className="gap-0 px-5">
@@ -16,10 +18,10 @@ export function CostByUserTable({ report }: { report: CostByUserReport }) {
             <thead className="text-muted-foreground">
               <tr className="border-b border-border">
                 <th scope="col" className="py-2 pr-4 text-left font-medium">User</th>
-                <th scope="col" className="px-4 py-2 text-right font-medium">Runs</th>
-                <th scope="col" className="px-4 py-2 text-right font-medium">Input</th>
-                <th scope="col" className="px-4 py-2 text-right font-medium">Output</th>
-                <th scope="col" className="py-2 pl-4 text-right font-medium">Cost</th>
+                <th scope="col" className="px-4 py-2 text-right font-medium">{translateUi("interfaceCopy.runs")}</th>
+                <th scope="col" className="px-4 py-2 text-right font-medium">{translateUi("interfaceCopy.input")}</th>
+                <th scope="col" className="px-4 py-2 text-right font-medium">{translateUi("interfaceCopy.output")}</th>
+                <th scope="col" className="py-2 pl-4 text-right font-medium">{translateUi("interfaceCopy.cost")}</th>
               </tr>
             </thead>
             <tbody>

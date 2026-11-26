@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useId, useState, type ComponentProps, type CSSProperties, type ReactNode } from "react";
 import { Bot, Search, User } from "lucide-react";
 import type { IssueFiltersPopover } from "./IssueFiltersPopover";
@@ -30,6 +31,7 @@ function FilterRow({ label, checked, onToggle, icon }: { label: string; checked:
 
 /** The collection retains ownership of filter state. */
 export function IssueFilterPanel({ state, onChange, activeFilterCount, agents = [], projects = [], labels = [], creators = [], currentUserId, onClear, enableRoutineTasksFilter, enableAgentCreatedVisibilityFilter, enableLiveRunsFilter = true }: PanelProps) {
+  const { t: translateUi } = useUiTranslation();
   const [queries, setQueries] = useState({ projects: "", creators: "", assignees: "", labels: "" });
   const search = (key: keyof typeof queries) => (value: string) => setQueries(current => ({ ...current, [key]: value }));
   const visibleProjects = searchIssueFilterOptions(projects, queries.projects, option => option.name);
@@ -38,10 +40,10 @@ export function IssueFilterPanel({ state, onChange, activeFilterCount, agents = 
   const visibleAssignees = searchIssueFilterOptions(assignees, queries.assignees, option => option.name);
   const visibleLabels = searchIssueFilterOptions(labels, queries.labels, option => option.name);
   return <>
-    <FlyoutHeader className="task-filters-header"><span>Filters</span>{activeFilterCount ? <Button variant="ghost" onClick={() => { onClear(); setQueries({ projects: "", creators: "", assignees: "", labels: "" }); }}>Clear</Button> : null}</FlyoutHeader>
+    <FlyoutHeader className="task-filters-header"><span>{translateUi("interfaceCopy.filters")}</span>{activeFilterCount ? <Button variant="ghost" onClick={() => { onClear(); setQueries({ projects: "", creators: "", assignees: "", labels: "" }); }}>{translateUi("interfaceCopy.clear")}</Button> : null}</FlyoutHeader>
     <div className="task-filters-grid">
       <div className="task-filter-group">
-        <FilterGroup title="Status" optionsKey="statuses">
+        <FilterGroup title={translateUi("interfaceCopy.status")} optionsKey="statuses">
           {issueStatusOrder.map(status => <FilterRow key={status} label={issueFilterLabel(status)} checked={state.statuses.includes(status)} onToggle={() => onChange({ statuses: toggleIssueFilterValue(state.statuses, status) })} icon={<StatusIcon status={status} />} />)}
         </FilterGroup>
         {enableLiveRunsFilter || enableAgentCreatedVisibilityFilter || enableRoutineTasksFilter ? <FilterGroup title="Visibility" optionsKey="visibility">
@@ -50,7 +52,7 @@ export function IssueFilterPanel({ state, onChange, activeFilterCount, agents = 
           {enableRoutineTasksFilter ? <FilterRow label="Routine tasks" checked={state.routineTasksOnly === true} onToggle={() => onChange({ routineTasksOnly: !state.routineTasksOnly })} /> : null}
         </FilterGroup> : null}
       </div>
-      <FilterGroup title="Project" optionsKey="projects" searchLabel="projects" query={queries.projects} onQueryChange={search("projects")}>
+      <FilterGroup title={translateUi("interfaceCopy.project")} optionsKey="projects" searchLabel="projects" query={queries.projects} onQueryChange={search("projects")}>
         {visibleProjects.map(project => <FilterRow key={project.id} label={project.name} checked={state.projects.includes(project.id)} onToggle={() => onChange({ projects: toggleIssueFilterValue(state.projects, project.id) })} />)}
         {!visibleProjects.length ? <p className="task-filter-empty">{queries.projects ? "No projects match." : "No projects available."}</p> : null}
       </FilterGroup>

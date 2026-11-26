@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Search as SearchIcon, AlertTriangle, FileQuestion, Plus, X } from "lucide-react";
@@ -133,6 +134,7 @@ function shapeError(error: unknown): { message: string; status?: number } {
 }
 
 export function Search() {
+  const { t: translateUi } = useUiTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { openNewIssue } = useDialogActions();
@@ -551,7 +553,7 @@ export function Search() {
   return (
     <div className="flex h-full min-h-0 flex-col" data-page="search">
       <div className="border-b border-border px-4 py-3 sm:px-6">
-        <h1 className="sr-only">Search</h1>
+        <h1 className="sr-only">{translateUi("interfaceCopy.search")}</h1>
         <div className="relative">
           <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -579,7 +581,7 @@ export function Search() {
             <button
               type="button"
               onClick={handleClear}
-              aria-label="Clear search"
+              aria-label={translateUi("interfaceCopy.clearSearch")}
               className="absolute right-12 top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground hover:bg-accent/50"
             >
               <X className="h-3.5 w-3.5" />
@@ -765,6 +767,7 @@ function SearchTabContent({
   isFetching,
   agentsById,
 }: SearchTabContentProps) {
+  const { t: translateUi } = useUiTranslation();
   if (showInitialState) {
     return (
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 py-10 sm:px-6">
@@ -824,9 +827,7 @@ function SearchTabContent({
           you can retry or fall back to the Tasks filter.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-2">
-          <Button onClick={refetch} variant="default" size="sm">
-            Retry
-          </Button>
+          <Button onClick={refetch} variant="default" size="sm">{translateUi("interfaceCopy.retry")}</Button>
           <Button onClick={navigateIssuesFallback} variant="outline" size="sm">
             Open Tasks filter view
           </Button>

@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { FileText, FolderOpen } from "lucide-react";
@@ -34,6 +35,7 @@ function CaseRelation({ item, search }: { item: Pick<CaseSummary, "id" | "identi
 
 /** Cases are persistent records. This board page only reads them and their work. */
 export function CaseDetail() {
+  const { t: translateUi } = useUiTranslation();
   const { caseIdentifier } = useParams<{ caseIdentifier: string }>();
   const { search } = useLocation();
   const caseHref = useCaseHref();
@@ -107,12 +109,12 @@ export function CaseDetail() {
     <div className="min-w-0 space-y-8">
       <CaseWorkSummary caseData={caseData} agents={agents} />
       {fields.length > 0 && <section className="space-y-3" aria-label="Case details">
-        <h2 className="text-sm font-semibold">Details</h2>
+        <h2 className="text-sm font-semibold">{translateUi("interfaceCopy.details")}</h2>
         <CaseFieldsTable fields={Object.fromEntries(fields)} />
       </section>}
 
       {(caseData.documents.length > 0 || taskDocuments.length > 0) && <section className="space-y-3" aria-label="Case documents">
-        <h2 className="text-sm font-semibold">Documents</h2>
+        <h2 className="text-sm font-semibold">{translateUi("interfaceCopy.documents")}</h2>
         <div className="divide-y divide-border">
           {taskDocuments.map(document => <CaseDocumentPreview key={document.id} caseIdentifier={caseData.identifier} document={document} />)}
           {caseData.documents.map(document => <CaseDocumentPreview key={`case:${caseData.id}:${document.key}`} caseIdentifier={caseData.identifier} document={document} />)}
@@ -142,9 +144,9 @@ export function CaseDetail() {
 
       {!fields.length && !caseData.documents.length && !taskDocuments.length && !caseData.attachments.length && <p className="text-sm text-muted-foreground">No findings recorded yet.</p>}
       <dl className="flex flex-wrap gap-x-6 gap-y-3 text-xs text-muted-foreground">
-        {projectQuery.data && <div className="space-y-1"><dt>Project</dt><dd><Link to={`/projects/${projectQuery.data.id}`} className="text-foreground hover:underline">{projectQuery.data.name}</Link></dd></div>}
-        <div className="space-y-1"><dt>Created</dt><dd><time dateTime={caseData.createdAt} className="font-mono">{formatDateTime(caseData.createdAt, { includeYear: false })}</time></dd></div>
-        <div className="space-y-1"><dt>Updated</dt><dd><time dateTime={caseData.updatedAt} className="font-mono">{formatDateTime(caseData.updatedAt, { includeYear: false })}</time></dd></div>
+        {projectQuery.data && <div className="space-y-1"><dt>{translateUi("interfaceCopy.project")}</dt><dd><Link to={`/projects/${projectQuery.data.id}`} className="text-foreground hover:underline">{projectQuery.data.name}</Link></dd></div>}
+        <div className="space-y-1"><dt>{translateUi("interfaceCopy.created")}</dt><dd><time dateTime={caseData.createdAt} className="font-mono">{formatDateTime(caseData.createdAt, { includeYear: false })}</time></dd></div>
+        <div className="space-y-1"><dt>{translateUi("interfaceCopy.updated")}</dt><dd><time dateTime={caseData.updatedAt} className="font-mono">{formatDateTime(caseData.updatedAt, { includeYear: false })}</time></dd></div>
       </dl>
       <Link to={caseAuditHref(caseData.id)} className="inline-block text-sm text-muted-foreground hover:text-foreground hover:underline">View in Audit</Link>
     </div>

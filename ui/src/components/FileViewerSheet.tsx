@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { CsvPreview } from "./CsvPreview";
 import { createUnifiedDiffClassifier, isPatchFile } from "@/lib/patch";
 import { isCsvFile } from "@/lib/csv-preview";
@@ -511,6 +512,7 @@ export function FileViewerSheet({
   open: openProp,
   onOpenChange,
 }: FileViewerSheetProps) {
+  const { t: translateUi } = useUiTranslation();
   const viewer = useRequiredFileViewer();
   const state = typeof stateProp !== "undefined" ? stateProp : viewer.state;
   // Browse mode: no file selected, but the sheet was opened to browse/search.
@@ -863,7 +865,7 @@ export function FileViewerSheet({
                 onClick={() => handleOpenChange(false)}
                 className="h-7 w-7"
                 aria-label="Close file viewer"
-                title="Close"
+                title={translateUi("interfaceCopy.close")}
               >
                 <X className="h-4 w-4" />
               </Button>

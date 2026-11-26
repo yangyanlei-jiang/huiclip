@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import { TaskViewsMenu } from "@/components/TaskViewsMenu";
@@ -23,6 +24,7 @@ function loadView(key: string, userId: string | null): TaskViewKey {
 }
 
 export function CoordinatorTaskViews() {
+  const { t: translateUi } = useUiTranslation();
   const { selectedCompanyId } = useCompany();
   const { userId, loaded } = useCoordinatorWorkspaceEnabled();
   const { openNewIssue } = useDialogActions();
@@ -48,7 +50,7 @@ export function CoordinatorTaskViews() {
   }
   const views = <TaskViewsMenu coordinator value={view} onChange={next => navigate(`/issues?view=${next}`)} />;
   if (definition.surface === "issues") return <CoordinatorTasks viewControl={views} />;
-  return <section className="coordinator-task-list" aria-label="Tasks"><Inbox
+  return <section className="coordinator-task-list" aria-label={translateUi("interfaceCopy.tasks")}><Inbox
     tab={definition.inboxTab}
     surfaceLabel="Tasks"
     toolbarContext={<div className="flex min-w-0 items-center gap-2">{views}<Button variant="outline" size="sm" onClick={() => openNewIssue()}><Plus className="size-4" />New Task</Button></div>}

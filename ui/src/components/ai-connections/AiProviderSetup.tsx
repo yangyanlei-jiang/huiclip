@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Network, Monitor } from "lucide-react";
@@ -94,6 +95,7 @@ export function AiProviderSetup({
     binding: Exclude<AiConnectionBinding, { mode: "responsible_user" }>,
   ) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [provider, setProvider] = useState<ProviderChoice | undefined>(
     reconnect
       ? reconnect.routing?.kind === "gateway" ||
@@ -299,9 +301,7 @@ export function AiProviderSetup({
             <div className="pt-4">{choices(true)}</div>
           </details>
           </>}
-          <Button type="button" variant="ghost" onClick={onCancel}>
-            Cancel
-          </Button>
+          <Button type="button" variant="ghost" onClick={onCancel}>{translateUi("interfaceCopy.cancel")}</Button>
         </>
       ) : !advanced ? (
         <AiConnectionCredentialStep
@@ -449,9 +449,7 @@ export function AiProviderSetup({
               variant="ghost"
               onClick={cancel}
               disabled={save.isPending}
-            >
-              Back
-            </Button>
+            >{translateUi("interfaceCopy.back")}</Button>
             <Button
               type="submit"
               disabled={

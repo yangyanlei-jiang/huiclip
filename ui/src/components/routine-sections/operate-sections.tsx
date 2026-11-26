@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Activity as ActivityIcon } from "lucide-react";
@@ -67,6 +68,7 @@ export function ActivitySection({
   onRetry?: () => void;
   retrying?: boolean;
 } = {}) {
+  const { t: translateUi } = useUiTranslation();
   const ctx = useRoutineDetail();
   const { activity } = ctx;
   const events = activity ?? [];
@@ -104,7 +106,7 @@ export function ActivitySection({
   }
 
   if (events.length === 0) {
-    return <EmptyState icon={ActivityIcon} message="No activity yet." />;
+    return <EmptyState icon={ActivityIcon} message={translateUi("interfaceCopy.noActivityYet")} />;
   }
 
   return (

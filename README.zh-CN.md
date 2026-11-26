@@ -2,6 +2,8 @@
 
 回形夹是基于 [Paperclip](https://github.com/paperclipai/paperclip) 的独立中文社区版。社区负责本分支的中文界面、HuiClip 本地安装包、原创指南和维护工作。应用沿用 [MIT 许可与 Paperclip AI 版权](LICENSE)。参阅[上游 README](README.md)了解原版。
 
+项目第一规则是保留 Paperclip 原有功能。社区版在这个基础上提供简体中文界面和中文使用文档。
+
 首版基于上游稳定标签 [`v2026.1117.0`](https://github.com/paperclipai/paperclip/releases/tag/v2026.1117.0)。简体中文是界面默认语言，可从账号菜单或首次设置切回 English。接入 Codex 的真实模型调用依赖自己的授权和运行环境。
 
 ## 本机试用
@@ -12,7 +14,7 @@
 git clone --branch community/zh-cn-v1 --single-branch https://github.com/yangyanlei-jiang/huiclip.git
 cd huiclip
 node community/huiclip/pack.mjs ../huiclip-packages
-npm install --global --prefix ../huiclip-cli ../huiclip-packages/huiclip-0.1.0.tgz
+npm install --global --prefix ../huiclip-cli ../huiclip-packages/huiclip-0.1.2.tgz
 ../huiclip-cli/bin/huiclip setup
 ../huiclip-cli/bin/huiclip run
 ```

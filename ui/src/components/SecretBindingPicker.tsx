@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { createContext, useContext, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, KeyRound, Loader2, Plus, X } from "lucide-react";
@@ -94,6 +95,7 @@ export function SecretBindingPicker({
   disabled,
   statusFilter = ["active"],
 }: SecretBindingPickerProps) {
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { selectedCompanyId } = useCompany();
   const [createOpen, setCreateOpen] = useState(false);
@@ -221,7 +223,7 @@ export function SecretBindingPicker({
               onChange({ ...value, version: next });
             }}
             disabled={disabled || !value || !selectedSecret}
-            aria-label="Version"
+            aria-label={translateUi("interfaceCopy.version")}
           >
             <option value={VERSION_LATEST}>latest</option>
             {selectedSecret
@@ -289,7 +291,7 @@ export function SecretBindingPicker({
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <label className="text-xs font-medium text-foreground/80" htmlFor="secret-name">Name</label>
+              <label className="text-xs font-medium text-foreground/80" htmlFor="secret-name">{translateUi("interfaceCopy.name")}</label>
               <Input
                 id="secret-name"
                 value={createName}
@@ -299,7 +301,7 @@ export function SecretBindingPicker({
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-foreground/80" htmlFor="secret-value">Value</label>
+              <label className="text-xs font-medium text-foreground/80" htmlFor="secret-value">{translateUi("interfaceCopy.value")}</label>
               <Textarea
                 id="secret-value"
                 value={createValue}
@@ -313,7 +315,7 @@ export function SecretBindingPicker({
               </p>
             </div>
             <div>
-              <label className="text-xs font-medium text-foreground/80" htmlFor="secret-description">Description</label>
+              <label className="text-xs font-medium text-foreground/80" htmlFor="secret-description">{translateUi("interfaceCopy.description")}</label>
               <Input
                 id="secret-description"
                 value={createDescription}
@@ -324,7 +326,7 @@ export function SecretBindingPicker({
             {createError ? <p className="text-xs text-destructive">{createError}</p> : null}
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
+            <Button type="button" variant="outline" onClick={() => setCreateOpen(false)}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button
               type="button"
               onClick={() => createMutation.mutate()}

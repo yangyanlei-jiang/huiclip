@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import type { IssueDocument } from "@paperclipai/shared";
 import { FileText, Lightbulb, Maximize2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -92,6 +93,7 @@ export function TaskChatPlanPreviewCard({
   testId = "task-chat-plan-preview",
   className,
 }: TaskChatPlanPreviewCardProps) {
+  const { t: translateUi } = useUiTranslation();
   const coordinator = useCoordinatorPresentation();
   const shimmer = useTaskChatShimmer(source.kind === "live" ? source.activity.id : "saved-plan");
   const revision = planRevision(source);
@@ -114,7 +116,7 @@ export function TaskChatPlanPreviewCard({
       {targetHref ? <span className="hidden shrink-0 sm:inline">{" "}in the sidebar</span> : null}</>;
     return targetHref ? <SidebarDocumentLink href={targetHref} testId={testId}
       ariaLabel={ariaLabel ?? `Open ${content.title}${revision == null ? "" : ` revision ${revision}`} in task sidebar`} className={className}>
-      <span className="shrink-0">Open</span>{" "}<span className="min-w-0 truncate text-foreground underline underline-offset-4">{content.title}</span>
+      <span className="shrink-0">{translateUi("interfaceCopy.open")}</span>{" "}<span className="min-w-0 truncate text-foreground underline underline-offset-4">{content.title}</span>
       <span className="hidden shrink-0 sm:inline">{" "}in the sidebar</span>
     </SidebarDocumentLink>
       : <section data-testid={testId} aria-label={ariaLabel ?? "Writing plan"} className={compactClassName}>{compactBody}</section>;

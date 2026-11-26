@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { ArrowUpDown, Check, Plus } from "lucide-react";
 import { ToolbarSearch } from "./ToolbarSearch";
 import { Button } from "./ui/button";
@@ -22,12 +23,13 @@ export function ProjectsToolbar({ query, onQueryChange, sortField, sortDir, onSo
   onSortChange: (field: ProjectSortField, direction: ProjectSortDir) => void;
   onNewProject: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const sortLabel = PROJECT_SORT_OPTIONS.find(option => option.field === sortField)?.label ?? "Name";
   return <div data-canonical-toolbar="projects" role="toolbar" aria-label="Projects controls" className="flex flex-wrap items-center gap-4">
     <ToolbarSearch query={query} onQueryChange={onQueryChange} label="Search projects" placeholder="Search projects…" />
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" title="Sort">
+        <Button variant="outline" size="sm" title={translateUi("interfaceCopy.sort")}>
           <ArrowUpDown className="h-3.5 w-3.5 sm:h-3 sm:w-3 sm:mr-1" />
           <span>Sort: {sortLabel}</span>
         </Button>

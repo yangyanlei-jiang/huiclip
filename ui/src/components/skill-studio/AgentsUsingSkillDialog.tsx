@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Plus, Trash2, Users } from "lucide-react";
@@ -318,6 +319,7 @@ function AgentRow({
   onRemove: () => void;
   onPin: (versionId: string | null) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const behindLatest =
     pinnedRevision !== null && latestRevision !== null && latestRevision > pinnedRevision
       ? latestRevision - pinnedRevision
@@ -389,9 +391,7 @@ function AgentRow({
             >
               {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Remove"}
             </Button>
-            <Button variant="ghost" size="sm" onClick={onCancelRemove} disabled={busy}>
-              Cancel
-            </Button>
+            <Button variant="ghost" size="sm" onClick={onCancelRemove} disabled={busy}>{translateUi("interfaceCopy.cancel")}</Button>
           </div>
         ) : (
           <Button

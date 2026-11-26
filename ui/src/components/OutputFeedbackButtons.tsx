@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
 import type { FeedbackDataSharingPreference, FeedbackVoteValue } from "@paperclipai/shared";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,7 @@ export function OutputFeedbackButtons({
   rightSlot?: React.ReactNode;
   inline?: boolean;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [pendingVote, setPendingVote] = useState<{
     vote: FeedbackVoteValue;
     reason?: string;
@@ -202,7 +204,7 @@ export function OutputFeedbackButtons({
               This vote is always saved locally.
             </p>
             <p>
-              Choose <span className="font-medium text-foreground">Always allow</span> to share
+              Choose <span className="font-medium text-foreground">{translateUi("interfaceCopy.alwaysAllow")}</span> to share
               this vote and future voted AI outputs. Choose{" "}
               <span className="font-medium text-foreground">Don't allow</span> to keep this vote
               and future votes local.

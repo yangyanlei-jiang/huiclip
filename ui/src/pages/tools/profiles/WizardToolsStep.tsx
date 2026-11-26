@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, Plug, Plus, Search, X } from "lucide-react";
 import { Link } from "@/lib/router";
@@ -52,6 +53,7 @@ export interface WizardToolsStepProps {
 }
 
 export function WizardToolsStep(props: WizardToolsStepProps) {
+  const { t: translateUi } = useUiTranslation();
   const { appGroups, catalogLoading, selections, onSelectionsChange } = props;
   const [search, setSearch] = useState("");
   const [capabilityFilter, setCapabilityFilter] = useState<ToolCapability | null>(null);
@@ -137,9 +139,7 @@ export function WizardToolsStep(props: WizardToolsStepProps) {
               setCapabilityFilter(null);
             }}
             className="text-sm font-medium text-primary hover:underline"
-          >
-            Clear search
-          </button>
+          >{translateUi("interfaceCopy.clearSearch")}</button>
         </div>
       ) : (
         <div className="divide-y divide-border overflow-hidden rounded-lg border border-border">
@@ -327,6 +327,7 @@ function AdvancedRules({
   rules: AdvancedRule[];
   onChange: (next: AdvancedRule[]) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
   const [kind, setKind] = useState<AdvancedRuleKind>("tool_name");
   const [value, setValue] = useState("");
@@ -407,7 +408,7 @@ function AdvancedRules({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="read">Read-only</SelectItem>
+                <SelectItem value="read">{translateUi("interfaceCopy.readonly")}</SelectItem>
                 <SelectItem value="write">Makes changes</SelectItem>
                 <SelectItem value="destructive">Destructive</SelectItem>
               </SelectContent>

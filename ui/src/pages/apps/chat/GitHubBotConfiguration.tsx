@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { copyTextToClipboard } from "@/lib/clipboard";
 import { useEffect, useId, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -584,6 +585,7 @@ export function GitHubAccessEditor({
   configuration: GitHubChatConfiguration;
   onChange: (configuration: GitHubChatConfiguration) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const company = useOptionalCompany()?.companies.find((item) => item.id === companyId);
   const accountLink = useRef<HTMLAnchorElement>(null);
   const [linkCopied, setLinkCopied] = useState(false);
@@ -826,9 +828,7 @@ export function GitHubAccessEditor({
               <Link
                 className="underline underline-offset-4"
                 to={`/apps/chat/${endpointId}/settings`}
-              >
-                Settings
-              </Link>
+              >{translateUi("interfaceCopy.settings")}</Link>
               .
             </>
           ) : (
@@ -837,9 +837,7 @@ export function GitHubAccessEditor({
               <Link
                 className="underline underline-offset-4"
                 to={`/apps/chat/${endpointId}/settings`}
-              >
-                Settings
-              </Link>
+              >{translateUi("interfaceCopy.settings")}</Link>
               . Authorized @mentions still work.
             </>
           )}
@@ -1076,9 +1074,7 @@ export function GitHubAccessEditor({
                 </p>
               )}
               <DialogFooter className="flex-row justify-between sm:justify-between">
-                <Button variant="ghost" onClick={() => setDialog(null)}>
-                  Cancel
-                </Button>
+                <Button variant="ghost" onClick={() => setDialog(null)}>{translateUi("interfaceCopy.cancel")}</Button>
                 <Button
                   disabled={
                     !candidate ||

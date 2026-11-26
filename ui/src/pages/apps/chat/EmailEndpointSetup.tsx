@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { isUuidLike } from "@paperclipai/shared";
 import { ApiError } from "@/api/client";
 import { describeError } from "@/api/errors";
@@ -92,6 +93,7 @@ export function EmailEndpointSetup() {
 }
 
 function EmailEndpointSetupForm({ companyId }: { companyId: string }) {
+  const { t: translateUi } = useUiTranslation();
   const [params] = useSearchParams();
   const navigate = useNavigate();
   const cache = useQueryClient();
@@ -348,7 +350,7 @@ function EmailEndpointSetupForm({ companyId }: { companyId: string }) {
       availableStep={step} disabled={busy} onSelect={index => { setup.reset(); setStep(index as 0 | 1); }} />}
     {step === 0 && <form className="space-y-6" onSubmit={event => { event.preventDefault(); if (canContinue) connect.mutate(); }}>
       <div className="space-y-2">
-        <Label htmlFor="email-agent">Agent</Label>
+        <Label htmlFor="email-agent">{translateUi("interfaceCopy.agent")}</Label>
         <AgentSelect id="email-agent" value={agentId} disabled={busy || agents.isPending || !inboxesLoaded || !!pendingEndpoint}
           placeholder="Choose an agent" emptyMessage="No agents found." triggerClassName="h-10"
           agents={(agents.data ?? []).filter(a => !["terminated", "pending_approval"].includes(a.status))}
@@ -367,7 +369,7 @@ function EmailEndpointSetupForm({ companyId }: { companyId: string }) {
       </div>}
       {setupError}
       <div className="flex items-center justify-between gap-3 border-t border-border pt-5">
-        <Button type="button" variant="ghost" disabled={busy} onClick={cancel}>Cancel</Button>
+        <Button type="button" variant="ghost" disabled={busy} onClick={cancel}>{translateUi("interfaceCopy.cancel")}</Button>
         <Button disabled={!canContinue}>{connect.isPending ? "Connecting…" : "Continue"}<ArrowRight className="size-4" /></Button>
       </div>
     </form>}
@@ -453,7 +455,7 @@ function EmailEndpointSetupForm({ companyId }: { companyId: string }) {
       <div className="space-y-2"><p className="flex items-center gap-2 font-medium"><Check className="size-4" />{setup.data?.address}</p>
         <p className="text-sm text-muted-foreground">{chosen?.name} can now receive email at this address.</p></div>
       <div className="flex items-center justify-between gap-3 border-t border-border pt-5">
-        <Button variant="ghost" onClick={leave}>Email settings</Button><Button onClick={() => navigate("/apps")}>Done</Button>
+        <Button variant="ghost" onClick={leave}>Email settings</Button><Button onClick={() => navigate("/apps")}>{translateUi("interfaceCopy.done")}</Button>
       </div>
     </div>}
       <Dialog open={trustOpen} onOpenChange={setTrustOpen}>
@@ -499,9 +501,7 @@ function EmailEndpointSetupForm({ companyId }: { companyId: string }) {
             />
           ) : null}
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setTrustOpen(false)}>
-              Cancel
-            </Button>
+            <Button variant="ghost" onClick={() => setTrustOpen(false)}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button
               disabled={
                 trust.isPending ||

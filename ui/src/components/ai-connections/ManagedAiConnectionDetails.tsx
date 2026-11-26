@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { heartbeatsApi } from "@/api/heartbeats";
 import { Button } from "@/components/ui/button";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -39,6 +40,7 @@ export function ManagedAiConnectionDetails({
 }: {
   connection: ToolConnection;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const client = useQueryClient();
   const navigate = useNavigate();
   const runs = useQuery({
@@ -95,9 +97,7 @@ export function ManagedAiConnectionDetails({
           if (accounts.error) void accounts.refetch();
           if (grants.error) void grants.refetch();
         }}
-      >
-        Retry
-      </Button>
+      >{translateUi("interfaceCopy.retry")}</Button>
     </div>
   ) : null;
   if ((!account || !grant) && loadFailure) return loadFailure;

@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useEffect, useState } from "react";
 import { Link2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ export function ManagedOAuthHandoffState({
   onRetry: () => void;
   onCancel: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const failed = phase === "error";
   return (
     <main className="flex min-h-screen items-center justify-center bg-background p-6">
@@ -46,7 +48,7 @@ export function ManagedOAuthHandoffState({
           </p>
           {failed ? (
             <div className="mt-6 flex items-center gap-2">
-              <Button type="button" onClick={onRetry}>Try again</Button>
+              <Button type="button" onClick={onRetry}>{translateUi("interfaceCopy.tryAgain")}</Button>
               <Button type="button" variant="ghost" onClick={onCancel}>Return to Paperclip</Button>
             </div>
           ) : null}

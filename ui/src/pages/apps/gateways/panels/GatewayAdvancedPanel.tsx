@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Copy } from "lucide-react";
@@ -23,6 +24,7 @@ export function GatewayAdvancedPanel({
   companyId: string;
   gateway: ToolMcpGatewayWithTokens;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { pushToast } = useToast();
@@ -108,7 +110,7 @@ export function GatewayAdvancedPanel({
       </section>
 
       <section className="space-y-2 rounded-lg border border-destructive/40 p-4">
-        <h3 className="text-sm font-semibold text-destructive">Danger zone</h3>
+        <h3 className="text-sm font-semibold text-destructive">{translateUi("interfaceCopy.dangerZone")}</h3>
         <p className="text-sm text-muted-foreground">
           Archiving takes the gateway offline for every client. Existing tokens stop working. Type the
           gateway name to confirm.
@@ -130,9 +132,7 @@ export function GatewayAdvancedPanel({
               >
                 {archiveMutation.isPending ? "Archiving…" : "Archive gateway"}
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => { setConfirming(false); setConfirmName(""); }}>
-                Cancel
-              </Button>
+              <Button variant="ghost" size="sm" onClick={() => { setConfirming(false); setConfirmName(""); }}>{translateUi("interfaceCopy.cancel")}</Button>
             </div>
           </div>
         ) : (

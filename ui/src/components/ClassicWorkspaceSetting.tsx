@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCompany } from "@/context/CompanyContext";
 import { useCoordinatorWorkspaceEnabled } from "@/hooks/useCoordinatorWorkspaceEnabled";
 import { Button } from "@/components/ui/button";
@@ -5,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 
 export function ClassicWorkspaceSetting() {
+  const { t: translateUi } = useUiTranslation();
   const { selectedCompany } = useCompany();
   const workspace = useCoordinatorWorkspaceEnabled();
   const error = workspace.error instanceof Error ? workspace.error.message : null;
@@ -39,7 +41,7 @@ export function ClassicWorkspaceSetting() {
       {error && (
         <div role="alert" className="mt-3 flex items-center gap-2 text-sm text-destructive">
           <span>{error}</span>
-          <Button variant="ghost" size="sm" onClick={() => { void workspace.retry(); }}>Retry</Button>
+          <Button variant="ghost" size="sm" onClick={() => { void workspace.retry(); }}>{translateUi("interfaceCopy.retry")}</Button>
         </div>
       )}
     </Card>

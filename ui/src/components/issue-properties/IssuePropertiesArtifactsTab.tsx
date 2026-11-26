@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { TextAttachmentContext } from "@/context/TextAttachmentContext";
 import { useContext, useEffect, useMemo, useRef, useState, type ComponentProps, type ReactNode } from "react";
 import { ArtifactUploadContent, type ArtifactUploadEntry } from "@/components/artifacts/ArtifactUploadControls";
@@ -153,6 +154,7 @@ function MarkdownWorkProductRow({
   openRequestId?: number;
   face?: ArtifactFace;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const openTextAttachment = useContext(TextAttachmentContext);
   const [expanded, setExpanded] = useState(false);
   const [annotationPanelOpen, setAnnotationPanelOpen] = useState(false);
@@ -230,7 +232,7 @@ function MarkdownWorkProductRow({
           <MarkdownBody>{reviewDoc.body}</MarkdownBody>
         </IssueDocumentAnnotations>
       ) : (
-        <p className="text-sm text-muted-foreground">Document is empty.</p>
+        <p className="text-sm text-muted-foreground">{translateUi("interfaceCopy.documentIsEmpty")}</p>
       );
   } else if (ensure.isError) {
     expandedBody = (
@@ -248,9 +250,7 @@ function MarkdownWorkProductRow({
               ensure.reset();
               ensure.mutate();
             }}
-          >
-            Retry
-          </button>
+          >{translateUi("interfaceCopy.retry")}</button>
         ) : null}
       </div>
     );
@@ -352,6 +352,7 @@ function DocumentRow({
   onOpen?: () => void;
   face?: ArtifactFace;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [expanded, setExpanded] = useState(false);
   const [annotationPanelOpen, setAnnotationPanelOpen] = useState(false);
   const headerRef = useRef<HTMLDivElement | null>(null);
@@ -412,7 +413,7 @@ function DocumentRow({
               <MarkdownBody>{doc.body}</MarkdownBody>
             </IssueDocumentAnnotations>
           ) : (
-            <p className="text-sm text-muted-foreground">Document is empty.</p>
+            <p className="text-sm text-muted-foreground">{translateUi("interfaceCopy.documentIsEmpty")}</p>
           )}
         </div>
       ) : null}
@@ -435,6 +436,7 @@ export function IssuePropertiesArtifactsTab({
   onOpenDocument,
   uploadState,
 }: IssuePropertiesArtifactsTabProps) {
+  const { t: translateUi } = useUiTranslation();
   const { enabled: v1 } = useArtifactsV1Enabled();
   const documentAuthoring = documentEditor !== undefined;
   const {
@@ -573,9 +575,7 @@ export function IssuePropertiesArtifactsTab({
           void refetchProducts();
           void refetchDocuments();
         }}
-      >
-        Retry
-      </button>
+      >{translateUi("interfaceCopy.retry")}</button>
     </div>
   ) : loading ? (
     <p role="status" className="px-1 py-3 text-sm text-muted-foreground">

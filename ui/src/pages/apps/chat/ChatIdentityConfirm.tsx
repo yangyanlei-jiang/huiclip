@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { CheckCircle2, Loader2 } from "lucide-react";
@@ -21,6 +22,7 @@ const providerNames: Record<ChatProvider, string> = {
 };
 
 export function ChatIdentityConfirm() {
+  const { t: translateUi } = useUiTranslation();
   const [params] = useSearchParams();
   const token = params.get("token") ?? "";
   const [confirmed, setConfirmed] = useState(false);
@@ -118,7 +120,7 @@ export function ChatIdentityConfirm() {
       </div>
       <dl className="divide-y divide-border border-y border-border">
         <div className="flex items-center justify-between gap-4 py-3">
-          <dt className="text-sm text-muted-foreground">Provider</dt>
+          <dt className="text-sm text-muted-foreground">{translateUi("interfaceCopy.provider")}</dt>
           <dd className="text-sm font-medium">
             {providerNames[identity.provider]}
           </dd>
@@ -135,7 +137,7 @@ export function ChatIdentityConfirm() {
           <dd className="text-right text-sm font-medium">{paperclipAccount}</dd>
         </div>
         <div className="flex items-center justify-between gap-4 py-3">
-          <dt className="text-sm text-muted-foreground">Agent</dt>
+          <dt className="text-sm text-muted-foreground">{translateUi("interfaceCopy.agent")}</dt>
           <dd className="text-sm font-medium">
             {identity.botLabel ?? "Paperclip agent"}
           </dd>

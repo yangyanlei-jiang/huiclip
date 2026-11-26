@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { useMemo, useState } from "react";
 import {
@@ -96,6 +97,7 @@ export function OverviewSection({
 }: {
   defaultDescriptionAnnotationsOpen?: boolean;
 } = {}) {
+  const { t: translateUi } = useUiTranslation();
   const ctx = useRoutineDetail();
   const {
     routine,
@@ -144,7 +146,7 @@ export function OverviewSection({
             value={editDraft.assigneeAgentId}
             options={assigneeOptions}
             recentOptionIds={recentAssigneeIds}
-            placeholder="Responsible"
+            placeholder={translateUi("interfaceCopy.responsible")}
             noneLabel="No responsible"
             searchPlaceholder="Search responsible..."
             emptyMessage="No responsible found."
@@ -169,7 +171,7 @@ export function OverviewSection({
                   <span className="truncate">{option.label}</span>
                 )
               ) : (
-                <span className="text-muted-foreground">Responsible</span>
+                <span className="text-muted-foreground">{translateUi("interfaceCopy.responsible")}</span>
               )
             }
             renderOption={(option) => {
@@ -191,7 +193,7 @@ export function OverviewSection({
             value={editDraft.projectId}
             options={projectOptions}
             recentOptionIds={recentProjectIds}
-            placeholder="Project"
+            placeholder={translateUi("interfaceCopy.project")}
             noneLabel="No project"
             searchPlaceholder="Search projects..."
             emptyMessage="No projects found."
@@ -207,7 +209,7 @@ export function OverviewSection({
                   <span className="truncate">{option.label}</span>
                 </>
               ) : (
-                <span className="text-muted-foreground">Project</span>
+                <span className="text-muted-foreground">{translateUi("interfaceCopy.project")}</span>
               )
             }
             renderOption={(option) => {
@@ -326,11 +328,9 @@ export function OverviewSection({
 
       {/* Recent activity */}
       <div className="space-y-2">
-        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          Recent activity
-        </p>
+        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{translateUi("interfaceCopy.recentActivity")}</p>
         {recentActivity.length === 0 ? (
-          <p className="text-xs text-muted-foreground">No activity yet.</p>
+          <p className="text-xs text-muted-foreground">{translateUi("interfaceCopy.noActivityYet")}</p>
         ) : (
           <div className="divide-y divide-border/60">
             {recentActivity.map((event) => (

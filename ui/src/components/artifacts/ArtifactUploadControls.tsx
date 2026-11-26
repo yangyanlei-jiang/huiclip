@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useRef, type ReactNode } from "react";
 import { FileUp, Loader2, Upload, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,7 @@ export function ArtifactUploadContent({ children, empty = false, entries = [], o
   onRetry?: (id: string) => void;
   onDismiss?: (id: string) => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   return <div className="flex min-h-full flex-col gap-3">
     {entries.length > 0 ? <ul className="flex flex-col gap-2" aria-label="Uploads">
       {entries.map((entry) => <li key={entry.id} className="flex items-start gap-2 rounded-lg border border-border p-3">
@@ -50,7 +52,7 @@ export function ArtifactUploadContent({ children, empty = false, entries = [], o
           </span>
         </div>
         {entry.status === "error" ? <div className="flex shrink-0 items-center gap-1">
-          {onRetry ? <Button variant="ghost" size="sm" onClick={() => onRetry(entry.id)}>Retry</Button> : null}
+          {onRetry ? <Button variant="ghost" size="sm" onClick={() => onRetry(entry.id)}>{translateUi("interfaceCopy.retry")}</Button> : null}
           {onDismiss ? <Button variant="ghost" size="icon-sm" aria-label={`Dismiss upload: ${entry.filename}`} onClick={() => onDismiss(entry.id)}><X aria-hidden="true" /></Button> : null}
         </div> : null}
       </li>)}

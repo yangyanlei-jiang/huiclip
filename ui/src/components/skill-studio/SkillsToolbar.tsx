@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { ToolbarSearch } from "@/components/ToolbarSearch";
 import type { ReactNode } from "react";
 import { ChevronDown, Compass, FolderSearch, Globe, Pencil, Plus, RefreshCw } from "lucide-react";
@@ -45,6 +46,7 @@ export interface SkillsToolbarProps {
 
 /** Shared shipped Skills controls. Canonical proposal: Components / Toolbars / Skills. */
 export function SkillsToolbar({ viewTitle, viewDescription, searchLabel, search, onSearchChange, sort, onSortChange, availableSources, sourceBadgeFilter, setSourceBadgeFilter, onScan, scanPending, onCreate, onBrowseDiscover, onImport, onImportFromProject, folderControl, onCreateFolder, selectMode, onToggleSelectMode, navigation }: SkillsToolbarProps) {
+  const { t: translateUi } = useUiTranslation();
   return (
     <div data-canonical-toolbar="skills" role="toolbar" aria-label="Skills controls" className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-3">
       <div className="w-full">
@@ -55,7 +57,7 @@ export function SkillsToolbar({ viewTitle, viewDescription, searchLabel, search,
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="sm">
-            <span className="text-muted-foreground">Sort</span>
+            <span className="text-muted-foreground">{translateUi("interfaceCopy.sort")}</span>
             <span>{DISCOVERY_SORT_LABELS[sort]}</span>
             <ChevronDown className="ml-1 h-3.5 w-3.5" />
           </Button>
@@ -74,7 +76,7 @@ export function SkillsToolbar({ viewTitle, viewDescription, searchLabel, search,
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm">
-              <span className="text-muted-foreground">Source</span>
+              <span className="text-muted-foreground">{translateUi("interfaceCopy.source")}</span>
               <span>
                 {sourceBadgeFilter === "all"
                   ? "All"

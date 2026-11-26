@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState, type FormEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Archive, MoreHorizontal, Pencil, RefreshCw } from "lucide-react";
@@ -104,6 +105,7 @@ function RecentTasksList({
   liveIssueIds: ReadonlySet<string>;
   rail: boolean;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const { entries, storageKey } = useRecentTasks({ companyId, userId });
   const queryClient = useQueryClient();
   const toastActions = useOptionalToastActions();
@@ -333,9 +335,7 @@ function RecentTasksList({
                 variant="outline"
                 disabled={pendingAction === "rename"}
                 onClick={() => setRenameEntry(null)}
-              >
-                Cancel
-              </Button>
+              >{translateUi("interfaceCopy.cancel")}</Button>
               <Button
                 type="submit"
                 disabled={pendingAction === "rename" || !renameValue.trim()}

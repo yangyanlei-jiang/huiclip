@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { describeError } from "../api/errors";
 import { useWarmTaskDetailCode } from "@/hooks/useWarmTaskDetailCode";
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -694,6 +695,7 @@ function JoinRequestInboxRow({
 }
 
 export function Inbox() {
+  const { t: translateUi } = useUiTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { openNewIssue } = useDialogActions();
@@ -2420,7 +2422,7 @@ export function Inbox() {
                     variant="outline"
                     size="icon"
                     className="h-8 w-8 shrink-0"
-                    title="Sort"
+                    title={translateUi("interfaceCopy.sort")}
                   >
                     <ArrowUpDown className="h-3.5 w-3.5" />
                   </Button>
@@ -2538,9 +2540,7 @@ export function Inbox() {
                         </DialogDescription>
                       </DialogHeader>
                       <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowMarkAllReadConfirm(false)}>
-                          Cancel
-                        </Button>
+                        <Button variant="outline" onClick={() => setShowMarkAllReadConfirm(false)}>{translateUi("interfaceCopy.cancel")}</Button>
                         <Button
                           onClick={() => {
                             setShowMarkAllReadConfirm(false);
@@ -2567,13 +2567,13 @@ export function Inbox() {
             onValueChange={(value) => updateAllCategoryFilter(value as InboxCategoryFilter)}
           >
             <SelectTrigger className="h-8 w-(--sz-170px) text-xs">
-              <SelectValue placeholder="Category" />
+              <SelectValue placeholder={translateUi("interfaceCopy.category")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="everything">All categories</SelectItem>
+              <SelectItem value="everything">{translateUi("interfaceCopy.allCategories")}</SelectItem>
               <SelectItem value="issues_i_touched">My recent tasks</SelectItem>
               <SelectItem value="join_requests">Join requests</SelectItem>
-              <SelectItem value="approvals">Approvals</SelectItem>
+              <SelectItem value="approvals">{translateUi("interfaceCopy.approvals")}</SelectItem>
               <SelectItem value="failed_runs">Failed runs</SelectItem>
               <SelectItem value="alerts">Alerts</SelectItem>
             </SelectContent>

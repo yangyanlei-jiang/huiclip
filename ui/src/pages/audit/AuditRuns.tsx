@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { HeartbeatRun, RoutineRunSummary } from "@paperclipai/shared";
@@ -139,6 +140,7 @@ export function AuditRuns({
   lockedAgentId?: string;
   hideHeader?: boolean;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const agentId = lockedAgentId ?? searchParams.get("agentId") ?? ALL;
   const status = searchParams.get("runStatus") ?? ALL;
@@ -214,7 +216,7 @@ export function AuditRuns({
     <div className="space-y-4">
       {hideHeader ? null : (
         <div>
-          <h2 className="text-lg font-semibold text-foreground">Runs</h2>
+          <h2 className="text-lg font-semibold text-foreground">{translateUi("interfaceCopy.runs")}</h2>
           <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
             Recent agent executions across the organization. Open a run to inspect its transcript,
             output, and task context.
@@ -224,13 +226,13 @@ export function AuditRuns({
 
       <div data-canonical-toolbar="audit-runs" role="toolbar" aria-label="Audit filters" className="flex flex-wrap items-end gap-3 border-y border-border py-3">
         {lockedAgentId ? null : <label className="grid gap-1 text-(length:--text-micro) font-medium text-muted-foreground">
-          <span>Agent</span>
+          <span>{translateUi("interfaceCopy.agent")}</span>
           <Select value={agentId} onValueChange={(value) => updateFilter("agentId", value)}>
             <SelectTrigger className="w-48">
-              <SelectValue placeholder="All agents" />
+              <SelectValue placeholder={translateUi("interfaceCopy.allAgents")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={ALL}>All agents</SelectItem>
+              <SelectItem value={ALL}>{translateUi("interfaceCopy.allAgents")}</SelectItem>
               {(agents.data ?? []).map((agent) => (
                 <SelectItem key={agent.id} value={agent.id}>
                   {agent.name}
@@ -240,7 +242,7 @@ export function AuditRuns({
           </Select>
         </label>}
         <label className="grid gap-1 text-(length:--text-micro) font-medium text-muted-foreground">
-          <span>Status</span>
+          <span>{translateUi("interfaceCopy.status")}</span>
           <Select value={status} onValueChange={(value) => updateFilter("runStatus", value)}>
             <SelectTrigger className="w-40">
               <SelectValue placeholder="All statuses" />

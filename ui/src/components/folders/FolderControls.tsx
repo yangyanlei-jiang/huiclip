@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   Check,
@@ -420,6 +421,7 @@ export function MobileFolderSheet({
   onSelect: (selection: FolderSelection) => void;
   onCreate: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   function select(next: FolderSelection) {
     onSelect(next);
     onOpenChange(false);
@@ -465,9 +467,7 @@ export function MobileFolderSheet({
           {result?.kind === "skill" ? (
             <>
               {model.my ? renderBranch(model.my, "My Skills") : null}
-              <div className="px-2 pb-0.5 pt-2 text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
-                Organization
-              </div>
+              <div className="px-2 pb-0.5 pt-2 text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">{translateUi("interfaceCopy.organization")}</div>
               {model.company.map((node) => renderBranch(node))}
               {model.projects ? renderBranch(model.projects, "Projects") : null}
               {model.bundled ? renderBranch(model.bundled, "Bundled") : null}
@@ -477,7 +477,7 @@ export function MobileFolderSheet({
           )}
           <MobileFolderRow
             id="unfiled"
-            label="Unfiled"
+            label={translateUi("interfaceCopy.unfiled")}
             count={result?.unfiledCount ?? 0}
             selected={selection === "unfiled"}
             onSelect={select}
@@ -621,6 +621,7 @@ export function FolderFormDialog({
   onSubmit: (payload: { name: string; color: string | null }) => void;
   pending?: boolean;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [name, setName] = useState("");
   const [color, setColor] = useState<string | null>(FOLDER_COLORS[0] ?? null);
   const isEdit = Boolean(folder);
@@ -642,7 +643,7 @@ export function FolderFormDialog({
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor="folder-name">Name</label>
+            <label className="text-sm font-medium" htmlFor="folder-name">{translateUi("interfaceCopy.name")}</label>
             <Input
               id="folder-name"
               value={name}
@@ -654,7 +655,7 @@ export function FolderFormDialog({
             />
           </div>
           <div className="space-y-2">
-            <div className="text-sm font-medium">Color</div>
+            <div className="text-sm font-medium">{translateUi("interfaceCopy.color")}</div>
             <div className="flex flex-wrap gap-2">
               {FOLDER_COLORS.map((swatch) => (
                 <button
@@ -676,16 +677,12 @@ export function FolderFormDialog({
                   color == null && "ring-2 ring-ring ring-offset-2 ring-offset-background",
                 )}
                 onClick={() => setColor(null)}
-              >
-                None
-              </button>
+              >{translateUi("interfaceCopy.none")}</button>
             </div>
           </div>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={pending}>
-            Cancel
-          </Button>
+          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={pending}>{translateUi("interfaceCopy.cancel")}</Button>
           <Button onClick={() => onSubmit({ name: name.trim(), color })} disabled={pending || !name.trim()}>
             {pending ? "Saving..." : isEdit ? "Save" : "Create folder"}
           </Button>
@@ -710,17 +707,18 @@ export function DeleteFolderDialog({
   onConfirm: () => void;
   pending?: boolean;
 }) {
+  const { t: translateUi } = useUiTranslation();
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Delete folder</AlertDialogTitle>
+          <AlertDialogTitle>{translateUi("interfaceCopy.deleteFolder")}</AlertDialogTitle>
           <AlertDialogDescription>
             The {folder?.itemCount ?? 0} {itemLabelPlural} in this folder won't be deleted. They'll move to Unfiled.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={pending}>{translateUi("interfaceCopy.cancel")}</AlertDialogCancel>
           <AlertDialogAction
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             disabled={pending || !folder}
@@ -752,6 +750,7 @@ export function BulkBar({
   onClear: () => void;
   onDone: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   if (selectedCount === 0) return null;
   return (
     <div className="sticky top-2 z-10 flex flex-wrap items-center gap-2 rounded-md border border-border bg-background/95 px-3 py-2 shadow-sm backdrop-blur">
@@ -770,7 +769,7 @@ export function BulkBar({
         </DropdownMenuContent>
       </DropdownMenu>
       <Button size="sm" variant="ghost" onClick={onClear}>Deselect all</Button>
-      <Button size="sm" onClick={onDone}>Done</Button>
+      <Button size="sm" onClick={onDone}>{translateUi("interfaceCopy.done")}</Button>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { AgentAvatar } from "./AgentAvatar";
 import { Identity } from "./Identity";
 import { renderAccessIdentity, type AccessSelectOption } from "./AccessSelectIdentity";
@@ -181,6 +182,7 @@ export function IssueShareSheet({
   /** Pre-selected add subject (`type:id`), used by stories/tests to show the caution. */
   initialAddSelection?: string;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const [view, setView] = useState<"list" | "add">(initialView);
@@ -455,9 +457,7 @@ export function IssueShareSheet({
                   setView("list");
                   setAddSelection("");
                 }}
-              >
-                Back
-              </Button>
+              >{translateUi("interfaceCopy.back")}</Button>
               <Button size="sm" onClick={submitAdd} disabled={!addSelection || addMutation.isPending}>
                 {addMutation.isPending ? "Adding…" : "Add"}
               </Button>
@@ -485,7 +485,7 @@ export function IssueShareSheet({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{translateUi("interfaceCopy.cancel")}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               onClick={(event) => {

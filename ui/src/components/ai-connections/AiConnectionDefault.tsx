@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { Crown, Loader2 } from "lucide-react";
 import type { AiManagedConnectionSummary } from "@paperclipai/shared";
@@ -37,8 +38,9 @@ export function AiDefaultMenuItem({ account, pending, onSelect }: {
 export function AiDefaultError({ provider, pending, onRetry }: {
   provider: string; pending: boolean; onRetry: () => void;
 }) {
+  const { t: translateUi } = useUiTranslation();
   return <div role="alert" className="flex flex-wrap items-center gap-2 text-sm text-destructive">
     <p>Couldn’t change your {provider} default.</p>
-    <Button variant="outline" size="sm" disabled={pending} onClick={onRetry}>Retry</Button>
+    <Button variant="outline" size="sm" disabled={pending} onClick={onRetry}>{translateUi("interfaceCopy.retry")}</Button>
   </div>;
 }

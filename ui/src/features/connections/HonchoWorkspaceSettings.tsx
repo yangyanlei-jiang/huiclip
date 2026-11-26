@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useId, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { connectionInstructionsConfig, type ToolConnection } from "@paperclipai/shared";
@@ -8,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { InlineBanner } from "@/components/InlineBanner";
 
 export function HonchoWorkspaceSettings({ connection, canConfigure }: { connection: ToolConnection; canConfigure: boolean }) {
+  const { t: translateUi } = useUiTranslation();
   const id = useId();
   const client = useQueryClient();
   const connectionConfig = connectionInstructionsConfig(connection);
@@ -25,7 +27,7 @@ export function HonchoWorkspaceSettings({ connection, canConfigure }: { connecti
     {!value.trim() && <InlineBanner tone="warning">Enter a workspace to include Honcho instructions. Existing tools remain available.</InlineBanner>}
     {mutation.error && <div role="alert"><InlineBanner tone="danger">{describeError(mutation.error).body}</InlineBanner></div>}
     {draft !== null && draft !== saved && <div className="flex items-center justify-between">
-      <Button variant="ghost" disabled={mutation.isPending} onClick={() => { setDraft(null); mutation.reset(); }}>Cancel</Button>
+      <Button variant="ghost" disabled={mutation.isPending} onClick={() => { setDraft(null); mutation.reset(); }}>{translateUi("interfaceCopy.cancel")}</Button>
       <Button disabled={!canConfigure || mutation.isPending || !value.trim()} onClick={() => mutation.mutate()}>{mutation.isPending ? "Saving…" : "Save workspace"}</Button>
     </div>}
   </section>;

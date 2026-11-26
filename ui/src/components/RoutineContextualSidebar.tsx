@@ -1,3 +1,4 @@
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useQuery } from "@tanstack/react-query";
 import {
   Activity,
@@ -69,6 +70,7 @@ export function RoutineContextualSidebar({
   routineId?: string;
   title?: string;
 } = {}) {
+  const { t: translateUi } = useUiTranslation();
   const params = useParams<{ routineId?: string }>();
   const routineId = routineIdProp ?? params.routineId ?? "";
   const { data: routine } = useQuery({
@@ -106,12 +108,12 @@ export function RoutineContextualSidebar({
         <div className="flex flex-col gap-0.5">
           <SidebarNavItem
             to={routineDetailHref(routineId, "runs")}
-            label="Runs"
+            label={translateUi("interfaceCopy.runs")}
             icon={Play}
           />
           <SidebarNavItem
             to={routineDetailHref(routineId, "activity")}
-            label="Activity"
+            label={translateUi("interfaceCopy.activity")}
             icon={Activity}
           />
         </div>
