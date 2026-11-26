@@ -122,7 +122,18 @@
     "removeAttachment": "移除附件",
     "project": "项目",
     "noProjects": "未找到项目。",
-    "privateProject": "私有项目"
+    "privateProject": "私有项目",
+    "noMatches": "当前视图没有匹配的任务",
+    "noDecision": "暂无需要决策的任务。",
+    "emptyOrg": "此组织暂无任务",
+    "clearFilters": "清除筛选条件",
+    "controls": "任务列表操作",
+    "search": "搜索任务",
+    "searchHint": "搜索任务…",
+    "layout": "任务布局",
+    "boardView": "看板视图",
+    "collapseAll": "折叠所有任务",
+    "expandAll": "展开所有任务"
   },
   "agents": {
     "selectOrg": "请选择一个组织以查看 Agent。",

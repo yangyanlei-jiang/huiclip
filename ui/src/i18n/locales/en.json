@@ -122,7 +122,18 @@
     "removeAttachment": "Remove attachment",
     "project": "Project",
     "noProjects": "No projects found.",
-    "privateProject": "Private project"
+    "privateProject": "Private project",
+    "noMatches": "No tasks match this view",
+    "noDecision": "No tasks need a decision.",
+    "emptyOrg": "No tasks in this organization",
+    "clearFilters": "Clear filters",
+    "controls": "Task list controls",
+    "search": "Search tasks",
+    "searchHint": "Search tasks…",
+    "layout": "Task layout",
+    "boardView": "Board view",
+    "collapseAll": "Collapse all tasks",
+    "expandAll": "Expand all tasks"
   },
   "agents": {
     "selectOrg": "Select an organization to view agents.",

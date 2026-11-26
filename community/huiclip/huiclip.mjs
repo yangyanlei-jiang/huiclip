@@ -95,6 +95,7 @@ function environment(config) {
   return {
     ...env,
     PORT: String(config.server.port),
+    CODEX_HOME: join(home, "codex"),
     PAPERCLIP_API_URL: `http://127.0.0.1:${config.server.port}`,
     PAPERCLIP_HOME: home,
     PAPERCLIP_INSTANCE_ID: instance,
@@ -239,6 +240,7 @@ async function main(args) {
       config: configPath,
       context: join(home, "context.json"),
       cliAuth: join(home, "auth.json"),
+      codexHome: join(home, "codex"),
       port: config.server.port,
       embeddedPostgresPort: config.database.embeddedPostgresPort,
       serviceName,

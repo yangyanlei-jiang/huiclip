@@ -1,3 +1,4 @@
+import { useTranslation } from "@/i18n";
 import { readTaskListSortParams, taskListOrderToIssueSort, type TaskListSort } from "@/lib/task-list";
 import { useDeferredValue, useEffect, useRef, useState, type ReactNode } from "react";
 import { useWarmTaskDetailCode } from "@/hooks/useWarmTaskDetailCode";
@@ -40,6 +41,7 @@ const pageSize = 200;
 /** Coordinator's existing IA and attention feed, rendered with the production
  * components reviewed in Design proposals / Pages / Tasks. */
 export function CoordinatorTasks({ viewControl }: { viewControl?: ReactNode } = {}) {
+  const { t } = useTranslation();
   const { selectedCompanyId: companyId } = useCompany();
   const { userId, loaded: identitySettled } = useCoordinatorWorkspaceEnabled();
   const { openNewIssue } = useDialogActions();
@@ -112,7 +114,7 @@ export function CoordinatorTasks({ viewControl }: { viewControl?: ReactNode } = 
     next.set("view", nextView === "blocked" ? "needs_attention" : nextView);
     return next;
   });
-  useEffect(() => { setBreadcrumbs([{ label: "Tasks" }]); }, [setBreadcrumbs]);
+  useEffect(() => { setBreadcrumbs([{ label: t("nav.tasks") }]); }, [setBreadcrumbs, t]);
 
   const tasks = useInfiniteQuery({
     queryKey: [...queryKeys.issues.list(companyId!), "coordinator-table", "index", userId, deferredQuery, participantAgentId, workspaceIds, originKind, serverSortField, serverSortDir, includeBlockedBy, view === "unread"],
@@ -265,10 +267,10 @@ export function CoordinatorTasks({ viewControl }: { viewControl?: ReactNode } = 
   const enrichItem = (item: TaskListItem): TaskListItem => ({ ...item, issue: enrichIssueRow(item.issue) });
   const narrowed = query || collection.activeFilterCount || view === "inbox" || view === "unread";
   const empty = <EmptyState icon={narrowed ? SearchX : ListChecks}
-    message={narrowed ? "No tasks match this view" : needsAttention ? "No tasks need a decision." : "No tasks in this organization"}
-    action={narrowed ? "Clear filters" : needsAttention ? undefined : "New Task"}
+    message={narrowed ? t("tasks.noMatches") : needsAttention ? t("tasks.noDecision") : t("tasks.emptyOrg")}
+    action={narrowed ? t("tasks.clearFilters") : needsAttention ? undefined : t("nav.newTask")}
     onAction={narrowed ? clearFilters : () => openNewIssue()} />;
-  const issueLinkState = createIssueDetailLocationState("Tasks", `${location.pathname}${location.search}`, "issues");
+  const issueLinkState = createIssueDetailLocationState(t("nav.tasks"), `${location.pathname}${location.search}`, "issues");
   const retry = () => {
     update.reset();
     void (needsAttention ? attention.refetch() : tasks.refetch());
@@ -279,7 +281,7 @@ export function CoordinatorTasks({ viewControl }: { viewControl?: ReactNode } = 
   };
 
   if (!companyId) return <EmptyState icon={ListChecks} message="Select an organization to view tasks." />;
-  return <FlyoutAppearanceProvider><TruncatedTextMarqueeProvider><section ref={listRef} className="coordinator-task-list task-row-design-preview flex min-w-0 flex-col gap-8" aria-label="Tasks">
+  return <FlyoutAppearanceProvider><TruncatedTextMarqueeProvider><section ref={listRef} className="coordinator-task-list task-row-design-preview flex min-w-0 flex-col gap-8" aria-label={t("nav.tasks")}>
     <TaskListToolbar view={view} onViewChange={setView} viewControl={viewControl}
       query={collection.query} onQueryChange={collection.setQuery} layout={collection.layout} onLayoutChange={collection.setLayout}
       allExpanded={collection.allExpanded} onToggleExpanded={collection.toggleExpanded} onNewTask={() => openNewIssue()}
