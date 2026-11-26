@@ -206,6 +206,7 @@ WantedBy=default.target`;
 
 function help() {
   console.log(`回形夹 · HuiClip ${manifest.version}
+huiclip onboard --yes        使用实例配置准备并启动本机应用
 huiclip setup                安装依赖并构建本地运行环境
 huiclip run                  启动本机应用
 huiclip info                 查看 HuiClip 路径与服务名称
@@ -216,6 +217,10 @@ huiclip --version            查看已安装版本`);
 }
 
 async function main(args) {
+  if (args[0] === "onboard") {
+    if (args.length !== 2 || args[1] !== "--yes") throw new Error("用法：huiclip onboard --yes");
+    return main(["run"]);
+  }
   const [command, ...rest] = args;
   if (!command || command === "--help" || command === "-h") return help();
   if (command === "--version" || command === "-v") {
