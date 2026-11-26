@@ -50,7 +50,7 @@ function initializeHome() {
 
   mkdirSync(instanceRoot, { recursive: true, mode: 0o700 });
   if (!existsSync(configPath)) {
-    const port = portFrom(process.env.HUICLIP_PORT, 3310, "HUICLIP_PORT");
+    const port = portFrom(process.env.HUICLIP_PORT, 1549, "HUICLIP_PORT");
     const dbPort = portFrom(process.env.HUICLIP_DB_PORT, 54339, "HUICLIP_DB_PORT");
     if (port === dbPort) throw new Error("应用端口与内嵌数据库端口必须不同。");
     const config = {

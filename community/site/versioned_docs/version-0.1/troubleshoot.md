@@ -3,7 +3,7 @@
 ## 启动或打开页面失败
 
 - 先核对 `node --version` 和 `pnpm --version`。依赖安装使用仓库锁文件。若依赖解析指向团队 registry，先用组织允许的方式确认该 registry 能获取公共依赖。
-- 用 `huiclip info` 确认配置文件和端口。用 `curl -fsS http://127.0.0.1:3310/api/health` 区分服务启动和浏览器问题。
+- 用 `huiclip info` 确认配置文件和端口。用 `curl -fsS http://127.0.0.1:1549/api/health` 区分服务启动和浏览器问题。
 - 依赖构建失败后可重试 `huiclip setup`。如果机器在构建时突然断电，先确认没有仍在运行的构建，再检查该版本专属的运行目录和锁目录。保留 `instances/` 和重要日志。
 - 迁移失败时保留原数据目录与首条错误，在新测试目录复现。
 

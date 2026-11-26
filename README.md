@@ -20,12 +20,12 @@
 git clone --branch community/zh-cn-v1 --single-branch https://github.com/yangyanlei-jiang/huiclip.git
 cd huiclip
 node community/huiclip/pack.mjs ../huiclip-packages
-npm install --global --prefix ../huiclip-cli ../huiclip-packages/huiclip-0.1.2.tgz
+npm install --global --prefix ../huiclip-cli ../huiclip-packages/huiclip-0.1.3.tgz
 ../huiclip-cli/bin/huiclip setup
 ../huiclip-cli/bin/huiclip run
 ```
 
-打开 [http://127.0.0.1:3310](http://127.0.0.1:3310)。默认数据目录为 `~/.huiclip`。可用 `../huiclip-cli/bin/huiclip info` 查看配置、CLI 凭据文件位置、数据库端口和系统服务名。包从当前分支提交生成，npm 注册表暂未提供发行包。
+打开 [http://127.0.0.1:1549](http://127.0.0.1:1549)。默认数据目录为 `~/.huiclip`。可用 `../huiclip-cli/bin/huiclip info` 查看配置、CLI 凭据文件位置、数据库端口和系统服务名。包从当前分支提交生成，npm 注册表暂未提供发行包。
 
 ## 中文指南
 
