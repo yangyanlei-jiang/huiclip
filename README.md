@@ -29,13 +29,15 @@ npm install --global --prefix ../huiclip-cli ../huiclip-packages/huiclip-0.1.3.t
 
 ## 中文指南
 
-- [安装与启动](community/site/docs/install.md)
-- [团队私有部署](community/site/docs/private.md)
-- [连接 Codex](community/site/docs/codex.md)
-- [派任务、审批与验收](community/site/docs/tasks.md)
-- [费用与预算](community/site/docs/budgets.md)
-- [反馈、审核和评论](community/site/docs/community.md)
-- [贡献指南](community/CONTRIBUTING.zh-CN.md) · [同步上游](community/UPSTREAM.md) · [覆盖清单](community/COVERAGE.md) · [验收记录](community/VERIFICATION.md)
+完整指南与版本快照在独立的 [huiclip-docs 文档仓库](https://github.com/yangyanlei-jiang/huiclip-docs) 维护。
+
+- [安装与启动](https://github.com/yangyanlei-jiang/huiclip-docs/blob/main/docs/install.md)
+- [团队私有部署](https://github.com/yangyanlei-jiang/huiclip-docs/blob/main/docs/private.md)
+- [连接 Codex](https://github.com/yangyanlei-jiang/huiclip-docs/blob/main/docs/codex.md)
+- [派任务、审批与验收](https://github.com/yangyanlei-jiang/huiclip-docs/blob/main/docs/tasks.md)
+- [费用与预算](https://github.com/yangyanlei-jiang/huiclip-docs/blob/main/docs/budgets.md)
+- [反馈、审核和评论](https://github.com/yangyanlei-jiang/huiclip-docs/blob/main/docs/community.md)
+- [贡献指南](community/CONTRIBUTING.zh-CN.md) · [同步上游](community/UPSTREAM.md) · [覆盖清单](https://github.com/yangyanlei-jiang/huiclip-docs/blob/main/COVERAGE.md) · [验收记录](community/VERIFICATION.md)
 
 ## 上游与许可
 

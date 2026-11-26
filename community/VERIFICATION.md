@@ -22,16 +22,17 @@ pnpm exec vitest run src/i18n/locale-validation.test.ts src/pages/CoordinatorTas
 
 - Docusaurus 简中站以 Markdown 源目录与 `0.1` 版本快照构建，通过内部链接检查。浏览器以匿名访客打开安装文章，可阅读正文和已审核的评论、回复。
 - Waline 使用独立 SQLite 和本地管理端资源。用两个虚构测试账号验证注册、登录、匿名发言被拒、普通用户无法越权批准、自身评论和回复进入待审、管理员批准、以及重启后账号和公开内容仍能读取。注册界面与预算页面的截图来自上述本地环境。
-- 官方 sitemap 的 318 个地址全部登记，22 个已关联本批原创指南，296 个待写待验。部分原页的专题只覆盖相关本地流程，详见[覆盖清单](COVERAGE.md)。
+- 官方 sitemap 的 318 个地址全部登记，22 个已关联本批原创指南，296 个待写待验。部分原页的专题只覆盖相关本地流程，详见[覆盖清单](https://github.com/yangyanlei-jiang/huiclip-docs/blob/main/COVERAGE.md)。
 
 ```sh
-cd community/site
+git clone https://github.com/yangyanlei-jiang/huiclip-docs.git
+cd huiclip-docs
 npm ci
 HUICLIP_WALINE_URL=http://127.0.0.1:8360 npm run build
 npm run serve
 ```
 
-在另一终端用 Node.js 26 启动 `community/comments` 下的 `npm ci && npm start`。可到 `http://127.0.0.1:8360/ui/register` 注册本机测试用户，到 `http://127.0.0.1:4174/install` 验证评论行为。
+在另一终端用 Node.js 26 启动文档仓库 `comments/` 下的 `npm ci && npm start`。可到 `http://127.0.0.1:8360/ui/register` 注册本机测试用户，到 `http://127.0.0.1:4174/install` 验证评论行为。
 
 ## 待实地验证
 
