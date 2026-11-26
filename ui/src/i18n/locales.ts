@@ -1,6 +1,6 @@
 import type { Resource } from "i18next";
 
-import { assertValidLocaleMessages } from "./locale-validation";
+import { assertValidLocaleMessages, withEnglishFallback } from "./locale-validation";
 
 export const DEFAULT_LOCALE = "en" as const;
 
@@ -15,7 +15,7 @@ export const localeMessages = Object.fromEntries(
     if (!locale) {
       throw new Error(`Invalid locale file path: ${path}`);
     }
-    return [locale, messages];
+    return [locale, locale === "en" || locale === DEFAULT_LOCALE ? messages : withEnglishFallback(messages)];
   }),
 );
 

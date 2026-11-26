@@ -107,6 +107,17 @@ function validateNode(path: string[], candidate: unknown, englishReference: unkn
   }
 }
 
+export function withEnglishFallback(candidate: unknown, englishReference: unknown = en): unknown {
+  if (!isPlainObject(candidate) || !isPlainObject(englishReference)) return candidate;
+
+  const entries = Object.keys(englishReference).map((key) => [
+    key,
+    Object.hasOwn(candidate, key) ? withEnglishFallback(candidate[key], englishReference[key]) : englishReference[key],
+  ] as const);
+  // Leave unknown entries intact so normal validation can report them.
+  return Object.fromEntries([...Object.entries(candidate), ...entries]);
+}
+
 export function validateLocaleMessages(candidate: unknown, englishReference: unknown = en) {
   const errors: string[] = [];
   validateNode([], candidate, englishReference, errors);
