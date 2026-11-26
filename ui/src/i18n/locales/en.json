@@ -102,7 +102,11 @@
     "waitAuth": "Waiting for auth…",
     "waitCode": "Waiting for code…",
     "agentReady": "{{name}} is ready to work!",
-    "signInTo": "Sign in to {{provider}}"
+    "signInTo": "Sign in to {{provider}}",
+    "nameStep": "Name your organization",
+    "reviewStep": "Review",
+    "stepNumber": "Step {{step}}",
+    "stepProgress": "Step {{step}} of {{total}}"
   },
   "tasks": {
     "newSubtask": "New sub-task",

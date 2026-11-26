@@ -134,7 +134,6 @@ import { PillGuy } from "./onboarding/PillGuy";
 import { SleepingZs } from "./onboarding/SleepingZs";
 import {
   AGENT_ARC_WIZARD_STEPS,
-  ONBOARDING_STEP_LABELS,
   ONBOARDING_WIZARD_STEPS,
   Stepper,
   agentArcStepFor,
@@ -2890,7 +2889,12 @@ function OnboardingWizardInner({
                 <Stepper
                   step={onboardingStepPositionFor(step)}
                   total={ONBOARDING_WIZARD_STEPS.length}
-                  labels={ONBOARDING_STEP_LABELS}
+                  labels={[
+                    t("setup.nameStep"),
+                    t("setup.firstAgent"),
+                    t("setup.connectModel"),
+                    t("setup.reviewStep"),
+                  ]}
                   canJumpToStep={(target) =>
                     canJumpToOnboardingStep({
                       targetStep: ONBOARDING_WIZARD_STEPS[target - 1]!,
@@ -2910,6 +2914,7 @@ function OnboardingWizardInner({
               {showsAgentArcStepper && (
                 <Stepper
                   step={agentArcStepFor(step)!}
+                  labels={[t("setup.firstAgent"), t("setup.connectModel"), t("setup.reviewStep")]}
                   canJumpToStep={(target) =>
                     canJumpToOnboardingStep({
                       targetStep: AGENT_ARC_WIZARD_STEPS[target - 1]!,
