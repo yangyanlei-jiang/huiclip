@@ -1,0 +1,12 @@
+{
+  "name": "huiclip",
+  "version": "0.1.0",
+  "description": "回形夹 · HuiClip — 基于 Paperclip 的独立中文社区版",
+  "type": "module",
+  "license": "MIT",
+  "bin": { "huiclip": "./huiclip.mjs" },
+  "engines": { "node": ">=24.11.0" },
+  "os": ["darwin", "linux"],
+  "files": ["huiclip.mjs", "source.tar.gz", "LICENSE", "README.md"],
+  "repository": { "type": "git", "url": "git+https://github.com/yangyanlei-jiang/huiclip.git" }
+}
