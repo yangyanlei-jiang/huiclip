@@ -16,11 +16,21 @@ HuiClip 是基于 Paperclip 的独立中文社区版。你可以在同一个工�
 
 需要 macOS 或 Linux、Git、Node.js 24.11+、pnpm 9.15.4、npm 和 tar。
 
+从 npm 启动（推荐）：
+
+```sh
+npx --yes huiclip@0.1.5 run
+```
+
+升级时先停止旧实例，保留原 `HUICLIP_HOME`（默认 `~/.huiclip`），再运行新版；不需要重新初始化。
+
+也可以从源码打包：
+
 ```sh
 git clone --branch community/zh-cn-v1 --single-branch https://github.com/yangyanlei-jiang/huiclip.git
 cd huiclip
 node community/huiclip/pack.mjs ../huiclip-packages
-npm install --global --prefix ../huiclip-cli ../huiclip-packages/huiclip-0.1.4.tgz
+npm install --global --prefix ../huiclip-cli ../huiclip-packages/huiclip-0.1.5.tgz
 ../huiclip-cli/bin/huiclip setup
 ../huiclip-cli/bin/huiclip run
 ```

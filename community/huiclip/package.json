@@ -1,6 +1,6 @@
 {
   "name": "huiclip",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "HuiClip — 基于 Paperclip 的独立中文社区版",
   "type": "module",
   "license": "MIT",
