@@ -229,10 +229,9 @@ export function QueryPlaceholder({ size = "panel", label = "Loading", className 
 
 /** The small hint above stale content, for surfaces that opt in with `staleHint`. */
 export function QueryStaleHint({ className }: { className?: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
-    <p role="status" data-query-view="stale" className={cn("text-xs text-muted-foreground", className)}>
-      Updating paused while reconnecting…
-    </p>
+    <p role="status" data-query-view="stale" className={cn("text-xs text-muted-foreground", className)}>{pageText("updatingPausedWhileReconnecting_659b01")}</p>
   );
 }
 
@@ -268,12 +267,13 @@ export function QueryView<TData>({
   className,
   children,
 }: QueryViewProps<TData>) {
+  const { t: pageText } = usePageTranslation("interface");
   const view = useQueryView(query);
   switch (view.kind) {
     case "loading":
       return <>{loading ?? <QueryPlaceholder size={size} className={className} />}</>;
     case "reconnecting":
-      return <>{reconnecting ?? loading ?? <QueryPlaceholder size={size} label="Reconnecting" className={className} />}</>;
+      return <>{reconnecting ?? loading ?? <QueryPlaceholder size={size} label={pageText("reconnecting_9d80f9")} className={className} />}</>;
     case "error":
       if (view.errorKind === "not_found" && notFound !== undefined) return <>{notFound}</>;
       return (

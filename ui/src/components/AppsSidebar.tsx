@@ -1,3 +1,4 @@
+import { optionLabel } from "@/i18n/option-label";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useLocation } from "@/lib/router";
@@ -57,21 +58,17 @@ export function AppsSidebar() {
             <div
               data-slot="contextual-sidebar-section-label"
               className={contextualSidebarStyles.sectionLabel}
-            >
-              Developer
-            </div>
+            >{pageText("developer_7e08eb")}</div>
             <p
               data-slot="contextual-sidebar-section-description"
               className={contextualSidebarStyles.sectionDescription}
-            >
-              Advanced setup for developers.
-            </p>
+            >{pageText("advancedSetupForDevelopers_3cfd7a")}</p>
             <div data-slot="contextual-sidebar-group" className={contextualSidebarStyles.group}>
               {developerTabs.map((tab) => (
                 <SidebarNavItem
                   key={tab.key}
                   to={advancedTabHref(tab.key)}
-                  label={tab.label}
+                  label={optionLabel(tab.label)}
                   icon={tab.icon}
                   end
                 />

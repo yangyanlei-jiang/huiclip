@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useEffect, useState } from "react";
@@ -110,7 +111,7 @@ export function useRunnerGoalControl(issueId: string | null, agentId: string | n
         ...(action === "replace" ? { confirmReplace } : {}),
       });
     } catch (error) {
-      setActionError(error instanceof Error ? error.message : "The goal action could not be applied.");
+      setActionError(error instanceof Error ? error.message : interfaceNotice("interface:theGoalActionCouldNotBeApplied_7eeef0"));
       throw error;
     }
   }, [mutation, query]);
@@ -204,14 +205,14 @@ export function RunnerGoalWidget({ control }: { control: RunnerGoalControl }) {
   return (
     <section
       className="rounded-xl border border-border/80 bg-card/95 px-3 py-2 shadow-sm"
-      aria-label="Agent session goal"
+      aria-label={pageText("agentSessionGoal_3fce68")}
       data-testid="runner-goal-widget"
     >
       <div className="flex items-start gap-2">
         <Flag className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-xs font-semibold">Session goal</span>
+            <span className="text-xs font-semibold">{pageText("sessionGoal_639e78")}</span>
             {goal ? (
               <span className="rounded-full bg-muted px-1.5 py-0.5 text-xs font-medium capitalize" role="status">
                 {goal.status.replaceAll("_", " ")}
@@ -219,8 +220,7 @@ export function RunnerGoalWidget({ control }: { control: RunnerGoalControl }) {
             ) : null}
             {goal?.workingNow ? (
               <span className="inline-flex items-center gap-1 text-xs text-primary" role="status">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" /> Working now
-              </span>
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />{" " + pageText("workingNow_efaa47")}</span>
             ) : null}
             {pendingLabel ? (
               <span className="inline-flex items-center gap-1 text-xs text-muted-foreground" role="status">
@@ -232,7 +232,7 @@ export function RunnerGoalWidget({ control }: { control: RunnerGoalControl }) {
             <p className={cn("mt-1 text-sm leading-snug", control.expanded ? "max-h-40 overflow-auto" : "line-clamp-2")}>{goal.objective}</p>
           ) : (
             <p className="mt-1 text-xs text-muted-foreground">
-              {capability?.reason ?? "Type /goal followed by an objective to pursue work across turns."}
+              {capability?.reason ?? pageText("typeGoalFollowedByAnObjectiveToPursue_2d8594")}
             </p>
           )}
           {goal ? (
@@ -243,29 +243,29 @@ export function RunnerGoalWidget({ control }: { control: RunnerGoalControl }) {
                   {formatTokens(goal.tokensUsed)}{" " + pageText("tokens_339143")}{goal.tokenBudget ? ` / ${formatTokens(goal.tokenBudget)}` : ""}
                 </span>
               ) : null}
-              {goal.iterations > 0 ? <span>{goal.iterations} iterations</span> : null}
+              {goal.iterations > 0 ? <span>{goal.iterations}{" " + pageText("iterations_3d1fd4")}</span> : null}
               {goal.lastReason ? <span className="truncate">{goal.lastReason}</span> : null}
             </div>
           ) : null}
         </div>
         <div className="flex shrink-0 items-center gap-1">
           {goal && can("set") ? (
-            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => void control.edit().catch(() => {})} aria-label="Edit goal">
+            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => void control.edit().catch(() => {})} aria-label={pageText("editGoal_2a9e72")}>
               <Pencil className="h-3.5 w-3.5" aria-hidden />
             </Button>
           ) : null}
           {goal?.status === "active" && can("pause") ? (
-            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => void control.executeAction("pause").catch(() => {})} aria-label="Pause goal">
+            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => void control.executeAction("pause").catch(() => {})} aria-label={pageText("pauseGoal_15d638")}>
               <Pause className="h-3.5 w-3.5" aria-hidden />
             </Button>
           ) : null}
           {resumable && can("resume") ? (
-            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => void control.executeAction("resume").catch(() => {})} aria-label="Resume goal">
+            <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => void control.executeAction("resume").catch(() => {})} aria-label={pageText("resumeGoal_744f48")}>
               <Play className="h-3.5 w-3.5" aria-hidden />
             </Button>
           ) : null}
           {goal && can("clear") ? (
-            <Button size="icon" variant="ghost" className={cn("h-7 w-7", "text-muted-foreground hover:text-destructive")} onClick={() => void control.executeAction("clear").catch(() => {})} aria-label="Clear goal">
+            <Button size="icon" variant="ghost" className={cn("h-7 w-7", "text-muted-foreground hover:text-destructive")} onClick={() => void control.executeAction("clear").catch(() => {})} aria-label={pageText("clearGoal_e9633e")}>
               <Trash2 className="h-3.5 w-3.5" aria-hidden />
             </Button>
           ) : null}
@@ -283,15 +283,15 @@ export function RunnerGoalWidget({ control }: { control: RunnerGoalControl }) {
             void control.submitDialog();
           }}>
             <DialogHeader>
-              <DialogTitle>{control.dialog?.action === "replace" ? "Replace session goal?" : "Edit session goal"}</DialogTitle>
+              <DialogTitle>{control.dialog?.action === "replace" ? pageText("replaceSessionGoal_2747ea") : pageText("editSessionGoal_914c5c")}</DialogTitle>
               <DialogDescription>
                 {control.dialog?.action === "replace"
-                  ? "This clears the unfinished goal and starts a new goal with the objective below."
-                  : "Update the objective without clearing the goal's progress."}
+                  ? pageText("thisClearsTheUnfinishedGoalAndStartsA_fc41c0")
+                  : pageText("updateTheObjectiveWithoutClearingTheGoalS_9eadff")}
               </DialogDescription>
             </DialogHeader>
             <label className="block space-y-2">
-              <span className="text-sm font-medium">Goal objective</span>
+              <span className="text-sm font-medium">{pageText("goalObjective_f50cdf")}</span>
               <Textarea
                 value={control.dialog?.objective ?? ""}
                 maxLength={4_000}
@@ -313,7 +313,7 @@ export function RunnerGoalWidget({ control }: { control: RunnerGoalControl }) {
             <DialogFooter>
               <Button type="button" variant="outline" disabled={control.mutation?.isPending} onClick={() => control.setDialog(null)}>{translateUi("interfaceCopy.cancel")}</Button>
               <Button type="submit" disabled={!control.dialog?.objective.trim() || control.mutation?.isPending}>
-                {control.mutation?.isPending ? pageText("saving_56a228") : control.dialog?.action === "replace" ? "Replace goal" : "Save goal"}
+                {control.mutation?.isPending ? pageText("saving_56a228") : control.dialog?.action === "replace" ? pageText("replaceGoal_99729e") : pageText("saveGoal_10dc22")}
               </Button>
             </DialogFooter>
           </form>

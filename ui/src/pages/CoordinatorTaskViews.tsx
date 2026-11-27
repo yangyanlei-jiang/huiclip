@@ -54,7 +54,7 @@ export function CoordinatorTaskViews() {
   if (definition.surface === "issues") return <CoordinatorTasks viewControl={views} />;
   return <section className="coordinator-task-list" aria-label={translateUi("interfaceCopy.tasks")}><Inbox
     tab={definition.inboxTab}
-    surfaceLabel="Tasks"
+    surfaceLabel={translateUi("nav.tasks")}
     toolbarContext={<div className="flex min-w-0 items-center gap-2">{views}<Button variant="outline" size="sm" onClick={() => openNewIssue()}><Plus className="size-4" />{pageText("newTask_cc3dbd")}</Button></div>}
   /></section>;
 }

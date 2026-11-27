@@ -27,13 +27,13 @@ export function TaskDecisionRecord({ companyId, issueId, viewerId, agentMap }: {
   const decision = record.data;
   const matchesTask = decision?.companyId === companyId && decision.originIssueId === issueId;
   const choice = decision?.options.find((option) => option.id === decision.chosenOptionId);
-  return <section id={anchor!} aria-label="Decision record" className="space-y-3 rounded-xl border border-border bg-card p-4">
-    <h2 className="text-sm font-medium">Decision record</h2>
+  return <section id={anchor!} aria-label={pageText("decisionRecord_10cd48")} className="space-y-3 rounded-xl border border-border bg-card p-4">
+    <h2 className="text-sm font-medium">{pageText("decisionRecord_10cd48")}</h2>
     {["loading", "reconnecting"].includes(recordView.kind) ? <p role="status" className="text-sm text-muted-foreground">{pageText("loadingDecision_a7a5d4")}</p> : (recordView.kind === "error") ? (
-      <div role="alert" className="text-sm"><p>Could not load this decision.</p><Button size="sm" variant="ghost" onClick={() => void record.refetch()}>{translateUi("interfaceCopy.retry")}</Button></div>
-    ) : !matchesTask ? <p role="alert" className="text-sm text-muted-foreground">This decision is not available in this task.</p> : <>
+      <div role="alert" className="text-sm"><p>{pageText("couldNotLoadThisDecision_3f448d")}</p><Button size="sm" variant="ghost" onClick={() => void record.refetch()}>{translateUi("interfaceCopy.retry")}</Button></div>
+    ) : !matchesTask ? <p role="alert" className="text-sm text-muted-foreground">{pageText("thisDecisionIsNotAvailableInThisTask_1d188a")}</p> : <>
       {decision.status !== "open" ? <dl className="space-y-2 text-sm">
-        <div><dt className="text-muted-foreground">Recorded choice</dt><dd>{choice?.label ?? (decision.chosenOptionId === "dismissed" ? "Dismissed" : decision.status)}</dd></div>
+        <div><dt className="text-muted-foreground">{pageText("recordedChoice_d78f8f")}</dt><dd>{choice?.label ?? (decision.chosenOptionId === "dismissed" ? pageText("dismissed_e8db5f") : decision.status)}</dd></div>
         {(decision.inputs ?? []).filter((input) => decision.inputValues?.[input.id] !== undefined).map((input) => <div key={input.id}>
           <dt className="text-muted-foreground">{input.label}</dt><dd className="whitespace-pre-wrap">{decision.inputValues![input.id]}</dd>
         </div>)}

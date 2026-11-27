@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import {
   useCallback,
   useEffect,
@@ -136,7 +137,7 @@ export function useBrowserViewport({
                 desiredMode = stateRef.current.preset;
                 pending = null;
                 setError(
-                  "Browser size could not be changed. Choose a size in Browser options to try again.",
+                  interfaceNotice("interface:browserSizeCouldNotBeChangedChooseA_d0123e"),
                 );
               }
             } finally {

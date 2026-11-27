@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -153,7 +154,7 @@ function UrlSegment({ entry, compact }: { entry: WorkspaceServiceControlEntry; c
   const live = entry.state === "running" && Boolean(entry.url);
 
   if (!displayUrl) {
-    return <span className="font-mono text-xs text-muted-foreground/70">no url</span>;
+    return <span className="font-mono text-xs text-muted-foreground/70">{pageText("noUrl_3a0cc9")}</span>;
   }
   return (
     <>
@@ -287,6 +288,7 @@ function ServiceDetail({
   entry: WorkspaceServiceControlEntry;
   onViewLogs?: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const detail = entry.exposureDetail ?? (entry.state === "failed" ? entry.failureDetail : null);
   if (!detail) return null;
   const exposureFailed = entry.exposureState === "failed" || entry.exposureState === "cleanup_pending";
@@ -300,9 +302,7 @@ function ServiceDetail({
             type="button"
             onClick={onViewLogs}
             className="font-medium text-foreground underline underline-offset-2 hover:text-foreground/80"
-          >
-            View logs
-          </button>
+          >{pageText("viewLogs_4c3958")}</button>
         </>
       ) : null}
     </div>
@@ -456,7 +456,7 @@ function MultiServiceBar({
               <button
                 type="button"
                 className="flex h-full items-center gap-2 rounded-l-lg pr-1 text-xs font-medium text-foreground hover:bg-accent"
-                aria-label={`${runningCount} of ${services.length} services running — show services`}
+                aria-label={translateDynamic("dynamic:ofServicesRunningShowServices", { value1: runningCount, value2: services.length })}
               >
                 <StatusIndicator entry={aggregateEntry} />
                 <span className="whitespace-nowrap">{runningCount}/{services.length}{" " + pageText("running_3c49d9")}</span>
@@ -464,8 +464,7 @@ function MultiServiceBar({
               </button>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-96 p-0" onOpenAutoFocus={(event) => event.preventDefault()}>
-              <div className="px-4 pb-1 pt-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Services · {services.length}
+              <div className="px-4 pb-1 pt-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">{pageText("services_f0b35a") + " "}{services.length}
               </div>
               <div className="divide-y divide-border px-4">
                 {services.map((entry) => (
@@ -473,18 +472,16 @@ function MultiServiceBar({
                 ))}
               </div>
               <div className="flex items-center gap-1 border-t border-border px-4 py-2">
-                <Button variant="ghost" size="xs" onClick={() => onAction("start", null)}>Start all</Button>
-                <Button variant="ghost" size="xs" onClick={() => onAction("stop", null)}>Stop all</Button>
-                <Button variant="ghost" size="xs" onClick={() => onAction("restart", null)}>Restart all</Button>
+                <Button variant="ghost" size="xs" onClick={() => onAction("start", null)}>{pageText("startAll_ee6b40")}</Button>
+                <Button variant="ghost" size="xs" onClick={() => onAction("stop", null)}>{pageText("stopAll_a3a30f")}</Button>
+                <Button variant="ghost" size="xs" onClick={() => onAction("restart", null)}>{pageText("restartAll_29b3fa")}</Button>
                 {onManageServices ? (
                   <Button
                     variant="link"
                     size="xs"
                     className="ml-auto text-muted-foreground"
                     onClick={onManageServices}
-                  >
-                    Manage in Services tab →
-                  </Button>
+                  >{pageText("manageInServicesTab_4d4e47")}</Button>
                 ) : null}
               </div>
             </PopoverContent>
@@ -497,7 +494,7 @@ function MultiServiceBar({
                 <UrlSegment entry={primary} />
               </>
             ) : (
-              <span className="font-mono text-xs text-muted-foreground/70">no url</span>
+              <span className="font-mono text-xs text-muted-foreground/70">{pageText("noUrl_3a0cc9")}</span>
             )}
           </div>
           <div className="mx-3 hidden h-5 w-px bg-border sm:block" />

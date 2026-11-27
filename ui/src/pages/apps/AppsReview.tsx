@@ -1,3 +1,5 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect } from "react";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
@@ -15,29 +17,28 @@ import { ReviewQueueCard } from "./ReviewQueueCard";
  * "Needs attention"; decisions live here.
  */
 export function AppsReview() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: "Connectors", href: "/apps" },
-      { label: "Review" },
+      { label: interfaceNotice("interface:connectors_4b1e95"), href: "/apps" },
+      { label: interfaceNotice("interface:review_e29a79") },
     ]);
     return () => setBreadcrumbs([]);
   }, [setBreadcrumbs]);
 
   if (!selectedCompanyId) {
-    return <div className="p-6 text-sm text-muted-foreground">Select an organization to review approvals.</div>;
+    return <div className="p-6 text-sm text-muted-foreground">{pageText("selectAnOrganizationToReviewApprovals_0786e7")}</div>;
   }
 
   return (
     <div className="max-w-3xl space-y-6 pb-12">
       <header>
         <h1 className="text-2xl font-bold tracking-tight">{translateUi("interfaceCopy.review")}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Actions your agents want to run that need your OK first. Approve, always-allow, or decline.
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">{pageText("actionsYourAgentsWantToRunThatNeed_2d3106")}</p>
       </header>
 
       <ReviewQueueCard emptyState="reassure" heading="Waiting for your OK" />

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -27,6 +28,7 @@ export function TaskDocumentPanel({
   documentIssueId?: string;
   currentIssueId?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const location = useLocation();
   const [annotationPanelOpen, setAnnotationPanelOpen] = useState(false);
@@ -52,9 +54,7 @@ export function TaskDocumentPanel({
   if (query.isLoading || view.kind === "reconnecting") {
     return (
       <div className="flex items-center gap-2 py-8 text-sm text-muted-foreground" role="status">
-        <Loader2 className="size-4 animate-spin" aria-hidden />
-        Loading document…
-      </div>
+        <Loader2 className="size-4 animate-spin" aria-hidden />{pageText("loadingDocument_622054")}</div>
     );
   }
   if (view.kind === "error") {
@@ -70,9 +70,9 @@ export function TaskDocumentPanel({
       <div className="flex items-start gap-3 py-8 text-sm" role="status">
         <FileQuestion className="mt-0.5 size-5 shrink-0 text-muted-foreground" aria-hidden />
         <div className="space-y-1">
-          <p className="font-medium">{revisionId ? "Reviewed revision unavailable" : "Document no longer available"}</p>
+          <p className="font-medium">{revisionId ? pageText("reviewedRevisionUnavailable_1d0bac") : pageText("documentNoLongerAvailable_6a06dd")}</p>
           <p className="text-muted-foreground">
-            {revisionId ? "The exact reviewed revision could not be found. The current version has not been substituted." : "Close this tab or choose another document."}
+            {revisionId ? pageText("theExactReviewedRevisionCouldNotBeFound_a2846f") : pageText("closeThisTabOrChooseAnotherDocument_a27b24")}
           </p>
         </div>
       </div>
@@ -92,7 +92,7 @@ export function TaskDocumentPanel({
             docKey={document.key}
             panelOpen={annotationPanelOpen}
             onToggle={() => setAnnotationPanelOpen((open) => !open)}
-          /> : <span>· Reviewed version</span>}
+          /> : <span>{pageText("reviewedVersion_6c02af")}</span>}
         </div>
       </header>
       {document.body.trim() ? (

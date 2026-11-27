@@ -1,3 +1,5 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -14,13 +16,14 @@ import { Button } from "@/components/ui/button";
 import { Target, Plus } from "lucide-react";
 
 export function Goals() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { selectedCompanyId } = useCompany();
   const { openNewGoal } = useDialogActions();
   const { setBreadcrumbs } = useBreadcrumbs();
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Goals" }]);
+    setBreadcrumbs([{ label: interfaceNotice("interface:goals_48d8c6") }]);
   }, [setBreadcrumbs]);
 
   const goalsQuery = useQuery({
@@ -67,9 +70,7 @@ export function Goals() {
         <>
           <div className="flex items-center justify-start">
             <Button size="sm" variant="outline" onClick={() => openNewGoal()}>
-              <Plus className="h-3.5 w-3.5 mr-1.5" />
-              New Goal
-            </Button>
+              <Plus className="h-3.5 w-3.5 mr-1.5" />{pageText("newGoal_5e8164")}</Button>
           </div>
           <GoalTree goals={goals} goalLink={(goal) => `/goals/${goal.id}`} />
         </>

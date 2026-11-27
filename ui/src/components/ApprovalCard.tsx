@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation } from "@/i18n";
 import { AgentIdentity } from "@/components/AgentIdentity";
 import { CheckCircle2, XCircle, Clock } from "lucide-react";
@@ -10,7 +11,7 @@ import {
   typeIcon,
   defaultTypeIcon,
   ApprovalPayloadRenderer,
-  typeLabel,
+  approvalTypeLabel,
 } from "./ApprovalPayload";
 import { timeAgo } from "../lib/timeAgo";
 import type { Approval, Agent } from "@paperclipai/shared";
@@ -47,7 +48,7 @@ export function ApprovalCard({
   const { t } = useTranslation();
   const payload = approval.payload as Record<string, unknown> | null;
   const Icon = typeIcon[approval.type] ?? defaultTypeIcon;
-  const kindLabel = typeLabel[approval.type] ?? approval.type;
+  const kindLabel = approvalTypeLabel(approval.type);
   const subject = approvalSubject(payload);
   const showResolutionButtons =
     Boolean(onApprove && onReject) &&
@@ -92,7 +93,7 @@ export function ApprovalCard({
         <div className="shrink-0">
           <div className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-background/80 px-2.5 py-1 text-xs text-muted-foreground">
             {statusIcon(approval.status)}
-            <span className="capitalize">{approval.status.replace(/_/g, " ")}</span>
+            <span className="capitalize">{interfaceNotice("interface:status_" + approval.status, { defaultValue: approval.status.replace(/_/g, " ") })}</span>
           </div>
         </div>
       </div>

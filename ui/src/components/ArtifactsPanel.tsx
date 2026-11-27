@@ -165,8 +165,8 @@ export function ArtifactsPanel({ taskId, isAgentWorking, openDocKey, openDocTitl
             <Package className="h-8 w-8 mx-auto text-muted-foreground/40 mb-3" />
             <p className="text-sm text-muted-foreground">
               {workProducts?.length === 0
-                ? "Your team's deliverables and plans will appear here as they're produced."
-                : "No artifacts match this filter."}
+                ? pageText("yourTeamSDeliverablesAndPlansWillAppear_0fd7ec")
+                : pageText("noArtifactsMatchThisFilter_5c6c9e")}
             </p>
           </div>
         ) : (
@@ -215,9 +215,7 @@ export function ArtifactsPanel({ taskId, isAgentWorking, openDocKey, openDocTitl
                         </span>
                         {showGenerating ? (
                           <Badge variant="ghost" className="[&>svg]:size-2.5 text-(length:--text-nano) px-1.5 bg-blue-500/10 text-blue-600 dark:text-blue-400">
-                            <Loader2 className="h-2.5 w-2.5 animate-spin" />
-                            Generating...
-                          </Badge>
+                            <Loader2 className="h-2.5 w-2.5 animate-spin" />{pageText("generating_813622")}</Badge>
                         ) : (
                           <Badge variant="ghost" className={cn("text-(length:--text-nano) px-1.5", badge.className)}>
                             {badge.label}
@@ -285,11 +283,9 @@ function DocumentViewer({
       <div className="flex-1 overflow-y-auto scrollbar-auto-hide p-4">
         {isLoading ? (
           <div className="flex items-center justify-center py-8 text-muted-foreground text-sm">
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            Loading document...
-          </div>
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />{pageText("loadingDocument_951b0d")}</div>
         ) : error ? (
-          <p className="text-sm text-muted-foreground">Document not available yet.</p>
+          <p className="text-sm text-muted-foreground">{pageText("documentNotAvailableYet_aaddbc")}</p>
         ) : doc?.body ? (
           <div className="prose prose-sm dark:prose-invert max-w-none">
             <MarkdownBody>{doc.body}</MarkdownBody>
@@ -302,7 +298,7 @@ function DocumentViewer({
       {/* Sticky action footer */}
       {needsAction && (
         <div className="border-t border-border px-4 py-3 bg-background shrink-0">
-          <p className="text-(length:--text-micro) text-muted-foreground mb-2">This document needs your review.</p>
+          <p className="text-(length:--text-micro) text-muted-foreground mb-2">{pageText("thisDocumentNeedsYourReview_17d265")}</p>
           <div className="flex items-center gap-3">
             <Button size="lg" className="h-11 px-8 text-base font-semibold flex-1 rounded-lg bg-green-700 hover:bg-green-800 text-white border-0" onClick={onApprove}>{pageText("approve_7b2c7f")}</Button>
             <Button size="lg" className="h-11 px-8 text-base font-semibold flex-1 rounded-lg bg-red-900 hover:bg-red-950 text-white border-0" onClick={() => {
@@ -316,9 +312,7 @@ function DocumentViewer({
         <div className="border-t border-green-500/30 bg-green-500/5 px-4 py-3 shrink-0">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="h-4 w-4 text-green-500" />
-            <p className="text-(length:--text-compact) font-medium text-green-700 dark:text-green-400">
-              Approved — hire tasks created
-            </p>
+            <p className="text-(length:--text-compact) font-medium text-green-700 dark:text-green-400">{pageText("approvedHireTasksCreated_14ac52")}</p>
           </div>
         </div>
       )}
@@ -326,9 +320,7 @@ function DocumentViewer({
         <div className="border-t border-orange-500/30 bg-orange-500/5 px-4 py-3 shrink-0">
           <div className="flex items-center gap-2">
             <XCircle className="h-4 w-4 text-orange-500" />
-            <p className="text-(length:--text-compact) font-medium text-orange-700 dark:text-orange-400">
-              Changes requested — CEO is revising
-            </p>
+            <p className="text-(length:--text-compact) font-medium text-orange-700 dark:text-orange-400">{pageText("changesRequestedCEOIsRevising_9ef201")}</p>
           </div>
         </div>
       )}

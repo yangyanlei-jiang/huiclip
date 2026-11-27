@@ -162,7 +162,7 @@ export function TaskChatDescriptionBubble({ brief }: TaskChatDescriptionBubblePr
             type="button"
             className="mt-1 shrink-0 rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-accent/50 hover:text-foreground focus-visible:opacity-100 group-hover/brief:opacity-100"
             onClick={() => setEditing(true)}
-            aria-label="Edit description"
+            aria-label={pageText("editDescription_2ebe5b")}
             data-testid="task-chat-description-edit"
           >
             <Pencil className="h-3.5 w-3.5" aria-hidden />

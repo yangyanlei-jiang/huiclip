@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { AgentAvatar } from "./AgentAvatar";
 import { Identity } from "./Identity";
@@ -83,9 +84,9 @@ export function ProjectAccessMembers({ project, canManage }: { project: Project;
       queryClient.invalidateQueries({ queryKey: membersKey });
       // Project membership changes task access, descendants and cached discovery.
       queryClient.invalidateQueries({ queryKey: ["issues"] });
-      pushToast({ title: "Project access added", tone: "success" });
+      pushToast({ title: interfaceNotice("interface:projectAccessAdded_5d3de3"), tone: "success" });
     },
-    onError: (error) => pushToast({ title: "Couldn't add project access", body: describeError(error).body, tone: "error" }),
+    onError: (error) => pushToast({ title: interfaceNotice("interface:couldnTAddProjectAccess_363415"), body: describeError(error).body, tone: "error" }),
   });
   const removeMember = useMutation({
     mutationFn: (memberId: string) => projectsApi.removeAccessMember(project.id, memberId, project.companyId),
@@ -93,9 +94,9 @@ export function ProjectAccessMembers({ project, canManage }: { project: Project;
       queryClient.invalidateQueries({ queryKey: membersKey });
       // Project membership changes task access, descendants and cached discovery.
       queryClient.invalidateQueries({ queryKey: ["issues"] });
-      pushToast({ title: "Project access removed", tone: "success" });
+      pushToast({ title: interfaceNotice("interface:projectAccessRemoved_1be8d8"), tone: "success" });
     },
-    onError: (error) => pushToast({ title: "Couldn't remove project access", body: describeError(error).body, tone: "error" }),
+    onError: (error) => pushToast({ title: interfaceNotice("interface:couldnTRemoveProjectAccess_27379e"), body: describeError(error).body, tone: "error" }),
   });
 
   return (
@@ -106,14 +107,12 @@ export function ProjectAccessMembers({ project, canManage }: { project: Project;
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Private project access</DialogTitle>
-            <DialogDescription>
-              Members can discover this project and read every task in it. A task can still be shared directly.
-            </DialogDescription>
+            <DialogTitle>{pageText("privateProjectAccess_ec8751")}</DialogTitle>
+            <DialogDescription>{pageText("membersCanDiscoverThisProjectAndReadEvery_6028ef")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             {directoryView.kind === "error" || agentsView.kind === "error" ? (
-              <p className="text-sm text-destructive">Couldn&apos;t load the company access directory.</p>
+              <p className="text-sm text-destructive">{pageText("couldnTLoadTheCompanyAccessDirectory_ab5892")}</p>
             ) : null}
             <div className="flex items-end gap-2">
               <SearchableSelect
@@ -122,9 +121,9 @@ export function ProjectAccessMembers({ project, canManage }: { project: Project;
                 renderValue={(option) => option ? renderAccessIdentity(option) : "Add a person or agent"}
                 renderOption={renderAccessIdentity}
                 onValueChange={(value) => setSelection(value)}
-                placeholder="Add a person or agent"
-                searchPlaceholder="Search people and agents"
-                emptyMessage="No more company members to add"
+                placeholder={pageText("addAPersonOrAgent_aa9660")}
+                searchPlaceholder={pageText("searchPeopleAndAgents_8f4285")}
+                emptyMessage={pageText("noMoreCompanyMembersToAdd_018af3")}
                 loading={[directoryView.kind, agentsView.kind].some(kind => ["loading", "reconnecting"].includes(kind))}
                 className="min-w-0 flex-1"
               />
@@ -132,10 +131,7 @@ export function ProjectAccessMembers({ project, canManage }: { project: Project;
                 <UserPlus className="h-3.5 w-3.5" aria-hidden="true" />{" " + pageText("add_61cc55")}</Button>
             </div>
             {sharingWithSharedAgent ? (
-              <p className="rounded-md border border-border bg-muted px-3 py-2 text-sm text-foreground">
-                This agent can retain private project context in its memory and workspace for later runs.
-                Removing access cannot erase what it has already learned.
-              </p>
+              <p className="rounded-md border border-border bg-muted px-3 py-2 text-sm text-foreground">{pageText("thisAgentCanRetainPrivateProjectContextIn_88ded2")}</p>
             ) : null}
             <div className="divide-y divide-border/60">
               {(membersQuery.data ?? []).map((member) => {
@@ -143,9 +139,9 @@ export function ProjectAccessMembers({ project, canManage }: { project: Project;
                 return (
                   <div key={member.id} className="flex items-center gap-3 py-2">
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-medium">{member.subjectDisplayName ?? "Unknown member"}</div>
+                      <div className="truncate text-sm font-medium">{member.subjectDisplayName ?? pageText("unknownMember_ae6a9d")}</div>
                       <div className="text-xs text-muted-foreground">
-                        {isPersonalOwner ? pageText("owner_89ff31") : member.subjectType === "agent" ? pageText("agent_5ce2e6") : "Person"}
+                        {isPersonalOwner ? pageText("owner_89ff31") : member.subjectType === "agent" ? pageText("agent_5ce2e6") : pageText("person_8c41ae")}
                       </div>
                     </div>
                     {!isPersonalOwner ? (
@@ -164,7 +160,7 @@ export function ProjectAccessMembers({ project, canManage }: { project: Project;
               })}
               {membersWaiting ? <p className="py-3 text-sm text-muted-foreground">{pageText("loadingAccess_d4fbca")}</p> : null}
               {membersView.kind === "error" ? (
-                <p className="py-3 text-sm text-destructive">Couldn&apos;t load project access members.</p>
+                <p className="py-3 text-sm text-destructive">{pageText("couldnTLoadProjectAccessMembers_91dc77")}</p>
               ) : null}
             </div>
           </div>

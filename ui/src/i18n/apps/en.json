@@ -1,0 +1,254 @@
+{
+  "descriptions": {
+    "1password": "Read and manage items and secrets in the vaults you authorize.",
+    "agentmail": "Give agents email inboxes and handle each conversation as a task.",
+    "airtable": "Connect Airtable's provider-hosted MCP server.",
+    "anthropic": "Use Anthropic APIs with a restricted key.",
+    "api-key-generic": "Connect an API using a key from your provider.",
+    "arcade": "Use the tools exposed by your Arcade MCP connection.",
+    "asana": "Connect Asana's provider-hosted MCP server.",
+    "bedrock": "Use Claude through Amazon Bedrock with a Bedrock API key and AWS region.",
+    "beehiiv": "Connect beehiiv's provider-hosted MCP server.",
+    "bitly": "Connect Bitly's provider-hosted MCP server.",
+    "box": "Connect Box's provider-hosted MCP server.",
+    "braintrust": "Explore AI traces, manage evaluation datasets and scorers, and run Braintrust evaluations.",
+    "brex": "Connect Brex's provider-hosted MCP server.",
+    "browser-use-cloud": "Delegate browser tasks and watch them live in Paperclip.",
+    "calendly": "Review Calendly event types and availability, and use supported scheduling actions.",
+    "candid": "Connect Candid's provider-hosted MCP server.",
+    "chat-completions-api": "Connect any compatible harness to a Chat Completions-compatible provider or gateway.",
+    "clickhouse": "Connect ClickHouse's provider-hosted MCP server.",
+    "clickup": "Search ClickUp workspaces and manage tasks, docs, and conversations through the official MCP server.",
+    "cloudflare": "Connect Cloudflare's provider-hosted MCP server.",
+    "cloudinary": "Connect Cloudinary's provider-hosted MCP server.",
+    "coda": "Connect Coda's provider-hosted MCP server.",
+    "cognee": "Build and recall shared graph memory from documents and conversations.",
+    "composio": "Discover and use connected apps through Composio Connect.",
+    "context7": "Search public library documentation and retrieve current code examples.",
+    "daytona": "Manage Daytona sandboxes, files, commands, Git, snapshots, volumes, and account resources.",
+    "discord": "Let people start and continue Paperclip work with an agent from Discord.",
+    "ditto": "Search and reuse approved product copy, follow your style guide, and edit and translate text.",
+    "egnyte": "Connect Egnyte's provider-hosted MCP server.",
+    "embat": "Connect Embat's provider-hosted MCP server.",
+    "enterpret": "Ask questions about your customer feedback and pull verbatim quotes with citations.",
+    "exa": "Search the public web and read source pages with Exa.",
+    "executor": "Use the tools exposed by your Executor MCP connection.",
+    "firecrawl": "Search, scrape, and parse public web pages with Firecrawl.",
+    "fireflies": "Search meeting transcripts, read summaries and action items, and connect meeting-ready routines.",
+    "gauge": "Track how AI answers mention your brand, research keywords and traffic, and run content workflows.",
+    "github-code-review-bot": "Have an agent review pull requests and respond to GitHub mentions.",
+    "github": "Connect GitHub repository access or authenticate GitHub Copilot agents.",
+    "gmail": "Search and read Gmail messages and create drafts without enabling mail sending.",
+    "google-calendar": "Read calendars and manage Google Calendar events.",
+    "google-chat": "Search and read Google Chat conversations and send messages.",
+    "google-docs": "Read and update Google Docs documents.",
+    "google-drive": "Search, read, create, and copy files in Google Drive.",
+    "google-people": "Search contacts and directory profiles with the Google People API.",
+    "google-sheets": "Read and update Google Sheets spreadsheets.",
+    "google-slides": "Read and update Google Slides presentations.",
+    "google-workspace-search": "Search Gmail, Drive, Calendar, and Chat through one read-only Google Workspace search tool.",
+    "google-workspace": "Connect Gmail, Drive, Docs, Sheets, Slides, and Calendar with one Google account.",
+    "google": "Connect Google Antigravity accounts or Gemini API keys for your agents.",
+    "gsc-wizard": "Read Google Search Console, Bing Webmaster, and analytics data for connected properties.",
+    "honcho": "Remember conversations and retrieve context about peers.",
+    "hugging-face": "Connect Hugging Face's provider-hosted MCP server.",
+    "imessage-photon": "Message a Paperclip agent from Apple Messages using Photon Cloud. Pro supports DMs; dedicated lines also support groups.",
+    "jira": "Connect Jira's provider-hosted MCP server.",
+    "kernel": "Connect Kernel's provider-hosted MCP server.",
+    "klaviyo": "Review Klaviyo campaign performance and prepare campaign changes for review.",
+    "linear": "Create, update, and read Linear issues.",
+    "local-falcon": "Connect Local Falcon's provider-hosted MCP server.",
+    "local": "Use a local model server in the agent’s execution environment.",
+    "make": "Connect Make's provider-hosted MCP server.",
+    "manufact": "Connect Manufact's provider-hosted MCP server.",
+    "mem0": "Remember preferences, conversations, events, and agent state.",
+    "messages-api": "Connect any compatible harness to an Anthropic Messages-compatible provider or gateway.",
+    "microsoft-teams": "Let people start and continue Paperclip work with an agent from Microsoft Teams.",
+    "miro": "Connect Miro's provider-hosted MCP server.",
+    "mixpanel": "Connect Mixpanel's provider-hosted MCP server.",
+    "monday": "Read and manage boards and work items in monday.com.",
+    "neon": "Manage Postgres projects and branches, run SQL, and inspect schemas in Neon.",
+    "netlify": "Connect Netlify's provider-hosted MCP server.",
+    "notion": "Read and update pages in your Notion workspace.",
+    "oauth-generic": "Connect a provider using your own OAuth client.",
+    "openai": "Connect OpenAI accounts for your agents.",
+    "openrouter": "Connect OpenRouter accounts for your agents.",
+    "oreilly": "Connect O'Reilly's provider-hosted MCP server.",
+    "pagerduty": "Connect PagerDuty's provider-hosted MCP server.",
+    "paperclip-notebook": "Publish, find, and share reports, files, and interactive pages with your Paperclip Cloud account.",
+    "parallel-search": "Search the public web and extract source pages with Parallel.",
+    "planetscale": "Connect PlanetScale's provider-hosted MCP server.",
+    "posthog": "Analyze product usage, errors, feature flags, and experiments with PostHog's hosted MCP server.",
+    "postman": "Connect Postman's provider-hosted MCP server.",
+    "railway": "Inspect services and logs, deploy applications, and run commands in your Railway containers.",
+    "razorpay": "Connect Razorpay's provider-hosted MCP server.",
+    "resend": "Connect Resend's provider-hosted MCP server.",
+    "responses-api": "Connect any compatible harness to an OpenAI Responses-compatible provider or gateway, including Emissary.",
+    "sanity": "Connect Sanity's provider-hosted MCP server.",
+    "sentry": "Investigate errors, releases, and production issues.",
+    "shopify": "Search a store's products and policies, and manage shopping carts.",
+    "similarweb": "Connect Similarweb's provider-hosted MCP server.",
+    "slack": "Give agents Slack tools or let people start and continue Paperclip work from Slack.",
+    "speko": "Talk with a Paperclip agent through an experimental hosted voice connection.",
+    "stripe": "Connect Stripe's provider-hosted MCP server.",
+    "supabase": "Create Supabase projects, deploy Edge Functions, manage databases, and configure application authentication and APIs.",
+    "superagent": "Review security findings, start red-team reports, and score content and packages before agents trust them.",
+    "supermemory": "Search and save shared memories, documents, and profiles.",
+    "tavily": "Search the public web and extract page content with Tavily’s hosted MCP server.",
+    "telegram": "Let people start and continue Paperclip work with an agent from Telegram.",
+    "telem": "Search the web and read pages across many search providers with one API key.",
+    "ticket-tailor": "Connect Ticket Tailor's provider-hosted MCP server.",
+    "ticktick": "Connect TickTick's provider-hosted MCP server.",
+    "todoist": "Connect Todoist's provider-hosted MCP server.",
+    "unikraft": "Manage Unikraft Cloud instances, services, volumes, images, certificates, autoscaling, and sandbox commands and files.",
+    "vercel": "Deploy websites and configure projects, environment variables, and domains in your Vercel team.",
+    "webflow": "Connect Webflow's provider-hosted MCP server.",
+    "windsor-ai": "Query connected marketing, analytics, CRM, and warehouse data through Windsor.ai.",
+    "wix": "Connect Wix's provider-hosted MCP server.",
+    "xai": "Connect Grok accounts for your agents.",
+    "xero": "Connect Xero's provider-hosted MCP server.",
+    "youcom": "Connect You.com's provider-hosted MCP server.",
+    "zapier": "Reach thousands of apps through your Zapier account.",
+    "zep": "Retrieve temporal graph memory and authorized business context."
+  },
+  "actions": {
+    "Open": "Open",
+    "Manage": "Manage",
+    "Set up": "Set up",
+    "Connect": "Connect",
+    "Add key": "Add key",
+    "Add connection pool": "Add connection pool",
+    "Add connection": "Add connection",
+    "Add account": "Add account",
+    "Unavailable": "Unavailable"
+  },
+  "card": {
+    "installed": "Installed",
+    "all": "All",
+    "filters": "App filters",
+    "assistantName": "Assistant Connection (MCP)",
+    "assistantSummary": "Use your Paperclip organization from Codex, Claude, OpenCode, or another assistant.",
+    "assistantLoading": "Checking your connection status…",
+    "customTitle": "Connect your own tool",
+    "customSummary": "Add a custom MCP server or paste an existing configuration.",
+    "customDescription": "A custom connector configured for this organization."
+  },
+  "nativeChat": {
+    "speko": "Talk with an agent using experimental browser voice.",
+    "agentmail": "Give agents email inboxes and handle each conversation as a task.",
+    "imessage-photon": "Message agents and share photos from Apple Messages with a dedicated Photon number.",
+    "slack": "Chat with agents from Slack channels and direct messages.",
+    "github-code-review-bot": "Have an agent review pull requests and respond to GitHub mentions.",
+    "discord": "Chat with agents from Discord channels, threads, and direct messages.",
+    "microsoft-teams": "Chat with agents from Teams channels and conversations.",
+    "telegram": "Chat with agents from Telegram direct messages, groups, and topics."
+  },
+  "assistantAction": "{{action}} Assistant Connection (MCP)",
+  "chatVia": "Chat with agents through {{name}}.",
+  "curated": {
+    "zapier": {
+      "tagline": "Reach 9,000+ apps your team already uses.",
+      "short": "Reach 9,000+ apps from your agents."
+    },
+    "github": {
+      "tagline": "Read code and pull requests, comment on issues.",
+      "short": "Read code and pull requests, comment on issues."
+    },
+    "slack": {
+      "tagline": "Send and read messages in your team's channels.",
+      "short": "Send and read messages in your channels."
+    },
+    "notion": {
+      "tagline": "Read and update pages in your workspace.",
+      "short": "Read and update pages in your workspace."
+    },
+    "railway": {
+      "tagline": "Inspect services, read logs, and manage deployments.",
+      "short": "Connect Railway for deployments, logs, and container access."
+    },
+    "posthog": {
+      "tagline": "Explore product usage, errors, flags, and experiments.",
+      "short": "Sign in with PostHog. Project pinning and access controls are optional."
+    },
+    "ditto": {
+      "tagline": "Reuse approved product copy and follow your style guide.",
+      "short": "Sign in with Ditto. API keys are optional."
+    },
+    "gauge": {
+      "tagline": "Track your brand in AI answers and run content workflows.",
+      "short": "Sign in with Gauge and pick an organization. API keys are optional."
+    },
+    "neon": {
+      "tagline": "Manage Postgres projects, branches, and queries.",
+      "short": "Sign in with Neon. Project pinning and read-only mode are optional."
+    },
+    "superagent": {
+      "tagline": "Review security findings and run red-team checks.",
+      "short": "Connect with a Superagent API key. Billable and destructive tools stay under action policies."
+    },
+    "linear": {
+      "tagline": "Create, update and read tickets.",
+      "short": "Create, update and read tickets."
+    },
+    "google-sheets": {
+      "tagline": "Read and update selected spreadsheets.",
+      "short": "Read spreadsheets or update the files you choose."
+    },
+    "gmail": {
+      "tagline": "Read mail and create drafts for your review.",
+      "short": "Read mail and create drafts for your review."
+    },
+    "google-drive": {
+      "tagline": "Find, read, and create files in Drive.",
+      "short": "Find, read, and create files in Drive."
+    },
+    "google-docs": {
+      "tagline": "Read and update documents.",
+      "short": "Read and update documents."
+    },
+    "google-slides": {
+      "tagline": "Read and update presentations.",
+      "short": "Read and update presentations."
+    },
+    "google-calendar": {
+      "tagline": "Review calendars and manage events.",
+      "short": "Review calendars and manage events."
+    },
+    "google-chat": {
+      "tagline": "Read conversations and send messages.",
+      "short": "Read conversations and send messages."
+    },
+    "google-people": {
+      "tagline": "Look up contacts and people in your directory.",
+      "short": "Look up contacts and people in your directory."
+    },
+    "google-workspace-search": {
+      "tagline": "Search across your Google workspace.",
+      "short": "Search across your Google workspace."
+    },
+    "hubspot": {
+      "tagline": "Look up contacts and update deal stages.",
+      "short": "Look up contacts and update deal stages."
+    },
+    "intercom": {
+      "tagline": "Read and reply to customer conversations.",
+      "short": "Read and reply to customer conversations."
+    },
+    "figma": {
+      "tagline": "Read files and post comments on frames.",
+      "short": "Read files and post comments on frames."
+    },
+    "stripe": {
+      "tagline": "Read customers, invoices, and payouts.",
+      "short": "Read customers, invoices, and payouts."
+    },
+    "context7": {
+      "tagline": "Look up up-to-date docs for your libraries.",
+      "short": "Look up up-to-date docs for your libraries."
+    },
+    "generic": {
+      "tagline": "Give your agents access to this app.",
+      "short": "Give your agents access to this app."
+    }
+  }
+}

@@ -27,10 +27,10 @@ export function TaskSkillPanel({ companyId, skillId }: { companyId: string; skil
   }
   if (view.kind === "error") {
     if (view.errorKind === "not_found") {
-      return <div className="py-8 text-sm text-muted-foreground" role="status">Skill no longer available.</div>;
+      return <div className="py-8 text-sm text-muted-foreground" role="status">{pageText("skillNoLongerAvailable_68c908")}</div>;
     }
     if (view.errorKind === "forbidden") {
-      return <div className="py-8 text-sm text-muted-foreground" role="alert">You do not have access to this skill.</div>;
+      return <div className="py-8 text-sm text-muted-foreground" role="alert">{pageText("youDoNotHaveAccessToThisSkill_1a476d")}</div>;
     }
     return (
       <div className="py-6">
@@ -39,7 +39,7 @@ export function TaskSkillPanel({ companyId, skillId }: { companyId: string; skil
     );
   }
   if (!query.data) {
-    return <div className="py-8 text-sm text-muted-foreground" role="status">Skill no longer available.</div>;
+    return <div className="py-8 text-sm text-muted-foreground" role="status">{pageText("skillNoLongerAvailable_68c908")}</div>;
   }
   const skill = query.data;
   const previewMarkdown = parseFrontmatterMarkdown(skill.markdown).body;
@@ -56,21 +56,17 @@ export function TaskSkillPanel({ companyId, skillId }: { companyId: string; skil
             size="sm"
             onClick={() => navigate(`/skills/studio/${encodeURIComponent(skill.id)}`)}
           >
-            <ExternalLink className="mr-1.5 size-3.5" aria-hidden />
-            Open in Skill Studio
-          </Button>
+            <ExternalLink className="mr-1.5 size-3.5" aria-hidden />{pageText("openInSkillStudio_080c29")}</Button>
         </div>
         <p className="text-xs text-muted-foreground">
-          {skill.slug} · {skill.currentVersion ? `Revision ${skill.currentVersion.revisionNumber}` : "Current version"}
+          {skill.slug} · {skill.currentVersion ? `Revision ${skill.currentVersion.revisionNumber}` : pageText("currentVersion_7be725")}
         </p>
       </header>
       {skill.description ? <p className="text-sm text-muted-foreground">{skill.description}</p> : null}
       <section className="space-y-2">
         <h3 className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
-          <FileText className="size-3.5" aria-hidden />
-          Skill instructions
-        </h3>
-        <MarkdownBody>{previewMarkdown || "Skill instructions are empty."}</MarkdownBody>
+          <FileText className="size-3.5" aria-hidden />{pageText("skillInstructions_e81897")}</h3>
+        <MarkdownBody>{previewMarkdown || pageText("skillInstructionsAreEmpty_689be5")}</MarkdownBody>
       </section>
     </article>
   );

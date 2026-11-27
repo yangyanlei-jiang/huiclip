@@ -19,23 +19,23 @@ export function RemoteMcpManagement({ providerName, connected = true, canReconne
   const { t: translateUi } = useUiTranslation();
   const [confirming, setConfirming] = useState(false);
   return <section className="space-y-4">
-    <h2 className="text-sm font-semibold">Connection settings</h2>
+    <h2 className="text-sm font-semibold">{pageText("connectionSettings_618aac")}</h2>
     <div className="flex flex-wrap items-center gap-3">
       <Button variant="outline" disabled={!canReconnect || busy} onClick={onReconnect}>{translateUi("interfaceCopy.reconnect")}</Button>
-      <Button variant="outline" onClick={onManage}>Manage in {providerName}</Button>
+      <Button variant="outline" onClick={onManage}>{pageText("manageIn_e0e276") + " "}{providerName}</Button>
       {connected && canDisconnect && <AlertDialog open={confirming} onOpenChange={(open) => { if (!busy) setConfirming(open); }}>
         <AlertDialogTrigger asChild><Button variant="ghost" className="text-destructive">{pageText("disconnect_ed28e0")}</Button></AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{pageText("disconnect_ed28e0") + " "}{providerName}?</AlertDialogTitle>
-            <AlertDialogDescription>Delete this connection’s saved credentials and stop further calls through Paperclip. Other connections are unaffected. Actions already sent to the provider may still complete. Connecting again requires a new sign-in or key.</AlertDialogDescription>
+            <AlertDialogDescription>{pageText("deleteThisConnectionSSavedCredentialsAndStop_30504d")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={busy}>{translateUi("interfaceCopy.cancel")}</AlertDialogCancel>
             <AlertDialogAction disabled={busy} onClick={async (event) => {
               event.preventDefault();
               try { await onDisconnect(); setConfirming(false); } catch { /* The controller displays the failure. */ }
-            }}>{busy ? "Disconnecting…" : "Disconnect connection"}</AlertDialogAction>
+            }}>{busy ? pageText("disconnecting_801e5a") : pageText("disconnectConnection_281a38")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>}

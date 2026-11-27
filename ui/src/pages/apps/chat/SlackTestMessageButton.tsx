@@ -58,32 +58,32 @@ export function SlackTestMessageButton({ endpointId }: { endpointId: string }) {
   return <div className="space-y-2">
       <Button variant="outline" disabled={send.isPending || sent || Boolean(pendingConnection && !invitationExpired)} onClick={startTest}>
         {send.isPending ? <Loader2 className="size-4 animate-spin" /> : sent ? <Check className="size-4" /> : <Send className="size-4" />}
-        {send.isPending ? pageText("sending_cf7655") : sent ? "Test message sent" : invitationExpired ? "Request a new invitation" : pendingConnection ? "Waiting for Slack connection…" : "Send me a test message"}
+        {send.isPending ? pageText("sending_cf7655") : sent ? pageText("testMessageSent_675d34") : invitationExpired ? pageText("requestANewInvitation_b65276") : pendingConnection ? pageText("waitingForSlackConnection_f3bc53") : pageText("sendMeATestMessage_dd7a01")}
       </Button>
-    {pendingConnection && <p role="status" className="text-sm text-muted-foreground">{invitationExpired ? "The Slack invitation expired." : "Open the invitation in Slack to connect your account."}</p>}
+    {pendingConnection && <p role="status" className="text-sm text-muted-foreground">{invitationExpired ? pageText("theSlackInvitationExpired_f6320c") : pageText("openTheInvitationInSlackToConnectYour_a8bdeb")}</p>}
     {send.error && <div role="alert" className="max-w-sm text-sm text-destructive">
       {describeError(send.error).body} <button className="underline" onClick={reset}>{pageText("dismiss_70afe9")}</button>
     </div>}
     <Dialog open={accounts !== null} onOpenChange={(open) => { if (!open && !send.isPending) setAccounts(null); }}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Connect your Slack account</DialogTitle>
-          <DialogDescription>Choose your account. Messages to this agent will use your Paperclip permissions.</DialogDescription>
+          <DialogTitle>{pageText("connectYourSlackAccount_640634")}</DialogTitle>
+          <DialogDescription>{pageText("chooseYourAccountMessagesToThisAgentWill_032060")}</DialogDescription>
         </DialogHeader>
-        <Input aria-label="Find your Slack account" placeholder="Find your name" value={search} onChange={event => setSearch(event.target.value)} />
-        <div className="max-h-64 space-y-1 overflow-y-auto" role="radiogroup" aria-label="Your Slack account">
+        <Input aria-label={pageText("findYourSlackAccount_638444")} placeholder={pageText("findYourName_c8117f")} value={search} onChange={event => setSearch(event.target.value)} />
+        <div className="max-h-64 space-y-1 overflow-y-auto" role="radiogroup" aria-label={pageText("yourSlackAccount_4882cd")}>
           {accounts?.filter(account => `${account.name} ${account.id}`.toLowerCase().includes(search.toLowerCase())).map(account =>
             <label key={account.id} className="flex cursor-pointer items-center gap-3 rounded-md border border-border p-3 text-sm">
               <input type="radio" name="slack-account" value={account.id} checked={selected === account.id} onChange={() => setSelected(account.id)} />
               <span>{account.name} <span className="text-muted-foreground">({account.id})</span></span>
             </label>)}
-          {accounts?.length === 0 && <p className="text-sm text-muted-foreground">No available accounts found in this Slack workspace.</p>}
+          {accounts?.length === 0 && <p className="text-sm text-muted-foreground">{pageText("noAvailableAccountsFoundInThisSlackWorkspace_6252ff")}</p>}
         </div>
-        {nextCursor && <Button variant="ghost" disabled={send.isPending} onClick={() => send.mutate({ accountCursor: nextCursor })}>Load more Slack accounts</Button>}
+        {nextCursor && <Button variant="ghost" disabled={send.isPending} onClick={() => send.mutate({ accountCursor: nextCursor })}>{pageText("loadMoreSlackAccounts_310cb2")}</Button>}
         {send.error && <p role="alert" className="text-sm text-destructive">{describeError(send.error).body}</p>}
         <div className="flex items-center justify-between gap-3">
           <Button variant="ghost" disabled={send.isPending} onClick={() => setAccounts(null)}>{pageText("cancel_77dfd2")}</Button>
-          <Button disabled={!selected || send.isPending} onClick={() => send.mutate({ slackUserId: selected })}>{send.isPending ? "Sending invitation…" : "Send connection invitation"}</Button>
+          <Button disabled={!selected || send.isPending} onClick={() => send.mutate({ slackUserId: selected })}>{send.isPending ? pageText("sendingInvitation_d128a9") : pageText("sendConnectionInvitation_94c712")}</Button>
         </div>
       </DialogContent>
     </Dialog>

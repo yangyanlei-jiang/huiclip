@@ -1,3 +1,4 @@
+import { adapterCopy } from "../../i18n/adapter-copy";
 import { useTranslation } from "@/i18n";
 import { cn } from "../../lib/utils";
 
@@ -117,7 +118,7 @@ export function Stepper({
           <button
             key={segment}
             type="button"
-            aria-label={labels[segment - 1] ?? t("setup.stepNumber", { step: segment })}
+            aria-label={labels[segment - 1] ? adapterCopy(labels[segment - 1]) : t("setup.stepNumber", { step: segment })}
             aria-current={segment === step ? "step" : undefined}
             disabled={!jumpable}
             onClick={() => jumpable && onJumpToStep?.(segment)}

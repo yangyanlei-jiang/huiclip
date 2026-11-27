@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { Check, ChevronsUpDown, X } from "lucide-react";
 import { useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
@@ -121,6 +122,7 @@ export function SearchableSelect<
   listFooter,
   createItem,
 }: SearchableSelectProps<TValue, TOption>) {
+  const { t: pageText } = usePageTranslation("interface");
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const mobileViewportStyle = useMobileEntityPickerViewportStyle();
@@ -272,7 +274,7 @@ export function SearchableSelect<
           <button
             type="button"
             className="inline-flex size-9 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
-            aria-label="Close selector"
+            aria-label={pageText("closeSelector_3e8c63")}
             onClick={() => closePopover({ suppressTriggerFocus: true })}
           >
             <X className="size-5" />

@@ -1,3 +1,5 @@
+import { t as interfaceNotice } from "@/i18n";
+import { t as translateDynamic } from "../../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -242,8 +244,7 @@ function CandidateStatusBadge({
           variant="outline"
           className="gap-1 px-1.5 py-0 font-normal text-muted-foreground border-border/60"
         >
-          <Link2 className="h-3 w-3" /> Imported
-        </Badge>
+          <Link2 className="h-3 w-3" />{" " + pageText("imported_434eb2")}</Badge>
       );
     case "conflict":
       return (
@@ -251,8 +252,7 @@ function CandidateStatusBadge({
           variant="outline"
           className="gap-1 px-1.5 py-0 font-normal text-amber-600 border-amber-500/40 dark:text-amber-400"
         >
-          <AlertTriangle className="h-3 w-3" /> Conflict
-        </Badge>
+          <AlertTriangle className="h-3 w-3" />{" " + pageText("conflict_39f7b0")}</Badge>
       );
     case "skipped":
       return (
@@ -369,17 +369,17 @@ export function ImportSkillsFromProjectDialog({
       const importedCount = result.imported.length;
       toast.pushToast({
         tone: importedCount > 0 ? "success" : "warn",
-        title: importedCount > 0 ? "Skills imported" : "Nothing imported",
+        title: importedCount > 0 ? interfaceNotice("interface:skillsImported_2046d6") : interfaceNotice("interface:nothingImported_04e51f"),
         body:
           importedCount > 0
             ? `${importedCount} skill${importedCount === 1 ? "" : "s"} imported as references from ${selectedProject?.name ?? "the project"}.`
-            : "No skills were imported.",
+            : interfaceNotice("interface:noSkillsWereImported_331e59"),
       });
     },
     onError: (error) => {
       toast.pushToast({
         tone: "error",
-        title: "Import failed",
+        title: interfaceNotice("interface:importFailed_fbae89"),
         body: readableErrorMessage(error),
       });
     },
@@ -465,12 +465,12 @@ export function ImportSkillsFromProjectDialog({
       } else {
         toast.pushToast({
           tone: "warn",
-          title: candidate?.status === "already_imported" ? "Skill already imported" : "Skill could not be added",
-          body: candidate?.reason ?? "The selected folder does not contain a valid SKILL.md file.",
+          title: candidate?.status === "already_imported" ? interfaceNotice("interface:skillAlreadyImported_4be68f") : interfaceNotice("interface:skillCouldNotBeAdded_3ac7f8"),
+          body: candidate?.reason ?? interfaceNotice("interface:theSelectedFolderDoesNotContainAValid_f43de0"),
         });
       }
     } catch (error) {
-      toast.pushToast({ tone: "error", title: "Could not inspect skill", body: readableErrorMessage(error) });
+      toast.pushToast({ tone: "error", title: interfaceNotice("interface:couldNotInspectSkill_9561cd"), body: readableErrorMessage(error) });
     } finally {
       setBrowseAddingKey(null);
     }
@@ -514,18 +514,14 @@ export function ImportSkillsFromProjectDialog({
       >
         <header className="flex shrink-0 items-start justify-between gap-3 border-b border-border/60 px-5 py-4">
           <div className="flex flex-col gap-1">
-            <DialogTitle className="text-base font-semibold">
-              Import skills from project
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
-              Pick a project, scan its workspaces for skills, and import them as references.
-            </DialogDescription>
+            <DialogTitle className="text-base font-semibold">{pageText("importSkillsFromProject_7c062b")}</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">{pageText("pickAProjectScanItsWorkspacesForSkills_f7ac0b")}</DialogDescription>
           </div>
           <button
             type="button"
             className="rounded-sm text-muted-foreground opacity-70 transition-opacity hover:opacity-100"
             onClick={handleClose}
-            aria-label="Close import dialog"
+            aria-label={pageText("closeImportDialog_d154f5")}
           >
             <X className="h-4 w-4" />
           </button>
@@ -573,9 +569,7 @@ export function ImportSkillsFromProjectDialog({
           {step === "select" && !scanError && candidates.length > 0 ? (
             <div className="min-w-0 flex-1 text-xs text-muted-foreground">
               <span className="flex items-center gap-1.5">
-                <Link2 className="h-3.5 w-3.5 shrink-0" />
-                Files stay in the project — Studio edits save directly to them.
-              </span>
+                <Link2 className="h-3.5 w-3.5 shrink-0" />{pageText("filesStayInTheProjectStudioEditsSave_680638")}</span>
             </div>
           ) : (
             <div className="hidden min-w-0 flex-1 sm:block" />
@@ -591,18 +585,14 @@ export function ImportSkillsFromProjectDialog({
                       onClick={selectAll}
                       disabled={selectableCandidates.length === 0}
                       data-testid="select-all"
-                    >
-                      Select all
-                    </Button>
+                    >{pageText("selectAll_913aff")}</Button>
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={deselectAll}
                       disabled={selectedCount === 0}
                       data-testid="deselect-all"
-                    >
-                      Deselect all
-                    </Button>
+                    >{pageText("deselectAll_85cce1")}</Button>
                   </div>
                 )}
                 <Button variant="outline" size="sm" onClick={backToPick}>
@@ -616,8 +606,7 @@ export function ImportSkillsFromProjectDialog({
                   >
                     {importMutation.isPending ? (
                       <>
-                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> Importing…
-                      </>
+                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />{" " + pageText("importing_820599")}</>
                     ) : (
                       `Import ${selectedCount} skill${selectedCount === 1 ? "" : "s"}`
                     )}
@@ -690,7 +679,7 @@ function PickProjectStep({
             retrying={retrying}
           />
         ) : totalProjects === 0 ? (
-          <EmptyState icon={Layers} message="This organization has no projects yet." />
+          <EmptyState icon={Layers} message={pageText("thisOrganizationHasNoProjectsYet_d745c2")} />
         ) : projects.length === 0 ? (
           <EmptyState icon={Search} message={`No projects match "${filter}".`} />
         ) : (
@@ -722,15 +711,12 @@ function PickProjectStep({
                         {kinds ? ` · ${kinds}` : ""}
                       </div>
                       {disabled && (
-                        <div className="mt-1 text-(length:--text-micro) text-muted-foreground">
-                          Remote-only project — no locally scannable workspaces to import from.
-                        </div>
+                        <div className="mt-1 text-(length:--text-micro) text-muted-foreground">{pageText("remoteOnlyProjectNoLocallyScannableWorkspacesTo_58ee8c")}</div>
                       )}
                     </div>
                     {!disabled && (
                       <Badge variant="outline" className="shrink-0 px-1.5 py-0 font-normal">
-                        {scannable.length} scannable
-                      </Badge>
+                        {scannable.length}{" " + pageText("scannable_ce964c")}</Badge>
                     )}
                   </button>
                 </li>
@@ -755,10 +741,8 @@ function ScanningStep({ projectName }: { projectName: string }) {
         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
       <div>
-        <p className="text-sm font-medium">Scanning {projectName || pageText("project_98f541")} for skills…</p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          Looking in well-known skill folders across each workspace.
-        </p>
+        <p className="text-sm font-medium">{pageText("scanning_e230f6") + " "}{projectName || pageText("project_98f541")}{" " + pageText("forSkills_77e2e0")}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{pageText("lookingInWellKnownSkillFoldersAcrossEach_9e237f")}</p>
       </div>
       <div className="flex max-w-md flex-wrap justify-center gap-1.5">
         {HIGHLIGHTED_SCAN_FOLDERS.map((folder) => (
@@ -821,15 +805,14 @@ function ProjectSkillBrowser({
       <div className="shrink-0 border-b border-border/60 px-5 py-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-sm font-medium">Browse project folders</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">Open any folder and add directories or individual SKILL.md files.</p>
+            <p className="text-sm font-medium">{pageText("browseProjectFolders_5e86fc")}</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">{pageText("openAnyFolderAndAddDirectoriesOrIndividual_63d0d6")}</p>
           </div>
           <Button variant="outline" size="sm" onClick={onBack}>
-            <ArrowLeft className="mr-1 h-3.5 w-3.5" /> Discovered skills
-          </Button>
+            <ArrowLeft className="mr-1 h-3.5 w-3.5" />{" " + pageText("discoveredSkills_3dfe1f")}</Button>
         </div>
         {workspaces.length > 1 && (
-          <div className="mt-3 flex flex-wrap gap-1.5" aria-label="Project workspace">
+          <div className="mt-3 flex flex-wrap gap-1.5" aria-label={pageText("projectWorkspace_0fbbdb")}>
             {workspaces.map((workspace) => (
               <Button
                 key={workspace.id}
@@ -850,7 +833,7 @@ function ProjectSkillBrowser({
           size="sm"
           onClick={() => result?.parentPath && setFolderPath(result.parentPath)}
           disabled={!result?.parentPath}
-          aria-label="Open parent folder"
+          aria-label={pageText("openParentFolder_beba19")}
         >
           <ArrowLeft className="h-3.5 w-3.5" />
         </Button>
@@ -902,10 +885,10 @@ function ProjectSkillBrowser({
             })}
           </ul>
         ) : (
-          <div className="p-8 text-center text-sm text-muted-foreground">This folder is empty.</div>
+          <div className="p-8 text-center text-sm text-muted-foreground">{pageText("thisFolderIsEmpty_60db81")}</div>
         )}
         {result?.truncated && (
-          <p className="border-t border-border/60 px-5 py-2 text-xs text-muted-foreground">Showing the first 250 entries.</p>
+          <p className="border-t border-border/60 px-5 py-2 text-xs text-muted-foreground">{pageText("showingTheFirst250Entries_dd768e")}</p>
         )}
       </div>
     </div>
@@ -949,6 +932,7 @@ function SelectStep({
   onAddBrowsedSkill,
   browseAddingKey,
 }: SelectStepProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   if (scanError) {
     const grant = isGrantError(scanError);
@@ -963,11 +947,11 @@ function SelectStep({
             )}
           </div>
           <p className="text-base font-semibold">
-            {grant ? "You can't import skills here" : "Scan failed"}
+            {grant ? pageText("youCanTImportSkillsHere_860571") : pageText("scanFailed_944d28")}
           </p>
           <p className="mt-1.5 text-sm text-muted-foreground">
             {grant
-              ? "Your account doesn't have permission to add skills to this organization. Ask an owner to grant the skills permission, then try again."
+              ? pageText("yourAccountDoesnTHavePermissionToAdd_4b5c3a")
               : readableErrorMessage(scanError)}
           </p>
           {!grant && (
@@ -1000,14 +984,11 @@ function SelectStep({
           <div className="mx-auto mb-4 w-fit bg-muted/50 p-4">
             <FolderSearch className="h-10 w-10 text-muted-foreground/50" />
           </div>
-          <p className="text-base font-semibold">No skills found</p>
-          <p className="mt-1.5 text-sm text-muted-foreground">
-            None of the well-known skill folders in this project's workspaces contain a{" "}
-            <code className="rounded bg-muted px-1 py-0.5 text-xs">SKILL.md</code>. We searched{" "}
-            {HIGHLIGHTED_SCAN_FOLDERS.join(", ")} and {APPROX_TOTAL_SCAN_FOLDERS -
-              HIGHLIGHTED_SCAN_FOLDERS.length}{" "}
-            other agent-harness folders.
-          </p>
+          <p className="text-base font-semibold">{pageText("noSkillsFound_f01097")}</p>
+          <p className="mt-1.5 text-sm text-muted-foreground">{pageText("noneOfTheWellKnownSkillFoldersIn_81f946")}{" "}
+            <code className="rounded bg-muted px-1 py-0.5 text-xs">SKILL.md</code>{pageText("weSearched_f72075")}{" "}
+            {HIGHLIGHTED_SCAN_FOLDERS.join(", ")}{" " + pageText("and_cffa50") + " "}{APPROX_TOTAL_SCAN_FOLDERS -
+              HIGHLIGHTED_SCAN_FOLDERS.length}{" "}{pageText("otherAgentHarnessFolders_7e288d")}</p>
           <Button
             variant="outline"
             size="sm"
@@ -1015,18 +996,14 @@ function SelectStep({
             onClick={() => onBrowseOpenChange(true)}
             data-testid="browse-project-folders-empty"
           >
-            <FolderOpen className="mr-1.5 h-3.5 w-3.5" /> Browse project folders
-          </Button>
+            <FolderOpen className="mr-1.5 h-3.5 w-3.5" />{" " + pageText("browseProjectFolders_5e86fc")}</Button>
           {onImportFromPath && (
-            <p className="mt-3 text-sm text-muted-foreground">
-              For skills in non-standard folders, use{" "}
+            <p className="mt-3 text-sm text-muted-foreground">{pageText("forSkillsInNonStandardFoldersUse_fe6f15")}{" "}
               <button
                 type="button"
                 className="font-medium text-foreground underline underline-offset-2"
                 onClick={onImportFromPath}
-              >
-                Import from path or URL
-              </button>
+              >{pageText("importFromPathOrURL_100895")}</button>
               .
             </p>
           )}
@@ -1038,10 +1015,9 @@ function SelectStep({
   return (
     <div className="flex min-h-0 flex-1 flex-col" data-testid="candidate-list">
       <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border/60 px-5 py-2.5">
-        <p className="text-xs text-muted-foreground">Choose discovered skills, or browse any workspace folder.</p>
+        <p className="text-xs text-muted-foreground">{pageText("chooseDiscoveredSkillsOrBrowseAnyWorkspaceFolder_f1db9b")}</p>
         <Button variant="outline" size="sm" onClick={() => onBrowseOpenChange(true)} data-testid="browse-project-folders">
-          <FolderOpen className="mr-1.5 h-3.5 w-3.5" /> Browse folders
-        </Button>
+          <FolderOpen className="mr-1.5 h-3.5 w-3.5" />{" " + pageText("browseFolders_f757eb")}</Button>
       </div>
       <div className="shrink-0 border-b border-border/60 px-5 py-2.5">
         <div className="relative">
@@ -1049,24 +1025,21 @@ function SelectStep({
           <Input
             value={filter}
             onChange={(event) => onFilterChange(event.target.value)}
-            placeholder="Search discovered skills…"
+            placeholder={pageText("searchDiscoveredSkills_852f18")}
             className="h-8 pl-8 text-xs"
-            aria-label="Search discovered skills"
+            aria-label={pageText("searchDiscoveredSkills_f90196")}
           />
         </div>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
         {groups.length === 0 ? (
-          <div className="flex h-full items-center justify-center p-6 text-sm text-muted-foreground">
-            No skills match “{filter.trim()}”.
+          <div className="flex h-full items-center justify-center p-6 text-sm text-muted-foreground">{pageText("noSkillsMatch_d355ad")}{filter.trim()}”.
           </div>
         ) : (
           groups.map((group, groupIndex) => (
             <section key={group.key}>
               {groupIndex > 0 && !group.isPrimary && groups[groupIndex - 1]?.isPrimary && (
-                <header className="border-y border-border/60 bg-muted/30 px-5 py-2 text-xs uppercase tracking-wide text-muted-foreground">
-                  Other Workspaces
-                </header>
+                <header className="border-y border-border/60 bg-muted/30 px-5 py-2 text-xs uppercase tracking-wide text-muted-foreground">{pageText("otherWorkspaces_0c9a22")}</header>
               )}
               <header className="sticky top-0 z-10 border-b border-border/60 bg-background px-5 py-2 text-sm font-medium text-foreground">
                 {group.workspaceName}
@@ -1100,7 +1073,7 @@ function SelectStep({
                               checked={isSelected}
                               onCheckedChange={() => toggleCandidate(candidate)}
                               disabled={!selectable}
-                              aria-label={`Select ${candidate.name}`}
+                              aria-label={translateDynamic("dynamic:select", { value1: candidate.name })}
                             />
                           </div>
                           <div className="min-w-0 flex-1">
@@ -1138,9 +1111,7 @@ function SelectStep({
                                 <label
                                   htmlFor={`rename-${candidate.workspaceId}-${candidate.slug}`}
                                   className="shrink-0 text-xs text-muted-foreground"
-                                >
-                                  Import as
-                                </label>
+                                >{pageText("importAs_1bd8da")}</label>
                                 <Input
                                   id={`rename-${candidate.workspaceId}-${candidate.slug}`}
                                   value={selectedValue?.slug ?? ""}
@@ -1148,7 +1119,7 @@ function SelectStep({
                                     renameCandidate(candidate, event.target.value)
                                   }
                                   className="h-7 max-w-xs font-mono text-xs"
-                                  aria-label={`Rename ${candidate.name}`}
+                                  aria-label={translateDynamic("dynamic:rename", { value1: candidate.name })}
                                   aria-invalid={
                                     selectedValue
                                       ? !isValidSelectionSlug(selectedValue)
@@ -1156,9 +1127,7 @@ function SelectStep({
                                   }
                                 />
                                 {selectedValue && !isValidSelectionSlug(selectedValue) && (
-                                  <span className="text-xs text-destructive">
-                                    Use a lowercase URL-safe slug.
-                                  </span>
+                                  <span className="text-xs text-destructive">{pageText("useALowercaseURLSafeSlug_5e7826")}</span>
                                 )}
                               </div>
                             )}
@@ -1194,15 +1163,11 @@ function ResultStep({ result }: ResultStepProps) {
         <div className="flex items-start gap-3 rounded-md border border-emerald-500/30 bg-emerald-500/5 p-3">
           <Link2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
           <div className="text-xs leading-relaxed text-muted-foreground">
-            <span className="font-medium text-foreground">No files were copied.</span> These skills
-            reference the files in the project workspace — editing them in Skill Studio saves
-            directly back to those files.
-          </div>
+            <span className="font-medium text-foreground">{pageText("noFilesWereCopied_343129")}</span>{" " + pageText("theseSkillsReferenceTheFilesInTheProject_f140b1")}</div>
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
           <span className="text-emerald-600 dark:text-emerald-400">
-            ✓ {result.imported.length} imported
-          </span>
+            ✓ {result.imported.length}{" " + pageText("imported_a671a4")}</span>
           {result.updated.length > 0 && <span>↻ {result.updated.length}{" " + pageText("updated_13a189")}</span>}
           {result.skipped.length > 0 && <span>⊘ {result.skipped.length}{" " + pageText("skipped_413a93")}</span>}
         </div>
@@ -1210,8 +1175,7 @@ function ResultStep({ result }: ResultStepProps) {
       <div className="min-h-0 flex-1 overflow-y-auto">
         {importedSkills.length > 0 && (
           <section>
-            <header className="bg-muted/30 px-5 py-1.5 text-xs uppercase tracking-wide text-muted-foreground">
-              Imported · {importedSkills.length}
+            <header className="bg-muted/30 px-5 py-1.5 text-xs uppercase tracking-wide text-muted-foreground">{pageText("imported_a70641") + " "}{importedSkills.length}
             </header>
             <ul className="divide-y divide-border/60" data-testid="result-imported">
               {importedSkills.map((skill) => (
@@ -1239,8 +1203,7 @@ function ResultStep({ result }: ResultStepProps) {
         )}
         {result.skipped.length > 0 && (
           <section>
-            <header className="bg-muted/30 px-5 py-1.5 text-xs uppercase tracking-wide text-muted-foreground">
-              Skipped · {result.skipped.length}
+            <header className="bg-muted/30 px-5 py-1.5 text-xs uppercase tracking-wide text-muted-foreground">{pageText("skipped_5c7a4b") + " "}{result.skipped.length}
             </header>
             <ul className="divide-y divide-border/60" data-testid="result-skipped">
               {result.skipped.map((row, index) => (
@@ -1262,8 +1225,7 @@ function ResultStep({ result }: ResultStepProps) {
         )}
         {result.warnings.length > 0 && (
           <section>
-            <header className="bg-muted/30 px-5 py-1.5 text-xs uppercase tracking-wide text-muted-foreground">
-              Warnings · {result.warnings.length}
+            <header className="bg-muted/30 px-5 py-1.5 text-xs uppercase tracking-wide text-muted-foreground">{pageText("warnings_56579b") + " "}{result.warnings.length}
             </header>
             <ul className="divide-y divide-border/60" data-testid="result-warnings">
               {result.warnings.map((warning, index) => (

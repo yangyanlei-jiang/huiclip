@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { ExternalLink, Loader2, Play, ScrollText, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -64,6 +65,7 @@ export function WorkspaceAccessCard({
   onViewLogs: () => void;
   errorMessage?: string | null;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const Icon = ACTION_ICONS[access.action.kind];
   const isWaiting = access.action.kind === "wait";
   const handlers: Record<WorkspaceAccessState["action"]["kind"], () => void> = {
@@ -115,14 +117,10 @@ export function WorkspaceAccessCard({
             {access.action.label}
           </Button>
           {access.state === "ready" && !access.handoffAvailable ? (
-            <span className="text-xs text-muted-foreground">
-              Signs in with the snapshot-local credentials captured when this clone was made.
-            </span>
+            <span className="text-xs text-muted-foreground">{pageText("signsInWithTheSnapshotLocalCredentialsCaptured_dafc8f")}</span>
           ) : null}
           {access.state === "ready" && access.handoffAvailable ? (
-            <span className="text-xs text-muted-foreground">
-              Uses a single-use login handoff — no password needed.
-            </span>
+            <span className="text-xs text-muted-foreground">{pageText("usesASingleUseLoginHandoffNoPassword_83bc56")}</span>
           ) : null}
         </div>
         {errorMessage ? (

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation } from "@/i18n";
 import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { useShowAgentCreatedTasks } from "../hooks/useShowAgentCreatedTasks";
@@ -174,6 +175,7 @@ function OrganizationIssues({
   toolbarContext,
   initialStatuses,
 }: { toolbarContext?: ReactNode; initialStatuses?: string[] } = {}) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t } = useTranslation();
   const { enabled: streamlinedUiEnabled } = useStreamlinedUiEnabled();
   const issuesPresentation = resolveIssuesPresentation(streamlinedUiEnabled);
@@ -337,8 +339,8 @@ function OrganizationIssues({
       <EmptyState
         icon={CircleDot}
         message={streamlinedUiEnabled
-          ? "Select an organization to view tasks."
-          : "Select a company to view tasks."}
+          ? pageText("selectAnOrganizationToViewTasks_773c1b")
+          : pageText("selectACompanyToViewTasks_0a8f88")}
       />
     );
   }

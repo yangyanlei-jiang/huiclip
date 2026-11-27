@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { t as interfaceMessage } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo } from "react";
@@ -69,6 +70,7 @@ export function ActivitySection({
   onRetry?: () => void;
   retrying?: boolean;
 } = {}) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const ctx = useRoutineDetail();
   const { activity } = ctx;
@@ -94,7 +96,7 @@ export function ActivitySection({
     return Array.from(byDay.entries());
   }, [events]);
 
-  if (isLoading) return <p className="text-sm text-muted-foreground">Loading activity…</p>;
+  if (isLoading) return <p className="text-sm text-muted-foreground">{pageText("loadingActivity_4c959a")}</p>;
   if (error) {
     return (
       <QueryErrorState

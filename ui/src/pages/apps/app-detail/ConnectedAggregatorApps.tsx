@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../../../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -59,8 +60,8 @@ export function ConnectedAggregatorApps({ connection }: { connection: ToolConnec
 
   return <section aria-labelledby="connected-aggregator-apps-heading" className="space-y-3">
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <h2 id="connected-aggregator-apps-heading" className="text-sm font-semibold">Connected apps</h2>
-      <Button variant="outline" size="sm" aria-label={`Refresh ${providerName}`}
+      <h2 id="connected-aggregator-apps-heading" className="text-sm font-semibold">{pageText("connectedApps_8f5e8e")}</h2>
+      <Button variant="outline" size="sm" aria-label={translateDynamic("dynamic:refresh", { value1: providerName })}
         disabled={!settled || queryPending || syncing || Boolean(unavailable)}
         onClick={() => refresh.mutate(userId)}>
         <RefreshCw className={syncing ? "size-4 animate-spin" : "size-4"} aria-hidden="true" />
@@ -68,14 +69,12 @@ export function ConnectedAggregatorApps({ connection }: { connection: ToolConnec
       </Button>
     </div>
     {queryView.kind === "error" ? <QueryErrorState error={query.error} action={`load ${providerName} apps`} onRetry={queryView.retry} retrying={queryView.isFetching} /> : null}
-    {failed || syncFailed ? <p role="alert" className="text-sm text-destructive">
-      Couldn’t refresh {providerName} apps.{apps.length ? " Last known apps are shown." : " Try refreshing again."}
+    {failed || syncFailed ? <p role="alert" className="text-sm text-destructive">{pageText("couldnTRefresh_8e1e54") + " "}{providerName}{" " + pageText("apps_131def")}{apps.length ? " " + pageText("lastKnownAppsAreShown_c220b8") : " " + pageText("tryRefreshingAgain_e46e68")}
     </p> : null}
-    {syncing ? <p role="status" className="text-sm text-muted-foreground">
-      Refreshing apps…{data?.sync.total ? ` ${data.sync.checked} of ${data.sync.total}` : ""}
-    </p> : refresh.isSuccess && !syncFailed && !unavailable ? <p role="status" className="text-sm text-muted-foreground">Apps refreshed.</p> : null}
-    {(!settled && !failed) || queryPending ? <p role="status" className="text-sm text-muted-foreground">Loading apps…</p>
-      : apps.length ? <ul aria-label={`Connected ${providerName} apps`} tabIndex={0}
+    {syncing ? <p role="status" className="text-sm text-muted-foreground">{pageText("refreshingApps_f8a44b")}{data?.sync.total ? ` ${data.sync.checked} of ${data.sync.total}` : ""}
+    </p> : refresh.isSuccess && !syncFailed && !unavailable ? <p role="status" className="text-sm text-muted-foreground">{pageText("appsRefreshed_508943")}</p> : null}
+    {(!settled && !failed) || queryPending ? <p role="status" className="text-sm text-muted-foreground">{pageText("loadingApps_140ddb")}</p>
+      : apps.length ? <ul aria-label={translateDynamic("dynamic:connectedApps", { value1: providerName })} tabIndex={0}
         className="max-h-80 overflow-y-auto rounded-lg border border-border divide-y divide-border">
         {apps.map(snapshots => {
           const app = snapshots[0];

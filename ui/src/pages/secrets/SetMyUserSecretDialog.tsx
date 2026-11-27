@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
@@ -79,7 +80,7 @@ export function SetMyUserSecretDialog({
       queryClient.invalidateQueries({ queryKey: queryKeys.secrets.myUserSecrets(companyId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.secrets.userDefinitions(companyId) });
       pushToast({
-        title: existingSecret ? "Value updated" : "Value saved",
+        title: existingSecret ? interfaceNotice("interface:valueUpdated_2f7775") : interfaceNotice("interface:valueSaved_f0a0ca"),
         body: definition?.name,
         tone: "success",
       });
@@ -100,14 +101,12 @@ export function SetMyUserSecretDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {existingSecret ? "Update your value" : "Set your value"}
+            {existingSecret ? pageText("updateYourValue_119edd") : pageText("setYourValue_97028f")}
             <UserSecretChip />
           </DialogTitle>
           <DialogDescription>
             {definition ? (
-              <>
-                This value is yours only. It is used when you are the user responsible for a run that
-                needs <span className="font-mono">{definition.key}</span>.
+              <>{pageText("thisValueIsYoursOnlyItIsUsed_381321") + " "}<span className="font-mono">{definition.key}</span>.
               </>
             ) : null}
           </DialogDescription>
@@ -131,28 +130,23 @@ export function SetMyUserSecretDialog({
                 <Input
                   value={externalRef}
                   onChange={(event) => setExternalRef(event.target.value)}
-                  placeholder="provider reference or ARN"
+                  placeholder={pageText("providerReferenceOrARN_8fdd1c")}
                   className="font-mono text-sm"
                   autoFocus
                 />
-                <p className="text-(length:--text-micro) text-muted-foreground">
-                  Points at your own credential in the configured provider. Paperclip stores the
-                  reference, not the value.
-                </p>
+                <p className="text-(length:--text-micro) text-muted-foreground">{pageText("pointsAtYourOwnCredentialInTheConfigured_8821fd")}</p>
               </div>
             ) : (
               <div className="space-y-1">
-                <label className="text-xs font-medium text-foreground">Your value</label>
+                <label className="text-xs font-medium text-foreground">{pageText("yourValue_990b78")}</label>
                 <Textarea
                   value={value}
                   onChange={(event) => setValue(event.target.value)}
-                  placeholder="Paste your token or credential"
+                  placeholder={pageText("pasteYourTokenOrCredential_df993f")}
                   className="font-mono text-sm min-h-(--sz-80px)"
                   autoFocus
                 />
-                <p className="text-(length:--text-micro) text-muted-foreground">
-                  Stored encrypted. Never shown back to anyone, including admins.
-                </p>
+                <p className="text-(length:--text-micro) text-muted-foreground">{pageText("storedEncryptedNeverShownBackToAnyoneIncluding_cd050c")}</p>
               </div>
             )}
 
@@ -163,7 +157,7 @@ export function SetMyUserSecretDialog({
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={save.isPending}>{translateUi("interfaceCopy.cancel")}</Button>
           <Button onClick={() => save.mutate()} disabled={!canSave || save.isPending}>
-            {save.isPending ? pageText("saving_56a228") : existingSecret ? "Update value" : "Save value"}
+            {save.isPending ? pageText("saving_56a228") : existingSecret ? pageText("updateValue_af2072") : pageText("saveValue_f63b76")}
           </Button>
         </DialogFooter>
       </DialogContent>

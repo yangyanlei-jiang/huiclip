@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useId } from "react";
 import type { LabGroup } from "../../kit";
 import { GalleryTile } from "./GalleryTile";
@@ -51,9 +52,10 @@ function Section({ section }: { section: StackSection }) {
 }
 
 export function GalleryStack({ group }: { group: LabGroup }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (group.artifacts.length === 0) {
     // The shipped empty state's copy.
-    return <p className="py-16 text-center text-sm font-medium text-foreground">No artifacts in this stack match the current filters.</p>;
+    return <p className="py-16 text-center text-sm font-medium text-foreground">{pageText("noArtifactsInThisStackMatchTheCurrent_5422bd")}</p>;
   }
   return (
     <div data-surface="gallery-stack" className="flex flex-col gap-6">

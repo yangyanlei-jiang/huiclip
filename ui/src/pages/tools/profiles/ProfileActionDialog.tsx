@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { AlertTriangle } from "lucide-react";
 import type { ToolProfileWithDetails } from "@paperclipai/shared";
@@ -30,6 +31,7 @@ export function ProfileActionDialog({
   onRestore: () => void;
   onDelete: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   if (!kind || !profile) return null;
 
@@ -67,7 +69,7 @@ export function ProfileActionDialog({
         {defaultDeleteBlocked ? (
           <div className="flex gap-3 rounded-lg border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>Choose another access profile and make it the organization default first.</span>
+            <span>{pageText("chooseAnotherAccessProfileAndMakeItThe_47181a")}</span>
           </div>
         ) : null}
         <DialogFooter>

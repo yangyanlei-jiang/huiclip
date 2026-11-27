@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useCallback, useMemo } from "react";
 import { NavLink, useLocation } from "@/lib/router";
@@ -106,7 +107,7 @@ export function SidebarStarredProjects() {
   }
 
   return (
-    <div className="flex flex-col gap-0.5" aria-label="Starred projects">
+    <div className="flex flex-col gap-0.5" aria-label={pageText("starredProjects_14c247")}>
       {starredProjects.map((project) => {
         const routeRef = projectRouteRef(project);
         const isActive = activeProjectRef === routeRef || activeProjectRef === project.id;
@@ -134,7 +135,7 @@ export function SidebarStarredProjects() {
             <span className={rail ? SIDEBAR_RAIL_HIDDEN_LABEL : "flex-1 truncate"}>{project.name}</span>
             {!rail && project.visibility === "private" ? <Lock className="size-3.5 shrink-0 text-muted-foreground" aria-label={pageText("privateProject_505bbd")} /> : null}
             {!rail && project.pauseReason === "budget" ? (
-              <BudgetSidebarMarker title="Project paused by budget" />
+              <BudgetSidebarMarker title={pageText("projectPausedByBudget_07dd7d")} />
             ) : null}
           </NavLink>
         );
@@ -175,7 +176,7 @@ export function SidebarStarredProjects() {
                     variant="ghost"
                     size="icon-xs"
                     className="absolute right-3 top-1/2 h-6 w-6 -translate-y-1/2 opacity-100"
-                    aria-label={`Open actions for ${project.name}`}
+                    aria-label={translateDynamic("dynamic:openActionsFor", { value1: project.name })}
                   >
                     <MoreHorizontal className="h-3.5 w-3.5" />
                   </Button>
@@ -208,7 +209,7 @@ export function SidebarStarredProjects() {
                     ) : (
                       <LogOut className="size-4" />
                     )}
-                    <span>Leave project</span>
+                    <span>{pageText("leaveProject_7db1f1")}</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

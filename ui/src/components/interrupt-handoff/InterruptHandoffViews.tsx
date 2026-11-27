@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { AlertTriangle, Info, PauseCircle, User, X } from "lucide-react";
@@ -84,7 +85,7 @@ export function AssigneeChip({
       data-testid="handoff-assignee-chip"
       data-kind="unassigned"
     >
-      <span className="sr-only">No responsible — </span>{pageText("unassigned_e57016")}</span>
+      <span className="sr-only">{pageText("noResponsible_bf2fa7") + " "}</span>{pageText("unassigned_e57016")}</span>
   );
 }
 
@@ -99,6 +100,7 @@ export function HandoffWakeRow({
   resolvers: HandoffChipResolvers;
   interruptedRunAttached?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const info = classifyAssigneeHandoff(to, {
     agentName: to.agentId ? agentName(to.agentId, resolvers) : null,
     interruptedRunAttached,
@@ -109,7 +111,7 @@ export function HandoffWakeRow({
       data-testid="handoff-wake-row"
       data-kind={info.kind}
     >
-      <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Wake</span>
+      <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{pageText("wake_d6a365")}</span>
       <span className={cn(info.kind === "agent_wake" ? "text-foreground" : "text-muted-foreground")}>
         {info.wakeText}
       </span>
@@ -196,6 +198,7 @@ export function ComposerMentionCoach({
   onInsert: () => void;
   onDismiss: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div
       className="flex items-center gap-2 rounded-md border border-amber-300/40 bg-amber-50/70 px-2 py-1.5 text-xs text-amber-700 dark:bg-amber-500/10 dark:text-amber-300"
@@ -204,23 +207,18 @@ export function ComposerMentionCoach({
       aria-live="polite"
     >
       <Info className="h-3.5 w-3.5 shrink-0" aria-hidden />
-      <span className="min-w-0 flex-1">
-        Did you mean <span className="font-medium">@{candidate.matchedText}</span>? Plain text won't
-        notify or assign an agent.
-      </span>
+      <span className="min-w-0 flex-1">{pageText("didYouMean_fac068") + " "}<span className="font-medium">@{candidate.matchedText}</span>{pageText("plainTextWonTNotifyOrAssignAn_c50408")}</span>
       <button
         type="button"
         onClick={onInsert}
         className="shrink-0 rounded border border-amber-400/50 px-1.5 py-0.5 font-medium hover:bg-amber-100/60 dark:hover:bg-amber-500/20"
-        aria-label={`Insert mention for ${agentDisplayName} into your comment`}
-      >
-        Insert mention
-      </button>
+        aria-label={translateDynamic("dynamic:insertMentionForIntoYourComment", { value1: agentDisplayName })}
+      >{pageText("insertMention_18f68a")}</button>
       <button
         type="button"
         onClick={onDismiss}
         className="shrink-0 rounded p-0.5 hover:bg-amber-100/60 dark:hover:bg-amber-500/20"
-        aria-label="Dismiss suggestion"
+        aria-label={pageText("dismissSuggestion_29a78b")}
       >
         <X className="h-3.5 w-3.5" aria-hidden />
       </button>
@@ -269,6 +267,7 @@ export function InterruptAssignConfirm({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div
       data-testid="interrupt-assign-confirm"
@@ -279,7 +278,7 @@ export function InterruptAssignConfirm({
         <div className="min-w-0 flex-1 space-y-1">
           <p className="font-medium">{copy.confirmTitle}</p>
           <p className="flex flex-wrap items-center gap-1 text-amber-700/90 dark:text-amber-300/90">
-            <span>Hand off to</span>
+            <span>{pageText("handOffTo_c9574f")}</span>
             <AssigneeChip assignee={to} resolvers={resolvers} />
           </p>
         </div>
@@ -313,6 +312,7 @@ export function PauseAffectsSummaryView({
   summary: PauseAffectsSummary;
   className?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const visibleBuckets = summary.buckets.filter((bucket) => bucket.count > 0);
   return (
     <div
@@ -320,14 +320,9 @@ export function PauseAffectsSummaryView({
       className={cn("space-y-2 rounded-md border border-border bg-muted/30 p-3", className)}
     >
       <div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-        <PauseCircle className="h-3.5 w-3.5" aria-hidden />
-        What this affects
-      </div>
+        <PauseCircle className="h-3.5 w-3.5" aria-hidden />{pageText("whatThisAffects_30b756")}</div>
       {summary.nothingLive ? (
-        <p role="status" className="text-xs text-muted-foreground" data-testid="pause-nothing-live">
-          Nothing live to pause — no agent run is in flight or queued. This records a hold so new work
-          won't start until you resume.
-        </p>
+        <p role="status" className="text-xs text-muted-foreground" data-testid="pause-nothing-live">{pageText("nothingLiveToPauseNoAgentRunIs_32dea3")}</p>
       ) : null}
       {visibleBuckets.length > 0 ? (
         <ul className="space-y-1">
@@ -344,7 +339,7 @@ export function PauseAffectsSummaryView({
           ))}
         </ul>
       ) : (
-        <p className="text-xs text-muted-foreground">No tasks are affected.</p>
+        <p className="text-xs text-muted-foreground">{pageText("noTasksAreAffected_34064a")}</p>
       )}
     </div>
   );

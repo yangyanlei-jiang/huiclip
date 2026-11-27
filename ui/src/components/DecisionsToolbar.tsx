@@ -1,3 +1,4 @@
+import { controlText } from "@/i18n/controls";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { type ReactNode } from "react";
@@ -64,7 +65,7 @@ export function DecisionsToolbar({
   const { t: translateUi } = useUiTranslation();
   const activeFilterCount = countActiveAttentionFilters(filters);
   return (
-    <div data-canonical-toolbar="decisions" role="toolbar" aria-label="Decisions controls" className="flex flex-wrap items-center gap-2">
+    <div data-canonical-toolbar="decisions" role="toolbar" aria-label={pageText("decisionsControls_250096")} className="flex flex-wrap items-center gap-2">
       <ToolbarSearch query={query} onQueryChange={onQueryChange} label={pageText("searchDecisions_b5f1fd")} placeholder={pageText("searchDecisions_3dbb5b")} />
       {/* Filter */}
       <Popover>
@@ -112,7 +113,7 @@ export function DecisionsToolbar({
                 )}
                 onClick={() => onGroupByChange(value)}
               >
-                <span>{label}</span>
+                <span>{controlText(label)}</span>
                 {groupBy === value ? <Check className="h-3.5 w-3.5" /> : null}
               </button>
             ))}
@@ -145,7 +146,7 @@ export function DecisionsToolbar({
                 )}
                 onClick={() => onSortOrderChange(value)}
               >
-                <span>{label}</span>
+                <span>{controlText(label)}</span>
                 {sortOrder === value ? <Check className="h-3.5 w-3.5" /> : null}
               </button>
             ))}
@@ -202,7 +203,7 @@ function FilterMenu({
       )}
 
       {options.severities.length > 1 && (
-        <FilterSection title="Severity">
+        <FilterSection title={pageText("severity_de314f")}>
           {options.severities.map((severity) => (
             <FilterRow
               key={severity}
@@ -246,7 +247,7 @@ function FilterMenu({
           ))}
           {options.hasNoWorkspace && (
             <FilterRow
-              label="No workspace"
+              label={pageText("noWorkspace_df398e")}
               checked={filters.workspaceIds.includes(NO_GROUP_SENTINEL)}
               onToggle={() => toggle("workspaceIds", NO_GROUP_SENTINEL)}
             />

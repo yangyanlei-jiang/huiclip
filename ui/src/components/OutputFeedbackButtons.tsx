@@ -189,24 +189,14 @@ export function OutputFeedbackButtons({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Save your feedback sharing preference</DialogTitle>
-            <DialogDescription>
-              Choose whether voted AI outputs can be shared with Paperclip Labs. This
-              answer becomes the default for future thumbs up and thumbs down votes.
-            </DialogDescription>
+            <DialogTitle>{pageText("saveYourFeedbackSharingPreference_c8511f")}</DialogTitle>
+            <DialogDescription>{pageText("chooseWhetherVotedAIOutputsCanBeShared_ca14bb")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 text-sm text-muted-foreground">
-            <p>
-              This vote is always saved locally.
-            </p>
-            <p>{pageText("choose_78b7c9") + " "}<span className="font-medium text-foreground">{translateUi("interfaceCopy.alwaysAllow")}</span> to share
-              this vote and future voted AI outputs. Choose{" "}
-              <span className="font-medium text-foreground">{pageText("donTAllow_63da96")}</span> to keep this vote
-              and future votes local.
-            </p>
-            <p>
-              You can change this later in Settings &gt; General.
-            </p>
+            <p>{pageText("thisVoteIsAlwaysSavedLocally_680abb")}</p>
+            <p>{pageText("choose_78b7c9") + " "}<span className="font-medium text-foreground">{translateUi("interfaceCopy.alwaysAllow")}</span>{" " + pageText("toShareThisVoteAndFutureVotedAI_10139e")}{" "}
+              <span className="font-medium text-foreground">{pageText("donTAllow_63da96")}</span>{" " + pageText("toKeepThisVoteAndFutureVotesLocal_8f9fdc")}</p>
+            <p>{pageText("youCanChangeThisLaterInSettingsGeneral_1558d3")}</p>
             {termsUrl ? (
               <a
                 href={termsUrl}

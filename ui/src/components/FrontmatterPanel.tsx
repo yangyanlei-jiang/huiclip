@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useMemo, useState } from "react";
@@ -343,7 +344,7 @@ export function FrontmatterPanel({
             aria-controls="frontmatter-panel-body"
           >
             {chevron}
-            <span className="text-sm font-medium">Frontmatter</span>
+            <span className="text-sm font-medium">{pageText("frontmatter_494158")}</span>
             {!open && present ? (
               <span className="truncate text-xs text-muted-foreground">{summary}</span>
             ) : null}
@@ -372,11 +373,7 @@ export function FrontmatterPanel({
                         >{pageText("fields_e8b685")}</TabsTrigger>
                       </span>
                     </TooltipTrigger>
-                    <TooltipContent className="max-w-60">
-                      Switch to YAML to edit. This frontmatter uses YAML features the form can't safely
-                      round-trip (e.g. comments, anchors, or custom ordering). Editing here keeps it
-                      byte-for-byte.
-                    </TooltipContent>
+                    <TooltipContent className="max-w-60">{pageText("switchToYAMLToEditThisFrontmatterUses_340d2e")}</TooltipContent>
                   </Tooltip>
                 )}
                 <TabsTrigger value="yaml" className="px-2 py-0.5 text-xs">
@@ -386,9 +383,7 @@ export function FrontmatterPanel({
             </Tabs>
           ) : !readOnly ? (
             <Button variant="ghost" size="sm" onClick={addFrontmatter} data-testid="add-frontmatter">
-              <Plus className="mr-1 h-3.5 w-3.5" />
-              Add frontmatter
-            </Button>
+              <Plus className="mr-1 h-3.5 w-3.5" />{pageText("addFrontmatter_805e2e")}</Button>
           ) : null}
 
           {present && effectiveMode === "fields" && warningCount > 0 ? (
@@ -420,9 +415,7 @@ export function FrontmatterPanel({
               )}
             </div>
           ) : (
-            <div className="px-3 pb-2 text-xs text-muted-foreground">
-              This file has no frontmatter.
-            </div>
+            <div className="px-3 pb-2 text-xs text-muted-foreground">{pageText("thisFileHasNoFrontmatter_90b2b1")}</div>
           )}
         </CollapsibleContent>
       </Collapsible>
@@ -508,13 +501,13 @@ function FieldsForm({
           <Label className="text-xs text-muted-foreground">allowed-tools</Label>
           {form.allowedTools === null ? (
             <p className="mt-1 text-xs text-amber-500">
-              {toolsWarning ?? "Expected a list — edit in YAML."}
+              {toolsWarning ?? pageText("expectedAListEditInYAML_43dd63")}
             </p>
           ) : (
             <ChipInput
               values={form.allowedTools}
               readOnly={readOnly}
-              placeholder="Add a tool…"
+              placeholder={pageText("addATool_ddfeb0")}
               onChange={(next) => onCommit({ ...form, allowedTools: next })}
             />
           )}
@@ -525,7 +518,7 @@ function FieldsForm({
         <div>
           <Label className="text-xs text-muted-foreground">metadata</Label>
           {form.metadataComplex !== null ? (
-            <p className="mt-1 text-xs text-muted-foreground">Complex value — edit in YAML.</p>
+            <p className="mt-1 text-xs text-muted-foreground">{pageText("complexValueEditInYAML_3abf05")}</p>
           ) : (
             <MetadataRows
               rows={form.metaRows}
@@ -557,7 +550,7 @@ function FieldsForm({
         ) : (
           <div key={row.id}>
             <Label className="text-xs text-muted-foreground">{row.key}</Label>
-            <p className="mt-1 text-xs text-muted-foreground">Complex value — edit in YAML.</p>
+            <p className="mt-1 text-xs text-muted-foreground">{pageText("complexValueEditInYAML_3abf05")}</p>
           </div>
         ),
       )}
@@ -595,7 +588,7 @@ function MetadataRows({
       {rows.map((row, index) => (
         <div key={row.id} className="flex items-center gap-1.5">
           <Input
-            aria-label={`Metadata key ${index + 1}`}
+            aria-label={translateDynamic("dynamic:metadataKey", { value1: index + 1 })}
             value={row.key}
             readOnly={readOnly}
             placeholder={pageText("key_a62f22")}
@@ -625,9 +618,7 @@ function MetadataRows({
       ))}
       {!readOnly ? (
         <Button variant="ghost" size="sm" onClick={add} className="text-xs">
-          <Plus className="mr-1 h-3.5 w-3.5" />
-          add field
-        </Button>
+          <Plus className="mr-1 h-3.5 w-3.5" />{pageText("addField_c4d38d")}</Button>
       ) : null}
     </div>
   );
@@ -662,7 +653,7 @@ function ChipInput({
           {!readOnly ? (
             <button
               type="button"
-              aria-label={`Remove ${value}`}
+              aria-label={translateDynamic("dynamic:remove", { value1: value })}
               onClick={() => onChange(values.filter((_, i) => i !== index))}
               className="hover:text-foreground"
             >
@@ -706,12 +697,13 @@ function YamlEditor({
   parseError: boolean;
   onChange: (value: string) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="pt-1">
       {!canReturnToFields && !parseError ? (
         <div className="mb-1.5 flex items-start gap-2 rounded-md bg-muted/40 px-2 py-1.5 text-xs text-muted-foreground">
           <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          <span>Editing raw YAML to preserve formatting the form can't reconstruct.</span>
+          <span>{pageText("editingRawYAMLToPreserveFormattingTheForm_f92342")}</span>
         </div>
       ) : null}
       <Textarea
@@ -721,11 +713,9 @@ function YamlEditor({
         rows={Math.min(12, Math.max(3, value.split("\n").length))}
         onChange={(event) => onChange(event.target.value)}
         className="font-mono text-xs"
-        aria-label="Frontmatter YAML"
+        aria-label={pageText("frontmatterYAML_fa184d")}
       />
-      <p className="mt-1 text-xs text-muted-foreground">
-        Raw YAML is the source of truth in this mode.
-      </p>
+      <p className="mt-1 text-xs text-muted-foreground">{pageText("rawYAMLIsTheSourceOfTruthIn_4271ce")}</p>
     </div>
   );
 }

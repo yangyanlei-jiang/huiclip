@@ -1,3 +1,5 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { t as interfaceMessage } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useLayoutEffect, useRef, useState } from "react";
@@ -55,6 +57,7 @@ export function WorkspaceExportRecovery({ action, className, issueId, companyId,
   className?: string; action: IssueRecoveryAction | null; issueId?: string; companyId?: string; showStatus?: boolean;
   onRecoveryControlChange?: (owns: boolean) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   // A restart killed the copyback owner of retained saved-work recovery. Recovery
   // and any accepted Retry wait on its receipt; the confirmation is the one action.
   const retainedOwnerToken = action && issueId && companyId && isRetainedExport(action, issueId, companyId)
@@ -115,7 +118,7 @@ export function WorkspaceExportRecovery({ action, className, issueId, companyId,
   const automatic = queued || (ownerRecovery && asObject(action.evidence.workspaceOwnerRecovery).state === "resuming");
   return <><ReportRecoveryControl owns={false} onChange={onRecoveryControlChange} />
     <p role="status" className={cn("text-sm text-muted-foreground", className)}>
-      {automatic ? "Restoring saved work…" : "Saved work is not recovered yet. The agent’s result is saved."}
+      {automatic ? pageText("restoringSavedWork_9ae0ae") : pageText("savedWorkIsNotRecoveredYetTheAgent_c50c1c")}
     </p></>;
 }
 
@@ -163,6 +166,7 @@ function PreviousServerStopConfirmation({ action, ownerToken, issueId, companyId
   confirmStop?: (stopEvidence: string) => Promise<unknown>;
   copy?: { waiting: string; question: string; placeholder: string; resuming: string };
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const runId = action.evidence.runId as string;
   const client = useQueryClient();
@@ -184,26 +188,25 @@ function PreviousServerStopConfirmation({ action, ownerToken, issueId, companyId
     } });
   const ready = evidence.trim().length >= 20;
   return <div className={cn("flex flex-col gap-2 text-sm", className)} data-testid="previous-server-stop">
-    <p role="status">{confirm.isSuccess ? copy?.resuming ?? "Restoring saved work…"
-      : copy?.waiting ?? "The previous server stopped while it was saving this task’s files, and Paperclip can’t verify that it stopped. The agent’s result is saved."}</p>
+    <p role="status">{confirm.isSuccess ? copy?.resuming ?? pageText("restoringSavedWork_9ae0ae")
+      : copy?.waiting ?? pageText("thePreviousServerStoppedWhileItWasSaving_79e2bb")}</p>
     {confirm.isSuccess ? null : !canConfirm
       ? <p className="text-xs text-muted-foreground">{accessView.kind === "loading" || accessView.kind === "reconnecting"
-        ? "Checking access…" : "Paperclip is waiting to confirm that the previous server stopped."}</p>
-      : !open ? <Button variant="outline" size="sm" className="self-start" onClick={() => setOpen(true)}>
-        Confirm the previous server stopped</Button>
+        ? pageText("checkingAccess_c5108c") : pageText("paperclipIsWaitingToConfirmThatThePrevious_e2f769")}</p>
+      : !open ? <Button variant="outline" size="sm" className="self-start" onClick={() => setOpen(true)}>{pageText("confirmThePreviousServerStopped_552262")}</Button>
       : <form className="flex flex-col gap-2" onSubmit={event => { event.preventDefault(); if (ready && !confirm.isPending) confirm.mutate(); }}>
         <label htmlFor={`previous-server-stop-${action.id}`} className="text-xs text-muted-foreground">
-          {copy?.question ?? "How did you confirm that the previous server and its file copy stopped?"}</label>
+          {copy?.question ?? pageText("howDidYouConfirmThatThePreviousServer_eb99c7")}</label>
         <Textarea id={`previous-server-stop-${action.id}`} value={evidence} onChange={event => setEvidence(event.target.value)}
-          placeholder={copy?.placeholder ?? "For example: the old server process exited and was not restarted."} maxLength={12000} rows={3} />
+          placeholder={copy?.placeholder ?? pageText("forExampleTheOldServerProcessExitedAnd_eedf6f")} maxLength={12000} rows={3} />
         <div className="flex items-center justify-between gap-2">
           <Button type="button" variant="ghost" size="sm" disabled={confirm.isPending} onClick={() => setOpen(false)}>{translateUi("interfaceCopy.cancel")}</Button>
           <Button type="submit" size="sm" disabled={!ready || confirm.isPending}>
-            {confirm.isPending ? "Confirming…" : "Confirm and resume"}</Button>
+            {confirm.isPending ? pageText("confirming_0c2708") : pageText("confirmAndResume_a89422")}</Button>
         </div>
       </form>}
     {confirm.error ? <p role="alert" className="text-sm text-destructive">
-      {confirm.error instanceof Error ? confirm.error.message : "The confirmation was not accepted. Refresh the task and try again."}</p> : null}
+      {confirm.error instanceof Error ? confirm.error.message : pageText("theConfirmationWasNotAcceptedRefreshTheTask_8a3522")}</p> : null}
   </div>;
 }
 
@@ -224,6 +227,7 @@ function RetainedFilesRecovery({ action, issueId, companyId, className, onRecove
   action: IssueRecoveryAction; issueId: string; companyId: string; className?: string;
   onRecoveryControlChange?: (owns: boolean) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const runId = action.evidence.runId as string;
   const owner = useDraftOwner();
   const readOwner = useDraftOwnerReader();
@@ -316,7 +320,7 @@ function RetainedFilesRecovery({ action, issueId, companyId, className, onRecove
       } catch (error) {
         setNotice(classifySendFailure(error) === "rejected"
           ? `Recovery request was not confirmed: ${error instanceof Error ? error.message : "Inspect its status."}`
-          : "The recovery request could not be confirmed. Check its status before trying again; the saved request will be reused.");
+          : interfaceNotice("interface:theRecoveryRequestCouldNotBeConfirmedCheck_8689b9"));
       }
     } catch (error) {
       setNotice(error instanceof Error ? error.message : interfaceMessage("interface:errorUnableToInspectFileRecoverySentence"));
@@ -336,7 +340,7 @@ function RetainedFilesRecovery({ action, issueId, companyId, className, onRecove
     const ids = state.requestIds;
     const unconfirmed = Boolean(pending && Array.isArray(ids) && !ids.includes(pending.idempotencyKey));
     setCheckedUnconfirmed(unconfirmed);
-    setNotice(unconfirmed ? "No recovery request is confirmed yet. Trying again will reuse the saved request." : null);
+    setNotice(unconfirmed ? interfaceNotice("interface:noRecoveryRequestIsConfirmedYetTryingAgain_75fa06") : null);
     invalidate();
   } });
   const checkError = isTransientError(check.error) ? null : check.error;
@@ -353,32 +357,31 @@ function RetainedFilesRecovery({ action, issueId, companyId, className, onRecove
   const unverified = Boolean(current && !verified && !saved && !waiting);
   return <div className={cn("flex flex-col gap-2 text-sm", className)} data-testid="retained-file-recovery">
     <ReportRecoveryControl owns={ownsRecoveryControl} onChange={onRecoveryControlChange} />
-    <p role="status">{saved ? "Saved files recovered. Task recovery is still being checked."
-      : failedReceipt ? "File recovery has not finished. The saved source remains protected."
-      : restoring ? "Recovering saved files. Work remains paused until recovery is verified."
-        : waiting ? "File recovery is queued. Waiting for verified saved files."
-          : "The saved files need recovery before work can continue."}</p>
+    <p role="status">{saved ? pageText("savedFilesRecoveredTaskRecoveryIsStillBeing_b6d7b3")
+      : failedReceipt ? pageText("fileRecoveryHasNotFinishedTheSavedSource_313776")
+      : restoring ? pageText("recoveringSavedFilesWorkRemainsPausedUntilRecovery_e00c65")
+        : waiting ? pageText("fileRecoveryIsQueuedWaitingForVerifiedSaved_7d962d")
+          : pageText("theSavedFilesNeedRecoveryBeforeWorkCan_bbbfd5")}</p>
     {canMutate ? <>
       {current && verified && retryable && !waiting && (!pending || unconfirmed && checkedUnconfirmed || confirmedFailedAttempt) ? <Button variant="outline" size="sm"
         className="self-start" disabled={request.isPending || check.isPending}
-        onClick={() => request.mutate(confirmedFailedAttempt)}>{request.isPending ? "Requesting file recovery…"
-          : confirmedFailedAttempt ? "Try file recovery again" : "Recover saved files"}</Button> : null}
+        onClick={() => request.mutate(confirmedFailedAttempt)}>{request.isPending ? pageText("requestingFileRecovery_42185e")
+          : confirmedFailedAttempt ? pageText("tryFileRecoveryAgain_717d7a") : pageText("recoverSavedFiles_5085c7")}</Button> : null}
       {waiting || unconfirmed || failedReceipt || source.error || sourceReady && !current ? <Button variant="ghost" size="sm" className="self-start"
         disabled={request.isPending || check.isPending} onClick={() => check.mutate()}>
-        {check.isPending ? "Checking file recovery…" : "Check file recovery status"}
+        {check.isPending ? pageText("checkingFileRecovery_a31b06") : pageText("checkFileRecoveryStatus_653964")}
       </Button> : null}
-      {sourceView.kind === "loading" || sourceView.kind === "reconnecting" ? <p className="text-xs text-muted-foreground">Inspecting the recorded file source…</p> : null}
+      {sourceView.kind === "loading" || sourceView.kind === "reconnecting" ? <p className="text-xs text-muted-foreground">{pageText("inspectingTheRecordedFileSource_feb35d")}</p> : null}
       {sourceView.kind === "error" || checkError || notice ? <p role="alert" className="text-sm text-destructive">
-        {notice ?? (checkError instanceof Error ? checkError.message : "File recovery could not be inspected. Check its status again.")}
+        {notice ?? (checkError instanceof Error ? checkError.message : pageText("fileRecoveryCouldNotBeInspectedCheckIts_8c21ed"))}
       </p> : null}
       {current && recovery.status === "blocked" && (serverAcknowledged || recovery.retryable !== true)
-        ? <p role="alert">File recovery has not finished. The saved files remain protected and are not applied.</p> : null}
+        ? <p role="alert">{pageText("fileRecoveryHasNotFinishedTheSavedFiles_c0cffa")}</p> : null}
       {unverified ? <p role="status" className="text-muted-foreground">
-        {unverifiedSourceText(source.data?.sourceInspection)} Paperclip does not apply files it can’t verify.
-      </p> : null}
-      {sourceReady && !current ? <p role="alert">This file recovery was replaced. Check its status to show the task’s current recovery.</p> : null}
-    </> : accessView.kind === "error" ? <p role="alert" className="text-sm text-destructive">Task access could not be checked. Refresh before requesting file recovery.</p>
-      : accessView.kind === "loading" || accessView.kind === "reconnecting" || !owner ? <p role="status" className="text-xs text-muted-foreground">Checking file recovery access…</p>
-        : <p className="text-xs text-muted-foreground">A board member with task access can request file recovery.</p>}
+        {unverifiedSourceText(source.data?.sourceInspection)}{" " + pageText("paperclipDoesNotApplyFilesItCanT_79160f")}</p> : null}
+      {sourceReady && !current ? <p role="alert">{pageText("thisFileRecoveryWasReplacedCheckItsStatus_6b4fc4")}</p> : null}
+    </> : accessView.kind === "error" ? <p role="alert" className="text-sm text-destructive">{pageText("taskAccessCouldNotBeCheckedRefreshBefore_d5ac4b")}</p>
+      : accessView.kind === "loading" || accessView.kind === "reconnecting" || !owner ? <p role="status" className="text-xs text-muted-foreground">{pageText("checkingFileRecoveryAccess_116140")}</p>
+        : <p className="text-xs text-muted-foreground">{pageText("aBoardMemberWithTaskAccessCanRequest_1437da")}</p>}
   </div>;
 }

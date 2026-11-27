@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useCallback } from "react";
 import { useMutation, useQueryClient, type UseMutationResult } from "@tanstack/react-query";
 import type { IssueRetryNowOutcome, IssueRetryNowResponse } from "@paperclipai/shared";
@@ -66,7 +67,7 @@ export function useRetryNowMutation(
     },
     onError: (error) => {
       pushToast({
-        title: "Couldn't retry now",
+        title: interfaceNotice("interface:couldnTRetryNow_cc7b7e"),
         body: readErrorMessage(error),
         tone: "error",
       });

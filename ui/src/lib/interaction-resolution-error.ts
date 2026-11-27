@@ -12,7 +12,7 @@
  * action is permitted, it only explains the answer the server already gave.
  */
 
-import { describeError, errorCopy, isRawErrorCode, isTransientError } from "@/api/errors";
+import { describeError, errorCopy, isRawErrorCode, isTransientError, retryErrorText } from "@/api/errors";
 import type { InteractionAudienceDescription } from "./interaction-audience";
 
 /**
@@ -83,7 +83,7 @@ function serverReason(error: unknown): string | null {
   const reason = [fromBody, fromError].find((text) => text && !isRawErrorCode(text));
   if (!reason) return null;
   // The API writes reasons as bare clauses ("This interaction is human-only").
-  return /[.!?]$/.test(reason) ? reason : `${reason}.`;
+  return /[.!?。！？]$/.test(reason) ? reason : `${reason}.`;
 }
 
 export function isInteractionAudienceDenial(error: unknown): boolean {
@@ -160,7 +160,7 @@ export function describeInteractionResolutionFailure(
   return {
     kind: "transient",
     code,
-    message: reason ? `${reason} Try again.` : errorCopy("interaction_submit_failed").body,
+    message: reason ? `${reason} ${retryErrorText()}` : errorCopy("interaction_submit_failed").body,
   };
 }
 

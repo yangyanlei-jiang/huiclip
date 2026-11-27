@@ -28,9 +28,9 @@ export function ExecutorManagementSetup({ connection, onClose }: { connection: T
     queries.setQueryData(queryKeys.tools.aggregatorApps(connection.id, userId), result);
   }, onSuccess: async () => { await queries.invalidateQueries({ queryKey: queryKeys.tools.connections(connection.companyId) }); onClose(); } });
   return <Dialog open onOpenChange={open => { if (!open && !save.isPending) onClose(); }}><DialogContent>
-    <DialogHeader><DialogTitle>Executor console</DialogTitle><DialogDescription>Choose where to manage accounts for “{connection.name}”. Include your workspace path.</DialogDescription></DialogHeader>
+    <DialogHeader><DialogTitle>{pageText("executorConsole_44d467")}</DialogTitle><DialogDescription>{pageText("chooseWhereToManageAccountsFor_b214d6")}{connection.name}{pageText("includeYourWorkspacePath_e87ade")}</DialogDescription></DialogHeader>
     <form className="space-y-4" onSubmit={event => { event.preventDefault(); save.mutate(); }}>
-      <div className="space-y-2"><Label htmlFor="executor-console-url">Console URL</Label><Input id="executor-console-url" type="url" required value={url} onChange={event => setUrl(event.target.value)} /></div>
+      <div className="space-y-2"><Label htmlFor="executor-console-url">{pageText("consoleURL_7a8721")}</Label><Input id="executor-console-url" type="url" required value={url} onChange={event => setUrl(event.target.value)} /></div>
       {save.error ? <p role="alert" className="text-sm text-destructive">{describeError(save.error).body}</p> : null}
       <DialogFooter className="sm:justify-between"><Button type="button" variant="ghost" onClick={onClose} disabled={save.isPending}>{translateUi("interfaceCopy.cancel")}</Button><Button type="submit" disabled={!settled || save.isPending || !url.trim()}>{save.isPending ? pageText("saving_56a228") : pageText("save_efc007")}</Button></DialogFooter>
     </form>

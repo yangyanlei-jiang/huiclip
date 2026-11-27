@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { cn } from "@/lib/utils";
 import type { LabGroup } from "../../kit";
 import { Counts } from "./Counts";
@@ -35,7 +36,8 @@ const GRID = "grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3";
 const COUNT_LINE = cn(META_TEXT, "px-1 text-muted-foreground");
 
 export function GalleryStacks({ groups }: { groups: LabGroup[] }) {
-  if (groups.length === 0) return <p className="px-1 py-16 text-center text-sm font-medium text-foreground">No artifact stacks yet.</p>;
+  const { t: pageText } = usePageTranslation("interface");
+  if (groups.length === 0) return <p className="px-1 py-16 text-center text-sm font-medium text-foreground">{pageText("noArtifactStacksYet_6af74f")}</p>;
   const all = groups.flatMap((group) => group.artifacts);
   const total = groups.reduce((sum, group) => sum + group.count, 0);
   return (
@@ -86,8 +88,9 @@ function Day({ id, section }: { id: string; section: DaySection }) {
 const flat = () => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("days") === "off";
 
 export function GalleryStack({ group }: { group: LabGroup }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (group.artifacts.length === 0) {
-    return <p className="px-1 py-16 text-center text-sm font-medium text-foreground">No artifacts in this stack match the current filters.</p>;
+    return <p className="px-1 py-16 text-center text-sm font-medium text-foreground">{pageText("noArtifactsInThisStackMatchTheCurrent_5422bd")}</p>;
   }
   return (
     <div data-solid="gallery-stack" className="flex flex-col gap-6">

@@ -35,7 +35,7 @@ export function DesignSandboxProvider({ children }: { children: ReactNode }) {
           const next = !selected;
           setSelected(next);
           try { localStorage.setItem(storageKey, next ? "on" : "off"); } catch { /* Session-only when storage is unavailable. */ }
-        }}>Design proposals: {enabled ? pageText("on_e0049a") : pageText("off_e3de5a")}</Button>
+        }}>{pageText("designProposals_151d05") + " "}{enabled ? pageText("on_e0049a") : pageText("off_e3de5a")}</Button>
       </div> : null}
     </FlyoutAppearanceProvider>
   </DesignSandboxContext.Provider>;

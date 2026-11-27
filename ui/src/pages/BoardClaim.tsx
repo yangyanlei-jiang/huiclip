@@ -47,11 +47,11 @@ export function BoardClaimPage() {
   });
 
   if (!token || !code) {
-    return <div className="mx-auto max-w-xl py-10 text-sm text-destructive">Invalid board claim URL.</div>;
+    return <div className="mx-auto max-w-xl py-10 text-sm text-destructive">{pageText("invalidBoardClaimURL_551288")}</div>;
   }
 
   if (statusQuery.isLoading || sessionQuery.isLoading) {
-    return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">Loading claim challenge...</div>;
+    return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">{pageText("loadingClaimChallenge_e0306e")}</div>;
   }
 
   if (statusView.kind === "error") {
@@ -72,17 +72,15 @@ export function BoardClaimPage() {
 
   const status = statusQuery.data;
   if (!status) {
-    return <div className="mx-auto max-w-xl py-10 text-sm text-destructive">Claim challenge unavailable.</div>;
+    return <div className="mx-auto max-w-xl py-10 text-sm text-destructive">{pageText("claimChallengeUnavailable_d6cb14")}</div>;
   }
 
   if (status.status === "claimed") {
     return (
       <div className="mx-auto max-w-xl py-10">
         <Card className="block p-6">
-          <h1 className="text-lg font-semibold">Board ownership claimed</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            This instance is now linked to your authenticated user.
-          </p>
+          <h1 className="text-lg font-semibold">{pageText("boardOwnershipClaimed_76a09d")}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{pageText("thisInstanceIsNowLinkedToYourAuthenticated_f06b56")}</p>
           <Button asChild className="mt-4">
             <Link to="/">{translateUi("interfaceCopy.openBoard")}</Link>
           </Button>
@@ -95,10 +93,8 @@ export function BoardClaimPage() {
     return (
       <div className="mx-auto max-w-xl py-10">
         <Card className="block p-6">
-          <h1 className="text-lg font-semibold">Sign in required</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Sign in or create an account, then return to this page to claim Board ownership.
-          </p>
+          <h1 className="text-lg font-semibold">{pageText("signInRequired_934d2a")}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{pageText("signInOrCreateAnAccountThenReturn_0a81ba")}</p>
           <Button asChild className="mt-4">
             <Link to={`/auth?next=${encodeURIComponent(currentPath)}`}>{pageText("signInCreateAccount_5d2b23")}</Link>
           </Button>
@@ -110,10 +106,8 @@ export function BoardClaimPage() {
   return (
     <div className="mx-auto max-w-xl py-10">
       <Card className="block p-6">
-        <h1 className="text-xl font-semibold">Claim Board ownership</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          This will promote your user to instance admin and migrate organization ownership access from local trusted mode.
-        </p>
+        <h1 className="text-xl font-semibold">{pageText("claimBoardOwnership_8c8437")}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{pageText("thisWillPromoteYourUserToInstanceAdmin_31025a")}</p>
 
         {claimMutation.isError && ( // query-error-ok: mutation result
           <p className="mt-3 text-sm text-destructive">{describeError(claimMutation.error).body}</p>
@@ -124,7 +118,7 @@ export function BoardClaimPage() {
           onClick={() => claimMutation.mutate()}
           disabled={claimMutation.isPending}
         >
-          {claimMutation.isPending ? "Claiming…" : "Claim ownership"}
+          {claimMutation.isPending ? pageText("claiming_25b55e") : pageText("claimOwnership_ebe7e7")}
         </Button>
       </Card>
     </div>

@@ -38,7 +38,7 @@ export function GeminiLocalConfigFields({
         the ACP sub-fields below name host paths. The platform-managed
         environment owns both, so the managed-sandbox-only policy hides them.
       */}
-      {!managedSandboxOnly && <Field label={pageText("executionEngine_1f5a0b")} hint="Default uses ACP. If ACP is unavailable, the run fails with a setup error. Choose CLI explicitly to use it.">
+      {!managedSandboxOnly && <Field label={pageText("executionEngine_1f5a0b")} hint={pageText("defaultUsesACPIfACPIsUnavailableThe_b2b91a")}>
         <select
           className={inputClass}
           value={engine}
@@ -49,7 +49,7 @@ export function GeminiLocalConfigFields({
               : mark("adapterConfig", "engine", value === "auto" ? undefined : value);
           }}
         >
-          <option value="auto">Default (ACP)</option>
+          <option value="auto">{pageText("defaultACP_b0e355")}</option>
           <option value="cli">Gemini CLI</option>
           <option value="acp">ACP</option>
         </select>
@@ -58,8 +58,8 @@ export function GeminiLocalConfigFields({
         <>
           {!managedSandboxOnly && (
             <Field configSection="advanced"
-              label="ACP server command"
-              hint="Optional override for the Gemini ACP server command. Defaults to gemini --acp."
+              label={pageText("acpServerCommand_d6765f")}
+              hint={pageText("optionalOverrideForTheGeminiACPServerCommand_e7a563")}
             >
               <DraftInput
                 value={
@@ -78,7 +78,7 @@ export function GeminiLocalConfigFields({
               />
             </Field>
           )}
-          <Field configSection="runPolicy" label="ACP session mode" hint="Persistent keeps ACP session state between runs. One-shot starts fresh each run.">
+          <Field configSection="runPolicy" label={pageText("acpSessionMode_ceac16")} hint={pageText("persistentKeepsACPSessionStateBetweenRunsOne_360b5f")}>
             <select
               className={inputClass}
               value={
@@ -93,13 +93,13 @@ export function GeminiLocalConfigFields({
                   : mark("adapterConfig", "mode", value);
               }}
             >
-              <option value="persistent">Persistent</option>
-              <option value="oneshot">One-shot</option>
+              <option value="persistent">{pageText("persistent_9260ff")}</option>
+              <option value="oneshot">{pageText("oneShot_d9d60d")}</option>
             </select>
           </Field>
           <Field
-            label="ACP non-interactive permissions"
-            hint="Fallback if the ACP agent asks for input outside an interactive session."
+            label={pageText("acpNonInteractivePermissions_99ec06")}
+            hint={pageText("fallbackIfTheACPAgentAsksForInput_b707ba")}
           >
             <select
               className={inputClass}
@@ -115,14 +115,14 @@ export function GeminiLocalConfigFields({
                   : mark("adapterConfig", "nonInteractivePermissions", value);
               }}
             >
-              <option value="deny">Deny</option>
-              <option value="fail">Fail</option>
+              <option value="deny">{pageText("deny_53577b")}</option>
+              <option value="fail">{pageText("fail_2758e3")}</option>
             </select>
           </Field>
           {!managedSandboxOnly && (
             <Field
-              label="ACP state directory"
-              hint="Optional ACP session state directory. Defaults to Paperclip-managed organization/agent scoped storage."
+              label={pageText("acpStateDirectory_a828d3")}
+              hint={pageText("optionalACPSessionStateDirectoryDefaultsToPaperclip_57e956")}
             >
               <div className="flex items-center gap-2">
                 <DraftInput
@@ -145,8 +145,8 @@ export function GeminiLocalConfigFields({
             </Field>
           )}
           <Field configSection="runPolicy"
-            label="ACP warm process idle ms"
-            hint="Defaults to 0, which closes the ACP process after each run while retaining persistent session state."
+            label={pageText("acpWarmProcessIdleMs_99fe6a")}
+            hint={pageText("defaultsTo0WhichClosesTheACPProcess_5a6f61")}
           >
             {isCreate ? (
               <input

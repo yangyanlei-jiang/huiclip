@@ -1,3 +1,18 @@
+import englishActivity from "./activity/en.json";
+import chineseActivity from "./activity/zh-CN.json";
+import chineseServerErrors from "./server-errors/zh-CN.json";
+import englishAdapter from "./adapter/en.json";
+import chineseAdapter from "./adapter/zh-CN.json";
+import englishControls from "./controls/en.json";
+import chineseControls from "./controls/zh-CN.json";
+import englishOptions from "./options/en.json";
+import chineseOptions from "./options/zh-CN.json";
+import englishApps from "./apps/en.json";
+import chineseApps from "./apps/zh-CN.json";
+import englishErrors from "./errors/en.json";
+import chineseErrors from "./errors/zh-CN.json";
+import englishDynamic from "./dynamic/en.json";
+import chineseDynamic from "./dynamic/zh-CN.json";
 import englishInterface from "./interface/en.json";
 import chineseInterface from "./interface/zh-CN.json";
 import type { Resource } from "i18next";
@@ -36,8 +51,13 @@ for (const [locale, messages] of Object.entries(localeMessages)) {
 
 export const supportedLocales = Object.keys(localeMessages);
 
+const supplementalNamespaces: Resource = {
+  en: { activity: englishActivity, adapter: englishAdapter, controls: englishControls, interface: englishInterface, errors: englishErrors, dynamic: englishDynamic, apps: englishApps, options: englishOptions },
+  "zh-CN": { activity: chineseActivity, serverErrors: chineseServerErrors, adapter: chineseAdapter, controls: chineseControls, interface: chineseInterface, errors: chineseErrors, dynamic: chineseDynamic, apps: chineseApps, options: chineseOptions },
+};
+
 export const i18nextResources: Resource = Object.fromEntries(
-  Object.entries(localeMessages).map(([locale, messages]) => [locale, { translation: messages, ...(locale === "en" ? { interface: englishInterface } : locale === "zh-CN" ? { interface: chineseInterface } : {}) }]),
+  Object.entries(localeMessages).map(([locale, messages]) => [locale, { translation: messages, ...supplementalNamespaces[locale] }]),
 ) as Resource;
 
 export type SupportedLocale = keyof typeof localeMessages;

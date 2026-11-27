@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import {
@@ -253,7 +254,7 @@ export function SkillFolderRail({
   return (
     <div className="relative hidden h-full shrink-0 md:flex" style={{ width: `${width}px` }}>
       <nav
-        aria-label="Skill folders"
+        aria-label={pageText("skillFolders_ff2cc5")}
         className="flex min-w-0 flex-1 flex-col overflow-y-auto border-r border-border pr-3"
       >
       <div className="mb-2 flex items-center justify-between gap-2 pt-0.5">
@@ -273,7 +274,7 @@ export function SkillFolderRail({
         <div className="space-y-0.5">
           <VirtualRow
             active={selection === "all"}
-            label="All skills"
+            label={pageText("allSkills_884c05")}
             count={allCount}
             icon={<Layers className="h-3.5 w-3.5" />}
             onSelect={() => onSelect("all")}
@@ -304,7 +305,7 @@ export function SkillFolderRail({
           ) : onEnsureMyFolder ? (
             <VirtualRow
               active={false}
-              label="My Skills"
+              label={pageText("mySkills_ef5403")}
               count={0}
               icon={<User className="h-3.5 w-3.5" />}
               muted
@@ -337,7 +338,7 @@ export function SkillFolderRail({
               />
             ))
           ) : (
-            <div className="px-2 py-1 text-xs text-muted-foreground">No organization folders yet.</div>
+            <div className="px-2 py-1 text-xs text-muted-foreground">{pageText("noOrganizationFoldersYet_b4ac5f")}</div>
           )}
 
           {/* Projects — auto-managed, read-only structure */}
@@ -398,9 +399,7 @@ export function SkillFolderRail({
             />
           ) : null}
 
-          <div className="px-2 pb-1 pt-3 text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
-            System
-          </div>
+          <div className="px-2 pb-1 pt-3 text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">{pageText("system_bc0792")}</div>
           <VirtualRow
             active={selection === "unfiled"}
             label={translateUi("interfaceCopy.unfiled")}
@@ -415,9 +414,7 @@ export function SkillFolderRail({
       {tags.length > 0 ? (
         <div className="mt-4 border-t border-border pt-3">
           <div className="mb-1.5 flex items-center gap-1.5 px-2 text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
-            <Hash className="h-3 w-3" />
-            Tags
-          </div>
+            <Hash className="h-3 w-3" />{pageText("tags_848eed")}</div>
           <div className="flex flex-wrap gap-1.5 px-1">
             {activeTag ? (
               <button
@@ -448,7 +445,7 @@ export function SkillFolderRail({
       </nav>
       <div
         role="separator"
-        aria-label="Resize skill folders"
+        aria-label={pageText("resizeSkillFolders_3919db")}
         aria-orientation="vertical"
         aria-valuemin={MIN_FOLDER_RAIL_WIDTH}
         aria-valuemax={MAX_FOLDER_RAIL_WIDTH}
@@ -480,7 +477,7 @@ function RailHeading({ label, onCreate }: { label: string; onCreate: () => void 
       <button
         type="button"
         onClick={onCreate}
-        title={`New ${label.toLowerCase()} folder`}
+        title={translateDynamic("dynamic:newFolder", { value1: label.toLowerCase() })}
         className="opacity-0 transition-opacity group-hover/heading:opacity-100"
       >
         <Plus className="h-3 w-3 text-muted-foreground" />
@@ -585,7 +582,7 @@ function TreeBranch({
       >
         <button
           type="button"
-          aria-label={isOpen ? "Collapse folder" : "Expand folder"}
+          aria-label={isOpen ? pageText("collapseFolder_49e70c") : pageText("expandFolder_4988a0")}
           className={cn(
             "flex h-6 w-4 items-center justify-center text-muted-foreground",
             children.length === 0 && "invisible",
@@ -634,7 +631,7 @@ function TreeBranch({
                 variant="ghost"
                 size="icon-sm"
                 className="h-6 w-6 opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100"
-                aria-label={`Folder actions for ${label}`}
+                aria-label={translateDynamic("dynamic:folderActionsFor", { value1: label })}
               >
                 <MoreHorizontal className="h-3.5 w-3.5" />
               </Button>
@@ -642,17 +639,14 @@ function TreeBranch({
             <DropdownMenuContent align="end">
               {canNest ? (
                 <DropdownMenuItem onSelect={() => onCreateFolder(folder.id)}>
-                  <FolderPlus className="h-3.5 w-3.5" />
-                  New subfolder
-                </DropdownMenuItem>
+                  <FolderPlus className="h-3.5 w-3.5" />{pageText("newSubfolder_d3135a")}</DropdownMenuItem>
               ) : null}
               {editable ? (
                 <>
                   <DropdownMenuItem onSelect={() => onStartRename(folder)}>{pageText("rename_d3f4cb")}</DropdownMenuItem>
-                  <DropdownMenuItem onSelect={() => onEditFolder(folder)}>Edit color</DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => onEditFolder(folder)}>{pageText("editColor_ea33c5")}</DropdownMenuItem>
                   <DropdownMenuItem onSelect={() => onMoveFolder(folder, isInMySkills ? "company" : "my")}>
-                    <MoveRight className="h-3.5 w-3.5" />
-                    Move to {isInMySkills ? pageText("organization_519255") : "My Skills"}
+                    <MoveRight className="h-3.5 w-3.5" />{pageText("moveTo_349f80") + " "}{isInMySkills ? pageText("organization_519255") : pageText("mySkills_ef5403")}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem variant="destructive" onSelect={() => onDeleteFolder(folder)}>
@@ -707,6 +701,7 @@ export function FolderBreadcrumb({
   selection: FolderSelection;
   onSelect: (selection: FolderSelection) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const model = useMemo(() => treeFromResult(result), [result]);
   const trail = selection === "all" || selection === "unfiled"
@@ -714,7 +709,7 @@ export function FolderBreadcrumb({
     : folderBreadcrumbTrail(model, selection);
 
   return (
-    <nav aria-label="Folder path" className="flex flex-wrap items-center gap-1 text-sm">
+    <nav aria-label={pageText("folderPath_cd6605")} className="flex flex-wrap items-center gap-1 text-sm">
       <button
         type="button"
         onClick={() => onSelect("all")}
@@ -723,9 +718,7 @@ export function FolderBreadcrumb({
           selection === "all" ? "font-medium text-foreground" : "text-muted-foreground",
         )}
       >
-        <Home className="h-3.5 w-3.5" />
-        All skills
-      </button>
+        <Home className="h-3.5 w-3.5" />{pageText("allSkills_884c05")}</button>
       {selection === "unfiled" ? (
         <>
           <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/60" />
@@ -913,7 +906,7 @@ export function MoveToFolderDialog({
           {nestable ? (
             <button
               type="button"
-              title="New folder inside…"
+              title={pageText("newFolderInside_2d5397")}
               className="opacity-0 transition-opacity group-hover:opacity-100"
               onClick={(event) => {
                 event.stopPropagation();
@@ -991,20 +984,17 @@ export function MoveToFolderDialog({
                 }}
                 className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent/40 hover:text-foreground"
               >
-                <Plus className="h-3.5 w-3.5" />
-                New top-level folder…
-              </button>
+                <Plus className="h-3.5 w-3.5" />{pageText("newTopLevelFolder_d361e2")}</button>
             )}
           </div>
         </div>
 
         <div className="min-h-5 text-xs text-muted-foreground">
           {previewPath ? (
-            <span>
-              Moving to <span className="font-mono text-foreground">{previewPath}</span>
+            <span>{pageText("movingTo_76a288") + " "}<span className="font-mono text-foreground">{previewPath}</span>
             </span>
           ) : (
-            <span>Pick a destination folder.</span>
+            <span>{pageText("pickADestinationFolder_2e14e9")}</span>
           )}
         </div>
 
@@ -1014,7 +1004,7 @@ export function MoveToFolderDialog({
             disabled={pending || chosen === undefined || chosen === currentFolderId}
             onClick={() => chosen !== undefined && onMove(chosen)}
           >
-            {pending ? "Moving…" : "Move here"}
+            {pending ? pageText("moving_09701b") : pageText("moveHere_d6f5b7")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -1050,7 +1040,7 @@ function InlineNewFolder({
       <Input
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        placeholder="Folder name"
+        placeholder={pageText("folderName_b2ce02")}
         autoFocus
         className="h-7 flex-1 text-sm"
         onKeyDown={(event) => {

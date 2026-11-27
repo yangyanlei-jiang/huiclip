@@ -53,38 +53,38 @@ export function DotRunnerConnection({ companyId, agentId, bindingId, onBinding }
   useEffect(() => {
     if (existingBindingId && existingBindingId !== bindingId && !revoke.isPending) onBinding(existingBindingId);
   }, [existingBindingId, bindingId, onBinding, revoke.isPending]);
-  if (!agentId) return <p className="text-sm text-muted-foreground">Save the agent, then return here to pair your Dot.</p>;
+  if (!agentId) return <p className="text-sm text-muted-foreground">{pageText("saveTheAgentThenReturnHereToPair_34c9a5")}</p>;
   const mutationError = pair.error ?? test.error ?? revoke.error;
   const b = state.data?.binding;
   const setupPrompt = pairing && state.data?.resourceUrl && companyId && agentId
     ? buildDotSetupPrompt({ companyId, agentId, resourceUrl: state.data.resourceUrl, ...pairing })
     : "";
   return <div className="space-y-3">
-    <p className="text-sm text-muted-foreground">Dot manages its model and external tools. Paperclip supplies task coordination, people, assigned skills, and connected app tools. Dot can start a task directly from its conversation. Enable Read task attachments below to send assigned task file contents to OpenAI. Enable workspace files and commands for work in the assigned workspace. Provider usage and cost are unavailable; stopping a Paperclip run revokes access without confirming an external stop.</p>
-    {state.data && !state.data.enabled && <p className="text-sm text-muted-foreground">Enable OpenAI Dot and Assistant connections (MCP) in experimental settings.</p>}
-    {state.data?.resourceUrl && <p className="text-sm break-all">Private plugin MCP URL: <code>{state.data.resourceUrl}</code></p>}
-    {b && <p className="text-sm">Connection: {b.status}. Event subscription: {b.subscriptionVerified ? "verified" : pageText("required_1a77d4")}.</p>}
-    {b?.assignment && <p className="text-sm">Assignment: {b.assignment.status === "offered" ? "waiting for Dot to accept" : "accepted by Dot"}.</p>}
-    {b?.assignment?.attentionRequired && <p className="text-sm text-destructive" role="alert">Dot has not reported useful activity for 15 minutes. Inspect the Dot before assigning replacement work; Paperclip cannot confirm its external stop.</p>}
+    <p className="text-sm text-muted-foreground">{pageText("dotManagesItsModelAndExternalToolsPaperclip_64ed9e")}</p>
+    {state.data && !state.data.enabled && <p className="text-sm text-muted-foreground">{pageText("enableOpenAIDotAndAssistantConnectionsMCPIn_b4d6bb")}</p>}
+    {state.data?.resourceUrl && <p className="text-sm break-all">{pageText("privatePluginMCPURL_3c4081") + " "}<code>{state.data.resourceUrl}</code></p>}
+    {b && <p className="text-sm">{pageText("connection_eeb478") + " "}{b.status}{pageText("eventSubscription_bd0d85") + " "}{b.subscriptionVerified ? pageText("verified_ec734b") : pageText("required_1a77d4")}.</p>}
+    {b?.assignment && <p className="text-sm">{pageText("assignment_fb694c") + " "}{b.assignment.status === "offered" ? pageText("waitingForDotToAccept_f750c4") : pageText("acceptedByDot_6290c2")}.</p>}
+    {b?.assignment?.attentionRequired && <p className="text-sm text-destructive" role="alert">{pageText("dotHasNotReportedUsefulActivityFor15_f658ae")}</p>}
     {pairing && setupPrompt && b?.status === "pairing" && <div className="space-y-2">
       <AgentSetupPrompt
         prompt={setupPrompt}
-        label="Set up with Dot"
+        label={pageText("setUpWithDot_e6ac09")}
         agent={{ name: "Dot", src: "/brands/adapters/openai-dot.svg" }}
-        title="Connect your Dot"
-        description="Paste into your Dot to connect this agent."
+        title={pageText("connectYourDot_d7cfc6")}
+        description={pageText("pasteIntoYourDotToConnectThisAgent_858acd")}
         side="bottom"
       />
-      <p className="text-xs text-muted-foreground">Setup prompt expires {new Date(pairing.expiresAt).toLocaleTimeString()}.</p>
+      <p className="text-xs text-muted-foreground">{pageText("setupPromptExpires_348a0f") + " "}{new Date(pairing.expiresAt).toLocaleTimeString()}.</p>
     </div>}
-    {!pairing && b?.status === "pairing" && <p className="text-sm text-muted-foreground">Revoke the pending connection and pair again to generate a fresh setup prompt.</p>}
+    {!pairing && b?.status === "pairing" && <p className="text-sm text-muted-foreground">{pageText("revokeThePendingConnectionAndPairAgainTo_5b9e17")}</p>}
     <div className="flex flex-wrap items-center gap-2">
-      {!b && <Button type="button" variant="outline" disabled={!state.data?.enabled || !state.data?.resourceUrl || pair.isPending} onClick={() => pair.mutate()}>Pair Dot</Button>}
-      {b?.subscriptionVerified && <Button type="button" variant="outline" disabled={test.isPending || b.hasPendingChallenge} onClick={() => test.mutate()}>Test event delivery</Button>}
+      {!b && <Button type="button" variant="outline" disabled={!state.data?.enabled || !state.data?.resourceUrl || pair.isPending} onClick={() => pair.mutate()}>{pageText("pairDot_294790")}</Button>}
+      {b?.subscriptionVerified && <Button type="button" variant="outline" disabled={test.isPending || b.hasPendingChallenge} onClick={() => test.mutate()}>{pageText("testEventDelivery_823e32")}</Button>}
       <Button type="button" variant="outline" onClick={() => { void state.refetch(); }}>{pageText("refreshConnection_e26021")}</Button>
-      {b && <Button type="button" variant="outline" disabled={revoke.isPending} onClick={() => revoke.mutate()}>Revoke connection</Button>}
+      {b && <Button type="button" variant="outline" disabled={revoke.isPending} onClick={() => revoke.mutate()}>{pageText("revokeConnection_d6f480")}</Button>}
     </div>
-    {b?.hasPendingChallenge && <p className="text-sm text-muted-foreground">Waiting for Dot to read and confirm the harmless mailbox challenge.</p>}
+    {b?.hasPendingChallenge && <p className="text-sm text-muted-foreground">{pageText("waitingForDotToReadAndConfirmThe_edb996")}</p>}
     {stateView.kind === "error" && (
       <QueryErrorState
         size="inline"

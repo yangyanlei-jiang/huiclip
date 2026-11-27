@@ -1,3 +1,5 @@
+import { t as plainText } from "@/i18n";
+import { t as translateDynamic } from "../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { memo, useState, type KeyboardEvent, type ReactNode } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -23,7 +25,7 @@ import { describeAttentionResolverAudience, type InteractionAudienceDescription 
 import { interactionResolutionErrorMessage } from "../lib/interaction-resolution-error";
 import {
   attentionDetailImages,
-  attentionDetailLine,
+  attentionDetailLine, attentionReason,
   attentionImageUrl,
   attentionStatus,
   attentionTaskRef,
@@ -133,7 +135,7 @@ export const AttentionQueueRow = memo(function AttentionQueueRow({
   const inline = !isHidden && isInlineResolvable(item);
   const href = item.subject.href;
   const snoozedUntil = item.dismissal?.kind === "snooze" ? item.dismissal.snoozedUntil : null;
-  const detailLine = attentionDetailLine(item) ?? item.whyNow;
+  const detailLine = attentionDetailLine(item) ?? attentionReason(item);
   const images = attentionDetailImages(item);
   const hasImages = images.length > 0;
   // The issue (or source) this row points at — used as the target for the
@@ -180,12 +182,12 @@ export const AttentionQueueRow = memo(function AttentionQueueRow({
     <button
       type="button"
       className="inline-flex shrink-0 items-center gap-1 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground focus-visible:ring-ring focus-visible:ring-(length:--rad-3) focus-visible:outline-none"
-      aria-label={expanded ? "Collapse decision" : "Expand decision"}
+      aria-label={expanded ? plainText("interface:collapseDecision_5a0d44") : plainText("interface:expandDecision_ad3b91")}
       aria-expanded={expanded}
       onClick={activate}
     >
       {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-      {expanded ? "See less" : "See more"}
+      {expanded ? plainText("interface:seeLess_47c77b") : plainText("interface:seeMore_c510d6")}
     </button>
   ) : null;
 
@@ -215,18 +217,14 @@ export const AttentionQueueRow = memo(function AttentionQueueRow({
 
           {showOpen && (
             <Button asChild variant="default" size="xs" className={ACTION_BTN}>
-              <Link to={href!}>
-                Open
-                <ExternalLink className="h-3 w-3" />
+              <Link to={href!}>{plainText("interface:open_cf9b77")}<ExternalLink className="h-3 w-3" />
               </Link>
             </Button>
           )}
 
           {showRestore && (
             <Button type="button" variant="outline" size="xs" className={ACTION_BTN} onClick={() => onRestore(item)}>
-              <RotateCcw className="h-3 w-3" />
-              Restore
-            </Button>
+              <RotateCcw className="h-3 w-3" />{plainText("interface:restore_3cbe6d")}</Button>
           )}
         </div>
       </div>
@@ -283,7 +281,7 @@ export const AttentionQueueRow = memo(function AttentionQueueRow({
                 <CalendarClock className="h-3 w-3" />
                 {decideByLabel(item.decideBy)}
                 {decideByProvenance(item) && (
-                  <span className="text-muted-foreground/80">· set by {decideByProvenance(item)}</span>
+                  <span className="text-muted-foreground/80">{plainText("interface:setBy_90a144") + " "}{decideByProvenance(item)}</span>
                 )}
               </span>
             </>
@@ -294,9 +292,8 @@ export const AttentionQueueRow = memo(function AttentionQueueRow({
           {isHidden && snoozedUntil ? (
             <span
               className="text-(length:--text-nano) text-muted-foreground"
-              title={`Reappears ${new Date(snoozedUntil).toLocaleString()}`}
-            >
-              Reappears {reappearLabel(snoozedUntil)}
+              title={translateDynamic("dynamic:reappears", { value1: new Date(snoozedUntil).toLocaleString() })}
+            >{plainText("interface:reappears_3308f1") + " "}{reappearLabel(snoozedUntil)}
             </span>
           ) : (
             <span className="text-(length:--text-nano) text-muted-foreground">{relativeTime(item.activityAt)}</span>
@@ -308,7 +305,7 @@ export const AttentionQueueRow = memo(function AttentionQueueRow({
                   variant="ghost"
                   size="icon-xs"
                   className="text-muted-foreground"
-                  aria-label="Row actions"
+                  aria-label={plainText("interface:rowActions_961e93")}
                 >
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
@@ -316,14 +313,12 @@ export const AttentionQueueRow = memo(function AttentionQueueRow({
               <DropdownMenuContent align="end">
                 {onSnooze && <SnoozeSubmenu onSnooze={(iso) => onSnooze(item, iso)} />}
                 <DropdownMenuItem onClick={() => onDismiss(item)}>
-                  <X className="h-4 w-4" />
-                  Dismiss
-                </DropdownMenuItem>
+                  <X className="h-4 w-4" />{plainText("interface:dismiss_70afe9")}</DropdownMenuItem>
                 {href && (
                   <>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link to={href}>Open source</Link>
+                      <Link to={href}>{plainText("interface:openSource_6cc336")}</Link>
                     </DropdownMenuItem>
                   </>
                 )}
@@ -485,6 +480,7 @@ function CompactDecisionActions({
   audience: InteractionAudienceDescription | null;
   onOpen: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const actions = collectCompactActions(item);
@@ -535,7 +531,7 @@ function CompactDecisionActions({
   if (actions.length === 0) return null;
 
   return (
-    <div className="flex w-full flex-wrap items-center gap-2 @xl:w-auto @xl:justify-end @xl:gap-1" aria-label="Decision actions">
+    <div className="flex w-full flex-wrap items-center gap-2 @xl:w-auto @xl:justify-end @xl:gap-1" aria-label={pageText("decisionActions_d292fb")}>
       {actions.map(({ action, id, label, description }) => (
         <Button
           key={id}
@@ -683,9 +679,7 @@ function SnoozeSubmenu({ onSnooze }: { onSnooze: (snoozedUntil: string) => void 
   return (
     <DropdownMenuSub>
       <DropdownMenuSubTrigger>
-        <AlarmClock className="h-4 w-4" />
-        Snooze
-      </DropdownMenuSubTrigger>
+        <AlarmClock className="h-4 w-4" />{pageText("snooze_e2b516")}</DropdownMenuSubTrigger>
       <DropdownMenuSubContent>
         {SNOOZE_PRESETS.map((preset) => (
           <DropdownMenuItem key={preset.label} onClick={() => onSnooze(preset.resolve())}>
@@ -707,9 +701,7 @@ function SnoozeSubmenu({ onSnooze }: { onSnooze: (snoozedUntil: string) => void 
             onChange={(e) => setCustomValue(e.target.value)}
             className="w-full rounded-sm border border-border bg-background px-2 py-1 text-xs"
           />
-          <Button type="button" size="xs" disabled={!customValue} onClick={applyCustom}>
-            Snooze until…
-          </Button>
+          <Button type="button" size="xs" disabled={!customValue} onClick={applyCustom}>{pageText("snoozeUntil_39efcb")}</Button>
         </div>
       </DropdownMenuSubContent>
     </DropdownMenuSub>
@@ -761,6 +753,7 @@ function InlineResolver({
   userLabelMap?: ReadonlyMap<string, string> | null;
   toggle: ReactNode;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (item.sourceKind === "decision") {
     return (
       <DecisionResolver
@@ -775,7 +768,7 @@ function InlineResolver({
   if (item.sourceKind === "issue_thread_interaction") {
     const issueId = (item.subject.metadata?.issueId as string | undefined) ?? item.relatedIssue?.id;
     if (!issueId) {
-      return <p className="text-xs text-muted-foreground">Missing issue reference for this decision.</p>;
+      return <p className="text-xs text-muted-foreground">{pageText("missingIssueReferenceForThisDecision_9f434d")}</p>;
     }
     return (
       <>
@@ -855,7 +848,7 @@ function ApprovalResolver({ item, companyId, toggle }: { item: AttentionItem; co
       <Textarea
         value={note}
         onChange={(e) => setNote(e.target.value)}
-        placeholder="Optional decision note…"
+        placeholder={pageText("optionalDecisionNote_4a188d")}
         className="min-h-16 text-sm"
       />
       <ResolverFooter toggle={toggle}>

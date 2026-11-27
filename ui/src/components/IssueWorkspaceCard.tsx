@@ -402,32 +402,30 @@ export function IssueWorkspaceCard({
           )}
           {workspace?.repoUrl && (
             <div className="flex items-center gap-1.5 text-muted-foreground">
-              <span className="text-(length:--text-micro)">Repo:</span>
+              <span className="text-(length:--text-micro)">{pageText("repo_468d55")}</span>
               <CopyableInline value={workspace.repoUrl} mono />
             </div>
           )}
           {environmentsEnabled && currentEnvironmentId && (
-            <div className="text-muted-foreground" style={{ overflowWrap: "anywhere" }}>
-              Environment: <span className="text-foreground">{currentEnvironment?.name ?? currentEnvironmentId}</span>
+            <div className="text-muted-foreground" style={{ overflowWrap: "anywhere" }}>{pageText("environment_f3d7eb") + " "}<span className="text-foreground">{currentEnvironment?.name ?? currentEnvironmentId}</span>
               {currentSelection === "reuse_existing" && currentReusableEnvironmentId === currentEnvironmentId
-                ? " · reused workspace"
+                ? " " + pageText("reusedWorkspace_7dd7e4")
                 : !issue.executionWorkspaceSettings?.environmentId && projectEnvironmentId === currentEnvironmentId
-                ? " · project default"
+                ? " " + pageText("projectDefault_5cf8c7")
                 : null}
             </div>
           )}
           {!workspace && (
             <div className="text-muted-foreground">
               {currentSelection === "isolated_workspace"
-                ? "A fresh isolated workspace will be created when this task runs."
+                ? pageText("aFreshIsolatedWorkspaceWillBeCreatedWhen_bed78f")
                 : currentSelection === "reuse_existing"
-                  ? "This task will reuse an existing workspace when it runs."
-                  : "This task will use the project default workspace configuration when it runs."}
+                  ? pageText("thisTaskWillReuseAnExistingWorkspaceWhen_27808f")
+                  : pageText("thisTaskWillUseTheProjectDefaultWorkspace_e2b9dd")}
             </div>
           )}
           {currentSelection === "reuse_existing" && selectedReusableExecutionWorkspace && (
-            <div className="text-muted-foreground" style={{ overflowWrap: "anywhere" }}>
-              Reusing:{" "}
+            <div className="text-muted-foreground" style={{ overflowWrap: "anywhere" }}>{pageText("reusing_0e6b46")}{" "}
               {selectedReusableWorkspaceLink ? (
                 <Link
                   to={selectedReusableWorkspaceLink}
@@ -445,9 +443,7 @@ export function IssueWorkspaceCard({
               <Link
                 to={currentWorkspaceLink}
                 className="text-(length:--text-micro) text-muted-foreground hover:text-foreground hover:underline"
-              >
-                View workspace details →
-              </Link>
+              >{pageText("viewWorkspaceDetails_a844e3")}</Link>
             </div>
           )}
         </div>
@@ -472,7 +468,7 @@ export function IssueWorkspaceCard({
             {EXECUTION_WORKSPACE_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.value === "reuse_existing" && configuredReusableWorkspace?.mode === "isolated_workspace"
-                  ? "Existing isolated workspace"
+                  ? pageText("existingIsolatedWorkspace_7c51ac")
                   : option.label}
               </option>
             ))}
@@ -491,8 +487,7 @@ export function IssueWorkspaceCard({
           {/* Current workspace summary when editing */}
           {workspace && (
             <div className="text-(length:--text-micro) text-muted-foreground space-y-0.5 pt-1 border-t border-border/50">
-              <div style={{ overflowWrap: "anywhere" }}>
-                Current:{" "}
+              <div style={{ overflowWrap: "anywhere" }}>{pageText("current_19889c")}{" "}
                 {currentWorkspaceLink ? (
                   <Link
                     to={currentWorkspaceLink}
@@ -519,17 +514,13 @@ export function IssueWorkspaceCard({
             onClick={onBrowseFiles}
             className="inline-flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground"
           >
-            <FolderSearch className="h-3.5 w-3.5 shrink-0" />
-            Browse files…
-          </button>
+            <FolderSearch className="h-3.5 w-3.5 shrink-0" />{pageText("browseFiles_af7c13")}</button>
           <button
             type="button"
             onClick={onOpenFileByPath ?? onBrowseFiles}
             className="inline-flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground"
           >
-            <FileSearch className="h-3.5 w-3.5 shrink-0" />
-            Open file by path…
-          </button>
+            <FileSearch className="h-3.5 w-3.5 shrink-0" />{pageText("openFileByPath_3783fc")}</button>
         </div>
       )}
     </div>

@@ -1,3 +1,5 @@
+import { optionLabel } from "@/i18n/option-label";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type { ReactNode } from "react";
 import { Link } from "@/lib/router";
 import { useStreamlinedUiEnabled } from "@/hooks/useStreamlinedUiEnabled";
@@ -11,10 +13,11 @@ const views = [
 
 /** Route navigation with the canonical tab appearance. Sources stays in the actions menu. */
 export function SkillsNavigationTabs({ activeView }: { activeView: SkillsNavigationView }) {
-  return <nav aria-label="Skills views" data-canonical-tabs="standard" className="canonical-tab-list">
+  const { t: pageText } = usePageTranslation("interface");
+  return <nav aria-label={pageText("skillsViews_cc15c3")} data-canonical-tabs="standard" className="canonical-tab-list">
     {views.map(view => <Link key={view.value} to={SKILLS_NAVIGATION_HREFS[view.value]}
       className="canonical-tab" data-state={activeView === view.value ? "active" : "inactive"}
-      aria-current={activeView === view.value ? "page" : undefined}>{view.label}</Link>)}
+      aria-current={activeView === view.value ? "page" : undefined}>{optionLabel(view.label)}</Link>)}
   </nav>;
 }
 

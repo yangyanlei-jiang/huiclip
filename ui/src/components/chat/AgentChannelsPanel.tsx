@@ -41,28 +41,24 @@ export function AgentChannelsPanel({
     <section className="max-w-3xl space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-lg font-semibold">Channels</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Chat and email identities connected to this agent.
-          </p>
+          <h2 className="text-lg font-semibold">{pageText("channels_18e03e")}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{pageText("chatAndEmailIdentitiesConnectedToThisAgent_ae152f")}</p>
         </div>
         <Button asChild size="sm">
           <Link to={`/apps?chatAgentId=${encodeURIComponent(agentId)}`}>
-            <MessageSquarePlus />
-            Connect a channel
-          </Link>
+            <MessageSquarePlus />{pageText("connectAChannel_785f2f")}</Link>
         </Button>
       </div>
       {query.isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading channels…</p>
+        <p className="text-sm text-muted-foreground">{pageText("loadingChannels_293b4e")}</p>
       ) : endpoints.length === 0 ? (
         <div className="rounded-lg border border-dashed border-border p-5">
-          <p className="text-sm font-medium">No channels connected</p>
+          <p className="text-sm font-medium">{pageText("noChannelsConnected_63950e")}</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {enabled || githubEnabled ? "Connect an agent identity from Connectors." : "Connect AgentMail from Connectors."}
+            {enabled || githubEnabled ? pageText("connectAnAgentIdentityFromConnectors_59d3a7") : pageText("connectAgentMailFromConnectors_068f8c")}
           </p>
           <Button asChild className="mt-3" variant="outline" size="sm">
-            <Link to="/apps">Open Connectors</Link>
+            <Link to="/apps">{pageText("openConnectors_869ed0")}</Link>
           </Button>
         </div>
       ) : (
@@ -79,7 +75,7 @@ export function AgentChannelsPanel({
                 <p className="truncate text-xs text-muted-foreground">
                   {endpoint.botLabel ??
                     endpoint.providerAccountLabel ??
-                    "Provider identity"}
+                    pageText("providerIdentity_f7d8e5")}
                 </p>
               </div>
               <Badge variant="outline">{endpoint.status.replace(/[_-]/g, " ")}</Badge>

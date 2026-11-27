@@ -134,7 +134,7 @@ export function CompanySettingsSidebar() {
               />
             ))}
           {showPage("company.invites") && (
-            <SidebarNavItem to="/company/settings/invites" label="Invites" icon={MailPlus} end />
+            <SidebarNavItem to="/company/settings/invites" label={pageText("invites_ed2610")} icon={MailPlus} end />
           )}
           {showPage("company.secrets") && (
             <SidebarNavItem to="/company/settings/secrets" label={pageText("secrets_1e3732")} icon={KeyRound} end />
@@ -159,16 +159,16 @@ export function CompanySettingsSidebar() {
           {showPage("instance.heartbeats") && (
             <SidebarNavItem
               to={`${INSTANCE_SETTINGS_PATH_PREFIX}/heartbeats`}
-              label="Heartbeats"
+              label={pageText("heartbeats_33ed2d")}
               icon={Clock3}
               end
             />
           )}
           {showPage("company.export") && (
-            <SidebarNavItem to="/company/export" label="Export" icon={Download} />
+            <SidebarNavItem to="/company/export" label={pageText("export_f3e4fa")} icon={Download} />
           )}
           {!isCloud && showPage("company.import") && (
-            <SidebarNavItem to="/company/import" label="Import" icon={Upload} end />
+            <SidebarNavItem to="/company/import" label={pageText("import_d6fbc9")} icon={Upload} end />
           )}
           {showPage("instance.experimental") && (
             <SidebarNavItem

@@ -1,3 +1,5 @@
+import { t as interfaceNotice } from "@/i18n";
+import { t as translateDynamic } from "../../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { AGGREGATOR_NAMES, aggregatorManagementUrl, isAppAggregator, type AggregatorAppSnapshot, type AggregatorAppsResponse } from "@paperclipai/shared/aggregator-apps";
@@ -416,7 +418,7 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
     useState<ConnectionRemovalTarget | null>(null);
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Connectors" }]);
+    setBreadcrumbs([{ label: interfaceNotice("interface:connectors_4b1e95") }]);
     return () => setBreadcrumbs([]);
   }, [setBreadcrumbs]);
 
@@ -555,9 +557,9 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
         queryKey: queryKeys.apps.attention(selectedCompanyId!),
       });
       pushToast({
-        title: "Connection removed",
+        title: interfaceNotice("interface:connectionRemoved_144e7d"),
         body:
-          target.pool ? "The connections in the pool are kept." : target.kind === "chat"
+          target.pool ? interfaceNotice("interface:theConnectionsInThePoolAreKept_d91e92") : target.kind === "chat"
             ? `${target.providerName} is disconnected. Existing Paperclip tasks remain available.`
             : target.remainingConnectionCount > 0
             ? `${target.providerName} still has ${target.remainingConnectionCount} active ${target.remainingConnectionCount === 1 ? "connection" : "connections"} available to agents.`
@@ -568,7 +570,7 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
     },
     onError: (error) =>
       pushToast({
-        title: "Couldn't remove the connection",
+        title: interfaceNotice("interface:couldnTRemoveTheConnection_e04a4a"),
         body: describeError(error).body,
         tone: "error",
       }),
@@ -583,7 +585,7 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
       // it at submission time: concurrent edits must invalidate this consent.
       setConnectionToRemove({ ...target, accountName: pool.name, poolRevision: pool.revision });
     } catch (error) {
-      pushToast({ title: "Couldn't open the connection pool", body: describeError(error).body, tone: "error" });
+      pushToast({ title: interfaceNotice("interface:couldnTOpenTheConnectionPool_c02a81"), body: describeError(error).body, tone: "error" });
     }
   }
 
@@ -697,7 +699,7 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
         key: `native-chat:${item.slug}`,
         slug: item.slug,
         name: item.name,
-        description: item.description,
+        description: pageText(`apps:nativeChat.${item.slug}`, { defaultValue: item.description }),
         brandKey: item.slug,
         entry: null,
         applications: [],
@@ -771,7 +773,7 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
         name: application.name,
         description:
           application.description ??
-          "A custom connector configured for this organization.",
+          pageText("apps:card.customDescription"),
         brandKey: applicationSlug ?? application.name,
         entry: null,
         applications: [application],
@@ -800,7 +802,7 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
           key: `chat:${endpoint.provider}`,
           slug: endpoint.provider,
           name: names[endpoint.provider],
-          description: `Chat with agents through ${names[endpoint.provider]}.`,
+          description: pageText("apps:chatVia", { name: names[endpoint.provider] }),
           brandKey: endpoint.provider,
           entry: null,
           applications: [],
@@ -910,6 +912,7 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
     managedCatalog,
     managedCatalogIdentities,
     upstreamAppsBySlug,
+    pageText,
   ]);
 
   const trimmed = query.trim().toLocaleLowerCase();
@@ -984,9 +987,7 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
 
   if (!selectedCompanyId) {
     return (
-      <div className="p-6 text-sm text-muted-foreground">
-        Select an organization to manage connectors.
-      </div>
+      <div className="p-6 text-sm text-muted-foreground">{pageText("selectAnOrganizationToManageConnectors_345f4d")}</div>
     );
   }
 
@@ -1022,25 +1023,25 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
         />
       ) : null}
 
-      {refreshAggregator.error ? <p role="alert" className="text-sm text-destructive">Couldn’t refresh the gateway. Last known accounts are shown.</p> : null}
+      {refreshAggregator.error ? <p role="alert" className="text-sm text-destructive">{pageText("couldnTRefreshTheGatewayLastKnownAccounts_7d52c0")}</p> : null}
       {aiDefaultsView.kind === "error" && <QueryErrorState size="inline" error={aiDefaultsView.error} action="load AI account defaults"
         onRetry={aiDefaultsView.retry} retrying={aiDefaultsView.isFetching} />}
       {aiDefaults.error && aiDefaults.failedProvider && <AiDefaultError provider={AI_PROVIDERS[aiDefaults.failedProvider].name}
         pending={aiDefaults.pending(aiDefaults.failedProvider)} onRetry={aiDefaults.retry} />}
 
       {loading ? (
-        <div className="space-y-3" aria-label="Loading connectors">
+        <div className="space-y-3" aria-label={pageText("loadingConnectors_3077fc")}>
           {Array.from({ length: 6 }).map((_, index) => (
             <Skeleton key={index} className="h-24 w-full rounded-xl" />
           ))}
         </div>
       ) : nothingMatches ? (
         <div className="flex flex-col items-start gap-3 rounded-xl border border-dashed border-border bg-card px-4 py-6 text-sm text-muted-foreground">
-          <p className="flex items-center gap-2"><Link2 className="h-4 w-4" />No connectors match “{query.trim()}”.</p>
+          <p className="flex items-center gap-2"><Link2 className="h-4 w-4" />{pageText("noConnectorsMatch_09d3e5")}{query.trim()}”.</p>
           <Button variant="outline" size="sm" onClick={() => changeQuery("")}>{translateUi("interfaceCopy.clearSearch")}</Button>
         </div>
       ) : (
-        <div className="space-y-3" role="list" aria-label="Connector list">
+        <div className="space-y-3" role="list" aria-label={pageText("connectorList_d2f313")}>
           {showAssistantConnection && <AssistantConnectionCard onNavigate={navigate} />}
           {paginatedRows.map((row) => (
             <ConnectorCard
@@ -1075,13 +1076,13 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
         </div>
       )}
 
-      {accountLoadErrors.length ? <p role="alert" className="text-sm text-destructive">Couldn’t load {Array.from(new Set(accountLoadErrors)).join(" or ")} accounts. Use Refresh in the connection’s menu to try again.</p> : null}
+      {accountLoadErrors.length ? <p role="alert" className="text-sm text-destructive">{pageText("couldnTLoad_7d9d4a") + " "}{Array.from(new Set(accountLoadErrors)).join(" or ")}{" " + pageText("accountsUseRefreshInTheConnectionSMenu_2b79b9")}</p> : null}
 
-      {!loading && catalogRows.length > 0 ? <nav aria-label="Connector catalog pages" className="flex flex-wrap items-center justify-between gap-3 text-sm">
-        <p className="text-muted-foreground" role="status">{pageStart + 1}–{Math.min(pageStart + CATALOG_PAGE_SIZE, catalogRows.length)} of {catalogRows.length.toLocaleString()}{" " + pageText("connectors_d84289")}</p>
+      {!loading && catalogRows.length > 0 ? <nav aria-label={pageText("connectorCatalogPages_66687a")} className="flex flex-wrap items-center justify-between gap-3 text-sm">
+        <p className="text-muted-foreground" role="status">{pageStart + 1}–{Math.min(pageStart + CATALOG_PAGE_SIZE, catalogRows.length)}{" " + pageText("of_de04fa") + " "}{catalogRows.length.toLocaleString()}{" " + pageText("connectors_d84289")}</p>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => { setPage(currentPage - 1); catalogTop.current?.scrollIntoView?.({ block: "start" }); }}>{translateUi("interfaceCopy.previous")}</Button>
-          <span className="text-xs text-muted-foreground">Page {currentPage} of {pageCount}</span>
+          <span className="text-xs text-muted-foreground">{pageText("page_fb0627") + " "}{currentPage}{" " + pageText("of_de04fa") + " "}{pageCount}</span>
           <Button variant="outline" size="sm" disabled={currentPage === pageCount} onClick={() => { setPage(currentPage + 1); catalogTop.current?.scrollIntoView?.({ block: "start" }); }}>{translateUi("interfaceCopy.next")}</Button>
         </div>
       </nav> : null}
@@ -1103,17 +1104,16 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{pageText("remove_e96390") + " "}{connectionToRemove?.accountName ?? "this"} connection?
-            </AlertDialogTitle>
+            <AlertDialogTitle>{pageText("remove_e96390") + " "}{connectionToRemove?.accountName ?? pageText("this_c2543f")}{" " + pageText("connection_1aad81")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {connectionToRemove?.pool ? "The connections in this pool are kept." : connectionToRemove && Object.values(AGGREGATOR_NAMES).includes(connectionToRemove.providerName as "Composio")
+              {connectionToRemove?.pool ? pageText("theConnectionsInThisPoolAreKept_044b77") : connectionToRemove && Object.values(AGGREGATOR_NAMES).includes(connectionToRemove.providerName as "Composio")
                 ? `This removes the saved ${connectionToRemove.providerName} connection from Paperclip and agents lose access through it. Your apps and accounts remain connected in ${connectionToRemove.providerName}.`
                 : connectionToRemove?.kind === "chat"
                 ? `This connection will stop receiving new work from ${connectionToRemove.providerName}. Existing Paperclip tasks and conversation history remain available. This does not delete the app, bot, or account in ${connectionToRemove.providerName}.`
                 : connectionToRemove &&
                     connectionToRemove.remainingConnectionCount > 0
                   ? `This connection's saved credentials are deleted and agents lose access through it immediately. They can still use ${connectionToRemove.providerName} through ${connectionToRemove.remainingConnectionCount} other active ${connectionToRemove.remainingConnectionCount === 1 ? "connection" : "connections"}.`
-                  : "The saved credentials are deleted and agents lose access immediately. Connecting it again later requires a new sign-in or key."}
+                  : pageText("theSavedCredentialsAreDeletedAndAgentsLose_7ba09b")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           {removeConnection.error ? <p role="alert" className="text-sm text-destructive">
@@ -1205,6 +1205,7 @@ export function ConnectorCard({
     chatProviderVisible(row.slug, chatConnectorsEnabled, githubReviewBotsEnabled),
     preselectedAgentId,
   );
+  const actionLabel = pageText(`apps:actions.${action.label}`, { defaultValue: action.label });
   const copilotMethod = row.slug === "github"
     ? getAppStoreDefinition(row.slug)?.methods.find(method => method.purpose === "ai" && method.ai?.provider === "github")
     : undefined;
@@ -1266,9 +1267,7 @@ export function ConnectorCard({
           size="sm"
           variant="outline"
           onClick={() => onNavigate(`/apps/connect?source=github&method=${encodeURIComponent(copilotMethod.key)}`)}
-        >
-          Connect Copilot
-        </Button>}
+        >{pageText("connectCopilot_38cb0f")}</Button>}
         {setupEnabled && <Button
           type="button"
           size="sm"
@@ -1281,9 +1280,9 @@ export function ConnectorCard({
             else if (action.href) onNavigate(row.slug === "agentmail"
               ? `${action.href}&setupId=${crypto.randomUUID()}` : action.href);
           }}
-          aria-label={`${action.label} ${row.name}`}
+          aria-label={`${actionLabel} ${row.name}`}
         >
-          {action.label}
+          {actionLabel}
         </Button>}
       </div>
 
@@ -1292,7 +1291,7 @@ export function ConnectorCard({
           <CollapsibleTrigger className="flex w-full items-center gap-2 border-t border-border px-4 py-3 text-left text-sm text-muted-foreground hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring">
             <ChevronRight className={`h-4 w-4 shrink-0 transition-transform${expanded ? " rotate-90" : ""}`} aria-hidden="true" />
             <span className="font-medium text-foreground">{connectionCount}{" " + pageText("connections_c0e3ce")}</span>
-            {attentionCount > 0 ? <span className="text-destructive">· {attentionCount} {attentionCount === 1 ? "needs" : "need"} attention</span> : null}
+            {attentionCount > 0 ? <span className="text-destructive">· {attentionCount} {attentionCount === 1 ? pageText("needs_edb048") : pageText("need_efe30e")}{" " + pageText("attention_d0278d")}</span> : null}
           </CollapsibleTrigger>
         ) : null}
         <CollapsibleContent>
@@ -1345,12 +1344,12 @@ export function ConnectorCard({
               const managementUrl = aggregatorManagementUrl(provider, account.managementUrl ?? (typeof connection.config?.managementUrl === "string" ? connection.config?.managementUrl : null));
               const manage = () => onManageAggregator?.(row.upstreamCatalogApp!, connection.id);
               return <ConnectionAccountRowLayout key={`${connection.id}:${snapshot.toolkit}:${account.id}`} state={state} accountName={name}
-                source={<><AppLogo name={providerName} brandKey={provider} size={16} compact /><span>Managed by {providerName} ·</span><button type="button" className="max-w-full truncate hover:underline" onClick={() => onNavigate(`/apps/${connection.id}/permissions`)}>“{connection.name}”</button></>}
+                source={<><AppLogo name={providerName} brandKey={provider} size={16} compact /><span>{pageText("managedBy_8babd5") + " "}{providerName} ·</span><button type="button" className="max-w-full truncate hover:underline" onClick={() => onNavigate(`/apps/${connection.id}/permissions`)}>“{connection.name}”</button></>}
                 onOpen={manage} openLabel={`Manage ${name}`}>
-                <DropdownMenu><DropdownMenuTrigger asChild><Button type="button" variant="ghost" size="icon-sm" aria-label={`Manage ${name} connection`}><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                <DropdownMenu><DropdownMenuTrigger asChild><Button type="button" variant="ghost" size="icon-sm" aria-label={translateDynamic("dynamic:manageConnection", { value1: name })}><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    {managementUrl ? <DropdownMenuItem asChild><a href={managementUrl} target="_blank" rel="noopener noreferrer">Open in {providerName}<ExternalLink className="size-4" /></a></DropdownMenuItem>
-                      : <DropdownMenuItem disabled title="Set the management URL on this gateway to open its console">Open in {providerName}<ExternalLink className="size-4" /></DropdownMenuItem>}
+                    {managementUrl ? <DropdownMenuItem asChild><a href={managementUrl} target="_blank" rel="noopener noreferrer">{pageText("openIn_f03b6f") + " "}{providerName}<ExternalLink className="size-4" /></a></DropdownMenuItem>
+                      : <DropdownMenuItem disabled title={pageText("setTheManagementURLOnThisGatewayTo_6b9eea")}>{pageText("openIn_f03b6f") + " "}{providerName}<ExternalLink className="size-4" /></DropdownMenuItem>}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </ConnectionAccountRowLayout>;
@@ -1365,7 +1364,7 @@ export function ConnectorCard({
                 >
                   <div className="flex min-w-0 flex-1 items-center gap-3">
                     <AgentAvatar agent={chatAgentById?.get(endpoint.assignedAgentId) ?? { id: endpoint.assignedAgentId, name: endpoint.assignedAgentName }}
-                      size={40} label={`${endpoint.assignedAgentName} avatar`} />
+                      size={40} label={translateDynamic("dynamic:avatar", { value1: endpoint.assignedAgentName })} />
                     <div className="min-w-0">
                       <button
                         type="button"
@@ -1374,12 +1373,12 @@ export function ConnectorCard({
                           onNavigate(`/apps/chat/${endpoint.id}/settings`)
                         }
                       >
-                        {endpoint.assignedAgentName} · {endpoint.provider === "agentmail" ? pageText("email_84add5") : endpoint.provider === "github" ? "Code review bot" : pageText("chat_2ced57")}
+                        {endpoint.assignedAgentName} · {endpoint.provider === "agentmail" ? pageText("email_84add5") : endpoint.provider === "github" ? pageText("codeReviewBot_553018") : pageText("chat_2ced57")}
                       </button>
                       <p className="truncate text-xs text-muted-foreground">
                         {endpoint.providerAccountLabel ??
                           endpoint.botLabel ??
-                          "Provider identity"}
+                          pageText("providerIdentity_f7d8e5")}
                       </p>
                     </div>
                   </div>
@@ -1388,7 +1387,7 @@ export function ConnectorCard({
                       { createdByUserId: (endpoint.connectionId ? connectionById?.get(endpoint.connectionId)?.createdByUserId : null) ?? endpoint.sponsorUserId ?? null }, userProfileById,
                     )} />
                     {["paused", "attention", "revoked"].includes(endpoint.status) && <span className="text-xs text-muted-foreground">
-                      {endpoint.status === "attention" ? pageText("needsAttention_a12672") : endpoint.status === "revoked" ? "Access revoked" : pageText("paused_c7dfb6")}
+                      {endpoint.status === "attention" ? pageText("needsAttention_a12672") : endpoint.status === "revoked" ? pageText("accessRevoked_7d420e") : pageText("paused_c7dfb6")}
                     </span>}
                     {chatEndpointNeedsSetup(endpoint) ? (
                       <Button
@@ -1403,15 +1402,13 @@ export function ConnectorCard({
                           type="button"
                           variant="ghost"
                           size="icon-sm"
-                          aria-label={`Manage ${endpoint.assignedAgentName} ${row.name} connection`}
+                          aria-label={translateDynamic("dynamic:manageConnectionForAgent", { value1: endpoint.assignedAgentName, value2: row.name })}
                         >
                           <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onSelect={() => onNavigate(`/apps/chat/${endpoint.id}/settings`)}>
-                          Manage
-                        </DropdownMenuItem>
+                        <DropdownMenuItem onSelect={() => onNavigate(`/apps/chat/${endpoint.id}/settings`)}>{pageText("manage_bf58d1")}</DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           variant="destructive"
@@ -1480,7 +1477,7 @@ function ConnectionAccountRow({
   return (
     <ConnectionAccountRowLayout state={state} accountName={accountName} owner={owner}
       afterName={account?.isDefault ? <AiDefaultCrown account={account} /> : undefined}
-      details={<>{details}{account?.isDefault && account.status !== "connected" && <p className="text-xs text-destructive">Default unavailable</p>}{discovery?.discovery.message || discovery?.sync.status === "error" ? <p className="text-xs text-muted-foreground" role="status">{discovery.discovery.message ?? discovery.sync.error}</p> : null}</>}
+      details={<>{details}{account?.isDefault && account.status !== "connected" && <p className="text-xs text-destructive">{pageText("defaultUnavailable_fd8a93")}</p>}{discovery?.discovery.message || discovery?.sync.status === "error" ? <p className="text-xs text-muted-foreground" role="status">{discovery.discovery.message ?? discovery.sync.error}</p> : null}</>}
       openLabel={`Open ${accountName} permissions`} onOpen={() => onNavigate(`/apps/${connection.id}/permissions`)}>
         {setupEnabled && (state.kind === "attention" || state.kind === "draft") ? (
           <Button
@@ -1491,7 +1488,7 @@ function ConnectionAccountRow({
           >
             {state.kind === "attention"
               ? connection.requiresReauthorization === false
-                ? "Retry access"
+                ? pageText("retryAccess_d2b13d")
                 : pageText("reconnect_6988b1")
               : pageText("finishSetup_c516d2")}
           </Button>
@@ -1502,7 +1499,7 @@ function ConnectionAccountRow({
               type="button"
               variant="ghost"
               size="icon-sm"
-              aria-label={`Manage ${accountName} connection`}
+              aria-label={translateDynamic("dynamic:manageConnection", { value1: accountName })}
             >
               <MoreHorizontal className="h-4 w-4" />
             </Button>
@@ -1516,8 +1513,8 @@ function ConnectionAccountRow({
             {onRefreshComposio ? <DropdownMenuItem disabled={refreshingComposio} onSelect={onRefreshComposio}>
               {refreshingComposio ? <Loader2 className="animate-spin" /> : null}{pageText("refresh_56e3ba") + " "}{isAppAggregator(row.slug) ? AGGREGATOR_NAMES[row.slug] : "Composio"}
             </DropdownMenuItem> : null}
-            {row.slug === "arcade" && onConfigureArcade ? <DropdownMenuItem onSelect={onConfigureArcade}>{discovery?.discovery.availability === "setup_required" ? "Set up account sync" : "Account sync settings"}</DropdownMenuItem> : null}
-            {row.slug === "executor" && onConfigureExecutor ? <DropdownMenuItem onSelect={onConfigureExecutor}>Console URL</DropdownMenuItem> : null}
+            {row.slug === "arcade" && onConfigureArcade ? <DropdownMenuItem onSelect={onConfigureArcade}>{discovery?.discovery.availability === "setup_required" ? pageText("setUpAccountSync_194a26") : pageText("accountSyncSettings_3ab862")}</DropdownMenuItem> : null}
+            {row.slug === "executor" && onConfigureExecutor ? <DropdownMenuItem onSelect={onConfigureExecutor}>{pageText("consoleURL_7a8721")}</DropdownMenuItem> : null}
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive" onSelect={onRemove}>
               <Trash2 />{pageText("removeConnection_7312a3")}</DropdownMenuItem>
@@ -1630,10 +1627,10 @@ function CustomConnectorCard({
         </div>
         <div className="min-w-0 flex-1">
           <h2 className="text-sm font-semibold text-foreground">
-            Connect your own tool
+            {pageText("apps:card.customTitle")}
           </h2>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            Add a custom MCP server or paste an existing configuration.
+            {pageText("apps:card.customSummary")}
           </p>
         </div>
         <Button
@@ -1655,14 +1652,14 @@ function CustomConnectorCard({
         >
           <CustomConnectorOption
             icon={ServerCog}
-            title="Connect your own MCP server"
-            description="Enter the URL for a custom or self-hosted MCP server."
+            title={pageText("connectYourOwnMCPServer_fcfbba")}
+            description={pageText("enterTheURLForACustomOrSelf_067661")}
             onClick={() => onNavigate("/apps/byo")}
           />
           <CustomConnectorOption
             icon={ClipboardPaste}
-            title="Paste a config"
-            description="Paste an existing setup snippet and connect it."
+            title={pageText("pasteAConfig_ea79dc")}
+            description={pageText("pasteAnExistingSetupSnippetAndConnectIt_e30112")}
             onClick={() => onNavigate("/apps/advanced/paste-config")}
           />
         </div>

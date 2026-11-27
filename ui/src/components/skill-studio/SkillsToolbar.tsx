@@ -1,3 +1,4 @@
+import { optionLabel } from "@/i18n/option-label";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { ToolbarSearch } from "@/components/ToolbarSearch";
@@ -50,7 +51,7 @@ export function SkillsToolbar({ viewTitle, viewDescription, searchLabel, search,
   const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   return (
-    <div data-canonical-toolbar="skills" role="toolbar" aria-label="Skills controls" className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-3">
+    <div data-canonical-toolbar="skills" role="toolbar" aria-label={pageText("skillsControls_ed97d6")} className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-3">
       <div className="w-full">
         <h1 className="text-lg font-semibold text-foreground">{viewTitle}</h1>
         <p className="text-xs text-muted-foreground">{viewDescription}</p>
@@ -60,7 +61,7 @@ export function SkillsToolbar({ viewTitle, viewDescription, searchLabel, search,
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="sm">
             <span className="text-muted-foreground">{translateUi("interfaceCopy.sort")}</span>
-            <span>{DISCOVERY_SORT_LABELS[sort]}</span>
+            <span>{optionLabel(DISCOVERY_SORT_LABELS[sort])}</span>
             <ChevronDown className="ml-1 h-3.5 w-3.5" />
           </Button>
         </DropdownMenuTrigger>
@@ -68,7 +69,7 @@ export function SkillsToolbar({ viewTitle, viewDescription, searchLabel, search,
           <DropdownMenuRadioGroup value={sort} onValueChange={(value) => onSortChange(value as DiscoverySort)}>
             {DISCOVERY_SORTS.map((option) => (
               <DropdownMenuRadioItem key={option} value={option}>
-                {DISCOVERY_SORT_LABELS[option]}
+                {optionLabel(DISCOVERY_SORT_LABELS[option])}
               </DropdownMenuRadioItem>
             ))}
           </DropdownMenuRadioGroup>
@@ -89,7 +90,7 @@ export function SkillsToolbar({ viewTitle, viewDescription, searchLabel, search,
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuRadioGroup value={sourceBadgeFilter} onValueChange={setSourceBadgeFilter}>
-              <DropdownMenuRadioItem value="all">All sources</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="all">{pageText("allSources_c0e8e5")}</DropdownMenuRadioItem>
               {availableSources.map((source) => (
                 <DropdownMenuRadioItem key={source.value} value={source.value}>
                   {source.label}
@@ -104,8 +105,8 @@ export function SkillsToolbar({ viewTitle, viewDescription, searchLabel, search,
         size="icon-sm"
         onClick={() => onScan()}
         disabled={scanPending}
-        aria-label="Scan project workspaces for skills"
-        title="Scan project workspaces for skills"
+        aria-label={pageText("scanProjectWorkspacesForSkills_e54ce9")}
+        title={pageText("scanProjectWorkspacesForSkills_e54ce9")}
       >
         <RefreshCw className={cn("h-4 w-4", scanPending && "animate-spin")} />
       </Button>
@@ -127,23 +128,15 @@ export function SkillsToolbar({ viewTitle, viewDescription, searchLabel, search,
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onSelect={onCreate}>
-            <Pencil className="mr-2 h-4 w-4" />
-            Create new skill
-          </DropdownMenuItem>
+            <Pencil className="mr-2 h-4 w-4" />{pageText("createNewSkill_7a2c5c")}</DropdownMenuItem>
           <DropdownMenuItem onSelect={onBrowseDiscover}>
-            <Compass className="mr-2 h-4 w-4" />
-            Discover skills
-          </DropdownMenuItem>
+            <Compass className="mr-2 h-4 w-4" />{pageText("discoverSkills_5b5f56")}</DropdownMenuItem>
           <DropdownMenuItem asChild><Link to="/skills/sources/new"><GithubIcon className="mr-2 h-4 w-4" />{pageText("importFromGitHub_937e1f")}</Link></DropdownMenuItem>
-          <DropdownMenuItem asChild><Link to="/skills/sources">Manage sources</Link></DropdownMenuItem>
+          <DropdownMenuItem asChild><Link to="/skills/sources">{pageText("manageSources_ec758d")}</Link></DropdownMenuItem>
           <DropdownMenuItem onSelect={onImport}>
-            <Globe className="mr-2 h-4 w-4" />
-            Import from path or URL
-          </DropdownMenuItem>
+            <Globe className="mr-2 h-4 w-4" />{pageText("importFromPathOrURL_100895")}</DropdownMenuItem>
           <DropdownMenuItem onSelect={onImportFromProject}>
-            <FolderSearch className="mr-2 h-4 w-4" />
-            Import skills from project
-          </DropdownMenuItem>
+            <FolderSearch className="mr-2 h-4 w-4" />{pageText("importSkillsFromProject_7c062b")}</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
       {navigation ? <div className="w-full">{navigation}</div> : null}

@@ -1,6 +1,11 @@
+import { t } from "../i18n";
 import type { Agent } from "@paperclipai/shared";
 import type { CompanyUserProfile } from "./company-members";
 import { formatReviewPolicyValue } from "./review-policy";
+
+function activityText(label: string, values: Record<string, string | number> = {}): string {
+  return t(label, { ...values, ns: "activity", nsSeparator: false, keySeparator: false, defaultValue: label });
+}
 
 type ActivityDetails = Record<string, unknown> | null | undefined;
 
@@ -23,6 +28,9 @@ interface ActivityFormatOptions {
 }
 
 const ACTIVITY_ROW_VERBS: Record<string, string> = {
+  "routine.created": "routine created",
+  "routine.revision_created": "routine revision created",
+  "agent.identity.created": "agent identity created",
   "case.created": "created",
   "case.updated": "updated",
   "case.fields_changed": "updated details on",
@@ -261,8 +269,9 @@ function asRecord(value: unknown): Record<string, unknown> | null {
 }
 
 function humanizeValue(value: unknown): string {
-  if (typeof value !== "string") return String(value ?? "none");
-  return value.replace(/_/g, " ");
+  if (typeof value !== "string") return String(value ?? activityText("none"));
+  const display = value.replace(/_/g, " ");
+  return /^(idle|todo|backlog|in_progress|in_review|blocked|monitoring|done|cancelled|critical|high|medium|low)$/.test(value) ? activityText(display) : display;
 }
 
 function isActivityParticipant(value: unknown): value is ActivityParticipant {
@@ -288,17 +297,17 @@ function readIssueReferences(details: ActivityDetails, key: string): ActivityIss
 }
 
 function formatUserLabel(userId: string | null | undefined, options: ActivityFormatOptions = {}): string {
-  if (!userId || userId === "local-board") return "Board";
-  if (options.currentUserId && userId === options.currentUserId) return "You";
+  if (!userId || userId === "local-board") return activityText("Board");
+  if (options.currentUserId && userId === options.currentUserId) return activityText("You");
   const profile = options.userProfileMap?.get(userId);
   if (profile) return profile.label;
-  return `user ${userId.slice(0, 5)}`;
+  return activityText("user {{id}}", { id: userId.slice(0, 5) });
 }
 
 function formatParticipantLabel(participant: ActivityParticipant, options: ActivityFormatOptions): string {
   if (participant.type === "agent") {
     const agentId = participant.agentId ?? "";
-    return options.agentMap?.get(agentId)?.name ?? "agent";
+    return options.agentMap?.get(agentId)?.name ?? activityText("agent");
   }
   return formatUserLabel(participant.userId, options);
 }
@@ -307,7 +316,7 @@ function formatIssueReferenceLabel(reference: ActivityIssueReference): string {
   if (reference.identifier) return reference.identifier;
   if (reference.title) return reference.title;
   if (reference.id) return reference.id.slice(0, 8);
-  return "task";
+  return activityText("task");
 }
 
 function formatChangedEntityLabel(
@@ -315,9 +324,9 @@ function formatChangedEntityLabel(
   plural: string,
   labels: string[],
 ): string {
-  if (labels.length <= 0) return plural;
-  if (labels.length === 1) return `${singular} ${labels[0]}`;
-  return `${labels.length} ${plural}`;
+  if (labels.length <= 0) return activityText(plural);
+  if (labels.length === 1) return `${activityText(singular)} ${labels[0]}`;
+  return activityText("{{number}} {{roles}}", { number: labels.length, roles: activityText(plural) });
 }
 
 function readNumber(value: unknown): number | null {
@@ -338,13 +347,13 @@ function formatAcceptedPlanDecompositionDetail(details: ActivityDetails): string
   const newlyCreated = readStringArrayLength(details.newlyCreatedChildIssueIds);
   const reused = Math.max(0, totalChildren - newlyCreated);
   const parts: string[] = [];
-  if (newlyCreated > 0) parts.push(`created ${newlyCreated} new`);
-  if (reused > 0) parts.push(`reused ${reused} existing`);
-  if (parts.length === 0 && requested !== null) parts.push(`${requested} requested`);
-  const summary = parts.length > 0 ? parts.join(", ") : null;
-  if (status === "completed" && summary) return `decomposition completed (${summary})`;
-  if (status === "completed") return "decomposition completed";
-  if (status === "in_flight" && summary) return `decomposition in flight (${summary})`;
+  if (newlyCreated > 0) parts.push(activityText("created {{number}} new", { number: newlyCreated }));
+  if (reused > 0) parts.push(activityText("reused {{number}} existing", { number: reused }));
+  if (parts.length === 0 && requested !== null) parts.push(activityText("{{number}} requested", { number: requested }));
+  const summary = parts.length > 0 ? parts.join(activityText("listSeparator")) : null;
+  if (status === "completed" && summary) return activityText("decomposition completed ({{summary}})", { summary });
+  if (status === "completed") return activityText("decomposition completed");
+  if (status === "in_flight" && summary) return activityText("decomposition in flight ({{summary}})", { summary });
   return summary;
 }
 
@@ -355,14 +364,14 @@ function formatIssueUpdatedVerb(details: ActivityDetails): string | null {
     const from = previous.status;
     const to = humanizeValue(details.status === "in_review" && details.externalConversationState === "waiting" ? "idle" : details.status);
     return from
-      ? `changed status from ${humanizeValue(from)} to ${to} on`
-      : `changed status to ${to} on`;
+      ? activityText("changed status from {{previous}} to {{next}} on", { previous: humanizeValue(from), next: to })
+      : activityText("changed status to {{next}} on", { next: to });
   }
   if (details.priority !== undefined) {
     const from = previous.priority;
     return from
-      ? `changed priority from ${humanizeValue(from)} to ${humanizeValue(details.priority)} on`
-      : `changed priority to ${humanizeValue(details.priority)} on`;
+      ? activityText("changed priority from {{previous}} to {{next}} on", { previous: humanizeValue(from), next: humanizeValue(details.priority) })
+      : activityText("changed priority to {{next}} on", { next: humanizeValue(details.priority) });
   }
   return null;
 }
@@ -372,7 +381,7 @@ function formatAssigneeName(details: ActivityDetails, options: ActivityFormatOpt
   const agentId = details.assigneeAgentId;
   const userId = details.assigneeUserId;
   if (typeof agentId === "string" && agentId) {
-    return options.agentMap?.get(agentId)?.name ?? "agent";
+    return options.agentMap?.get(agentId)?.name ?? activityText("agent");
   }
   if (typeof userId === "string" && userId) {
     return formatUserLabel(userId, options);
@@ -390,31 +399,34 @@ function formatIssueUpdatedAction(details: ActivityDetails, options: ActivityFor
     const to = humanizeValue(details.status === "in_review" && details.externalConversationState === "waiting" ? "idle" : details.status);
     parts.push(
       from
-        ? `changed the status from ${humanizeValue(from)} to ${to}`
-        : `changed the status to ${to}`,
+        ? activityText("changed the status from {{previous}} to {{next}}", { previous: humanizeValue(from), next: to })
+        : activityText("changed the status to {{next}}", { next: to }),
     );
   }
   if (details.priority !== undefined) {
     const from = previous.priority;
     parts.push(
       from
-        ? `changed the priority from ${humanizeValue(from)} to ${humanizeValue(details.priority)}`
-        : `changed the priority to ${humanizeValue(details.priority)}`,
+        ? activityText("changed the priority from {{previous}} to {{next}}", { previous: humanizeValue(from), next: humanizeValue(details.priority) })
+        : activityText("changed the priority to {{next}}", { next: humanizeValue(details.priority) }),
     );
   }
   if (details.assigneeAgentId !== undefined || details.assigneeUserId !== undefined) {
     const assigneeName = formatAssigneeName(details, options);
-    parts.push(assigneeName ? `made ${assigneeName} responsible for the task` : "cleared the responsible");
+    parts.push(assigneeName ? activityText("made {{name}} responsible for the task", { name: assigneeName }) : activityText("cleared the responsible"));
   }
   if (details.reviewPolicy !== undefined) {
     // `null` is the default ("anyone can approve"), so it must not read as
     // "changed the review policy to none" (PAP-16506).
-    parts.push(`changed who can approve to ${formatReviewPolicyValue(details.reviewPolicy)}`);
+    const policy = formatReviewPolicyValue(details.reviewPolicy);
+    const label = details.reviewPolicy == null || ["anyone", "not_creator", "human_only"].includes(String(details.reviewPolicy))
+      ? activityText(policy) : policy;
+    parts.push(activityText("changed who can approve to {{policy}}", { policy: label }));
   }
-  if (details.title !== undefined) parts.push("updated the title");
-  if (details.description !== undefined) parts.push("updated the description");
+  if (details.title !== undefined) parts.push(activityText("updated the title"));
+  if (details.description !== undefined) parts.push(activityText("updated the description"));
 
-  return parts.length > 0 ? parts.join(", ") : null;
+  return parts.length > 0 ? parts.join(activityText("listSeparator")) : null;
 }
 
 function formatStructuredIssueChange(input: {
@@ -431,13 +443,13 @@ function formatStructuredIssueChange(input: {
     const removed = readIssueReferences(details, "removedBlockedByIssues").map(formatIssueReferenceLabel);
     if (added.length > 0 && removed.length === 0) {
       const changed = formatChangedEntityLabel("blocker", "blockers", added);
-      return input.forIssueDetail ? `added ${changed}` : `added ${changed} to`;
+      return input.forIssueDetail ? activityText("added {{changed}}", { changed }) : activityText("added {{changed}} to", { changed });
     }
     if (removed.length > 0 && added.length === 0) {
       const changed = formatChangedEntityLabel("blocker", "blockers", removed);
-      return input.forIssueDetail ? `removed ${changed}` : `removed ${changed} from`;
+      return input.forIssueDetail ? activityText("removed {{changed}}", { changed }) : activityText("removed {{changed}} from", { changed });
     }
-    return input.forIssueDetail ? "updated blockers" : "updated blockers on";
+    return activityText(input.forIssueDetail ? "updated blockers" : "updated blockers on");
   }
 
   if (input.action === "issue.reviewers_updated" || input.action === "issue.approvers_updated") {
@@ -447,13 +459,13 @@ function formatStructuredIssueChange(input: {
     const plural = input.action === "issue.reviewers_updated" ? "reviewers" : "approvers";
     if (added.length > 0 && removed.length === 0) {
       const changed = formatChangedEntityLabel(singular, plural, added);
-      return input.forIssueDetail ? `added ${changed}` : `added ${changed} to`;
+      return input.forIssueDetail ? activityText("added {{changed}}", { changed }) : activityText("added {{changed}} to", { changed });
     }
     if (removed.length > 0 && added.length === 0) {
       const changed = formatChangedEntityLabel(singular, plural, removed);
-      return input.forIssueDetail ? `removed ${changed}` : `removed ${changed} from`;
+      return input.forIssueDetail ? activityText("removed {{changed}}", { changed }) : activityText("removed {{changed}} from", { changed });
     }
-    return input.forIssueDetail ? `updated ${plural}` : `updated ${plural} on`;
+    return input.forIssueDetail ? activityText("updated {{roles}}", { roles: activityText(plural) }) : activityText("updated {{roles}} on", { roles: activityText(plural) });
   }
 
   return null;
@@ -469,16 +481,16 @@ export function formatActivityVerb(
       ? details.tool
       : typeof details?.upstreamToolName === "string"
         ? details.upstreamToolName
-        : "an app action";
+        : activityText("an app action");
     const tool = rawTool.replace(/[._-]+/g, " ");
     const isTest = details?.source === "test";
-    if (action === "tool_gateway.call_completed") return `${isTest ? "tested" : "used"} ${tool} on`;
-    if (action === "tool_gateway.call_allowed") return `${isTest ? "started a test of" : "was allowed to use"} ${tool} on`;
-    if (action === "tool_gateway.call_denied") return `was blocked from using ${tool} on`;
-    if (action === "tool_gateway.approval_requested") return `asked to use ${tool} on`;
-    if (action === "tool_gateway.session_created") return "opened an app session for";
-    if (action === "tool_gateway.session_rejected") return "was blocked from opening an app session for";
-    if (action === "tool_gateway.discovery") return "discovered app actions for";
+    if (action === "tool_gateway.call_completed") return activityText(isTest ? "tested {{tool}} on" : "used {{tool}} on", { tool });
+    if (action === "tool_gateway.call_allowed") return activityText(isTest ? "started a test of {{tool}} on" : "was allowed to use {{tool}} on", { tool });
+    if (action === "tool_gateway.call_denied") return activityText("was blocked from using {{tool}} on", { tool });
+    if (action === "tool_gateway.approval_requested") return activityText("asked to use {{tool}} on", { tool });
+    if (action === "tool_gateway.session_created") return activityText("opened an app session for");
+    if (action === "tool_gateway.session_rejected") return activityText("was blocked from opening an app session for");
+    if (action === "tool_gateway.discovery") return activityText("discovered app actions for");
   }
 
   if (action === "issue.updated") {
@@ -489,11 +501,11 @@ export function formatActivityVerb(
   if (action === "issue.stalled_review_decided") {
     const decision = typeof details?.action === "string" ? details.action : null;
     const label = decision ? STALLED_REVIEW_DECISION_LABELS[decision] : null;
-    if (label) return `${label} on`;
+    if (label) return activityText("{{decision}} on", { decision: activityText(label) });
   }
 
   const outcomeLabel = formatInteractionOutcomeLabel(action, details);
-  if (outcomeLabel) return `${outcomeLabel} on`;
+  if (outcomeLabel) return activityText("{{decision}} on", { decision: activityText(outcomeLabel) });
 
   const structuredChange = formatStructuredIssueChange({
     action,
@@ -503,7 +515,8 @@ export function formatActivityVerb(
   });
   if (structuredChange) return structuredChange;
 
-  return ACTIVITY_ROW_VERBS[action] ?? action.replace(/[._]/g, " ");
+  const verb = ACTIVITY_ROW_VERBS[action];
+  return verb ? activityText(verb) : action.replace(/[._]/g, " ");
 }
 
 export function formatIssueActivityAction(
@@ -532,18 +545,18 @@ export function formatIssueActivityAction(
   if (action === "issue.stalled_review_decided") {
     const decision = typeof details?.action === "string" ? details.action : null;
     const label = decision ? STALLED_REVIEW_DECISION_LABELS[decision] : null;
-    if (label) return label;
+    if (label) return activityText(label);
   }
 
   const outcomeLabel = formatInteractionOutcomeLabel(action, details);
-  if (outcomeLabel) return outcomeLabel;
+  if (outcomeLabel) return activityText(outcomeLabel);
 
   if (action.startsWith("issue.monitor_") && details) {
     const serviceName = typeof details.serviceName === "string" && details.serviceName.trim()
       ? details.serviceName.trim()
       : null;
-    const base = ISSUE_ACTIVITY_LABELS[action] ?? action.replace(/[._]/g, " ");
-    return serviceName ? `${base} for ${serviceName}` : base;
+    const base = ISSUE_ACTIVITY_LABELS[action] ? activityText(ISSUE_ACTIVITY_LABELS[action]) : action.replace(/[._]/g, " ");
+    return serviceName ? activityText("{{event}} for {{service}}", { event: base, service: serviceName }) : base;
   }
 
   if (
@@ -556,10 +569,10 @@ export function formatIssueActivityAction(
     ) &&
     details
   ) {
-    const key = typeof details.key === "string" ? details.key : "document";
+    const key = typeof details.key === "string" ? details.key : activityText("document");
     const title = typeof details.title === "string" && details.title ? ` (${details.title})` : "";
-    return `${ISSUE_ACTIVITY_LABELS[action] ?? action} ${key}${title}`;
+    return `${activityText(ISSUE_ACTIVITY_LABELS[action] ?? action)} ${key}${title}`;
   }
 
-  return ISSUE_ACTIVITY_LABELS[action] ?? action.replace(/[._]/g, " ");
+  return ISSUE_ACTIVITY_LABELS[action] ? activityText(ISSUE_ACTIVITY_LABELS[action]) : action.replace(/[._]/g, " ");
 }

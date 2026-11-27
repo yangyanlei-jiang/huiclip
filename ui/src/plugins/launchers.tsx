@@ -1,3 +1,4 @@
+import { t as plainText } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import {
   Component,
@@ -424,8 +425,7 @@ class LauncherErrorBoundary extends Component<LauncherErrorBoundaryProps, Launch
     if (this.state.hasError) {
       return (
         <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
-          {this.props.launcher.pluginDisplayName}: failed to render
-        </div>
+          {this.props.launcher.pluginDisplayName}{plainText("interface:failedToRender_4dfbac")}</div>
       );
     }
     return this.props.children;
@@ -439,6 +439,7 @@ function LauncherRenderContent({
   instance: LauncherInstance;
   renderEnvironment: PluginRenderEnvironmentContext;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const component = instance.component;
   const { data: session } = useQuery({
     queryKey: queryKeys.auth.session,
@@ -463,7 +464,7 @@ function LauncherRenderContent({
 
     return (
       <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
-        {instance.launcher.pluginDisplayName}: could not resolve launcher target "{instance.launcher.action.target}".
+        {instance.launcher.pluginDisplayName}{pageText("couldNotResolveLauncherTarget_84c57f")}{instance.launcher.action.target}".
       </div>
     );
   }

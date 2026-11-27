@@ -1,3 +1,4 @@
+import { bundledAppDescription } from "@/i18n/bundled-app-description";
 import { aiConnectionCatalogSlug, aiConnectionMetadataSchema, type AppDefinition, type ToolApplication, type ToolConnection } from "@paperclipai/shared";
 import { aiConnectionRouterSlug, aiConnectionRouterPluginKey } from "@paperclipai/shared";
 
@@ -17,7 +18,7 @@ export function appDefinitionName(entry: AppGalleryDisplayEntry | null | undefin
 }
 
 export function appDefinitionDescription(entry: AppGalleryDisplayEntry | null | undefined): string {
-  return entry?.description ?? entry?.tagline ?? "";
+  return bundledAppDescription(appDefinitionSlug(entry), entry?.description ?? entry?.tagline ?? "");
 }
 
 export function appDefinitionLogoUrl(entry: AppGalleryDisplayEntry | null | undefined): string | undefined {

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo, useRef } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -62,13 +63,14 @@ export function CoordinatorChatTaskHandoff({ handoff, animateEntry = false }: { 
 }
 
 export function CoordinatorChatHandoffStatus({ query, scroll = false }: { scroll?: boolean; query: ReturnType<typeof useCoordinatorChatTaskHandoffs> }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   if (!query.enabled) return null;
   if (query.isError) return <div role="status" className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-    <span>Created tasks couldn’t load.</span><Button size="sm" variant="ghost" onClick={() => void query.refetch()}>{translateUi("interfaceCopy.retry")}</Button>
+    <span>{pageText("createdTasksCouldnTLoad_5090b6")}</span><Button size="sm" variant="ghost" onClick={() => void query.refetch()}>{translateUi("interfaceCopy.retry")}</Button>
   </div>;
   if (!scroll && query.hasNextPage) return <Button size="sm" variant="ghost" disabled={query.isFetchingNextPage} onClick={() => void query.fetchNextPage()}>
-    {query.isFetchingNextPage ? "Loading earlier tasks…" : "Load earlier tasks"}
+    {query.isFetchingNextPage ? pageText("loadingEarlierTasks_f83e88") : pageText("loadEarlierTasks_10a345")}
   </Button>;
   return null;
 }

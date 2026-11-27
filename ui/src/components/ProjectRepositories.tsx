@@ -39,7 +39,7 @@ export function ProjectRepositories({ project }: { project: Project }) {
     {project.workspaces.filter((workspace) => workspace.repoUrl && !workspace.metadata?.githubRepositoryId).map((workspace) => <LegacyProjectRepository key={workspace.id} workspace={workspace} projectRef={project.urlKey} />)}
     <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border pt-4">
       {save.status === "error" && <p role="alert" className="mr-auto text-sm text-destructive">{describeError(save.error).body}</p>}
-      {save.isSuccess && <span role="status" className="mr-auto text-sm text-muted-foreground">Changes saved</span>}
+      {save.isSuccess && <span role="status" className="mr-auto text-sm text-muted-foreground">{pageText("changesSaved_0bbe9e")}</span>}
       {draft && <Button type="button" variant="ghost" disabled={save.isPending} onClick={() => { setDraft(null); save.reset(); }}>{pageText("discardChanges_fa8fc0")}</Button>}
       <Button type="button" disabled={!draft || save.isPending} onClick={() => save.mutate()}>{save.isPending ? pageText("saving_56a228") : pageText("saveChanges_179359")}</Button>
     </div>

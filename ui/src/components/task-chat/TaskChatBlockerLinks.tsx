@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type {
   IssueBlockerAttentionIssueSummary,
   IssueRelationIssueSummary,
@@ -214,6 +215,7 @@ export function TaskChatBlockerLinks({
   ultimateBlocker: IssueRelationIssueSummary | IssueBlockerAttentionIssueSummary | null;
   placement: "top" | "bottom";
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const streamlined = useStreamlinedTaskChatPresentation();
   const directLabel = streamlined && placement === "bottom" ? "Still blocked by" : "Blocked by";
   const rootLabel = streamlined
@@ -221,7 +223,7 @@ export function TaskChatBlockerLinks({
     : "Ultimately blocked by";
   return (
     <div
-      aria-label="Task blockers"
+      aria-label={pageText("taskBlockers_fc373d")}
       data-placement={placement}
       data-testid="task-chat-blocker-links"
       className="flex min-w-0 flex-col gap-1 overflow-hidden text-(length:--text-micro) leading-4 text-amber-700 dark:text-amber-300"
@@ -243,6 +245,7 @@ export function TaskChatLiveWorkLinks({
   placement: "top" | "bottom";
   companyId?: string | null;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const streamlined = useStreamlinedTaskChatPresentation();
   const listedBlockers = useMemo(
     () => [...liveWork.steps.map((step) => step.blocker), ...liveWork.nowRunning],
@@ -252,7 +255,7 @@ export function TaskChatLiveWorkLinks({
   const heading = streamlined && placement === "bottom" ? "Still waiting on live work" : "Waiting on live work";
   return (
     <div
-      aria-label="Tasks waiting on live work"
+      aria-label={pageText("tasksWaitingOnLiveWork_32c9d6")}
       data-placement={placement}
       data-testid="task-chat-live-work-links"
       className="flex min-w-0 flex-col gap-1.5 overflow-hidden text-(length:--text-micro) leading-4 text-blue-700 dark:text-blue-300"
@@ -283,10 +286,10 @@ export function TaskChatLiveWorkLinks({
         ))}
       </ol>
       {liveWork.nowRunning.map((blocker) => streamlined ? (
-        <LiveWorkLink key={blocker.id} blocker={blocker} presentation={presentationFor(blocker)} label="Now running" />
+        <LiveWorkLink key={blocker.id} blocker={blocker} presentation={presentationFor(blocker)} label={pageText("nowRunning_9f1bf4")} />
       ) : (
         <div key={blocker.id} className="flex min-w-0 items-center gap-1.5 whitespace-nowrap">
-          <span className="shrink-0 font-medium">Now running</span>
+          <span className="shrink-0 font-medium">{pageText("nowRunning_9f1bf4")}</span>
           <LiveWorkGlyph presentation={presentationFor(blocker)} />
           <LiveWorkLink blocker={blocker} presentation={presentationFor(blocker)} />
         </div>

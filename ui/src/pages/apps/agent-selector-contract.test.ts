@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import englishInterface from "../../i18n/interface/en.json";
 import { describe, expect, it } from "vitest";
 
 function source(relativePath: string) {
@@ -17,7 +18,8 @@ describe("Apps agent selector contract", () => {
     expect(appConnect).toContain("<ConnectionSetupFlow");
     expect(connectionSetupFlow).toContain("<AgentMultiSelect");
     expect(permissions).toContain("<AgentMultiSelect");
-    expect(tester).toContain('placeholder="Search agents…"');
+    const placeholderKeys = Array.from(tester.matchAll(/placeholder=\{pageText\("([^"]+)"\)\}/g), match => match[1]);
+    expect(placeholderKeys.map(key => englishInterface[key as keyof typeof englishInterface])).toContain("Search agents…");
 
     expect(profiles.match(/<AgentSelect/g)).toHaveLength(2);
     expect(profiles).not.toContain("<Select value={agentId}");

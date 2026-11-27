@@ -95,11 +95,9 @@ export function AgentChat() {
     );
   if (!enabled && !chat.data)
     return (
-      <p className="text-sm text-muted-foreground">
-        Agent Chat is disabled for this instance. An administrator can enable it in{" "}
-        <Link className="underline underline-offset-4" to="/company/settings/instance/experimental#experimental-enableAgentChat">Experimental settings</Link>.
-        {" "}Your workspace preference does not change Chat availability. Existing history remains available through task links.
-      </p>
+      <p className="text-sm text-muted-foreground">{pageText("agentChatIsDisabledForThisInstanceAn_f52198")}{" "}
+        <Link className="underline underline-offset-4" to="/company/settings/instance/experimental#experimental-enableAgentChat">{pageText("experimentalSettings_2502ec")}</Link>.
+        {" "}{pageText("yourWorkspacePreferenceDoesNotChangeChatAvailability_99c837")}</p>
     );
   const failed = [agentsView, chatView, ...(rosterAgent ? [] : [historyView])].find((view) => view.kind === "error");
   if (failed)
@@ -113,7 +111,7 @@ export function AgentChat() {
       />
     );
   if (!agent)
-    return <p className="text-sm text-destructive">Agent not found.</p>;
+    return <p className="text-sm text-destructive">{pageText("agentNotFound_157b19")}</p>;
   if (chat.isPending)
     return (
       <p className="text-sm text-muted-foreground">{pageText("loadingConversation_6a8beb")}</p>

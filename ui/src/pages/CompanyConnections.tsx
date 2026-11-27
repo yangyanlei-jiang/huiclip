@@ -1,3 +1,5 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect } from "react";
 import { Link2 } from "lucide-react";
@@ -9,6 +11,7 @@ import { useFastResponsesEnabled } from "../hooks/useFastResponsesEnabled";
 import { PromptInjectionPreventionSettingsSection } from "../components/prompt-injection-prevention/PromptInjectionPreventionSettings";
 
 export function CompanyConnections() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { selectedCompany, selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -16,17 +19,15 @@ export function CompanyConnections() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: selectedCompany?.name ?? "Company", href: "/dashboard" },
-      { label: "Settings", href: "/company/settings" },
-      { label: "Connections" },
+      { label: selectedCompany?.name ?? interfaceNotice("interface:company_7a1994"), href: "/dashboard" },
+      { label: interfaceNotice("interface:settings_c7f73b"), href: "/company/settings" },
+      { label: interfaceNotice("interface:connections_8f3509") },
     ]);
   }, [setBreadcrumbs, selectedCompany?.name]);
 
   if (!selectedCompanyId) {
     return (
-      <div className="text-sm text-muted-foreground">
-        No organization selected. Select an organization from the switcher above.
-      </div>
+      <div className="text-sm text-muted-foreground">{pageText("noOrganizationSelectedSelectAnOrganizationFromThe_160135")}</div>
     );
   }
 

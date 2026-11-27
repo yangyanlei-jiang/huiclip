@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { t as interfaceMessage } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
@@ -45,8 +46,8 @@ export function ProfileSettings() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: "Settings", href: "/company/settings" },
-      { label: "Profile" },
+      { label: interfaceNotice("interface:settings_c7f73b"), href: "/company/settings" },
+      { label: interfaceNotice("interface:profile_ff4fc0") },
     ]);
   }, [setBreadcrumbs]);
 
@@ -133,7 +134,7 @@ export function ProfileSettings() {
   });
 
   if (sessionQuery.isLoading || sessionView.kind === "reconnecting") {
-    return <div className="text-sm text-muted-foreground">Loading profile...</div>;
+    return <div className="text-sm text-muted-foreground">{pageText("loadingProfile_a9e1ee")}</div>;
   }
 
   if (sessionView.kind === "error") {
@@ -167,9 +168,7 @@ export function ProfileSettings() {
           <UserRoundPen className="h-5 w-5 text-muted-foreground" />
           <h1 className="text-lg font-semibold">{pageText("profile_ff4fc0")}</h1>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Control how your account appears in the sidebar and other board surfaces.
-        </p>
+        <p className="text-sm text-muted-foreground">{pageText("controlHowYourAccountAppearsInTheSidebar_257521")}</p>
       </div>
 
       {actionError ? (
@@ -220,7 +219,7 @@ export function ProfileSettings() {
                     disabled={!selectedCompanyId || isSavingProfile}
                   >
                     {uploadAvatarMutation.isPending ? <LoaderCircle className="size-4 animate-spin" /> : <Camera className="size-4" />}
-                    {currentImage ? "Change photo" : "Upload photo"}
+                    {currentImage ? pageText("changePhoto_ed5690") : pageText("uploadPhoto_69abef")}
                   </Button>
                   {currentImage ? (
                     <Button
@@ -237,10 +236,9 @@ export function ProfileSettings() {
               <div className="min-w-0 flex-1 space-y-2 pb-1">
                 <div>
                   <h2 className="truncate text-2xl font-semibold text-foreground">{currentName}</h2>
-                  <p className="truncate text-sm text-muted-foreground">{sessionQuery.data.user.email ?? "No email"}</p>
+                  <p className="truncate text-sm text-muted-foreground">{sessionQuery.data.user.email ?? pageText("noEmail_4ceffd")}</p>
                 </div>
-                <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-                  Click the avatar to upload a new image. {uploadHint}
+                <p className="max-w-2xl text-sm leading-6 text-muted-foreground">{pageText("clickTheAvatarToUploadANewImage_a7458a") + " "}{uploadHint}
                 </p>
               </div>
             </div>
@@ -255,7 +253,7 @@ export function ProfileSettings() {
           }}
         >
           <div className="space-y-2">
-            <Label htmlFor="profile-name">Display name</Label>
+            <Label htmlFor="profile-name">{pageText("displayName_c7874a")}</Label>
             <Input
               id="profile-name"
               value={name}
@@ -263,9 +261,7 @@ export function ProfileSettings() {
               maxLength={120}
               placeholder={pageText("board_e879b0")}
             />
-            <p className="text-xs text-muted-foreground">
-              Shown in the sidebar account footer and comment author surfaces.
-            </p>
+            <p className="text-xs text-muted-foreground">{pageText("shownInTheSidebarAccountFooterAndComment_f6f46d")}</p>
           </div>
 
           <div className="space-y-2">
@@ -276,15 +272,13 @@ export function ProfileSettings() {
               readOnly
               disabled
             />
-            <p className="text-xs text-muted-foreground">
-              Email is managed by your auth session and is read-only here.
-            </p>
+            <p className="text-xs text-muted-foreground">{pageText("emailIsManagedByYourAuthSessionAnd_bcc59d")}</p>
           </div>
 
           <div className="md:col-span-2 flex justify-end">
             <Button type="submit" disabled={isSavingProfile || !name.trim()}>
               {updateMutation.isPending ? <LoaderCircle className="size-4 animate-spin" /> : <Save className="size-4" />}
-              {updateMutation.isPending ? pageText("saving_ae7e88") : "Save profile"}
+              {updateMutation.isPending ? pageText("saving_ae7e88") : pageText("saveProfile_f597c0")}
             </Button>
           </div>
         </form>

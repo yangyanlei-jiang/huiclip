@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { Issue, IssueThreadInteraction } from "@paperclipai/shared";
@@ -36,6 +37,7 @@ function hasPendingPlanConfirmation(interactions: IssueThreadInteraction[] | und
  * the /dev/task-chat-lab harness).
  */
 export function IssuePropertiesPlansTab({ issue }: IssuePropertiesPlansTabProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { data: planDocument, isLoading: planDocumentLoading } = useIssuePlanDocument(issue.id);
   const location = useLocation();
   const [annotationPanelOpen, setAnnotationPanelOpen] = useState(false);
@@ -54,18 +56,16 @@ export function IssuePropertiesPlansTab({ issue }: IssuePropertiesPlansTabProps)
     return (
       <div className="px-1 py-6 text-sm text-muted-foreground">
         {planDocumentLoading ? (
-          "Loading plan…"
+          pageText("loadingPlan_285757")
         ) : issue.workMode === "planning" ? (
           <div className="space-y-2">
-            <p>This task is in plan mode but no plan document has been written yet.</p>
+            <p>{pageText("thisTaskIsInPlanModeButNo_a41043")}</p>
             {pendingPlanConfirmation ? (
-              <p className="text-amber-foreground">
-                A plan confirmation is pending, but the plan document it should confirm is missing.
-              </p>
+              <p className="text-amber-foreground">{pageText("aPlanConfirmationIsPendingButThePlan_4f31ac")}</p>
             ) : null}
           </div>
         ) : (
-          "No plan yet. The plan document, accepted plans, and their revisions will appear here."
+          pageText("noPlanYetThePlanDocumentAcceptedPlans_5fcdd0")
         )}
       </div>
     );

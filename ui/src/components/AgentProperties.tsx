@@ -1,3 +1,4 @@
+import { optionLabel } from "@/i18n/option-label";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { AgentIdentity } from "@/components/AgentIdentity";
@@ -50,14 +51,14 @@ export function AgentProperties({ agent, runtimeState }: AgentPropertiesProps) {
           <AgentStatusBadge status={agent.status} />
         </PropertyRow>
         {lastErrorIsActive && agent.errorReason && (
-          <PropertyRow label="Error reason">
+          <PropertyRow label={pageText("errorReason_ad2fdc")}>
             <span className="text-xs text-red-600 dark:text-red-400 break-words min-w-0">
               {agent.errorReason}
             </span>
           </PropertyRow>
         )}
         <PropertyRow label={translateUi("interfaceCopy.role")}>
-          <span className="text-sm">{roleLabels[agent.role] ?? agent.role}</span>
+          <span className="text-sm">{roleLabels[agent.role] ? optionLabel(roleLabels[agent.role]) : agent.role}</span>
         </PropertyRow>
         {agent.title && (
           <PropertyRow label={translateUi("interfaceCopy.title")}>
@@ -80,7 +81,7 @@ export function AgentProperties({ agent, runtimeState }: AgentPropertiesProps) {
           </PropertyRow>
         )}
         {runtimeState?.lastError && (
-          <PropertyRow label={lastErrorIsActive ? "Last error" : "Last run error"}>
+          <PropertyRow label={lastErrorIsActive ? pageText("lastError_5e4df8") : pageText("lastRunError_766d2e")}>
             <span
               className={
                 lastErrorIsActive
@@ -98,7 +99,7 @@ export function AgentProperties({ agent, runtimeState }: AgentPropertiesProps) {
           </PropertyRow>
         )}
         {agent.reportsTo && (
-          <PropertyRow label="Reports To">
+          <PropertyRow label={pageText("reportsTo_75defa")}>
             {reportsToAgent ? (
               <Link to={agentUrl(reportsToAgent)} className="hover:underline">
                 <AgentIdentity agent={reportsToAgent} size="sm" />

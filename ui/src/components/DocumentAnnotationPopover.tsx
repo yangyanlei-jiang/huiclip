@@ -83,7 +83,7 @@ export function DocumentAnnotationPopover(props: DocumentAnnotationPopoverProps)
     <div
       ref={cardRef}
       role="dialog"
-      aria-label={props.pendingAnchor ? "Add annotation comment" : "Annotation thread"}
+      aria-label={props.pendingAnchor ? pageText("addAnnotationComment_6fc8ea") : pageText("annotationThread_7bbf34")}
       data-testid="document-annotation-popover"
       className="absolute z-(--z-20) w-80 max-w-full rounded-lg border border-border bg-popover text-popover-foreground shadow-xl"
       style={{ top, left }}
@@ -106,7 +106,7 @@ export function DocumentAnnotationPopover(props: DocumentAnnotationPopoverProps)
                 submitComposer();
               }
             }}
-            placeholder="Write a comment…"
+            placeholder={pageText("writeAComment_ee6540")}
             disabled={props.newCommentDisabled || createThread.isPending}
             className="resize-y text-sm"
           />

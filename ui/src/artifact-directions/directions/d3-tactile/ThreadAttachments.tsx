@@ -82,6 +82,7 @@ function DeskItem({ artifact }: { artifact: LabArtifact }) {
 
 /** The pile that stands for the prints that did not fit. */
 function MorePrints({ count }: { count: number }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <button type="button" aria-label={`Open ${count} more images`} className={ITEM}>
       <Place>
@@ -93,7 +94,7 @@ function MorePrints({ count }: { count: number }) {
           </span>
         </span>
       </Place>
-      <span className="text-(length:--text-micro) leading-4 text-(--tac-meta)">more images</span>
+      <span className="text-(length:--text-micro) leading-4 text-(--tac-meta)">{pageText("moreImages_d50a73")}</span>
     </button>
   );
 }
@@ -121,7 +122,7 @@ export function ThreadAttachments({ artifacts }: { artifacts: LabArtifact[] }) {
     <div className="@container/col w-full">
       <section aria-label={pageText("attachments_6771ad")} className={cn("relative flex flex-col gap-2 pt-1", full ? "w-full max-w-(--tac-tray-max) @max-3xl/col:max-w-none" : "w-fit max-w-full")}>
         <p className="flex gap-3 px-1 text-xs text-muted-foreground">
-          {images.length > 0 ? <Count label="Images" count={images.length} /> : null}
+          {images.length > 0 ? <Count label={pageText("images_09e871")} count={images.length} /> : null}
           {files.length > 0 ? <Count label={pageText("files_6ce6c5")} count={files.length} /> : null}
         </p>
         <div className="relative">

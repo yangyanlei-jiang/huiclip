@@ -1,3 +1,6 @@
+import { t as interfaceNotice } from "@/i18n";
+import { t as timeText } from "@/i18n";
+import { t as translateDynamic } from "../../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -193,11 +196,11 @@ function formatRelativeShort(value: string | null | undefined): string {
   const seconds = Math.floor(diff / 1000);
   if (seconds < 60) return `${seconds}s ago`;
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 60) return timeText("interface:relativeAgo_m", { value: minutes });
   const hours = Math.floor(minutes / 60);
-  if (hours < 48) return `${hours}h ago`;
+  if (hours < 48) return timeText("interface:relativeAgo_h", { value: hours });
   const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d ago`;
+  if (days < 30) return timeText("interface:relativeAgo_d", { value: days });
   return date.toLocaleDateString();
 }
 
@@ -335,6 +338,7 @@ export function ImportFromVaultDialog({
   onImportComplete,
   onManageVaults,
 }: ImportFromVaultDialogProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const toast = useToastActions();
@@ -475,13 +479,13 @@ export function ImportFromVaultDialog({
         awsVaults.find((vault) => vault.id === vaultId)?.displayName ?? "AWS";
       if (result.errorCount === draftList.length && result.errorCount > 0) {
         toast.pushToast({
-          title: "Import failed",
+          title: interfaceNotice("interface:importFailed_fbae89"),
           body: `No secrets were imported from ${vaultName}.`,
           tone: "error",
         });
       } else {
         toast.pushToast({
-          title: result.errorCount > 0 ? "Import completed with errors" : "Import complete",
+          title: result.errorCount > 0 ? interfaceNotice("interface:importCompletedWithErrors_8da9d6") : interfaceNotice("interface:importComplete_133f50"),
           body: `${result.importedCount} created · ${result.skippedCount} skipped · ${result.errorCount} failed`,
           tone: result.errorCount > 0 ? "warn" : "success",
         });
@@ -489,7 +493,7 @@ export function ImportFromVaultDialog({
     },
     onError: (error) => {
       toast.pushToast({
-        title: "Import failed",
+        title: interfaceNotice("interface:importFailed_fbae89"),
         body: readableErrorMessage(error),
         tone: "error",
       });
@@ -550,7 +554,7 @@ export function ImportFromVaultDialog({
       })
       .catch((error) => {
         toast.pushToast({
-          title: "Could not load more results",
+          title: interfaceNotice("interface:couldNotLoadMoreResults_f36ea2"),
           body: readableErrorMessage(error),
           tone: "error",
         });
@@ -652,19 +656,15 @@ export function ImportFromVaultDialog({
       >
         <header className="flex items-start justify-between gap-3 border-b border-border/60 px-5 py-4">
           <div className="flex flex-col gap-1">
-            <DialogTitle className="text-base font-semibold">
-              Import from AWS Secrets Manager
-            </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
-              Bring AWS-managed secrets into Paperclip as external references.
-            </DialogDescription>
+            <DialogTitle className="text-base font-semibold">{pageText("importFromAWSSecretsManager_920761")}</DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">{pageText("bringAWSManagedSecretsIntoPaperclipAsExternal_565a7e")}</DialogDescription>
             <Stepper step={step} />
           </div>
           <button
             type="button"
             className="rounded-sm text-muted-foreground transition-opacity hover:opacity-100 opacity-70"
             onClick={() => handleClose()}
-            aria-label="Close import dialog"
+            aria-label={pageText("closeImportDialog_d154f5")}
           >
             <X className="h-4 w-4" />
           </button>
@@ -742,9 +742,7 @@ export function ImportFromVaultDialog({
                 size="sm"
                 onClick={() => setStep("review")}
                 disabled={totalSelected === 0}
-              >
-                Continue → Review
-              </Button>
+              >{pageText("continueReview_b46dec")}</Button>
             )}
             {step === "review" && (
               <Button
@@ -758,8 +756,7 @@ export function ImportFromVaultDialog({
               >
                 {importMutation.isPending ? (
                   <>
-                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> Importing…
-                  </>
+                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />{" " + pageText("importing_820599")}</>
                 ) : (
                   `Import ${draftList.length}`
                 )}
@@ -878,7 +875,7 @@ function SelectStep(props: SelectStepProps) {
       <div className="flex min-h-0 flex-1 items-center justify-center p-6" data-testid="select-empty-vaults">
         <EmptyState
           icon={Cloud}
-          message="No AWS provider vault configured. Add one to import secrets."
+          message={pageText("noAWSProviderVaultConfiguredAddOneTo_7d4c2d")}
           action={onManageVaults ? "Manage vaults" : undefined}
           onAction={onManageVaults}
         />
@@ -891,7 +888,7 @@ function SelectStep(props: SelectStepProps) {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex flex-wrap items-center gap-2 border-b border-border/60 px-5 py-3">
-        <label className="text-xs uppercase tracking-wide text-muted-foreground">Vault</label>
+        <label className="text-xs uppercase tracking-wide text-muted-foreground">{pageText("vault_fb46e3")}</label>
         {awsVaults.length === 1 && eligible.length === 1 ? (
           <span className="text-xs font-medium" data-testid="vault-static-label">
             {eligible[0].displayName}
@@ -901,8 +898,8 @@ function SelectStep(props: SelectStepProps) {
             value={vaultId ?? undefined}
             onValueChange={onVaultChange}
           >
-            <SelectTrigger size="sm" className="text-xs" aria-label="Select AWS vault">
-              <SelectValue placeholder="Select an AWS vault" />
+            <SelectTrigger size="sm" className="text-xs" aria-label={pageText("selectAWSVault_540e5b")}>
+              <SelectValue placeholder={pageText("selectAnAWSVault_ae6b30")} />
             </SelectTrigger>
             <SelectContent>
               {awsVaults.map((vault) => {
@@ -924,7 +921,7 @@ function SelectStep(props: SelectStepProps) {
                       )}
                       {blocked && (
                         <Badge variant="outline" className="px-1 py-0 text-(length:--text-nano) text-muted-foreground">
-                          {vault.status === "coming_soon" ? "coming soon" : vault.status}
+                          {vault.status === "coming_soon" ? pageText("comingSoon_9549bf") : vault.status}
                         </Badge>
                       )}
                     </span>
@@ -940,9 +937,9 @@ function SelectStep(props: SelectStepProps) {
           <Input
             value={searchInput}
             onChange={(event) => onSearchInput(event.target.value)}
-            placeholder="Search by name, ARN, tag"
+            placeholder={pageText("searchByNameARNTag_96bc8e")}
             className="pl-7 pr-7 text-xs"
-            aria-label="Search remote secrets"
+            aria-label={pageText("searchRemoteSecrets_ac2351")}
             data-testid="vault-search"
           />
           {showSearchSpinner && (
@@ -955,7 +952,7 @@ function SelectStep(props: SelectStepProps) {
           size="sm"
           onClick={onRefresh}
           disabled={previewLoading || !vaultId}
-          aria-label="Refresh remote secrets"
+          aria-label={pageText("refreshRemoteSecrets_ab3327")}
         >
           <RefreshCw className={cn("h-3.5 w-3.5", previewLoading && "animate-spin")} />
         </Button>
@@ -964,15 +961,14 @@ function SelectStep(props: SelectStepProps) {
       {selectedNotVisible > 0 && (
         <div className="flex items-center justify-between border-b border-border/60 bg-muted/20 px-5 py-1.5 text-xs text-muted-foreground">
           <span>
-            {selection.size} selected · {selectedNotVisible} not visible with current search
-          </span>
+            {selection.size}{" " + pageText("selected_608416") + " "}{selectedNotVisible}{" " + pageText("notVisibleWithCurrentSearch_718edb")}</span>
           <Button
             variant="ghost"
             size="sm"
             className="h-6 px-2 text-xs"
             onClick={() => onShowOnlySelectedChange(!showOnlySelected)}
           >
-            {showOnlySelected ? "Show all" : "Show selected"}
+            {showOnlySelected ? pageText("showAll_50a279") : pageText("showSelected_ed3a19")}
           </Button>
         </div>
       )}
@@ -992,14 +988,14 @@ function SelectStep(props: SelectStepProps) {
                   <Checkbox
                     checked={headerCheckboxState}
                     onCheckedChange={() => toggleAllLoaded()}
-                    aria-label={`Select all loaded (${selectableInLoaded.length})`}
+                    aria-label={translateDynamic("dynamic:selectAllLoadedCount", { value1: selectableInLoaded.length })}
                     disabled={selectableInLoaded.length === 0}
                   />
                 </th>
-                <th className="px-2 py-2 text-left font-medium">Remote name</th>
-                <th className="px-2 py-2 text-left font-medium">Reference</th>
-                <th className="px-2 py-2 text-left font-medium">Last changed</th>
-                <th className="px-2 py-2 text-left font-medium">Suggested name</th>
+                <th className="px-2 py-2 text-left font-medium">{pageText("remoteName_5df81a")}</th>
+                <th className="px-2 py-2 text-left font-medium">{pageText("reference_db1c78")}</th>
+                <th className="px-2 py-2 text-left font-medium">{pageText("lastChanged_b41824")}</th>
+                <th className="px-2 py-2 text-left font-medium">{pageText("suggestedName_c0a458")}</th>
                 <th className="px-2 py-2 text-left font-medium">{translateUi("interfaceCopy.state")}</th>
               </tr>
             </thead>
@@ -1032,7 +1028,7 @@ function SelectStep(props: SelectStepProps) {
                         checked={isSelected}
                         onCheckedChange={() => toggleRow(candidate)}
                         disabled={!candidate.importable}
-                        aria-label={`Select ${candidate.remoteName}`}
+                        aria-label={translateDynamic("dynamic:select", { value1: candidate.remoteName })}
                       />
                     </td>
                     <td className="px-2 py-2.5">
@@ -1055,9 +1051,7 @@ function SelectStep(props: SelectStepProps) {
                         <StatusBadge status={candidate.status} />
                         {candidate.status === "duplicate" &&
                           candidate.conflicts.find((c) => c.type === "exact_reference")?.existingSecretId && (
-                            <span className="text-(length:--text-micro) text-muted-foreground">
-                              Already imported
-                            </span>
+                            <span className="text-(length:--text-micro) text-muted-foreground">{pageText("alreadyImported_ca76ed")}</span>
                           )}
                       </div>
                       {candidate.status === "conflict" && candidate.conflicts.length > 0 && (
@@ -1083,9 +1077,8 @@ function SelectStep(props: SelectStepProps) {
         {hasNextPage && !previewError && (
           <div className="flex items-center justify-between border-t border-border/60 px-5 py-2 text-xs text-muted-foreground">
             <span>
-              {candidates.length} loaded
-              {selectableInLoaded.length > 0 && (
-                <span> · {selectableInLoaded.length} selectable</span>
+              {candidates.length}{" " + pageText("loaded_131009")}{selectableInLoaded.length > 0 && (
+                <span> · {selectableInLoaded.length}{" " + pageText("selectable_912ee5")}</span>
               )}
             </span>
             <Button
@@ -1124,14 +1117,14 @@ function PreviewErrorBanner({ error, onRetry }: { error: unknown; onRetry: () =>
       <div className="flex-1">
         <div className="font-medium">
           {isPermission
-            ? "AWS denied list access"
+            ? pageText("awsDeniedListAccess_dff675")
             : isThrottling
-              ? "AWS throttled the listing request"
-              : "Could not load remote secrets"}
+              ? pageText("awsThrottledTheListingRequest_b3b2e1")
+              : pageText("couldNotLoadRemoteSecrets_02dc2d")}
         </div>
         <div className="mt-1 text-xs leading-relaxed text-destructive/80">
           {isPermission
-            ? "The AWS principal behind this vault is missing secretsmanager:ListSecrets. Update IAM and try again."
+            ? pageText("theAWSPrincipalBehindThisVaultIsMissing_e939d5")
             : message}
         </div>
         <div className="mt-2 flex items-center gap-2">
@@ -1143,8 +1136,7 @@ function PreviewErrorBanner({ error, onRetry }: { error: unknown; onRetry: () =>
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-1 text-xs font-medium underline"
-            >
-              IAM reference <ExternalLink className="h-3 w-3" />
+            >{pageText("iamReference_d4ac84") + " "}<ExternalLink className="h-3 w-3" />
             </a>
           )}
         </div>
@@ -1164,6 +1156,7 @@ function SkeletonRows({ rows }: { rows: number }) {
 }
 
 function EmptyCandidates({ query }: { query: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (query) {
     return (
       <EmptyState
@@ -1175,7 +1168,7 @@ function EmptyCandidates({ query }: { query: string }) {
   return (
     <EmptyState
       icon={Database}
-      message="No secrets visible to this vault."
+      message={pageText("noSecretsVisibleToThisVault_a78095")}
     />
   );
 }
@@ -1196,7 +1189,7 @@ function ReviewStep({ drafts, reviewErrors, updateDraft, removeDraft, importing 
       <div className="flex min-h-0 flex-1 items-center justify-center p-6">
         <EmptyState
           icon={Info}
-          message="No secrets selected. Go back to pick remote secrets to import."
+          message={pageText("noSecretsSelectedGoBackToPickRemote_830fa1")}
         />
       </div>
     );
@@ -1208,11 +1201,10 @@ function ReviewStep({ drafts, reviewErrors, updateDraft, removeDraft, importing 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex flex-wrap items-center gap-3 border-b border-border/60 bg-muted/20 px-5 py-3 text-xs">
-        <span className="font-medium">{ready} secrets ready to import</span>
+        <span className="font-medium">{ready}{" " + pageText("secretsReadyToImport_62c0ca")}</span>
         {blocked > 0 && (
           <span className="text-amber-600 dark:text-amber-400">
-            {blocked} need attention before import
-          </span>
+            {blocked}{" " + pageText("needAttentionBeforeImport_a0a86b")}</span>
         )}
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto" data-testid="review-list">
@@ -1240,7 +1232,7 @@ function ReviewStep({ drafts, reviewErrors, updateDraft, removeDraft, importing 
                   </div>
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                     <label className="flex flex-col gap-1 text-xs">
-                      <span className="text-muted-foreground">Paperclip name</span>
+                      <span className="text-muted-foreground">{pageText("paperclipName_33d056")}</span>
                       <Input
                         value={draft.name}
                         onChange={(e) =>
@@ -1300,7 +1292,7 @@ function ReviewStep({ drafts, reviewErrors, updateDraft, removeDraft, importing 
                   variant="ghost"
                   size="icon"
                   onClick={() => removeDraft(draft.candidate.externalRef)}
-                  aria-label={`Remove ${draft.candidate.remoteName}`}
+                  aria-label={translateDynamic("dynamic:remove", { value1: draft.candidate.remoteName })}
                   className="h-7 w-7"
                   disabled={importing}
                 >
@@ -1453,7 +1445,7 @@ function FooterStatus({
     return (
       <div className="text-xs text-muted-foreground">
         {totalSelected === 0
-          ? "Select remote secrets to import"
+          ? pageText("selectRemoteSecretsToImport_28283c")
           : `${totalSelected} selected`}
       </div>
     );
@@ -1461,8 +1453,7 @@ function FooterStatus({
   if (step === "review") {
     return (
       <div className="text-xs text-muted-foreground">
-        {readyReviewCount} ready
-        {blockedReviewCount > 0 && (
+        {readyReviewCount}{" " + pageText("ready_75c053")}{blockedReviewCount > 0 && (
           <span className="ml-2 text-amber-600 dark:text-amber-400">
             · {blockedReviewCount}{" " + pageText("blocked_df88b8")}</span>
         )}

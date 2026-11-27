@@ -244,13 +244,10 @@ export function CommandPalette() {
       <CommandList>
         <CommandEmpty>
           {showSearchAll ? (
-            <span>
-              No quick task matches. Press{" "}
-              <kbd className="rounded border border-border bg-muted px-1 py-0.5 text-(length:--text-nano)">↵</kbd>{" "}
-              to <span className="font-medium">search all</span> or keep typing to refine.
-            </span>
+            <span>{pageText("noQuickTaskMatchesPress_ff31fe")}{" "}
+              <kbd className="rounded border border-border bg-muted px-1 py-0.5 text-(length:--text-nano)">↵</kbd>{" "}{pageText("to_4374aa") + " "}<span className="font-medium">{pageText("searchAll_47bf39")}</span>{" " + pageText("orKeepTypingToRefine_bc7364")}</span>
           ) : (
-            "No results found."
+            pageText("noResultsFound_e9cc6d")
           )}
         </CommandEmpty>
 
@@ -263,11 +260,10 @@ export function CommandPalette() {
               data-testid="command-search-all"
             >
               <Search className="mr-2 h-4 w-4" />
-              <span className="flex-1 truncate">
-                Search all for <span className="font-semibold">&ldquo;{searchQuery}&rdquo;</span>
+              <span className="flex-1 truncate">{pageText("searchAllFor_7414e1") + " "}<span className="font-semibold">&ldquo;{searchQuery}&rdquo;</span>
               </span>
               <span className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground">
-                <span>open full search</span>
+                <span>{pageText("openFullSearch_da2012")}</span>
                 <kbd className="rounded border border-border bg-background px-1 py-0.5 text-(length:--text-nano)">↵</kbd>
               </span>
             </CommandItem>
@@ -323,9 +319,7 @@ export function CommandPalette() {
               openNewIssue();
             }}
           >
-            <SquarePen className="mr-2 h-4 w-4" />
-            Create new task
-            <span className="ml-auto text-xs text-muted-foreground">C</span>
+            <SquarePen className="mr-2 h-4 w-4" />{pageText("createNewTask_5f80d7")}<span className="ml-auto text-xs text-muted-foreground">C</span>
           </CommandItem>
           {onIssueDetail && fileViewerEnabled && (
             <CommandItem
@@ -343,13 +337,9 @@ export function CommandPalette() {
               openNewAgent();
             }}
           >
-            <Plus className="mr-2 h-4 w-4" />
-            Create new agent
-          </CommandItem>
+            <Plus className="mr-2 h-4 w-4" />{pageText("createNewAgent_b64126")}</CommandItem>
           <CommandItem onSelect={() => go("/projects")}>
-            <Plus className="mr-2 h-4 w-4" />
-            Create new project
-          </CommandItem>
+            <Plus className="mr-2 h-4 w-4" />{pageText("createNewProject_dcd5a8")}</CommandItem>
         </CommandGroup>
 
         <CommandSeparator />

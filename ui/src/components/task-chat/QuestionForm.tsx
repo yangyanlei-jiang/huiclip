@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
@@ -136,6 +137,7 @@ function SelectOption({
   disabled: boolean;
   onClick: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <button
       type="button"
@@ -177,9 +179,7 @@ function SelectOption({
         <span className="flex flex-wrap items-center gap-1.5 text-sm font-medium leading-5 text-foreground">
           <span>{label}</span>
           {recommended ? (
-            <span className="rounded-sm bg-background/70 px-1.5 py-0.5 text-(length:--text-micro) font-medium text-muted-foreground">
-              Recommended
-            </span>
+            <span className="rounded-sm bg-background/70 px-1.5 py-0.5 text-(length:--text-micro) font-medium text-muted-foreground">{pageText("recommended_9ef937")}</span>
           ) : null}
         </span>
         {description ? (
@@ -199,6 +199,7 @@ export function QuestionResponseSummary({
   questionSet: PaperclipQuestionSet;
   response: PaperclipQuestionResponse;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <dl className="grid gap-2 text-sm">
       {questionSet.questions.map((question) => {
@@ -226,7 +227,7 @@ export function QuestionResponseSummary({
               </span>
             </dt>
             <dd className="mt-0.5 text-foreground">
-              {values.length > 0 ? values.join(", ") : "No answer"}
+              {values.length > 0 ? values.join(", ") : pageText("noAnswer_a9c16d")}
             </dd>
           </div>
         );
@@ -333,9 +334,7 @@ function QuestionFormForRequest({
   );
   if (!question)
     return (
-      <p className="text-sm text-muted-foreground">
-        No answerable questions were provided.
-      </p>
+      <p className="text-sm text-muted-foreground">{pageText("noAnswerableQuestionsWereProvided_2f3db0")}</p>
     );
   const answer = answers[question.id] ?? {};
   const selected = answer.selectedOptionIds ?? [];
@@ -477,26 +476,26 @@ function QuestionFormForRequest({
     questionSet.questions.length > 1 ? (
       <nav
         className="flex shrink-0 items-center gap-1"
-        aria-label="Question pagination"
+        aria-label={pageText("questionPagination_c13113")}
       >
         <Button
           type="button"
           size="icon-xs"
           variant="ghost"
-          aria-label="Previous question"
+          aria-label={pageText("previousQuestion_365a52")}
           disabled={disabled || working != null || page === 0}
           onClick={() => setPage((current) => current - 1)}
         >
           <ChevronLeft aria-hidden />
         </Button>
         <span className="min-w-10 text-center tabular-nums">
-          {page + 1} of {questionSet.questions.length}
+          {page + 1}{" " + pageText("of_de04fa") + " "}{questionSet.questions.length}
         </span>
         <Button
           type="button"
           size="icon-xs"
           variant="ghost"
-          aria-label="Next question"
+          aria-label={pageText("nextQuestion_2cc42c")}
           // The arrows browse; they do not validate. A send that finds an
           // earlier answer missing returns to that question (see submit).
           disabled={disabled || working != null || isLastPage}
@@ -548,7 +547,7 @@ function QuestionFormForRequest({
       {questionSet.description ? (
         <div
           role="region"
-          aria-label="Question context"
+          aria-label={pageText("questionContext_88ea61")}
           tabIndex={0}
           className="mb-3 max-h-96 overflow-auto text-sm text-muted-foreground"
         >
@@ -557,7 +556,7 @@ function QuestionFormForRequest({
       ) : null}
       {question.answerMode === "text" && presentation !== "decision" ? (
         <div className="mb-2 flex items-center gap-3 text-xs text-muted-foreground">
-          {question.answerMode === "text" ? <span>Write an answer</span> : null}
+          {question.answerMode === "text" ? <span>{pageText("writeAnAnswer_41ca9f")}</span> : null}
         </div>
       ) : null}
       {pagination ? (
@@ -601,7 +600,7 @@ function QuestionFormForRequest({
             value={answer.text ?? ""}
             disabled={disabled || working != null}
             onChange={(value) => updateAnswer({ text: value })}
-            placeholder="Write your answer"
+            placeholder={pageText("writeYourAnswer_9a32a2")}
             imageUploadHandler={imageUploadHandler}
             mentions={mentions}
             autoFocus
@@ -632,8 +631,8 @@ function QuestionFormForRequest({
                     [question.id]: event.target.value,
                   }))
                 }
-                placeholder="Filter choices"
-                aria-label={`Filter choices for ${question.prompt}`}
+                placeholder={pageText("filterChoices_3298e1")}
+                aria-label={translateDynamic("dynamic:filterChoicesFor", { value1: question.prompt })}
                 className="pl-8"
               />
             </label>
@@ -655,7 +654,7 @@ function QuestionFormForRequest({
             <div className="space-y-1.5">
               <SelectOption
                 id={`${id}-${question.id}-custom`}
-                label={question.customAnswer?.label ?? "Other"}
+                label={question.customAnswer?.label ?? pageText("other_6e6a6f")}
                 selected={isCustomActive}
                 multiple={multiple}
                 disabled={disabled || working != null}
@@ -668,7 +667,7 @@ function QuestionFormForRequest({
                   testId="question-other-answer-composer"
                   value={answer.customText ?? ""}
                   placeholder={
-                    question.customAnswer?.placeholder ?? "Type your answer"
+                    question.customAnswer?.placeholder ?? pageText("typeYourAnswer_2dd63e")
                   }
                   disabled={disabled || working != null}
                   onChange={(value) =>
@@ -719,9 +718,7 @@ function QuestionFormForRequest({
               variant="outline"
               disabled={busy}
               onClick={skipQuestion}
-            >
-              Skip
-            </Button>
+            >{pageText("skip_3da474")}</Button>
           ) : null}
           <Button
             type="button"
@@ -732,7 +729,7 @@ function QuestionFormForRequest({
             {working === "submit" ? (
               <Loader2 aria-hidden className="h-4 w-4 animate-spin" />
             ) : null}
-            {isLastPage ? (questionSet.submitLabel ?? "Submit answers") : pageText("next_bc9819")}
+            {isLastPage ? (questionSet.submitLabel ?? pageText("submitAnswers_988c41")) : pageText("next_bc9819")}
           </Button>
         </div>
       </DecisionCardFooter>

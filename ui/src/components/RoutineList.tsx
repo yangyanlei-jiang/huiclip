@@ -1,3 +1,5 @@
+import { controlText } from "@/i18n/controls";
+import { t as translateDynamic } from "../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import type { AgentAppearance } from "@paperclipai/shared";
 import { AgentAvatar } from "@/components/AgentAvatar";
@@ -127,7 +129,7 @@ export function RoutineListRow<TRoutine extends RoutineListRowItem>({
             type="checkbox"
             className="h-4 w-4 rounded border-border"
             checked={selected}
-            aria-label={`Select ${routine.title}`}
+            aria-label={translateDynamic("dynamic:select", { value1: routine.title })}
             onChange={(event) => onSelectChange?.(routine, event.target.checked)}
           />
         </div>
@@ -137,7 +139,7 @@ export function RoutineListRow<TRoutine extends RoutineListRowItem>({
           <span className="truncate text-sm font-medium">{routine.title}</span>
           {(isArchived || routine.status === "paused" || isDraft) ? (
             <span className="text-xs text-muted-foreground">
-              {isArchived ? pageText("archived_48f0f9") : isDraft ? "draft" : pageText("paused_11b1b5")}
+              {isArchived ? pageText("archived_48f0f9") : isDraft ? pageText("draft_0e7766") : pageText("paused_11b1b5")}
             </span>
           ) : null}
           {managedByLabel ? (
@@ -150,11 +152,11 @@ export function RoutineListRow<TRoutine extends RoutineListRowItem>({
               className="h-2.5 w-2.5 shrink-0 rounded-sm"
               style={{ backgroundColor: project?.color ?? "var(--project-none)" }}
             />
-            <span>{routine.projectId ? (project?.name ?? "Unknown project") : pageText("noProject_c326b7")}</span>
+            <span>{routine.projectId ? (project?.name ?? pageText("unknownProject_057c8f")) : pageText("noProject_c326b7")}</span>
           </span>
           <span className="flex items-center gap-2">
             {routine.assigneeAgentId ? <AgentAvatar agent={{ ...agent, id: routine.assigneeAgentId }} size={16} className="h-3.5 w-3.5 shrink-0"/> : null}
-            <span>{routine.assigneeAgentId ? (agent?.name ?? "Unknown agent") : "No default agent"}</span>
+            <span>{routine.assigneeAgentId ? (agent?.name ?? pageText("unknownAgent_4c2943")) : pageText("noDefaultAgent_836ecc")}</span>
           </span>
           <span>
             {formatLastRunTimestamp(routine.lastRun?.triggeredAt)}
@@ -185,16 +187,16 @@ export function RoutineListRow<TRoutine extends RoutineListRowItem>({
             checked={enabled}
             onCheckedChange={() => onToggleEnabled(routine, enabled)}
             disabled={isStatusPending || isArchived || disableToggle}
-            aria-label={enabled ? `Disable ${routine.title}` : `Enable ${routine.title}`}
+            aria-label={controlText(enabled ? "disableRoutine" : "enableRoutine", { name: routine.title })}
           />
           <span className="w-12 text-xs text-muted-foreground">
-            {isArchived ? pageText("archived_eddc81") : isDraft ? "Draft" : enabled ? pageText("on_e0049a") : pageText("off_e3de5a")}
+            {isArchived ? pageText("archived_eddc81") : isDraft ? pageText("draft_23d33e") : enabled ? pageText("on_e0049a") : pageText("off_e3de5a")}
           </span>
         </div>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon-sm" aria-label={`More actions for ${routine.title}`}>
+            <Button variant="ghost" size="icon-sm" aria-label={translateDynamic("dynamic:moreActionsFor", { value1: routine.title })}>
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>

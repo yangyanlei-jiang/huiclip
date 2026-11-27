@@ -134,9 +134,7 @@ export function ConnectModelPreview({
                 checked={useApiKeys}
                 onCheckedChange={(checked) => setUseApiKeys(checked === true)}
               />
-              <span className="text-sm font-medium text-foreground">
-                Use API keys instead
-              </span>
+              <span className="text-sm font-medium text-foreground">{pageText("useAPIKeysInstead_3ddb78")}</span>
             </label>
           )}
         </div>

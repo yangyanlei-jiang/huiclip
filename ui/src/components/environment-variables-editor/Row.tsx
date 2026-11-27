@@ -218,11 +218,11 @@ export function EnvironmentVariableRow({
             showNameIssue && nameIssue?.level === "error" && "border-destructive focus-visible:ring-destructive/40",
             showNameIssue && nameIssue?.level === "warn" && "border-amber-500 focus-visible:ring-amber-500/40",
           )}
-          placeholder="KEY"
+          placeholder={pageText("environmentKeyHint")}
           value={row.name}
           spellCheck={false}
           disabled={disabled}
-          aria-label="Variable name"
+          aria-label={pageText("variableName_39179c")}
           aria-invalid={showNameIssue && nameIssue?.level === "error" ? true : undefined}
           aria-describedby={showNameIssue && nameIssue ? nameErrorId : undefined}
           onChange={(event) => onPatch({ name: event.target.value })}
@@ -266,7 +266,7 @@ export function EnvironmentVariableRow({
                     <DropdownMenuTrigger asChild disabled={disabled}>
                       <button
                         type="button"
-                        aria-label="Value source"
+                        aria-label={pageText("valueSource_c0ae15")}
                         className="flex shrink-0 items-center gap-0.5 border-r border-border px-2 text-muted-foreground hover:bg-accent/50 disabled:pointer-events-none"
                       >
                         {row.source === "text" ? (
@@ -284,18 +284,16 @@ export function EnvironmentVariableRow({
                 </Tooltip>
                 <DropdownMenuContent align="start" className="w-56">
                   <DropdownMenuItem className="flex-col items-start gap-0.5" onSelect={() => switchSource("text")}>
-                    <span className="text-sm">Text value</span>
-                    <span className="text-(length:--text-micro) text-muted-foreground">Store the value inline as plain text.</span>
+                    <span className="text-sm">{pageText("textValue_9fe378")}</span>
+                    <span className="text-(length:--text-micro) text-muted-foreground">{pageText("storeTheValueInlineAsPlainText_33cd17")}</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem className="flex-col items-start gap-0.5" onSelect={() => switchSource("secret")}>
-                    <span className="text-sm">Organization secret</span>
-                    <span className="text-(length:--text-micro) text-muted-foreground">Resolve a stored organization secret at run start.</span>
+                    <span className="text-sm">{pageText("organizationSecret_98e5a3")}</span>
+                    <span className="text-(length:--text-micro) text-muted-foreground">{pageText("resolveAStoredOrganizationSecretAtRunStart_ee67d0")}</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem className="flex-col items-start gap-0.5" onSelect={() => switchSource("user_secret")}>
-                    <span className="text-sm">User secret</span>
-                    <span className="text-(length:--text-micro) text-muted-foreground">
-                      Resolve the responsible user&apos;s own value at run start.
-                    </span>
+                    <span className="text-sm">{pageText("userSecret_c62e9d")}</span>
+                    <span className="text-(length:--text-micro) text-muted-foreground">{pageText("resolveTheResponsibleUserSOwnValueAt_93d98f")}</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -310,7 +308,7 @@ export function EnvironmentVariableRow({
                     type={sensitive ? "password" : "text"}
                     spellCheck={false}
                     disabled={disabled}
-                    aria-label="Variable value"
+                    aria-label={pageText("variableValue_2e07a2")}
                     onChange={(event) => onPatch({ textValue: event.target.value })}
                     onKeyDown={(event) => {
                       if (event.key === "Enter" && isLast) {
@@ -326,17 +324,17 @@ export function EnvironmentVariableRow({
                         onClick={openStoreAsSecret}
                         disabled={disabled}
                         className="flex items-center gap-1 px-2 text-(length:--text-micro) text-amber-700 hover:bg-amber-500/10 dark:text-amber-400"
-                        title="This value looks sensitive — store it as a secret"
+                        title={pageText("thisValueLooksSensitiveStoreItAsA_1af63e")}
                       >
                         <ShieldAlert className="size-3.5" />
-                        <span className="hidden @[30rem]/env:inline">Store as secret</span>
+                        <span className="hidden @[30rem]/env:inline">{pageText("storeAsSecret_2c40b2")}</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => onPatch({ sensitiveDismissed: true })}
                         disabled={disabled}
-                        aria-label="Dismiss sensitive-value suggestion"
-                        title="Dismiss — keep this value as plain text"
+                        aria-label={pageText("dismissSensitiveValueSuggestion_e7039a")}
+                        title={pageText("dismissKeepThisValueAsPlainText_ef9a02")}
                         className="flex items-center px-1.5 text-amber-700/60 hover:bg-amber-500/10 hover:text-amber-700 dark:text-amber-400/60 dark:hover:text-amber-400"
                       >
                         <X className="size-3" />
@@ -382,7 +380,7 @@ export function EnvironmentVariableRow({
                           {versionTagLabel}
                         </button>
                       </PopoverAnchor>
-                      <PopoverContent align="end" className="w-44 p-1" role="radiogroup" aria-label="Secret version">
+                      <PopoverContent align="end" className="w-44 p-1" role="radiogroup" aria-label={pageText("secretVersion_8c74ef")}>
                         <button
                           type="button"
                           role="radio"
@@ -395,8 +393,7 @@ export function EnvironmentVariableRow({
                             "flex w-full items-center justify-between rounded px-2 py-1.5 text-sm hover:bg-accent",
                             row.version === "latest" && "font-medium",
                           )}
-                        >
-                          latest <span className="text-(length:--text-micro) text-muted-foreground">(recommended)</span>
+                        >{pageText("latest_1481d0") + " "}<span className="text-(length:--text-micro) text-muted-foreground">{pageText("recommended_1be21a")}</span>
                         </button>
                         {Array.from({ length: versions }, (_, idx) => versions - idx)
                           .filter((v) => v > 0)
@@ -426,7 +423,7 @@ export function EnvironmentVariableRow({
                 <div className="grid min-w-0 flex-1 grid-cols-(--gtc-13)">
                   {userSecretsEnabled ? (
                     <select
-                      aria-label="User secret"
+                      aria-label={pageText("userSecret_c62e9d")}
                       value={row.userSecretKey}
                       disabled={disabled}
                       onChange={(event) => {
@@ -439,9 +436,9 @@ export function EnvironmentVariableRow({
                       }}
                       className="min-w-0 bg-transparent px-2 py-1.5 text-sm font-mono outline-none disabled:pointer-events-none"
                     >
-                      <option value="">Select user secret...</option>
+                      <option value="">{pageText("selectUserSecret_f7c187")}</option>
                       {row.userSecretKey && !userSecretDefinitions?.some((definition) => definition.key === row.userSecretKey) ? (
-                        <option value={row.userSecretKey}>Unknown ({row.userSecretKey})</option>
+                        <option value={row.userSecretKey}>{pageText("unknown_c391e5")}{row.userSecretKey})</option>
                       ) : null}
                       {(userSecretDefinitions ?? []).map((definition) => (
                         <option key={definition.id} value={definition.key}>
@@ -453,23 +450,23 @@ export function EnvironmentVariableRow({
                   ) : (
                     <input
                       className={valueTextInputClass}
-                      placeholder="user-secret key"
+                      placeholder={pageText("userSecretKey_da607a")}
                       value={row.userSecretKey}
                       spellCheck={false}
                       disabled={disabled}
-                      aria-label="User secret key"
+                      aria-label={pageText("userSecretKey_751545")}
                       onChange={(event) => onPatch({ userSecretKey: event.target.value })}
                     />
                   )}
                   <select
-                    aria-label="Requirement"
+                    aria-label={pageText("requirement_e9c366")}
                     value={row.required ? "required" : "optional"}
                     disabled={disabled}
                     onChange={(event) => onPatch({ required: event.target.value === "required" })}
                     className="border-l border-border bg-transparent px-2 py-1.5 text-xs font-medium text-muted-foreground outline-none disabled:pointer-events-none"
                   >
-                    <option value="required">Required</option>
-                    <option value="optional">Optional</option>
+                    <option value="required">{pageText("required_eed6bf")}</option>
+                    <option value="optional">{pageText("optional_0c6c41")}</option>
                   </select>
                 </div>
               )}
@@ -536,8 +533,7 @@ export function EnvironmentVariableRow({
 
         {/* 5s undo after Secret→Text */}
         {undoPrev ? (
-          <p className="mt-0.5 inline-flex items-center gap-2 text-(length:--text-micro) text-muted-foreground">
-            Reverted to text —{" "}
+          <p className="mt-0.5 inline-flex items-center gap-2 text-(length:--text-micro) text-muted-foreground">{pageText("revertedToText_4d1948")}{" "}
             <button
               type="button"
               className="font-medium text-foreground underline underline-offset-2 hover:text-primary"
@@ -545,9 +541,7 @@ export function EnvironmentVariableRow({
                 onPatch({ source: "secret", secretId: undoPrev.secretId, version: undoPrev.version, textValue: "" });
                 setUndoPrev(null);
               }}
-            >
-              Undo
-            </button>
+            >{pageText("undo_39fc72")}</button>
           </p>
         ) : null}
       </div>
@@ -589,9 +583,7 @@ export function EnvironmentVariableRow({
                   // closing race as the picker's + Create item (PAP-12476/12477).
                   window.setTimeout(openStoreAsSecret, 0);
                 }}
-              >
-                Store as secret…
-              </DropdownMenuItem>
+              >{pageText("storeAsSecret_cd2968")}</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : null}

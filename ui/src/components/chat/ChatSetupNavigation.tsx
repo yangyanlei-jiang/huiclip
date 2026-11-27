@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useQuery } from "@tanstack/react-query";
 import type { GitHubAppWizardState } from "@paperclipai/shared";
 import { githubChatApi } from "@/api/githubChat";
@@ -25,5 +26,5 @@ export function ChatSetupSidebar({ NavItem = SidebarNavItem }: { NavItem?: typeo
 export function ChatSetupNavigation(props: {
   labels?: string[]; step: number; availableStep: number; disabled?: boolean; onSelect: (step: number) => void;
 }) {
-  return <SetupWizardNavigation {...props} labels={props.labels ?? ["Choose agent", "Connect provider", "Try it"]} ariaLabel="Connection setup progress" />;
+  return <SetupWizardNavigation {...props} labels={props.labels ?? ["Choose agent", "Connect provider", "Try it"]} ariaLabel={interfaceNotice("interface:connectionSetupProgress_1a41f8")} />;
 }

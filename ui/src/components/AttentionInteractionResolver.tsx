@@ -149,9 +149,7 @@ export function AttentionInteractionResolver({
   if (error || !interaction) {
     return (
       <div className="space-y-3 py-3">
-        <p className="text-xs text-muted-foreground">
-          This decision is no longer available — it may have been resolved elsewhere.
-        </p>
+        <p className="text-xs text-muted-foreground">{pageText("thisDecisionIsNoLongerAvailableItMay_8f4734")}</p>
         <DecisionCardFooter leading={footerSlot} />
       </div>
     );

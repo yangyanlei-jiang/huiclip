@@ -1,3 +1,4 @@
+import { optionLabel } from "@/i18n/option-label";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useLocation } from "@/lib/router";
@@ -78,19 +79,15 @@ export function AppsSidebar() {
             badgeLabel="waiting for your OK"
           />
         </div>
-        <div className="px-3 pb-1 pt-4 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-          Developer
-        </div>
-        <p className="px-3 pb-1.5 text-(length:--text-micro) leading-snug text-muted-foreground/70">
-          Advanced setup for developers. Most teams never open this.
-        </p>
+        <div className="px-3 pb-1 pt-4 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">{pageText("developer_7e08eb")}</div>
+        <p className="px-3 pb-1.5 text-(length:--text-micro) leading-snug text-muted-foreground/70">{pageText("advancedSetupForDevelopersMostTeamsNeverOpen_3e313b")}</p>
         <div className="flex flex-col gap-0.5">
           <SidebarNavItem to="/apps/connections" label={translateUi("interfaceCopy.connections")} icon={AppWindow} end />
           {developerTabs.map((tab) => (
             <SidebarNavItem
               key={tab.key}
               to={advancedTabHref(tab.key)}
-              label={tab.label}
+              label={optionLabel(tab.label)}
               icon={tab.icon}
               end
             />

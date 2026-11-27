@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState, type ReactNode } from "react";
@@ -108,6 +109,7 @@ export function connectionProviderName(
 }
 
 function PostHogConfigurationSection({ connection }: { connection: ToolConnection }) {
+  const { t: pageText } = usePageTranslation("interface");
   const raw = connection.config?.methodConfig;
   const config = raw && typeof raw === "object" && !Array.isArray(raw)
     ? raw as Record<string, unknown>
@@ -125,10 +127,8 @@ function PostHogConfigurationSection({ connection }: { connection: ToolConnectio
   ];
   return (
     <section>
-      <h2 className="text-sm font-bold text-foreground">PostHog access scope</h2>
-      <p className="mt-0.5 text-sm text-muted-foreground">
-        PostHog uses its normal account defaults unless you narrow the optional controls below.
-      </p>
+      <h2 className="text-sm font-bold text-foreground">{pageText("posthogAccessScope_a686ca")}</h2>
+      <p className="mt-0.5 text-sm text-muted-foreground">{pageText("posthogUsesItsNormalAccountDefaultsUnlessYou_c0b6f4")}</p>
       <dl className="mt-4 divide-y divide-border">
         {rows.map(([label, value]) => (
           <div key={label} className="grid gap-1 py-2 sm:grid-cols-3 sm:gap-4">
@@ -159,6 +159,7 @@ function GoogleSheetsAllowlistSection({
   disabled: boolean;
   onUpdateConfig: (config: Record<string, unknown>) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [draft, setDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -169,15 +170,13 @@ function GoogleSheetsAllowlistSection({
   return (
     <section>
       <div>
-        <h2 className="text-sm font-bold text-foreground">Sheets agents can use</h2>
-        <p className="mt-0.5 text-sm text-muted-foreground">
-          Agents can only use the sheets listed here.
-        </p>
+        <h2 className="text-sm font-bold text-foreground">{pageText("sheetsAgentsCanUse_67deaf")}</h2>
+        <p className="mt-0.5 text-sm text-muted-foreground">{pageText("agentsCanOnlyUseTheSheetsListedHere_d9f010")}</p>
       </div>
 
       <div className="mt-4 space-y-2">
         {ids.length === 0 ? (
-          <div className="text-sm text-muted-foreground">No sheets are connected yet.</div>
+          <div className="text-sm text-muted-foreground">{pageText("noSheetsAreConnectedYet_3bc485")}</div>
         ) : (
           ids.map((id) => {
             const sheetUrl = googleSheetsUrlForId(id);
@@ -189,12 +188,11 @@ function GoogleSheetsAllowlistSection({
                   rel="noreferrer"
                   className="min-w-0 flex-1 text-sm font-medium text-foreground underline-offset-2 hover:underline"
                 >
-                  <span className="block truncate">Open sheet</span>
+                  <span className="block truncate">{pageText("openSheet_1b33c7")}</span>
                   <span className="block truncate font-mono text-xs font-normal text-muted-foreground">
                     {sheetUrl}
                   </span>
-                  <span className="block truncate font-mono text-(length:--text-micro) font-normal text-muted-foreground/80">
-                    ID: {id}
+                  <span className="block truncate font-mono text-(length:--text-micro) font-normal text-muted-foreground/80">{pageText("id_d789a1") + " "}{id}
                   </span>
                 </a>
                 <Button
@@ -202,7 +200,7 @@ function GoogleSheetsAllowlistSection({
                   size="sm"
                   variant="outline"
                   disabled={disabled || ids.length <= 1}
-                  title={ids.length <= 1 ? "Add another sheet before removing this one." : undefined}
+                  title={ids.length <= 1 ? pageText("addAnotherSheetBeforeRemovingThisOne_458a16") : undefined}
                   onClick={() => saveIds(ids.filter((current) => current !== id))}
                 >{translateUi("interfaceCopy.remove")}</Button>
               </div>
@@ -228,19 +226,17 @@ function GoogleSheetsAllowlistSection({
           onClick={() => {
             const parsed = parseGoogleSheetIds(draft);
             if (parsed.ids.length === 0) {
-              setError("Paste a Google Sheets link.");
+              setError(interfaceNotice("interface:pasteAGoogleSheetsLink_24287d"));
               return;
             }
             if (parsed.invalidCount > 0) {
-              setError("That doesn't look like a Google Sheets link.");
+              setError(interfaceNotice("interface:thatDoesnTLookLikeAGoogleSheets_0a8282"));
               return;
             }
             saveIds(Array.from(new Set([...ids, ...parsed.ids])));
             setDraft("");
           }}
-        >
-          Add sheet
-        </Button>
+        >{pageText("addSheet_1f9398")}</Button>
       </div>
       {error && <div className="mt-2 text-xs text-destructive">{error}</div>}
     </section>
@@ -266,9 +262,7 @@ export function QuarantinedActionsReview({
         <div>
           <div className="text-sm font-semibold text-amber-800 dark:text-amber-200">{pageText("review_e29a79") + " "}{count}{" " + pageText("new_c2a6b0") + " "}{count === 1 ? pageText("action_34eb4c") : pageText("actions_326b42")}
           </div>
-          <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
-            Turn on the actions agents may use. Anything left off stays blocked when you save.
-          </p>
+          <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">{pageText("turnOnTheActionsAgentsMayUseAnything_4dad82")}</p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -276,17 +270,13 @@ export function QuarantinedActionsReview({
             className="text-xs font-medium text-amber-800 hover:text-amber-950 dark:text-amber-200 dark:hover:text-amber-50"
             disabled={disabled}
             onClick={() => setEnabledIds(new Set(entries.map((entry) => entry.id)))}
-          >
-            Turn all on
-          </button>
+          >{pageText("turnAllOn_8de319")}</button>
           <button
             type="button"
             className="text-xs font-medium text-amber-800 hover:text-amber-950 dark:text-amber-200 dark:hover:text-amber-50"
             disabled={disabled}
             onClick={() => setEnabledIds(new Set())}
-          >
-            Turn all off
-          </button>
+          >{pageText("turnAllOff_c1f062")}</button>
         </div>
       </div>
       <div className="divide-y divide-border">
@@ -320,10 +310,9 @@ export function QuarantinedActionsReview({
       </div>
       <div className="flex items-center justify-between gap-3">
         <span className="text-xs text-amber-700 dark:text-amber-300">
-          {selectedIds.length} of {count} will be on
-        </span>
+          {selectedIds.length}{" " + pageText("of_de04fa") + " "}{count}{" " + pageText("willBeOn_9dc2e7")}</span>
         <Button size="sm" disabled={disabled} onClick={() => onSubmit(selectedIds)}>
-          {disabled ? pageText("saving_56a228") : "Save choices"}
+          {disabled ? pageText("saving_56a228") : pageText("saveChoices_956fa7")}
         </Button>
       </div>
     </section>

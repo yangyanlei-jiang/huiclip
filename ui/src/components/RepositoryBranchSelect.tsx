@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { GitBranch, LoaderCircle } from 'lucide-react';
 import { SearchableSelect, type SearchableSelectGroup, type SearchableSelectOption } from '@/components/SearchableSelect';
@@ -22,6 +23,7 @@ export function RepositoryBranchSelect({ value, branches, loading, error, disabl
   onChange: (branch: string) => void;
   onRetry?: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const uniqueBranches = [...new Map(branches.map(branch => [branch.name, branch])).values()];
   const options: BranchOption[] = uniqueBranches.map(branch => ({ key: branch.name, value: branch.name, label: branch.name, searchText: branch.isDefault ? 'default branch' : undefined, isDefault: branch.isDefault }));
@@ -33,8 +35,8 @@ export function RepositoryBranchSelect({ value, branches, loading, error, disabl
   return <div className="flex min-w-0 flex-col gap-2">
     <SearchableSelect<string, BranchOption>
       value={value} groups={groups} disabled={disabled} triggerAriaLabel="Branch" mobileTitle="Choose a branch"
-      placeholder="Choose a branch" searchPlaceholder="Search or enter a branch name…"
-      emptyMessage={loading ? 'Branches are loading. You can still enter a name.' : 'No matching branches. Enter a branch name to use it.'}
+      placeholder={pageText("chooseABranch_0f9067")} searchPlaceholder={pageText("searchOrEnterABranchName_851364")}
+      emptyMessage={loading ? pageText("branchesAreLoadingYouCanStillEnterA_a0508c") : pageText("noMatchingBranchesEnterABranchNameTo_a5df15")}
       onValueChange={branch => onChange(branch)}
       deriveGroups={(query, current) => {
         const name = query.trim();
@@ -48,8 +50,8 @@ export function RepositoryBranchSelect({ value, branches, loading, error, disabl
         {option.isDefault && <span className="text-xs text-muted-foreground">{translateUi("interfaceCopy.default")}</span>}
       </>}
     />
-    {loading && <p role="status" className="flex items-center gap-2 text-xs text-muted-foreground"><LoaderCircle className="size-3.5 animate-spin motion-reduce:animate-none" />Loading branches…</p>}
-    {error && <div className="flex flex-wrap items-center gap-2"><p role="alert" className="text-sm text-destructive">{error} You can still enter a branch name.</p>
+    {loading && <p role="status" className="flex items-center gap-2 text-xs text-muted-foreground"><LoaderCircle className="size-3.5 animate-spin motion-reduce:animate-none" />{pageText("loadingBranches_8fc3fb")}</p>}
+    {error && <div className="flex flex-wrap items-center gap-2"><p role="alert" className="text-sm text-destructive">{error}{" " + pageText("youCanStillEnterABranchName_8303a3")}</p>
       {onRetry && <Button type="button" size="sm" variant="ghost" disabled={loading || disabled} onClick={onRetry}>{translateUi("interfaceCopy.tryAgain")}</Button>}
     </div>}
   </div>;

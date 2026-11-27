@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { isUuidLike } from "@paperclipai/shared";
@@ -12,6 +13,7 @@ const ChatReadContext = createContext<((message: Seen) => void) | null>(null);
 export function AgentChatReadProvider({ issueId, companyId, userId, children }: {
   issueId?: string; companyId: string; userId: string | null; children: ReactNode;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const client = useQueryClient();
   const [error, setError] = useState(false);
   const scope = useMemo(() => ({ active: true, pending: null as Seen | null, seenIds: new Set<string>(), sentAt: -Infinity,
@@ -86,7 +88,7 @@ export function AgentChatReadProvider({ issueId, companyId, userId, children }: 
     if (!scope.busy && scope.retryTimer === null) queueMicrotask(() => { void flush(); });
   }, [issueId, scope, flush]);
   return <ChatReadContext.Provider value={issueId ? seen : null}>
-    {error && <p role="alert" className="text-sm text-destructive">Couldn’t mark this chat read.</p>}
+    {error && <p role="alert" className="text-sm text-destructive">{pageText("couldnTMarkThisChatRead_546f8d")}</p>}
     {children}
   </ChatReadContext.Provider>;
 }

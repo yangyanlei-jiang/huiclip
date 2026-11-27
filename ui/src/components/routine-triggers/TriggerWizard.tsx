@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useEffect, useState } from "react";
@@ -145,7 +146,7 @@ export function RoutineTriggerWizard({
         setSaveError(
           error instanceof Error
             ? error.message
-            : "Couldn’t save. Please try again.",
+            : interfaceNotice("interface:couldnTSavePleaseTryAgain_1907c6"),
         );
       } finally {
         setBusy(false);
@@ -174,7 +175,7 @@ export function RoutineTriggerWizard({
           saveAndExit();
         },
       },
-      { label: "Add trigger" },
+      { label: interfaceNotice("interface:addTrigger_4e63e6") },
     ]);
   }, [saveAndExit, setBreadcrumbs, routineTitle, routineId]);
   const schedule = draft.kind === "schedule";
@@ -228,7 +229,7 @@ export function RoutineTriggerWizard({
       <SetupWizardNavigation
         takeover
         disabled={busy}
-        ariaLabel="Trigger setup progress"
+        ariaLabel={interfaceNotice("interface:triggerSetupProgress_d44007")}
         labels={labels}
         step={draft.step}
         availableStep={draft.availableStep}
@@ -242,7 +243,7 @@ export function RoutineTriggerWizard({
         {!schedule && draft.step > 0 && <WebhookUrlWarning url={webhookUrl} />}
         {draft.step === 0 && (
           <fieldset className="space-y-3">
-            <legend className="sr-only">Trigger type</legend>
+            <legend className="sr-only">{pageText("triggerType_a8b3dc")}</legend>
             {(
               [
                 {
@@ -299,20 +300,20 @@ export function RoutineTriggerWizard({
           <div className="space-y-5">
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="repeat">Repeat</Label>
+                <Label htmlFor="repeat">{pageText("repeat_659eba")}</Label>
                 <select
                   id="repeat"
                   className={selectClass}
                   value={draft.frequency}
                   onChange={(event) => patch({ frequency: event.target.value })}
                 >
-                  <option value="daily">Every day</option>
-                  <option value="weekdays">Weekdays (Monday–Friday)</option>
-                  <option value="weekly">Every week</option>
+                  <option value="daily">{pageText("everyDay_3b2eb5")}</option>
+                  <option value="weekdays">{pageText("weekdaysMondayFriday_b5720e")}</option>
+                  <option value="weekly">{pageText("everyWeek_043058")}</option>
                 </select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="run-time">Time</Label>
+                <Label htmlFor="run-time">{pageText("time_6c82e6")}</Label>
                 <Input
                   id="run-time"
                   type="time"
@@ -323,7 +324,7 @@ export function RoutineTriggerWizard({
             </div>
             {draft.frequency === "weekly" && (
               <div className="space-y-2">
-                <Label htmlFor="run-day">Day</Label>
+                <Label htmlFor="run-day">{pageText("day_987b9c")}</Label>
                 <select
                   id="run-day"
                   className={selectClass}
@@ -345,7 +346,7 @@ export function RoutineTriggerWizard({
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="timezone">Time zone</Label>
+              <Label htmlFor="timezone">{pageText("timeZone_eea79a")}</Label>
               <select
                 id="timezone"
                 className={selectClass}
@@ -365,9 +366,7 @@ export function RoutineTriggerWizard({
                   <option key={zone}>{zone}</option>
                 ))}
               </select>
-              <p className="text-xs text-muted-foreground">
-                The time follows this zone, including daylight saving changes.
-              </p>
+              <p className="text-xs text-muted-foreground">{pageText("theTimeFollowsThisZoneIncludingDaylightSaving_a254f6")}</p>
             </div>
           </div>
         )}
@@ -382,17 +381,12 @@ export function RoutineTriggerWizard({
                 </p>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Each scheduled run creates a task for the routine’s assigned
-              agent. Any existing webhook triggers will continue to work.
-            </p>
+            <p className="text-sm text-muted-foreground">{pageText("eachScheduledRunCreatesATaskForThe_574a3f")}</p>
           </div>
         )}
         {draft.step === 0 && draft.kind === "webhook" && (
           <fieldset className="space-y-2">
-            <legend className="mb-2 text-sm font-medium">
-              What’s sending the webhook?
-            </legend>
+            <legend className="mb-2 text-sm font-medium">{pageText("whatSSendingTheWebhook_377cef")}</legend>
             <div className="grid gap-2 sm:grid-cols-2">
               {(
                 [
@@ -431,9 +425,7 @@ export function RoutineTriggerWizard({
           </fieldset>
         )}
         {draft.kind === "webhook" && draft.step === 0 && (
-          <p className="text-sm text-muted-foreground">
-            Public services need a publicly reachable HTTPS webhook URL.
-          </p>
+          <p className="text-sm text-muted-foreground">{pageText("publicServicesNeedAPubliclyReachableHTTPSWebhook_5d6837")}</p>
         )}
         {!schedule && draft.step === 1 && (
           <div className="space-y-5">
@@ -450,35 +442,26 @@ export function RoutineTriggerWizard({
               />
             )}
             <CopyField
-              label={github ? "Payload URL" : pageText("webhookURL_fa7517")}
+              label={github ? pageText("payloadURL_a097fa") : pageText("webhookURL_fa7517")}
               value={webhookUrl}
             />
             {!github && draft.signingMode !== "bearer" && (
-              <p className="text-sm text-muted-foreground">
-                Paste this key into your app’s signing secret field.
-                {draft.signingMode !== "fireflies_hmac" && <>
-                  {" "}If your app uses custom headers instead, set Authorization to Bearer followed
-                  by a space and this key.
-                </>}
+              <p className="text-sm text-muted-foreground">{pageText("pasteThisKeyIntoYourAppSSigning_698439")}{draft.signingMode !== "fireflies_hmac" && <>
+                  {" "}{pageText("ifYourAppUsesCustomHeadersInsteadSet_906852")}</>}
               </p>
             )}
             {webhookSecret ? (
               <CopyField
-                label={github ? pageText("secret_f4e7a8") : draft.signingMode === "bearer" ? "Authorization header value" : "Secret key"}
+                label={github ? pageText("secret_f4e7a8") : draft.signingMode === "bearer" ? pageText("authorizationHeaderValue_f531af") : pageText("secretKey_341f53")}
                 value={!github && draft.signingMode === "bearer" ? `Bearer ${webhookSecret}` : webhookSecret}
               />
             ) : (
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  The key is hidden after leaving setup. If you haven’t saved it
-                  in your app, generate a replacement.
-                </p>
+                <p className="text-sm text-muted-foreground">{pageText("theKeyIsHiddenAfterLeavingSetupIf_72d9e9")}</p>
                 <Button
                   variant="outline"
                   onClick={() => void perform(() => onRotateKey?.())}
-                >
-                  Generate new key
-                </Button>
+                >{pageText("generateNewKey_e96330")}</Button>
               </div>
             )}
           </div>
@@ -486,24 +469,18 @@ export function RoutineTriggerWizard({
         {!schedule && draft.step === 2 && (
           <div className="space-y-5">
             <div className="space-y-1 rounded-md border border-border p-4">
-              <p className="text-sm font-medium">Connection test only</p>
-              <p className="text-sm text-muted-foreground">
-                Events received during setup won’t start the routine or create
-                tasks.
-              </p>
+              <p className="text-sm font-medium">{pageText("connectionTestOnly_08f6ba")}</p>
+              <p className="text-sm text-muted-foreground">{pageText("eventsReceivedDuringSetupWonTStartThe_1a25db")}</p>
             </div>
             <div className="space-y-2">
-              <p className="text-sm font-medium">
-                Send an event from {github ? "GitHub" : "your app"}
+              <p className="text-sm font-medium">{pageText("sendAnEventFrom_adf927") + " "}{github ? "GitHub" : pageText("yourApp_9dbbd8")}
               </p>
               <p className="text-sm text-muted-foreground">
                 {github
-                  ? "Open this webhook in your repository settings. Under Recent Deliveries, choose Redeliver on an event."
-                  : "Look for “Send test” in your app’s webhook settings. If it doesn’t have one, do the action that should trigger the webhook—for example, complete a deployment."}
+                  ? pageText("openThisWebhookInYourRepositorySettingsUnder_973b67")
+                  : pageText("lookForSendTestInYourAppS_dd990a")}
               </p>
-              <p className="text-xs text-muted-foreground">
-                Keep this page open to see the test result.
-              </p>
+              <p className="text-xs text-muted-foreground">{pageText("keepThisPageOpenToSeeTheTest_85bcf0")}</p>
             </div>
             <div
               role="status"
@@ -519,31 +496,26 @@ export function RoutineTriggerWizard({
               <div className="space-y-1">
                 <p className="text-sm font-medium">
                   {checkResult === "received"
-                    ? "Test event received · Connection working"
+                    ? pageText("testEventReceivedConnectionWorking_47b50b")
                     : checkResult === "rejected"
-                      ? "Event arrived, but the key was rejected"
+                      ? pageText("eventArrivedButTheKeyWasRejected_acd3b7")
                       : checkResult === "no_event"
-                        ? "No event received yet"
-                        : "Waiting for an event from your app…"}
+                        ? pageText("noEventReceivedYet_2407be")
+                        : pageText("waitingForAnEventFromYourApp_14fff5")}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {checkResult === "received"
-                    ? "Authentication passed. No routine run or task was created."
+                    ? pageText("authenticationPassedNoRoutineRunOrTaskWas_7e52da")
                     : checkResult === "rejected"
-                      ? "Go back to Connect your app, update the key in your sending app, and resend. No task was created."
-                      : "Waiting to verify delivery and authentication. The routine is not running."}
+                      ? pageText("goBackToConnectYourAppUpdateThe_edf137")
+                      : pageText("waitingToVerifyDeliveryAndAuthenticationTheRoutine_37d794")}
                 </p>
               </div>
             </div>
             <details>
-              <summary className="cursor-pointer text-xs text-muted-foreground">
-                Troubleshoot delivery
-              </summary>
+              <summary className="cursor-pointer text-xs text-muted-foreground">{pageText("troubleshootDelivery_5c2f50")}</summary>
               <div className="space-y-3 pt-3">
-                <p className="text-xs text-muted-foreground">
-                  Check that the webhook is enabled in your sending app and that
-                  its URL matches. Scripts must send POST with a JSON body.
-                </p>
+                <p className="text-xs text-muted-foreground">{pageText("checkThatTheWebhookIsEnabledInYour_99de92")}</p>
                 <CopyField label={pageText("webhookURL_fa7517")} value={webhookUrl} />
               </div>
             </details>
@@ -552,15 +524,12 @@ export function RoutineTriggerWizard({
         {!schedule && draft.step === 2 && (
           <p className="text-xs text-muted-foreground">
             {routineActive
-              ? "Finish setup to enable this webhook. Future events will start the routine; this test event won’t be replayed."
-              : "Finish setup to save this webhook. The routine is paused; enable its automatic triggers when you’re ready. This test event won’t be replayed."}
+              ? pageText("finishSetupToEnableThisWebhookFutureEvents_b97cd7")
+              : pageText("finishSetupToSaveThisWebhookTheRoutine_1457b6")}
           </p>
         )}
         {schedule && draft.step === 2 && !routineActive && (
-          <p className="text-sm text-muted-foreground">
-            The routine is paused. Enable its automatic triggers when you’re
-            ready to use this schedule.
-          </p>
+          <p className="text-sm text-muted-foreground">{pageText("theRoutineIsPausedEnableItsAutomaticTriggers_05d917")}</p>
         )}
         {saveError && (
           <p role="alert" className="text-sm text-destructive">
@@ -573,19 +542,17 @@ export function RoutineTriggerWizard({
             <Button disabled={draft.kind === "choose"} onClick={advance}>{translateUi("interfaceCopy.continue")}</Button>
           ) : schedule ? (
             draft.step === 1 ? (
-              <Button disabled={!draft.time} onClick={advance}>
-                Review schedule
-              </Button>
+              <Button disabled={!draft.time} onClick={advance}>{pageText("reviewSchedule_274d60")}</Button>
             ) : (
               <Button onClick={() => void perform(() => onFinish(draft))}>{pageText("addSchedule_e95610")}</Button>
             )
           ) : draft.step === 1 ? (
-            <Button onClick={advance}>Check connection</Button>
+            <Button onClick={advance}>{pageText("checkConnection_14caef")}</Button>
           ) : (
             <Button onClick={() => void perform(() => onFinish(draft))}>
               {checkResult === "received"
                 ? pageText("finishSetup_c516d2")
-                : "Finish without checking"}
+                : pageText("finishWithoutChecking_f10f4b")}
             </Button>
           )}
         </SetupWizardFooter>

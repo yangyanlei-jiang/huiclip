@@ -58,7 +58,7 @@ export function StageSecretsPanel({
     return (
       <EmptyState
         icon={KeyRound}
-        message="Secrets are available only to step automation. Pick an agent to run this step, then add the secrets it needs."
+        message={pageText("secretsAreAvailableOnlyToStepAutomationPick_abfec5")}
         action="Set up automation"
         onAction={onSetupAutomation}
       />
@@ -75,12 +75,8 @@ export function StageSecretsPanel({
         ) : (
           <KeyRound className="h-3.5 w-3.5 mt-0.5 shrink-0" />
         )}
-        <p>
-          These env vars are injected when{" "}
-          <span className="font-medium text-foreground">{displayName}</span> runs this step. They override
-          matching project and agent env on collisions. <span className="font-mono">PAPERCLIP_*</span> names
-          are reserved.
-        </p>
+        <p>{pageText("theseEnvVarsAreInjectedWhen_bbb85f")}{" "}
+          <span className="font-medium text-foreground">{displayName}</span>{" " + pageText("runsThisStepTheyOverrideMatchingProjectAnd_b17c44") + " "}<span className="font-mono">PAPERCLIP_*</span>{" " + pageText("namesAreReserved_f5d222")}</p>
       </div>
 
       {secretsLoading ? (
@@ -97,7 +93,7 @@ export function StageSecretsPanel({
       <div className="flex items-center gap-3">
         <Button type="button" onClick={onSave} disabled={!dirty || saving}>
           <Save className="h-4 w-4 mr-1.5" />
-          {saving ? pageText("saving_56a228") : "Save secrets"}
+          {saving ? pageText("saving_56a228") : pageText("saveSecrets_b73370")}
         </Button>
         {dirty && !saving ? <span className="text-xs text-muted-foreground">{translateUi("interfaceCopy.unsavedChanges")}</span> : null}
       </div>

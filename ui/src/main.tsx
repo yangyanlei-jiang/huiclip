@@ -1,3 +1,4 @@
+import { HuiClipUpdateNotice } from "./components/HuiClipUpdateNotice";
 import { VoiceCallProvider } from "./components/voice/VoiceCallProvider";
 import { useAccountIdentity } from "./api/companies-query";
 import * as React from "react";
@@ -121,6 +122,7 @@ getOrCreatePaperclipReactRoot(window, rootElement).render(
               <EditorAutocompleteProvider>
                 <ToastProvider>
                   <MutationErrorToastBridge />
+                  <HuiClipUpdateNotice />
                   <PrimaryAgentProvider>
                   <LiveUpdatesProvider>
                     <TooltipProvider>

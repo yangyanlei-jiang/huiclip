@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -38,6 +39,7 @@ export function ReviewQueueCard({
   heading?: string;
   plain?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { selectedCompanyId } = useCompany();
 
   const query = useQuery({
@@ -60,9 +62,7 @@ export function ReviewQueueCard({
   if (items.length === 0) {
     if (emptyState === "hidden") return null;
     return (
-      <div className={plain ? "py-5 text-sm text-muted-foreground" : "rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground"}>
-        Nothing is waiting for your OK right now.
-      </div>
+      <div className={plain ? "py-5 text-sm text-muted-foreground" : "rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground"}>{pageText("nothingIsWaitingForYourOKRightNow_81b81f")}</div>
     );
   }
 
@@ -116,7 +116,7 @@ function ReviewRow({
     mutationFn: () => toolsApi.approveActionRequest(companyId, item.request.id),
     onMutate: () => setResolving("allow"),
     onSuccess: () => {
-      pushToast({ title: "Allowed once", body: `${actionLabel(item)} can run this time.`, tone: "success" });
+      pushToast({ title: interfaceNotice("interface:allowedOnce_1b24bc"), body: `${actionLabel(item)} can run this time.`, tone: "success" });
       invalidate();
     },
     onError: (error) => {
@@ -133,7 +133,7 @@ function ReviewRow({
     onMutate: () => setResolving("always"),
     onSuccess: () => {
       pushToast({
-        title: "Always allowed",
+        title: interfaceNotice("interface:alwaysAllowed_297470"),
         body: `${actionLabel(item)} won’t ask again.`,
         tone: "success",
       });
@@ -151,7 +151,7 @@ function ReviewRow({
     mutationFn: () => toolsApi.declineActionRequest(companyId, item.request.id),
     onMutate: () => setResolving("decline"),
     onSuccess: () => {
-      pushToast({ title: "Declined", body: `${actionLabel(item)} won’t run.`, tone: "info" });
+      pushToast({ title: interfaceNotice("interface:declined_ff59b8"), body: `${actionLabel(item)} won’t run.`, tone: "info" });
       invalidate();
     },
     onError: (error) => {
@@ -181,11 +181,10 @@ function ReviewRow({
       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm">
         <span className="font-bold text-foreground">{actionLabel(item)}</span>
         {item.applicationName && (
-          <span className="text-muted-foreground">
-            in {humanizeConnectionDisplayName(item.applicationName)}
+          <span className="text-muted-foreground">{pageText("in_af10ef") + " "}{humanizeConnectionDisplayName(item.applicationName)}
           </span>
         )}
-        <span className="text-xs text-muted-foreground">· asked {timeAgo(item.request.createdAt)}</span>
+        <span className="text-xs text-muted-foreground">{pageText("asked_32b89b") + " "}{timeAgo(item.request.createdAt)}</span>
       </div>
 
       {preview ? (
@@ -193,17 +192,13 @@ function ReviewRow({
           <MarkdownBody>{preview}</MarkdownBody>
         </div>
       ) : (
-        <p className="mt-1 text-sm text-muted-foreground">
-          An agent wants to run this action. Your connection policy requires approval first.
-        </p>
+        <p className="mt-1 text-sm text-muted-foreground">{pageText("anAgentWantsToRunThisActionYour_4d7aa6")}</p>
       )}
 
-      {item.requestedByAgentId && item.connectionId && !item.request.approvalId ? <p className="mt-2 text-xs text-muted-foreground">Always allow lets this agent use this action with different arguments on this connection, within the current project when present.</p> : null}
+      {item.requestedByAgentId && item.connectionId && !item.request.approvalId ? <p className="mt-2 text-xs text-muted-foreground">{pageText("alwaysAllowLetsThisAgentUseThisAction_12e5f2")}</p> : null}
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <Button size="sm" onClick={() => allowOnce.mutate()} disabled={busy}>
-          {resolving === "allow" ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Check className="mr-1.5 h-3.5 w-3.5" />}
-          Allow once
-        </Button>
+          {resolving === "allow" ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Check className="mr-1.5 h-3.5 w-3.5" />}{pageText("allowOnce_c551e6")}</Button>
         {item.requestedByAgentId && item.connectionId && !item.request.approvalId ? <Button size="sm" variant="outline" onClick={() => alwaysAllow.mutate()} disabled={busy}>
           {resolving === "always" ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}{pageText("alwaysAllow_41325d")}</Button> : null}
         <Button size="sm" variant="ghost" onClick={() => decline.mutate()} disabled={busy}>
@@ -223,7 +218,7 @@ function failToast(
   error: unknown,
 ) {
   pushToast({
-    title: "Couldn’t save that",
+    title: interfaceNotice("interface:couldnTSaveThat_6a7300"),
     body: describeError(error).body,
     tone: "error",
   });

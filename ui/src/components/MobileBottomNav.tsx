@@ -1,3 +1,5 @@
+import { controlText } from "@/i18n/controls";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useCoordinatorWorkspaceEnabled } from "@/hooks/useCoordinatorWorkspaceEnabled";
 import { useMemo } from "react";
 import { useCoordinatorAttentionCount } from "@/hooks/useCoordinatorAttentionCount";
@@ -41,6 +43,7 @@ interface MobileNavActionItem {
 type MobileNavItem = MobileNavLinkItem | MobileNavActionItem;
 
 export function MobileBottomNav({ visible }: MobileBottomNavProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const location = useLocation();
   const { selectedCompanyId } = useCompany();
   const { openNewIssue } = useDialogActions();
@@ -101,7 +104,7 @@ export function MobileBottomNav({ visible }: MobileBottomNavProps) {
       )}
       data-visible={visible}
       inert={!visible}
-      aria-label="Mobile navigation"
+      aria-label={pageText("mobileNavigation_058f36")}
     >
       <div
         className="grid h-16 px-1"
@@ -124,7 +127,7 @@ export function MobileBottomNav({ visible }: MobileBottomNavProps) {
                 )}
               >
                 <Icon className="h-(--sz-18px) w-(--sz-18px)" />
-                <span className="truncate">{item.label}</span>
+                <span className="truncate">{controlText(item.label)}</span>
               </button>
             );
           }
@@ -154,7 +157,7 @@ export function MobileBottomNav({ visible }: MobileBottomNavProps) {
                       </Badge>
                     )}
                   </span>
-                  <span className="truncate">{item.label}</span>
+                  <span className="truncate">{controlText(item.label)}</span>
                 </>
               )}
             </NavLink>

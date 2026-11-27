@@ -31,31 +31,29 @@ export function RunWorkspaceSourceInspection({ issueId, runId, companyId }: { is
   return (
     <div className="space-y-2" data-testid="run-workspace-source-inspection">
       <Button variant="outline" size="sm" disabled={pending} onClick={() => { inspection.reset(); listing.mutate(); }}>
-        {pending ? "Inspecting recovery…" : "Inspect recovery"}
+        {pending ? pageText("inspectingRecovery_beca40") : pageText("inspectRecovery_02f9f7")}
       </Button>
       {error ? <p role="alert" className="text-xs text-destructive">
-        {error instanceof Error ? error.message : "Recovery inspection failed. Try inspecting again."}
+        {error instanceof Error ? error.message : pageText("recoveryInspectionFailedTryInspectingAgain_d72ee4")}
       </p> : null}
-      {listing.data?.actions.length === 0 ? <p className="text-xs text-muted-foreground">No recorded recovery action for this run.</p> : null}
+      {listing.data?.actions.length === 0 ? <p className="text-xs text-muted-foreground">{pageText("noRecordedRecoveryActionForThisRun_894b39")}</p> : null}
       {listing.data?.actions.map(action => (
         <div key={action.id} className="space-y-2 text-xs">
-          <p>Recorded failure: <code className="font-mono">{recordedFailure(action.evidence)}</code></p>
+          <p>{pageText("recordedFailure_402896") + " "}<code className="font-mono">{recordedFailure(action.evidence)}</code></p>
           <p className="font-mono text-muted-foreground">{action.id} · {action.status}</p>
-          <Button variant="ghost" size="sm" disabled={pending} onClick={() => inspection.mutate(action.id)}>
-            Inspect current source
-          </Button>
+          <Button variant="ghost" size="sm" disabled={pending} onClick={() => inspection.mutate(action.id)}>{pageText("inspectCurrentSource_24b582")}</Button>
           {action.evidence.runId === runId ? <WorkspaceExportRecovery action={action}
             issueId={issueId} companyId={companyId} showStatus={false} /> : null}
         </div>
       ))}
       {current ? <div className="space-y-2 text-xs" role="status">
-        <p className="font-medium">Current recorded-source identity</p>
+        <p className="font-medium">{pageText("currentRecordedSourceIdentity_5a2973")}</p>
         <p className="font-mono text-muted-foreground">{pageText("action_97c89a") + " "}{current.actionId}</p>
-        <p className="text-muted-foreground">This read-only observation checks recorded identity. It does not confirm provider termination, local files, or successful preservation.</p>
-        {current.status === "verified" ? <p>Recorded-source identity verified.</p>
-          : current.status === "not_inspected" ? <p>Source not inspected: this record exceeds the inspection limit.</p>
-          : <p>Blocked: <code className="font-mono">{current.sourceVerification?.reason ?? current.failureCode}</code>
-            {current.sourceVerification?.observedLeasePolicy ? <> · lease policy <code className="font-mono">{current.sourceVerification.observedLeasePolicy}</code></> : null}</p>}
+        <p className="text-muted-foreground">{pageText("thisReadOnlyObservationChecksRecordedIdentityIt_3d04a0")}</p>
+        {current.status === "verified" ? <p>{pageText("recordedSourceIdentityVerified_230b55")}</p>
+          : current.status === "not_inspected" ? <p>{pageText("sourceNotInspectedThisRecordExceedsTheInspection_d6dba2")}</p>
+          : <p>{pageText("blocked_3111b3") + " "}<code className="font-mono">{current.sourceVerification?.reason ?? current.failureCode}</code>
+            {current.sourceVerification?.observedLeasePolicy ? <>{" " + pageText("leasePolicy_67bf7a") + " "}<code className="font-mono">{current.sourceVerification.observedLeasePolicy}</code></> : null}</p>}
         <p className="font-mono text-muted-foreground">{pageText("observed_2e159b") + " "}{formatDateTime(current.observedAt)}</p>
       </div> : null}
     </div>

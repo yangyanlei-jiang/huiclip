@@ -56,13 +56,12 @@ function RoutineScopedRuns({
   runs: RoutineRunSummary[];
   view: QueryViewState<RoutineRunSummary[]>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   // A loaded list stays on screen through a failed refetch; an outage before
   // the first load reads as loading, and only a real failure shows copy.
   if (view.kind === "loading" || view.kind === "reconnecting") {
     return (
-      <div className="border-y border-border py-14 text-center text-sm text-muted-foreground">
-        Loading routine runs…
-      </div>
+      <div className="border-y border-border py-14 text-center text-sm text-muted-foreground">{pageText("loadingRoutineRuns_b07faf")}</div>
     );
   }
 
@@ -78,18 +77,16 @@ function RoutineScopedRuns({
   }
 
   if (runs.length === 0) {
-    return <EmptyState icon={Activity} message="No routine runs yet." />;
+    return <EmptyState icon={Activity} message={pageText("noRoutineRunsYet_1a2478")} />;
   }
 
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-lg font-semibold text-foreground">Routine runs</h2>
-        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-          Executions created by this routine, newest first.
-        </p>
+        <h2 className="text-lg font-semibold text-foreground">{pageText("routineRuns_ed9eb4")}</h2>
+        <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{pageText("executionsCreatedByThisRoutineNewestFirst_298eba")}</p>
       </div>
-      <ul className="divide-y divide-border border-y border-border" aria-label="Routine runs">
+      <ul className="divide-y divide-border border-y border-border" aria-label={pageText("routineRuns_ed9eb4")}>
         {runs.map((run) => {
           const content = (
             <>
@@ -124,7 +121,7 @@ function RoutineScopedRuns({
           );
         })}
       </ul>
-      <p className="text-xs text-muted-foreground">Showing the {RUN_LIMIT} most recent routine runs.</p>
+      <p className="text-xs text-muted-foreground">{pageText("showingThe_b43214") + " "}{RUN_LIMIT}{" " + pageText("mostRecentRoutineRuns_b57ced")}</p>
     </div>
   );
 }
@@ -219,14 +216,11 @@ export function AuditRuns({
       {hideHeader ? null : (
         <div>
           <h2 className="text-lg font-semibold text-foreground">{translateUi("interfaceCopy.runs")}</h2>
-          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
-            Recent agent executions across the organization. Open a run to inspect its transcript,
-            output, and task context.
-          </p>
+          <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{pageText("recentAgentExecutionsAcrossTheOrganizationOpenA_b3bd90")}</p>
         </div>
       )}
 
-      <div data-canonical-toolbar="audit-runs" role="toolbar" aria-label="Audit filters" className="flex flex-wrap items-end gap-3 border-y border-border py-3">
+      <div data-canonical-toolbar="audit-runs" role="toolbar" aria-label={pageText("auditFilters_e673ef")} className="flex flex-wrap items-end gap-3 border-y border-border py-3">
         {lockedAgentId ? null : <label className="grid gap-1 text-(length:--text-micro) font-medium text-muted-foreground">
           <span>{translateUi("interfaceCopy.agent")}</span>
           <Select value={agentId} onValueChange={(value) => updateFilter("agentId", value)}>
@@ -247,10 +241,10 @@ export function AuditRuns({
           <span>{translateUi("interfaceCopy.status")}</span>
           <Select value={status} onValueChange={(value) => updateFilter("runStatus", value)}>
             <SelectTrigger className="w-40">
-              <SelectValue placeholder="All statuses" />
+              <SelectValue placeholder={pageText("allStatuses_640517")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={ALL}>All statuses</SelectItem>
+              <SelectItem value={ALL}>{pageText("allStatuses_640517")}</SelectItem>
               {statuses.map((value) => (
                 <SelectItem key={value} value={value}>
                   {readableSource(value)}
@@ -276,10 +270,10 @@ export function AuditRuns({
       ) : visibleRuns.length === 0 ? (
         <EmptyState
           icon={agentId !== ALL || status !== ALL ? CircleDotDashed : Activity}
-          message={agentId !== ALL || status !== ALL ? "No runs match these filters." : pageText("noRunsYet_7a8b1c")}
+          message={agentId !== ALL || status !== ALL ? pageText("noRunsMatchTheseFilters_c8ddb8") : pageText("noRunsYet_7a8b1c")}
         />
       ) : (
-        <ul className="divide-y divide-border border-y border-border" aria-label="Recent runs">
+        <ul className="divide-y divide-border border-y border-border" aria-label={pageText("recentRuns_af7051")}>
           {visibleRuns.map((run) => {
             const agent = agentById.get(run.agentId);
             const summary = runSummary(run);
@@ -293,7 +287,7 @@ export function AuditRuns({
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="font-medium text-foreground">
-                        {agent?.name ?? "Unknown agent"}
+                        {agent?.name ?? pageText("unknownAgent_4c2943")}
                       </span>
                       <span className="font-mono text-(length:--text-micro) text-muted-foreground">
                         {run.id.slice(0, 8)}
@@ -318,7 +312,7 @@ export function AuditRuns({
         </ul>
       )}
 
-      <p className="text-xs text-muted-foreground">Showing the {RUN_LIMIT} most recent runs.</p>
+      <p className="text-xs text-muted-foreground">{pageText("showingThe_b43214") + " "}{RUN_LIMIT}{" " + pageText("mostRecentRuns_a5f879")}</p>
     </div>
   );
 }

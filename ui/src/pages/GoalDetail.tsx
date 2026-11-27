@@ -1,3 +1,5 @@
+import { controlText } from "@/i18n/controls";
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect } from "react";
 import { useParams } from "@/lib/router";
@@ -120,8 +122,8 @@ export function GoalDetail() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: "Goals", href: "/goals" },
-      { label: goal?.title ?? goalId ?? "Goal" }
+      { label: interfaceNotice("interface:goals_48d8c6"), href: "/goals" },
+      { label: goal?.title ?? goalId ?? interfaceNotice("interface:goal_9fe00a") }
     ]);
   }, [setBreadcrumbs, goal, goalId]);
 
@@ -148,7 +150,7 @@ export function GoalDetail() {
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <span className="text-xs uppercase text-muted-foreground">
-            {goal.level}
+            {controlText("goalLevel_" + goal.level)}
           </span>
           <StatusBadge status={goal.status} />
           <div className="ml-auto">
@@ -182,11 +184,9 @@ export function GoalDetail() {
 
       <Tabs defaultValue="children">
         <TabsList>
-          <TabsTrigger value="children">
-            Sub-Goals ({childGoals.length})
+          <TabsTrigger value="children">{pageText("subGoals_505edf")}{childGoals.length})
           </TabsTrigger>
-          <TabsTrigger value="projects">
-            Projects ({linkedProjects.length})
+          <TabsTrigger value="projects">{pageText("projects_ed747d")}{linkedProjects.length})
           </TabsTrigger>
         </TabsList>
 
@@ -197,12 +197,10 @@ export function GoalDetail() {
               variant="outline"
               onClick={() => openNewGoal({ parentId: goalId })}
             >
-              <Plus className="h-3.5 w-3.5 mr-1.5" />
-              Sub Goal
-            </Button>
+              <Plus className="h-3.5 w-3.5 mr-1.5" />{pageText("subGoal_57f6d0")}</Button>
           </div>
           {childGoals.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No sub-goals.</p>
+            <p className="text-sm text-muted-foreground">{pageText("noSubGoals_29358a")}</p>
           ) : (
             <GoalTree goals={childGoals} goalLink={(g) => `/goals/${g.id}`} />
           )}
@@ -210,7 +208,7 @@ export function GoalDetail() {
 
         <TabsContent value="projects" className="mt-4">
           {linkedProjects.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No linked projects.</p>
+            <p className="text-sm text-muted-foreground">{pageText("noLinkedProjects_f0455b")}</p>
           ) : (
             <div className="border border-border">
               {linkedProjects.map((project) => (

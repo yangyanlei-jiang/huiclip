@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Agent } from "@paperclipai/shared";
@@ -72,17 +73,13 @@ export function EmailConnectionAccess({
   return (
     <div className="space-y-8">
       <section className="space-y-3">
-        <h2 className="text-sm font-semibold">
-          Which humans can use this credential?
-        </h2>
+        <h2 className="text-sm font-semibold">{pageText("whichHumansCanUseThisCredential_343790")}</h2>
         <p className="text-sm">{humanLabel}</p>
       </section>
       <section className="space-y-4">
-        <h2 className="text-sm font-semibold">
-          Which agents can use this connection?
-        </h2>
+        <h2 className="text-sm font-semibold">{pageText("whichAgentsCanUseThisConnection_158d1a")}</h2>
         <RadioCardGroup
-          ariaLabel="Which agents can use this connection"
+          ariaLabel={interfaceNotice("interface:whichAgentsCanUseThisConnection_d56d22")}
           value={allAgents ? "all" : "selected"}
           disabled={disabled}
           className="sm:grid-cols-2"
@@ -116,9 +113,7 @@ export function EmailConnectionAccess({
             }
           />
         )}
-        <p className="text-xs text-muted-foreground">
-          Removing an assigned agent stops receiving and sending from its inbox.
-        </p>
+        <p className="text-xs text-muted-foreground">{pageText("removingAnAssignedAgentStopsReceivingAndSending_cde34f")}</p>
         {save.error && (
           <p role="alert" className="text-sm text-destructive">
             {describeError(save.error).body}

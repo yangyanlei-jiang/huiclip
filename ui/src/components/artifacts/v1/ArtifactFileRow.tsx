@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../../../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useQueryView } from "@/components/QueryView";
 import { Download, ExternalLink } from "lucide-react";
@@ -66,16 +67,16 @@ export function ArtifactFileRow({
       {statusBadge}
       {localCsv && !tooLarge && !data.data && !(dataView.kind === "error") ? (
         <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" disabled={data.isFetching} onClick={() => setCsvRequested(true)}>
-          {data.isFetching ? pageText("loadingPreview_1b6d8c") : "Preview data"}
+          {data.isFetching ? pageText("loadingPreview_1b6d8c") : pageText("previewData_4403fd")}
         </Button>
       ) : null}
       {openPath ? (
-        <a href={openPath} target="_blank" rel="noreferrer" aria-label={`Open raw ${filename}`} title="Open raw" className={ROW_ACTION_CLASS}>
+        <a href={openPath} target="_blank" rel="noreferrer" aria-label={translateDynamic("dynamic:openRaw", { value1: filename })} title={pageText("openRaw_5cb935")} className={ROW_ACTION_CLASS}>
           <ExternalLink className="h-3 w-3" aria-hidden />
         </a>
       ) : null}
       {downloadPath ? (
-        <a href={downloadPath} download={filename} aria-label={`Download ${filename}`} title={pageText("download_a479c9")} className={ROW_ACTION_CLASS}>
+        <a href={downloadPath} download={filename} aria-label={translateDynamic("dynamic:download", { value1: filename })} title={pageText("download_a479c9")} className={ROW_ACTION_CLASS}>
           <Download className="h-3 w-3" aria-hidden />
         </a>
       ) : null}
@@ -101,7 +102,7 @@ export function ArtifactFileRow({
       ) : null}
       {csv && (tooLarge || (dataView.kind === "error")) ? (
         <div className="px-2 text-xs text-muted-foreground" role="status">
-          {tooLarge ? "CSV is too large to preview. Download the file to view it." : data.error?.message}
+          {tooLarge ? pageText("csvIsTooLargeToPreviewDownloadThe_d47060") : data.error?.message}
           {(dataView.kind === "error") ? (
             <Button variant="ghost" size="sm" onClick={() => void data.refetch()}>{pageText("retryPreview_6e5493")}</Button>
           ) : null}

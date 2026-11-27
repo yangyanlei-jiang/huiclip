@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -27,7 +28,7 @@ export function SearchFilterChips({
             type="button"
             className="rounded-full p-0.5 hover:bg-background/60"
             onClick={() => onChange(chip.remove(filters))}
-            aria-label={`Remove filter ${chip.label}`}
+            aria-label={translateDynamic("dynamic:removeFilter", { value1: chip.label })}
           >
             <X className="h-3 w-3" />
           </button>

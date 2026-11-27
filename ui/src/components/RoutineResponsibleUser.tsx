@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -53,7 +54,7 @@ export function RoutineResponsibleUser({ routine }: { routine: RoutineDetail }) 
           <PopoverTrigger asChild>
             <button
               type="button"
-              aria-label={`Change responsible user: ${label}`}
+              aria-label={translateDynamic("dynamic:changeResponsibleUser", { value1: label })}
               disabled={change.isPending || !directory.data}
               className="group flex w-fit max-w-full items-center gap-2 rounded-md text-left text-sm font-medium hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
             >
@@ -64,9 +65,9 @@ export function RoutineResponsibleUser({ routine }: { routine: RoutineDetail }) 
           </PopoverTrigger>
           <PopoverContent align="start" className="w-72 p-0">
             <Command>
-              <CommandInput placeholder="Find a person…" aria-label="Find a responsible user" />
+              <CommandInput placeholder={pageText("findAPerson_a85c4e")} aria-label={pageText("findAResponsibleUser_ebdf08")} />
               <CommandList aria-label={pageText("responsibleUser_59fcd1")}>
-                <CommandEmpty>No people found.</CommandEmpty>
+                <CommandEmpty>{pageText("noPeopleFound_c17366")}</CommandEmpty>
                 {(directory.data?.users ?? []).map((member) => (
                   <CommandItem
                     key={member.principalId}
@@ -78,7 +79,7 @@ export function RoutineResponsibleUser({ routine }: { routine: RoutineDetail }) 
                   >
                     <UserRound className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                     <span className="min-w-0 flex-1 truncate">{profiles.get(member.principalId)?.label}</span>
-                    {member.principalId === routine.responsibleUserId ? <Check className="h-4 w-4" aria-label="Current responsible user" /> : null}
+                    {member.principalId === routine.responsibleUserId ? <Check className="h-4 w-4" aria-label={pageText("currentResponsibleUser_d2a14f")} /> : null}
                   </CommandItem>
                 ))}
               </CommandList>
@@ -91,14 +92,14 @@ export function RoutineResponsibleUser({ routine }: { routine: RoutineDetail }) 
           <span className="truncate">{label}</span>
         </p>
       )}
-      <p className="text-xs text-muted-foreground">Automatic tasks use this person. Manual runs use the person who starts them.</p>
+      <p className="text-xs text-muted-foreground">{pageText("automaticTasksUseThisPersonManualRunsUse_1509c1")}</p>
       {directoryView.kind === "error" ? (
         <QueryErrorState error={directoryView.error} size="inline" action="load people" onRetry={directoryView.retry} retrying={directoryView.isFetching} />
       ) : null}
       {change.error ? (
         <p role="alert" className="text-xs text-destructive">
           {change.error instanceof ApiError && change.error.status === 409
-            ? "This routine changed. Reload before changing responsibility."
+            ? pageText("thisRoutineChangedReloadBeforeChangingResponsibility_f7a872")
             : describeError(change.error, { action: "change responsibility" }).body}
         </p>
       ) : null}

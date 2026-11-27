@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect } from "react";
 import { ArrowLeft, RadioTower } from "lucide-react";
@@ -16,8 +17,8 @@ export function DashboardLive() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: "Dashboard", href: "/dashboard" },
-      { label: "Live runs" },
+      { label: interfaceNotice("interface:dashboard_d87f47"), href: "/dashboard" },
+      { label: interfaceNotice("interface:liveRuns_69bc23") },
     ]);
   }, [setBreadcrumbs]);
 
@@ -25,7 +26,7 @@ export function DashboardLive() {
     return (
       <EmptyState
         icon={RadioTower}
-        message={companies.length === 0 ? "Create an organization to view live runs." : "Select an organization to view live runs."}
+        message={companies.length === 0 ? pageText("createAnOrganizationToViewLiveRuns_ec31f2") : pageText("selectAnOrganizationToViewLiveRuns_b9e659")}
       />
     );
   }
@@ -39,21 +40,19 @@ export function DashboardLive() {
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
             <ArrowLeft className="h-3.5 w-3.5" />{pageText("dashboard_d87f47")}</Link>
-          <h1 className="mt-2 text-2xl font-semibold tracking-normal text-foreground">Live agent runs</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Active runs first, followed by the most recent completed runs.
-          </p>
+          <h1 className="mt-2 text-2xl font-semibold tracking-normal text-foreground">{pageText("liveAgentRuns_9a10f5")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{pageText("activeRunsFirstFollowedByTheMostRecent_04f886")}</p>
         </div>
-        <div className="text-sm text-muted-foreground">Showing up to {DASHBOARD_LIVE_RUN_LIMIT}</div>
+        <div className="text-sm text-muted-foreground">{pageText("showingUpTo_7563c9") + " "}{DASHBOARD_LIVE_RUN_LIMIT}</div>
       </div>
 
       <ActiveAgentsPanel
         companyId={selectedCompanyId}
-        title="Active / recent"
+        title={pageText("activeRecent_46116c")}
         minRunCount={DASHBOARD_LIVE_RUN_LIMIT}
         fetchLimit={DASHBOARD_LIVE_RUN_LIMIT}
         cardLimit={DASHBOARD_LIVE_RUN_LIMIT}
-        emptyMessage="No active or recent agent runs."
+        emptyMessage={pageText("noActiveOrRecentAgentRuns_3fe199")}
         queryScope="dashboard-live"
         showMoreLink={false}
       />

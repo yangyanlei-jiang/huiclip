@@ -1,3 +1,5 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { t as interfaceNotice } from "@/i18n";
 import { t as interfaceMessage } from "@/i18n";
 import { useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -63,6 +65,7 @@ export function RunWorkspaceRecoverySurface({ run }: { run: HeartbeatRun }) {
 }
 
 function WorkspaceValidationRecoverySurface({ run }: { run: HeartbeatRun }) {
+  const { t: pageText } = usePageTranslation("interface");
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
@@ -113,20 +116,20 @@ function WorkspaceValidationRecoverySurface({ run }: { run: HeartbeatRun }) {
       pushToast(
         variables.mode === "quarantine_restore"
           ? {
-              title: "Workspace repaired",
-              body: "Dirty changes were quarantined onto a rescue branch and the recorded branch restored; the task will resume.",
+              title: interfaceNotice("interface:workspaceRepaired_6a2df1"),
+              body: interfaceNotice("interface:dirtyChangesWereQuarantinedOntoARescueBranch_6e5d82"),
               tone: "success",
             }
           : {
-              title: "Workspace branch reconciled",
-              body: "The recorded branch now matches the live branch; the task will resume.",
+              title: interfaceNotice("interface:workspaceBranchReconciled_127444"),
+              body: interfaceNotice("interface:theRecordedBranchNowMatchesTheLiveBranch_d9b0d2"),
               tone: "success",
             },
       );
     },
     onError: (err) => {
       pushToast({
-        title: "Reconcile failed",
+        title: interfaceNotice("interface:reconcileFailed_bed1cd"),
         body: err instanceof Error ? err.message : interfaceMessage("interface:errorUnableToReconcileTheWorkspaceBranchSentence"),
         tone: "error",
       });
@@ -168,10 +171,10 @@ function WorkspaceValidationRecoverySurface({ run }: { run: HeartbeatRun }) {
     onSuccess: (created) => {
       invalidate();
       pushToast({
-        title: "Isolated re-issue created",
+        title: interfaceNotice("interface:isolatedReIssueCreated_dffd37"),
         body: created.identifier
           ? `${created.identifier} will run on a fresh isolated workspace.`
-          : "A fresh isolated re-issue was created.",
+          : interfaceNotice("interface:aFreshIsolatedReIssueWasCreated_53b8c1"),
         tone: "success",
       });
       if (created.identifier) {
@@ -180,8 +183,8 @@ function WorkspaceValidationRecoverySurface({ run }: { run: HeartbeatRun }) {
     },
     onError: (err) => {
       pushToast({
-        title: "Re-issue failed",
-        body: err instanceof Error ? err.message : "Unable to create an isolated re-issue.",
+        title: interfaceNotice("interface:reIssueFailed_a48168"),
+        body: err instanceof Error ? err.message : interfaceNotice("interface:unableToCreateAnIsolatedReIssue_32f55f"),
         tone: "error",
       });
     },
@@ -204,7 +207,7 @@ function WorkspaceValidationRecoverySurface({ run }: { run: HeartbeatRun }) {
     },
     onError: (err) => {
       pushToast({
-        title: "Recovery resolution failed",
+        title: interfaceNotice("interface:recoveryResolutionFailed_a71bf9"),
         body: err instanceof Error ? err.message : interfaceMessage("interface:errorUnableToResolveRecoveryAction"),
         tone: "error",
       });
@@ -265,7 +268,7 @@ function WorkspaceValidationRecoverySurface({ run }: { run: HeartbeatRun }) {
   return (
     <div className="space-y-2" data-testid="run-workspace-recovery-surface">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-medium text-muted-foreground">Workspace recovery</span>
+        <span className="text-xs font-medium text-muted-foreground">{pageText("workspaceRecovery_d13bd9")}</span>
         {issue?.identifier ? (
           <a
             href={`/issues/${issue.identifier}`}

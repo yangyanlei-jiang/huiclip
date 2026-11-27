@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -48,6 +49,7 @@ export function ForkSkillDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -148,32 +150,23 @@ export function ForkSkillDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <GitFork className="h-4 w-4" />
-            Edit a copy of {skill.name}
+            <GitFork className="h-4 w-4" />{pageText("editACopyOf_c1b6c9") + " "}{skill.name}
           </DialogTitle>
           <DialogDescription>
-            {skill.name} is read-only because it comes from an external source.
-            Creating a fully editable copy in your workspace leaves the original
-            untouched and still updatable.
-          </DialogDescription>
+            {skill.name}{" " + pageText("isReadOnlyBecauseItComesFromAn_ee0483")}</DialogDescription>
         </DialogHeader>
 
         {reusableFork ? (
           <div className="rounded-md border border-primary/40 bg-primary/5 p-3 text-sm">
-            <p className="font-medium text-foreground">You already have a copy</p>
-            <p className="mt-0.5 text-muted-foreground">
-              An unedited copy of this skill already exists. Open it instead of
-              making another.
-            </p>
+            <p className="font-medium text-foreground">{pageText("youAlreadyHaveACopy_2840af")}</p>
+            <p className="mt-0.5 text-muted-foreground">{pageText("anUneditedCopyOfThisSkillAlreadyExists_5fab04")}</p>
             <Button
               type="button"
               size="sm"
               className="mt-2"
               onClick={openExisting}
               disabled={busy}
-            >
-              Open your existing copy
-            </Button>
+            >{pageText("openYourExistingCopy_c1210f")}</Button>
           </div>
         ) : null}
 
@@ -203,28 +196,23 @@ export function ForkSkillDialog({
               </div>
               <label className="mt-3 flex items-start justify-between gap-3">
                 <span className="text-sm">
-                  <span className="font-medium text-foreground">
-                    Switch these agents to the copy
-                  </span>
+                  <span className="font-medium text-foreground">{pageText("switchTheseAgentsToTheCopy_58dd84")}</span>
                   <span className="mt-0.5 block text-xs text-muted-foreground">
                     {reassign
-                      ? "These agents will run your copy instead of the original."
-                      : "These agents keep running the original — your copy won't change what they do."}
+                      ? pageText("theseAgentsWillRunYourCopyInsteadOf_ccbd59")
+                      : pageText("theseAgentsKeepRunningTheOriginalYourCopy_f21ae3")}
                   </span>
                 </span>
                 <ToggleSwitch
                   checked={reassign}
                   onCheckedChange={setReassign}
                   disabled={busy}
-                  aria-label="Switch these agents to the copy"
+                  aria-label={pageText("switchTheseAgentsToTheCopy_58dd84")}
                 />
               </label>
             </>
           ) : (
-            <p className="mt-1 text-xs text-muted-foreground">
-              Nothing is assigned to it, so your copy won't change any agent's
-              behaviour.
-            </p>
+            <p className="mt-1 text-xs text-muted-foreground">{pageText("nothingIsAssignedToItSoYourCopy_c425e0")}</p>
           )}
         </div>
 
@@ -242,7 +230,7 @@ export function ForkSkillDialog({
             disabled={busy}
           >
             {busy ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : null}
-            {reusableFork ? "Create another copy" : forkLabel}
+            {reusableFork ? pageText("createAnotherCopy_023c90") : forkLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

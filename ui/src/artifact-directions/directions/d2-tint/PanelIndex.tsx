@@ -90,8 +90,7 @@ export function PanelIndex({ artifacts, filter, onFilter }: { artifacts: LabArti
             </Chip>
           ) : null}
           <Chip onPress={() => setOpen(true)} name={`+${kinds.length} kinds`} className="hidden @max-xs/panel:inline-flex">
-            +{kinds.length} kinds
-          </Chip>
+            +{kinds.length}{" " + pageText("kinds_bfdaa5")}</Chip>
         </>
       )}
     </div>

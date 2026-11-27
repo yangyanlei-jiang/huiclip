@@ -1,3 +1,4 @@
+import { t as plainText, useTranslation } from "@/i18n";
 import { FILE_DROP_TARGET_ATTRIBUTE } from "../lib/file-drop-target";
 import { AgentAvatar } from "./AgentAvatar";
 import {
@@ -772,6 +773,7 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
   submitKey = "mod-enter",
   readOnly = false,
 }: MarkdownEditorProps, forwardedRef) {
+  const { t: editorText } = useTranslation("interface");
   const editorValue = useMemo(() => prepareMarkdownForEditor(value), [value]);
   function isSubmitShortcut(event: KeyboardEvent<HTMLElement>): boolean {
     return !readOnly
@@ -1374,8 +1376,7 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
         )}
       >
         <div className="flex items-start justify-between gap-3 px-3 pt-2 text-xs text-muted-foreground">
-          <p>
-            Rich editor unavailable for this markdown. Showing raw source instead.{" "}
+          <p>{plainText("interface:richEditorUnavailableForThisMarkdownShowingRaw_23d762")}{" "}
             <span data-testid="markdown-editor-fallback-code" className="font-mono">
               {richEditorError.code}
             </span>
@@ -1390,9 +1391,7 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
               initialChildOnChangeRef.current = true;
               setRichEditorError(null);
             }}
-          >
-            Retry rich editor
-          </button>
+          >{plainText("interface:retryRichEditor_44e0eb")}</button>
         </div>
         <textarea
           ref={fallbackTextareaRef}
@@ -1571,10 +1570,7 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
           translation={(key, fallback, interpolations = {}) =>
             key === "contentArea.editableMarkdown" && ariaLabel
               ? ariaLabel
-              : Object.entries(interpolations).reduce(
-                  (text, [name, value]) => text.replaceAll(`{{${name}}}`, String(value)),
-                  fallback,
-                )
+              : editorText(`editor_${key.replaceAll(".", "_")}`, { ...interpolations, defaultValue: fallback })
           }
           markdown={editorValue}
           iconComponentFor={editorIconFor}
@@ -1741,29 +1737,19 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
                   </span>
                 )}
                 {option.kind === "issue" && (
-                  <span className="ml-auto text-(length:--text-nano) uppercase tracking-wide text-muted-foreground">
-                    Task
-                  </span>
+                  <span className="ml-auto text-(length:--text-nano) uppercase tracking-wide text-muted-foreground">{plainText("interface:task_7bb0dd")}</span>
                 )}
                 {option.kind === "project" && option.projectId && (
-                  <span className="ml-auto text-(length:--text-nano) uppercase tracking-wide text-muted-foreground">
-                    Project
-                  </span>
+                  <span className="ml-auto text-(length:--text-nano) uppercase tracking-wide text-muted-foreground">{plainText("interface:project_f6f4da")}</span>
                 )}
                 {option.kind === "user" && (
-                  <span className="ml-auto text-(length:--text-nano) uppercase tracking-wide text-muted-foreground">
-                    User
-                  </span>
+                  <span className="ml-auto text-(length:--text-nano) uppercase tracking-wide text-muted-foreground">{plainText("interface:user_9f8a23")}</span>
                 )}
                 {option.kind === "skill" && (
-                  <span className="ml-auto shrink-0 text-(length:--text-nano) uppercase tracking-wide text-popover-foreground/70">
-                    Skill
-                  </span>
+                  <span className="ml-auto shrink-0 text-(length:--text-nano) uppercase tracking-wide text-popover-foreground/70">{plainText("interface:skill_ec9f63")}</span>
                 )}
                 {option.kind === "routine" && (
-                  <span className="ml-auto text-(length:--text-nano) uppercase tracking-wide text-muted-foreground">
-                    Routine
-                  </span>
+                  <span className="ml-auto text-(length:--text-nano) uppercase tracking-wide text-muted-foreground">{plainText("interface:routine_482273")}</span>
                 )}
                 {option.kind === "action" && (
                   <span className="ml-auto max-w-28 truncate text-(length:--text-nano) text-popover-foreground/70">
@@ -1782,9 +1768,7 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
             "pointer-events-none absolute inset-1 z-40 flex items-center justify-center rounded-md border border-dashed border-primary/80 bg-primary/10 text-xs font-medium text-primary",
             !bordered && "inset-0 rounded-sm",
           )}
-        >
-          Drop {onDropFile ? "file" : "image"} to upload
-        </div>
+        >{plainText("interface:drop_0a088b") + " "}{onDropFile ? plainText("interface:file_971c41") : plainText("interface:image_0e7629")}{" " + plainText("interface:toUpload_690c5a")}</div>
       )}
       {uploadError && (
         <p className="px-3 pb-2 text-xs text-destructive">{uploadError}</p>

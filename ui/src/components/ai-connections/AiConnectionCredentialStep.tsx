@@ -91,7 +91,7 @@ function SubscriptionConnectionStep({ companyId, provider, initialMethod, fixedM
   return <div className="mx-auto w-full min-w-0 max-w-xl space-y-6">
     {!hideName && <label className="block space-y-2 text-sm">{pageText("connectionName_5584ef")}<Input value={name} onChange={(event) => setName(event.target.value)} disabled={Boolean(connectionId)} /></label>}
     {!suppliedEnvironmentId && !forced.forced && loginEnvironments.length > 1 && <Select value={environmentId ?? ""} onValueChange={setChosenEnvironment}>
-      <SelectTrigger aria-label="Sign-in environment"><SelectValue placeholder="Sign-in environment" /></SelectTrigger>
+      <SelectTrigger aria-label={pageText("signInEnvironment_fe3a85")}><SelectValue placeholder={pageText("signInEnvironment_fe3a85")} /></SelectTrigger>
       <SelectContent>{loginEnvironments.map((env) => <SelectItem key={env.id} value={env.id}>{env.name}</SelectItem>)}</SelectContent>
     </Select>}
     {loadError ? <QueryErrorState size="inline" error={loadError.error} action="prepare sign-in" onRetry={loadError.retry} retrying={loadError.isFetching} />
@@ -133,9 +133,9 @@ function ApiKeyConnectionStep({ companyId, provider, connectionId, name: initial
   return <div className="mx-auto w-full min-w-0 max-w-xl space-y-4">
     {!hideName && <label className="block space-y-2 text-sm">{pageText("connectionName_5584ef")}<Input value={name} onChange={(event) => setName(event.target.value)} disabled={Boolean(connectionId)} /></label>}
     {save.error && <p role="alert" className="text-sm text-destructive">{describeError(save.error).body}</p>}
-    {copilot && <p className="text-sm text-muted-foreground">Use a personal fine-grained token with Copilot Requests permission. <a className="underline" href="https://docs.github.com/en/copilot/how-tos/copilot-cli/set-up-copilot-cli/authenticate-copilot-cli" target="_blank" rel="noreferrer">GitHub token instructions</a>. Verification discovers models in the selected environment and sends no model prompt. Repository access uses a separate connection.</p>}
+    {copilot && <p className="text-sm text-muted-foreground">{pageText("useAPersonalFineGrainedTokenWithCopilot_08194a") + " "}<a className="underline" href="https://docs.github.com/en/copilot/how-tos/copilot-cli/set-up-copilot-cli/authenticate-copilot-cli" target="_blank" rel="noreferrer">{pageText("githubTokenInstructions_c4f0b2")}</a>{pageText("verificationDiscoversModelsInTheSelectedEnvironmentAnd_fbb534")}</p>}
     {copilot && !suppliedEnvironmentId && <Select value={environmentId ?? ""} onValueChange={setChosenEnvironment} disabled={preparing || save.isPending}>
-      <SelectTrigger aria-label="Copilot execution environment"><SelectValue placeholder="Execution environment" /></SelectTrigger>
+      <SelectTrigger aria-label={pageText("copilotExecutionEnvironment_e06269")}><SelectValue placeholder={pageText("executionEnvironment_8a44fb")} /></SelectTrigger>
       <SelectContent>{(envs.data ?? []).filter(env => env.status === "active").map(env => <SelectItem key={env.id} value={env.id}>{env.name}</SelectItem>)}</SelectContent>
     </Select>}
     {environmentError && <p role="alert" className="text-sm text-destructive">{environmentError}</p>}

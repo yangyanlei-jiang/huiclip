@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useRef, useState } from "react";
@@ -102,9 +103,7 @@ export function GitHubRepositoryAccess({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem asChild>
-              <a href={managementUrl} target="_blank" rel="noreferrer">
-                Manage on GitHub
-                <ExternalLink className="size-4" />
+              <a href={managementUrl} target="_blank" rel="noreferrer">{pageText("manageOnGitHub_ebdf1b")}<ExternalLink className="size-4" />
               </a>
             </DropdownMenuItem>
             <DropdownMenuItem disabled={pending} onClick={onRefresh}>
@@ -112,10 +111,7 @@ export function GitHubRepositoryAccess({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <p className="text-xs text-muted-foreground">
-        Choose where the bot can receive messages and use tools. Repository
-        changes save immediately.
-      </p>
+      <p className="text-xs text-muted-foreground">{pageText("chooseWhereTheBotCanReceiveMessagesAnd_aeda5c")}</p>
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative min-w-0 flex-1 basis-48">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -125,12 +121,11 @@ export function GitHubRepositoryAccess({
         <Button variant="outline" size="sm" disabled={pending || list.isFetching || !summary || !summary.totalCount || (!disableAll && !summary.availableCount)}
           aria-label={`${disableAll ? "Disable" : "Enable"} all repositories`}
           onClick={() => onToggleAll(!disableAll)}>
-          {disableAll ? "Disable all" : "Enable all"}
+          {disableAll ? pageText("disableAll_485c59") : pageText("enableAll_1734db")}
         </Button>
       </div>
       {summary && <p className="text-xs text-muted-foreground">
-        {summary.enabledCount} of {summary.totalCount} repositories enabled. Toggle all applies across the entire connection.
-      </p>}
+        {summary.enabledCount}{" " + pageText("of_de04fa") + " "}{summary.totalCount}{" " + pageText("repositoriesEnabledToggleAllAppliesAcrossTheEntire_c90d40")}</p>}
       {listView.kind === "error" && (
         <QueryErrorState error={list.error} action="load repositories" onRetry={listView.retry} retrying={listView.isFetching} />
       )}
@@ -149,7 +144,7 @@ export function GitHubRepositoryAccess({
               description={
                 resource.availability === "available"
                   ? undefined
-                  : "Unavailable on GitHub. Update the App’s installation access, then refresh."
+                  : pageText("unavailableOnGitHubUpdateTheAppSInstallation_939bca")
               }
               onChange={(enabled) => onChange(resource.id, enabled)}
             />
@@ -173,13 +168,13 @@ export function GitHubRepositoryAccess({
         </div>
         {list.isPending || listView.kind === "reconnecting" ? <p role="status" className="py-4 text-sm text-muted-foreground">{pageText("loadingRepositories_a42923")}</p> : (listView.kind === "ready" || listView.kind === "stale") && rows.length === 0 && (
           <p className="py-4 text-sm text-muted-foreground">
-            {search ? "No repositories match your search." : "No repositories available. Add repository access on GitHub, then refresh."}
+            {search ? pageText("noRepositoriesMatchYourSearch_b77690") : pageText("noRepositoriesAvailableAddRepositoryAccessOnGitHub_17d5a1")}
           </p>
         )}
         {list.hasNextPage && <div ref={more} className="flex justify-center py-2">
           <Button variant="ghost" size="sm" disabled={pending || list.isFetching}
             onClick={() => void list.fetchNextPage({ cancelRefetch: false })}>
-            {list.isFetchingNextPage ? pageText("loadingRepositories_a42923") : "Load more repositories"}
+            {list.isFetchingNextPage ? pageText("loadingRepositories_a42923") : pageText("loadMoreRepositories_ccd19f")}
           </Button>
         </div>}
       </div>
@@ -273,7 +268,7 @@ export function GitHubBotManagement({
                   await client.invalidateQueries({ queryKey: ["github-bot-repositories", endpoint.id] });
                   await client.invalidateQueries({ queryKey: ["github-bot-repository-pages", endpoint.id] });
                   setNotice(
-                    "Repository access refreshed. New repositories stay disabled.",
+                    interfaceNotice("interface:repositoryAccessRefreshedNewRepositoriesStayDisabled_6570df"),
                   );
                 })
               }
@@ -300,25 +295,18 @@ export function GitHubBotManagement({
             />
             {!config.toolsEnabled && (
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  This saved bot has GitHub tools disabled, so it cannot start
-                  work or respond.
-                </p>
+                <p className="text-sm text-muted-foreground">{pageText("thisSavedBotHasGitHubToolsDisabledSo_7b9630")}</p>
                 <Button
                   variant="outline"
                   onClick={() => edit({ ...config, toolsEnabled: true })}
-                >
-                  Enable bot tools
-                </Button>
+                >{pageText("enableBotTools_12a7d1")}</Button>
               </div>
             )}
             {endpoint.connectionId && (
               <Link
                 className="text-xs text-muted-foreground underline underline-offset-4"
                 to={`/apps/${endpoint.connectionId}`}
-              >
-                Manage tool permissions
-              </Link>
+              >{pageText("manageToolPermissions_3d46a6")}</Link>
             )}
           </>
         ) : (
@@ -374,7 +362,7 @@ export function GitHubBotManagement({
                 setDraft(null);
                 setScoreText(null);
                 setAutomaticMode(null);
-                setNotice("Changes saved.");
+                setNotice(interfaceNotice("interface:changesSaved_5ffbaf"));
               })
             }
           >
@@ -415,14 +403,14 @@ export function gitHubReviewResultLabel(review: GitHubTaskReview) {
 }
 
 function ReviewResult({ review }: { review: GitHubTaskReview }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-baseline justify-between gap-3">
         <span className="text-sm font-medium">
           {gitHubReviewResultLabel(review)}
         </span>
-        <span className="text-xs text-muted-foreground">
-          Commit <code>{review.headSha.slice(0, 7)}</code> ·{" "}
+        <span className="text-xs text-muted-foreground">{pageText("commit_1a1873") + " "}<code>{review.headSha.slice(0, 7)}</code> ·{" "}
           {formatDateTime(review.updatedAt)}
         </span>
       </div>
@@ -431,26 +419,20 @@ function ReviewResult({ review }: { review: GitHubTaskReview }) {
           {review.assessment.summary}
         </MarkdownBody>
       ) : (
-        <p className="text-sm text-muted-foreground">
-          No assessment has been submitted yet.
-        </p>
+        <p className="text-sm text-muted-foreground">{pageText("noAssessmentHasBeenSubmittedYet_3cf048")}</p>
       )}
       <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
         <Link
           className="underline underline-offset-4"
           to={`/issues/${review.issueId}`}
-        >
-          Paperclip task
-        </Link>
+        >{pageText("paperclipTask_678b33")}</Link>
         {review.summaryUrl && (
           <a
             className="underline underline-offset-4"
             href={review.summaryUrl}
             target="_blank"
             rel="noreferrer"
-          >
-            GitHub comment
-          </a>
+          >{pageText("githubComment_f204b9")}</a>
         )}
         {review.checkUrl && (
           <a
@@ -458,28 +440,24 @@ function ReviewResult({ review }: { review: GitHubTaskReview }) {
             href={review.checkUrl}
             target="_blank"
             rel="noreferrer"
-          >
-            Check
-          </a>
+          >{pageText("check_4b5e84")}</a>
         )}
       </div>
-      <section className="space-y-4 text-sm" aria-label="Review evidence">
+      <section className="space-y-4 text-sm" aria-label={pageText("reviewEvidence_ab34d9")}>
         <div className="space-y-3">
           {review.runId && (
             <Link
               className="text-xs underline underline-offset-4"
               to={`/issues/${review.issueId}?runId=${review.runId}`}
-            >
-              Agent run
-            </Link>
+            >{pageText("agentRun_f5b3ee")}</Link>
           )}
           {review.assessment && (
             <>
-              <h3 className="font-medium">Rationale</h3>
+              <h3 className="font-medium">{pageText("rationale_98365a")}</h3>
               <MarkdownBody>{review.assessment.rationale}</MarkdownBody>
               {review.assessment.findings.length > 0 && (
                 <section className="space-y-3">
-                  <h3 className="font-medium">Findings</h3>
+                  <h3 className="font-medium">{pageText("findings_ca9b7e")}</h3>
                   {review.assessment.findings.map((finding) => (
                     <div
                       key={finding.key}
@@ -493,11 +471,9 @@ function ReviewResult({ review }: { review: GitHubTaskReview }) {
                   ))}
                 </section>
               )}
-              <h3 className="font-medium">Coverage</h3>
+              <h3 className="font-medium">{pageText("coverage_80e135")}</h3>
               <p className="text-xs text-muted-foreground">
-                {review.assessment.coverage.reviewedPaths.length} files reviewed
-                · {review.assessment.coverage.omittedPaths.length} omitted
-              </p>
+                {review.assessment.coverage.reviewedPaths.length}{" " + pageText("filesReviewed_29e163") + " "}{review.assessment.coverage.omittedPaths.length}{" " + pageText("omitted_9908ab")}</p>
               {review.assessment.coverage.limitations.map((limit, index) => (
                 <p key={index} className="text-xs text-muted-foreground">
                   {limit}
@@ -518,17 +494,18 @@ export function GitHubReviewList({
   endpointId: string;
   reviews: GitHubTaskReview[];
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (!reviews.length)
     return (
       <EmptyState
         icon={GitPullRequest}
-        message="No reviews yet"
-        description="Mention the bot on a pull request, or enable automatic events in Settings."
+        message={pageText("noReviewsYet_e4d212")}
+        description={pageText("mentionTheBotOnAPullRequestOr_d33d25")}
       />
     );
   return (
     <ul
-      aria-label="Reviews"
+      aria-label={pageText("reviews_b83c4c")}
       className="divide-y divide-border border-y border-border"
     >
       {orderedGitHubReviews(reviews).map((review) => (
@@ -569,14 +546,13 @@ export function GitHubReviewDetail({
   endpointId: string;
   review: GitHubTaskReview;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <article className="max-w-3xl space-y-6">
       <Link
         className="text-sm text-muted-foreground hover:underline"
         to={`/apps/chat/${endpointId}/reviews`}
-      >
-        ← All reviews
-      </Link>
+      >{pageText("allReviews_baf93d")}</Link>
       <header className="space-y-2">
         <h2 className="text-lg font-semibold">
           {review.event.title || `Pull request #${review.pullNumber}`}
@@ -602,6 +578,7 @@ export function GitHubReviews({
   endpointId: string;
   reviewId?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const query = useQuery({
     queryKey: ["github-bot-reviews", endpointId, reviewId ?? "list"],
     queryFn: async () => reviewId ? [await githubChatApi.review(endpointId, reviewId)] : githubChatApi.reviews(endpointId),
@@ -610,15 +587,11 @@ export function GitHubReviews({
   const view = useQueryView(query);
   const missingReview = (
     <div className="space-y-3">
-      <p role="alert" className="text-sm text-muted-foreground">
-        This review was not found in this connection.
-      </p>
+      <p role="alert" className="text-sm text-muted-foreground">{pageText("thisReviewWasNotFoundInThisConnection_ee4f79")}</p>
       <Link
         to={`/apps/chat/${endpointId}/reviews`}
         className="text-sm underline"
-      >
-        All reviews
-      </Link>
+      >{pageText("allReviews_acf660")}</Link>
     </div>
   );
   if (view.kind === "error") {
@@ -634,9 +607,7 @@ export function GitHubReviews({
   }
   if (query.isPending || view.kind === "reconnecting")
     return (
-      <p role="status" className="text-sm text-muted-foreground">
-        Loading reviews…
-      </p>
+      <p role="status" className="text-sm text-muted-foreground">{pageText("loadingReviews_1c4171")}</p>
     );
   if (reviewId) {
     const review = query.data?.find((review) => review.id === reviewId);

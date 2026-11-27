@@ -37,12 +37,12 @@ export function TaskChatPausedTakeover({
         <Pause aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-(--status-task-icon-todo)" />
         <div className="flex min-w-0 flex-col gap-1">
           <h2 id={headingId} className="text-sm font-medium text-foreground">
-            {subtree ? "Subtree is paused." : "Task is paused."}
+            {subtree ? pageText("subtreeIsPaused_44a184") : pageText("taskIsPaused_13ac82")}
           </h2>
           <p className="text-sm text-muted-foreground">
             {subtree
-              ? "Resume this subtree to send a message."
-              : "Resume this task to send a message."}
+              ? pageText("resumeThisSubtreeToSendAMessage_a26220")
+              : pageText("resumeThisTaskToSendAMessage_eaa752")}
           </p>
         </div>
       </div>
@@ -53,7 +53,7 @@ export function TaskChatPausedTakeover({
       ) : null}
       <div className="flex flex-wrap items-center justify-end gap-3">
         {hasDraft ? (
-          <p className="mr-auto text-xs text-muted-foreground">Your draft is saved.</p>
+          <p className="mr-auto text-xs text-muted-foreground">{pageText("yourDraftIsSaved_e5ddc1")}</p>
         ) : null}
         {resumeHref ? (
           <Button asChild size="sm" className="bg-(--status-agent-paused) text-foreground hover:bg-(--status-agent-paused)/80 dark:text-background">

@@ -1,3 +1,4 @@
+import { controlText } from "@/i18n/controls";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,7 @@ export function SetupWizardSidebar() {
 
 export function SetupWizardNavigation({
   labels,
-  ariaLabel = "Setup progress",
+  ariaLabel,
   takeover = false,
   inline = false,
   step,
@@ -43,7 +44,7 @@ export function SetupWizardNavigation({
     return () => setActive(false);
   }, [takeover, setActive]);
   const navigation = (
-    <nav aria-label={ariaLabel}>
+    <nav aria-label={ariaLabel ?? controlText("Setup progress")}>
       <ol className="text-sm">
         {labels.map((label, index) => (
           <li key={label}>

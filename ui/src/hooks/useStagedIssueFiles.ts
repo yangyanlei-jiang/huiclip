@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useCallback, useEffect, useState, type SetStateAction } from "react";
 import { readStagedIssueFiles, writeStagedIssueFiles, type StagedIssueFile } from "../lib/staged-issue-files";
 
@@ -23,7 +24,7 @@ export function useStagedIssueFiles(owner: string | undefined, companyId: string
       }).catch(() => {
         if (!active) return;
         setState({ key, files: unboundFiles, removedIds: [], restoring: false, changed: unboundFiles.length > 0 });
-        setError("Saved files could not be restored. Attach them again before you create the task.");
+        setError(interfaceNotice("interface:savedFilesCouldNotBeRestoredAttachThem_d0ba3d"));
       });
     }
     return () => { active = false; };
@@ -35,7 +36,7 @@ export function useStagedIssueFiles(owner: string | undefined, companyId: string
     void writeStagedIssueFiles(key, state.files, state.removedIds).then(() => {
       if (active) setError(null);
     }).catch(() => {
-      if (active) setError("Files could not be saved in this browser. Keep this page open until you create the task.");
+      if (active) setError(interfaceNotice("interface:filesCouldNotBeSavedInThisBrowser_843664"));
     });
     return () => { active = false; };
   }, [key, state]);

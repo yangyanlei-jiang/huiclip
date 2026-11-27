@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@/lib/router";
@@ -26,6 +27,7 @@ interface DecisionQueueRailProps {
  * the queue's pending items.
  */
 export function DecisionQueueRail({ companyId, activeQueueKey = null }: DecisionQueueRailProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { data: queues } = useQuery({
     queryKey: queryKeys.decisionQueues.list(companyId),
@@ -42,7 +44,7 @@ export function DecisionQueueRail({ companyId, activeQueueKey = null }: Decision
   const now = Date.now();
 
   return (
-    <nav className="flex flex-wrap items-center gap-1.5" aria-label="Decision queues" data-decision-queue-rail>
+    <nav className="flex flex-wrap items-center gap-1.5" aria-label={pageText("decisionQueues_866287")} data-decision-queue-rail>
       <Chip href={decisionsHref(null)} active={activeQueueKey == null} label={translateUi("interfaceCopy.all")} />
       {queues.map((queue) => {
         const recent = now - new Date(queue.updatedAt).getTime() < RECENT_ACTIVITY_MS;

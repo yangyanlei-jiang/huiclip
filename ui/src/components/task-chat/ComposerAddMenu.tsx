@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useRef, useState } from "react";
 import type { IssueWorkMode } from "@paperclipai/shared";
@@ -56,7 +57,7 @@ export function ComposerAddMenu({
       { id: "composer-add-ask", label: "Ask mode", detail: "Answer without changes", Icon: MessageCircleQuestion, select: () => onModeChange(mode === "ask" ? "standard" : "ask"), selected: mode === "ask" },
     ] : []),
   ];
-  const trigger = <button type="button" aria-label="Add to composer" aria-keyshortcuts={onModeChange ? "Meta+Period Control+Period Shift+Tab" : undefined}
+  const trigger = <button type="button" aria-label={pageText("addToComposer_f28e26")} aria-keyshortcuts={onModeChange ? "Meta+Period Control+Period Shift+Tab" : undefined}
     disabled={disabled} data-testid={triggerTestId}
     className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50">
     <Plus className="size-4" aria-hidden />
@@ -73,7 +74,7 @@ export function ComposerAddMenu({
       className="composer-mobile-dialog flex flex-col translate-y-0 gap-0 overflow-hidden p-0 md:translate-y-0">
       <div className="flex shrink-0 items-center gap-2 px-3 py-2">
         <DialogTitle className="min-w-0 flex-1 text-sm font-medium">{pageText("add_61cc55")}</DialogTitle>
-        <DialogClose asChild><button type="button" aria-label="Close Add menu" className="grid size-11 place-items-center rounded-md text-muted-foreground hover:bg-accent"><X className="size-4" /></button></DialogClose>
+        <DialogClose asChild><button type="button" aria-label={pageText("closeAddMenu_a9af14")} className="grid size-11 place-items-center rounded-md text-muted-foreground hover:bg-accent"><X className="size-4" /></button></DialogClose>
       </div>
       <div className="min-h-0 overflow-y-auto overscroll-contain p-2 pt-0">{actions.map((action) => <button key={action.id} type="button" disabled={action.disabled} data-testid={action.id}
         onClick={() => { goalFocusRef.current = action.id === "composer-add-goal"; action.select(); setOpen(false); }}
@@ -107,7 +108,7 @@ export function ComposerModeChip({ mode, onRemove, disabled, testId, mobile = fa
   const meta = workModeMetaFor(mode);
   const Icon = meta.icon;
   return <button type="button" onClick={onRemove} disabled={disabled || !onRemove}
-    aria-label={`Remove ${meta.label}`} data-pending-work-mode={mode} data-testid={testId}
+    aria-label={translateDynamic("dynamic:remove", { value1: meta.label })} data-pending-work-mode={mode} data-testid={testId}
     className={cn("inline-flex h-8 shrink-0 items-center rounded-full border text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50", mobile ? "gap-1 px-2" : "gap-1 px-2 sm:gap-1.5 sm:px-2.5", meta.classes.chip)}>
     <Icon className="size-3.5" aria-hidden />
     <span className={mobile ? "sr-only" : "max-sm:sr-only"}>{meta.label}</span>
@@ -127,7 +128,7 @@ export function ComposerPrivacyChip({ inherited, onRemove, disabled }: { inherit
         onKeyDown={inherited ? (event) => {
           if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setHintOpen(true); }
         } : undefined}>
-        <button type="button" onClick={onRemove} aria-label={inherited ? "Private task" : "Remove private task"}
+        <button type="button" onClick={onRemove} aria-label={inherited ? pageText("privateTask_fc2d31") : pageText("removePrivateTask_2336de")}
           title={explanation}
           disabled={disabled || Boolean(inherited)} data-testid="composer-private-chip"
           className="inline-flex h-8 shrink-0 items-center gap-1 rounded-full border border-border bg-muted px-2 text-xs font-medium text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">

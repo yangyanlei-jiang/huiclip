@@ -1,3 +1,5 @@
+import { controlText } from "@/i18n/controls";
+import { optionLabel } from "@/i18n/option-label";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -79,8 +81,8 @@ export function Projects() {
   const [sortDir, setSortDir] = useState<ProjectSortDir>("asc");
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Projects" }]);
-  }, [setBreadcrumbs]);
+    setBreadcrumbs([{ label: optionLabel("Projects") }]);
+  }, [pageText, setBreadcrumbs]);
 
   const projectsQuery = useQuery({
     queryKey: queryKeys.projects.list(selectedCompanyId!),
@@ -122,7 +124,7 @@ export function Projects() {
   }, [membershipsQuery.data, sortedProjects]);
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Hexagon} message="Select an organization to view projects." />;
+    return <EmptyState icon={Hexagon} message={pageText("selectAnOrganizationToViewProjects_3dd213")} />;
   }
 
   // Keep a loaded list on screen through a failed refetch; only a real
@@ -152,13 +154,13 @@ export function Projects() {
           icon={Hexagon}
           graphic={<ArtifactEmptyGraphic stack />}
           message={pageText("noProjectsYet_313557")}
-          action="Create project"
+          action={optionLabel("Create project")}
           hideActionIcon
           onAction={openNewProject}
         />
       )}
 
-      {projects.length > 0 && sortedProjects.length === 0 && <p className="text-sm text-muted-foreground">No projects match your search.</p>}
+      {projects.length > 0 && sortedProjects.length === 0 && <p className="text-sm text-muted-foreground">{pageText("noProjectsMatchYourSearch_01cedd")}</p>}
 
       {sortedProjects.length > 0 && (
         <div className="space-y-6">
@@ -171,9 +173,9 @@ export function Projects() {
             return (
               <section key={label} className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-sm font-medium">{label}</h2>
+                  <h2 className="text-sm font-medium">{optionLabel(label)}</h2>
                   <span className="text-xs text-muted-foreground">
-                    {sectionProjects.length}{" " + pageText("project_98f541")}{sectionProjects.length === 1 ? "" : "s"}
+                    {pageText("options:projectCount", { count: sectionProjects.length })}
                   </span>
                 </div>
                 <Card className="block py-0 overflow-hidden divide-y divide-border">
@@ -199,9 +201,9 @@ export function Projects() {
                             {project.visibility === "private" ? <Lock className="size-4 shrink-0 text-muted-foreground" aria-label={pageText("privateProject_505bbd")} /> : null}
                             <span
                               className="hidden text-xs text-muted-foreground tabular-nums sm:inline"
-                              title={`${formatNumber(project.taskCount ?? 0)} task${(project.taskCount ?? 0) === 1 ? "" : "s"}`}
+                              title={controlText("taskTotal", { count: project.taskCount ?? 0, formatted: formatNumber(project.taskCount ?? 0) })}
                             >
-                              {formatNumber(project.taskCount ?? 0)}{" " + pageText("task_7fbb72")}{(project.taskCount ?? 0) === 1 ? "" : "s"}
+                              {controlText("taskTotal", { count: project.taskCount ?? 0, formatted: formatNumber(project.taskCount ?? 0) })}
                             </span>
                             {project.budget && (
                               <span className="hidden text-xs text-muted-foreground tabular-nums sm:inline">

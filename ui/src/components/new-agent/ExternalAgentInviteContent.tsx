@@ -1,3 +1,4 @@
+import { optionLabel } from "@/i18n/option-label";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useId } from "react";
@@ -51,6 +52,7 @@ const checks = [
 
 /** Controlled by server evidence in the invite controller, never by copying a prompt. */
 export function DotConnectionChecks({ state }: { state: DotConnectionState }) {
+  const { t: pageText } = usePageTranslation("interface");
   const completed = { waiting: 0, connected: 1, subscribed: 2, testing: 2, finishing: 3, ready: 3 }[state.phase];
   const message = state.problem === "agent_unavailable" ? "Connection checks passed, but this agent cannot receive tasks. Resolve the agent’s setup blocker in Paperclip."
     : state.problem === "offline" ? "Connection updates paused. Reconnect to check the latest status."
@@ -61,7 +63,7 @@ export function DotConnectionChecks({ state }: { state: DotConnectionState }) {
     : state.phase === "waiting" ? "Watching for your Dot. Updates will appear here automatically."
     : state.phase === "connected" ? "Your Dot connected. Waiting for it to enable task updates."
     : "Waiting for your Dot to confirm a test event. No task will be created.";
-  return <section aria-label="Dot connection checks" className="space-y-4">
+  return <section aria-label={pageText("dotConnectionChecks_f4c409")} className="space-y-4">
     <ol className="space-y-4">
       {checks.map((check, index) => {
         const done = index < completed;
@@ -74,7 +76,7 @@ export function DotConnectionChecks({ state }: { state: DotConnectionState }) {
           </span>
           <div className="min-w-0 pt-0.5">
             <p className={cn("text-sm", done || active || failed ? "font-medium" : "text-muted-foreground")}>
-              {check.title}<span className="sr-only">{done ? ": complete" : failed ? ": needs attention" : active ? ": in progress" : ": waiting"}</span>
+              {check.title}<span className="sr-only">{done ? pageText("complete_6fbfa0") : failed ? pageText("needsAttention_964919") : active ? pageText("inProgress_2dbeb6") : pageText("waiting_86114e")}</span>
             </p>
             {done && <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{check.description}</p>}
           </div>
@@ -97,6 +99,7 @@ export type MuseConnectionState = {
 
 /** Receiver contact is separate from an authenticated, independent worker reply. */
 export function MuseConnectionChecks({ state }: { state: MuseConnectionState }) {
+  const { t: pageText } = usePageTranslation("interface");
   const milestones = [
     { title: "Paired with Paperclip", done: state.paired, description: "Paperclip authorized the scoped Muse agent connection." },
     { title: "Receiver detected", done: state.receiverDetected, description: "Paperclip observed a public receiver check. Only an authenticated reply confirms Muse can work." },
@@ -116,7 +119,7 @@ export function MuseConnectionChecks({ state }: { state: MuseConnectionState }) 
     : !state.paired ? "Watching for Muse to pair. Copy the setup prompt into your current Muse conversation."
     : !state.receiverDetected ? "Muse is paired. Waiting for the first persisted receiver contact."
     : "Receiver detected. Waiting for Muse to reply to the background test.";
-  return <section aria-label="Muse connection checks" className="space-y-4">
+  return <section aria-label={pageText("museConnectionChecks_830be3")} className="space-y-4">
     <ol className="space-y-4">
       {milestones.map(item => <li key={item.title} className="flex items-start gap-3">
         <span className={cn("flex size-6 shrink-0 items-center justify-center rounded-full", item.done ? "bg-accent text-foreground" : "text-muted-foreground")}>
@@ -124,7 +127,7 @@ export function MuseConnectionChecks({ state }: { state: MuseConnectionState }) 
         </span>
         <div className="min-w-0 pt-0.5">
           <p className={cn("text-sm", item.done ? "font-medium" : "text-muted-foreground")}>
-            {item.title}<span className="sr-only">{item.done ? ": complete" : ": waiting"}</span>
+            {item.title}<span className="sr-only">{item.done ? pageText("complete_6fbfa0") : pageText("waiting_86114e")}</span>
           </p>
           {item.done && <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{item.description}</p>}
         </div>
@@ -183,20 +186,20 @@ export function ExternalAgentInviteContent({
         {provider && <AdapterMark type={provider.adapter} className="size-10" />}
         <div className="space-y-2">
           <DialogTitle className="text-xl font-semibold tracking-tight">
-            {!provider ? "Invite an external agent" : muse ? ready ? "Muse is connected" : museDetails || museAwaitingInvitation ? "Invite your Muse" : "Connect your Muse" : dot ? ready ? "Your Dot is connected" : "Connect your Dot" : preset === "hermes" ? "Invite your Hermes agent" : "Invite your agent"}
+            {!provider ? pageText("inviteAnExternalAgent_a382ae") : muse ? ready ? pageText("museIsConnected_775ef8") : museDetails || museAwaitingInvitation ? pageText("inviteYourMuse_66cfde") : pageText("connectYourMuse_3b7583") : dot ? ready ? pageText("yourDotIsConnected_f7120a") : pageText("connectYourDot_d7cfc6") : preset === "hermes" ? pageText("inviteYourHermesAgent_39bcd8") : pageText("inviteYourAgent_b8cc88")}
           </DialogTitle>
           <DialogDescription className="text-sm leading-relaxed">
             {!provider ? `Bring an agent you already use into ${companyName}.`
               : muse ? museDetails ? `Give your personal Muse a name and role in ${companyName}.`
-              : museAwaitingInvitation ? "Muse requires an authenticated Paperclip instance with a public HTTPS URL and a company operator account."
+              : museAwaitingInvitation ? pageText("museRequiresAnAuthenticatedPaperclipInstanceWithA_2fc539")
               : ready ? `Muse can receive assignments and work with ${companyName}.`
-              : !prompt && !museConnection?.paired ? "We’re checking whether this instance can prepare Muse setup."
-              : "Paste the setup prompt into your current Muse conversation. Complete Connect Paperclip if Muse asks, then approve this Paperclip hostname. Muse keeps the connection credential in its secure vault. The hostname permission applies to future requests."
+              : !prompt && !museConnection?.paired ? pageText("weReCheckingWhetherThisInstanceCanPrepare_437530")
+              : pageText("pasteTheSetupPromptIntoYourCurrentMuse_4e4aeb")
               : ready ? `Your Dot can now receive assignments and work with ${companyName}.`
-              : connection.problem === "agent_unavailable" ? "Your Dot is connected. This agent must be available in Paperclip before it can receive assignments."
-              : connection.phase === "finishing" ? "Your Dot has connected and confirmed task updates. Paperclip is preparing it for assignments."
-              : connecting ? "Your Dot has connected. We’re checking that task updates can travel both ways."
-              : dot ? "Copy the setup prompt and send it to your Dot in ChatGPT. Your Dot will connect itself; we’ll watch for it here."
+              : connection.problem === "agent_unavailable" ? pageText("yourDotIsConnectedThisAgentMustBe_7c8459")
+              : connection.phase === "finishing" ? pageText("yourDotHasConnectedAndConfirmedTaskUpdates_38a423")
+              : connecting ? pageText("yourDotHasConnectedWeReCheckingThat_9eb9b4")
+              : dot ? pageText("copyTheSetupPromptAndSendItTo_3740a4")
               : `Copy the invitation prompt and send it to your ${preset === "hermes" ? "Hermes " : ""}agent. Approve its join request in Paperclip when it’s ready.`}
           </DialogDescription>
         </div>
@@ -204,9 +207,9 @@ export function ExternalAgentInviteContent({
       {error && <div role="alert" className="space-y-3 text-sm text-destructive"><p>{error}</p>{!museAwaitingInvitation && <Button variant="outline" disabled={busy} onClick={onRetry}>{translateUi("interfaceCopy.tryAgain")}</Button>}</div>}
       {!provider ? <><ExternalAgentPresetPicker onSelect={onSelect} dotDisabledReason={dotDisabledReason} grokDisabledReason={grokDisabledReason} museEnabled={museEnabled} />
         {dotDisabledReason && <p className="text-sm text-muted-foreground">{dotDisabledReason}</p>}{grokDisabledReason && grokDisabledReason !== dotDisabledReason && <p className="text-sm text-muted-foreground">{grokDisabledReason}</p>}</>
-        : approvalHref ? <p className="text-sm text-muted-foreground">An organization admin needs to approve this agent before {muse ? "Muse" : "Dot"} can connect. This page will update after approval.</p>
-        : museAwaitingInvitation ? busy ? <p role="status" className="text-sm text-muted-foreground">Loading Muse invitation…</p> : null
-        : muse && busy && !museDetails && !prompt && !museConnection?.paired ? <p role="status" className="text-sm text-muted-foreground">Loading Muse setup…</p>
+        : approvalHref ? <p className="text-sm text-muted-foreground">{pageText("anOrganizationAdminNeedsToApproveThisAgent_a9d4d4") + " "}{muse ? "Muse" : "Dot"}{" " + pageText("canConnectThisPageWillUpdateAfterApproval_b44e4a")}</p>
+        : museAwaitingInvitation ? busy ? <p role="status" className="text-sm text-muted-foreground">{pageText("loadingMuseInvitation_824307")}</p> : null
+        : muse && busy && !museDetails && !prompt && !museConnection?.paired ? <p role="status" className="text-sm text-muted-foreground">{pageText("loadingMuseSetup_764f09")}</p>
         : museDetails ? <form id={detailsId} className="space-y-4" onSubmit={event => { event.preventDefault(); if (museDraft.name.trim() && !busy) onMuseContinue?.(); }}>
           <div className="space-y-2">
             <label htmlFor={`${detailsId}-name`} className="text-sm font-medium">{translateUi("interfaceCopy.agentName")}</label>
@@ -217,23 +220,23 @@ export function ExternalAgentInviteContent({
             <select id={`${detailsId}-role`} disabled={busy} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm" value={museDraft.role} onChange={event => {
               const role = AGENT_ROLES.find(value => value === event.target.value);
               if (role) onMuseDraftChange?.({ ...museDraft, role });
-            }}>{AGENT_ROLES.map(role => <option key={role} value={role}>{AGENT_ROLE_LABELS[role]}</option>)}</select>
+            }}>{AGENT_ROLES.map(role => <option key={role} value={role}>{optionLabel(AGENT_ROLE_LABELS[role])}</option>)}</select>
           </div>
-          <p className="text-xs text-muted-foreground">Muse uses its own approved tools. Provider usage and cost are unavailable to Paperclip.</p>
+          <p className="text-xs text-muted-foreground">{pageText("museUsesItsOwnApprovedToolsProviderUsage_b5c688")}</p>
         </form>
         : muse && museConnection ? <>
           <MuseConnectionChecks state={museConnection} />
-          {museConnection.problem === "no_recent_response" && <Button variant="outline" disabled={busy} onClick={onRetry}>Test background reply</Button>}
+          {museConnection.problem === "no_recent_response" && <Button variant="outline" disabled={busy} onClick={onRetry}>{pageText("testBackgroundReply_66e9f8")}</Button>}
           {museConnection.problem === "offline" && <Button variant="outline" disabled={busy} onClick={onRetry}>{pageText("refreshConnection_e26021")}</Button>}
-          {!museConnection.paired && <a href="https://muse.ai" target="_blank" rel="noopener noreferrer" className="inline-flex text-sm text-foreground underline underline-offset-4">Open Muse</a>}
-          <p className="text-xs text-muted-foreground">Receiver contact is persisted in batches and may lag. Setup never creates a task. Provider usage and cost are unavailable.</p>
+          {!museConnection.paired && <a href="https://muse.ai" target="_blank" rel="noopener noreferrer" className="inline-flex text-sm text-foreground underline underline-offset-4">{pageText("openMuse_ddc100")}</a>}
+          <p className="text-xs text-muted-foreground">{pageText("receiverContactIsPersistedInBatchesAndMay_bf9d61")}</p>
         </>
-        : busy && !prompt && connection.phase === "waiting" ? <p role="status" className="text-sm text-muted-foreground">Preparing your invitation…</p> : dot ? <>
+        : busy && !prompt && connection.phase === "waiting" ? <p role="status" className="text-sm text-muted-foreground">{pageText("preparingYourInvitation_8f9820")}</p> : dot ? <>
         <div className="border-t pt-6"><DotConnectionChecks state={connection} />
-          {connection.phase === "waiting" && <p className="mt-4 text-xs text-muted-foreground">Dot uses your OpenAI account. Provider usage and cost aren’t reported to Paperclip.</p>}</div>
-        {connection.problem === "event_timeout" && <Button variant="outline" disabled={busy} onClick={onRetry}>Retry test event</Button>}
-        {connection.problem === "offline" && <Button variant="outline" disabled={busy} onClick={onRetry}>Reconnect updates</Button>}
-      </> : <p className="text-sm leading-relaxed text-muted-foreground">The invitation includes everything your agent needs to join {companyName}. You can review its request before granting access.</p>}
+          {connection.phase === "waiting" && <p className="mt-4 text-xs text-muted-foreground">{pageText("dotUsesYourOpenAIAccountProviderUsageAnd_edf44b")}</p>}</div>
+        {connection.problem === "event_timeout" && <Button variant="outline" disabled={busy} onClick={onRetry}>{pageText("retryTestEvent_1b1e79")}</Button>}
+        {connection.problem === "offline" && <Button variant="outline" disabled={busy} onClick={onRetry}>{pageText("reconnectUpdates_1b08b5")}</Button>}
+      </> : <p className="text-sm leading-relaxed text-muted-foreground">{pageText("theInvitationIncludesEverythingYourAgentNeedsTo_ef66b8") + " "}{companyName}{pageText("youCanReviewItsRequestBeforeGrantingAccess_8d846c")}</p>}
     </div>
     <div className="flex items-center justify-between gap-3 border-t px-6 py-4 sm:px-8">
       <div className="flex items-center gap-2">
@@ -241,27 +244,27 @@ export function ExternalAgentInviteContent({
           {provider && !muse && <ArrowLeft className="size-4" />}{muse ? ready ? pageText("close_bbfa77") : pageText("saveExit_fc5599") : provider ? pageText("back_b52b36") : pageText("cancel_77dfd2")}
         </Button>
       </div>
-      {provider && (approvalHref ? <Button asChild><Link to={approvalHref} onClick={onClose}>Review approval</Link></Button>
+      {provider && (approvalHref ? <Button asChild><Link to={approvalHref} onClick={onClose}>{pageText("reviewApproval_2ee792")}</Link></Button>
         : museDetails ? <Button type="submit" form={detailsId} disabled={busy || !museDraft.name.trim()}>{busy ? pageText("preparing_0b1d6c") : pageText("continue_2e0262")}</Button>
         : ready ? <Button onClick={onClose}>{translateUi("interfaceCopy.done")}</Button>
-        : museAwaitingInvitation ? <Button disabled={busy} onClick={onRetry}>{busy ? "Loading setup…" : "Refresh setup"}</Button>
-        : muse ? museConnection?.problem === "disconnected" || museConnection?.problem === "connection_expired" ? <Button disabled={busy} onClick={onNewPrompt}>Reconnect Muse</Button>
-          : museConnection?.problem === "prompt_unavailable" ? <Button disabled={busy} onClick={onNewPrompt}>Create a new prompt</Button>
-          : !museConnection?.paired && prompt ? <AgentSetupPrompt key={prompt} prompt={prompt} label={pageText("copySetupPrompt_c42e18")} title="Connect your Muse" agent={{ name: "Muse", icon: <Bot className="size-5" /> }} description="Send this whole prompt to your current Muse conversation." align="end" className="min-w-0 shrink" onCopied={onCopied} />
+        : museAwaitingInvitation ? <Button disabled={busy} onClick={onRetry}>{busy ? pageText("loadingSetup_42e09d") : pageText("refreshSetup_f3964b")}</Button>
+        : muse ? museConnection?.problem === "disconnected" || museConnection?.problem === "connection_expired" ? <Button disabled={busy} onClick={onNewPrompt}>{pageText("reconnectMuse_574943")}</Button>
+          : museConnection?.problem === "prompt_unavailable" ? <Button disabled={busy} onClick={onNewPrompt}>{pageText("createANewPrompt_fe56a9")}</Button>
+          : !museConnection?.paired && prompt ? <AgentSetupPrompt key={prompt} prompt={prompt} label={pageText("copySetupPrompt_c42e18")} title={pageText("connectYourMuse_3b7583")} agent={{ name: "Muse", icon: <Bot className="size-5" /> }} description={pageText("sendThisWholePromptToYourCurrentMuse_2a4160")} align="end" className="min-w-0 shrink" onCopied={onCopied} />
           : busy ? <Button disabled>{pageText("preparing_0b1d6c")}</Button>
-          : <Button asChild><a href="https://muse.ai" target="_blank" rel="noopener noreferrer">Open Muse</a></Button>
+          : <Button asChild><a href="https://muse.ai" target="_blank" rel="noopener noreferrer">{pageText("openMuse_ddc100")}</a></Button>
         : connecting ? <Button disabled aria-live="polite">
           {!connection.problem && <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />}
           {progressLabel}
         </Button>
-        : dot && connection.problem === "prompt_unavailable" ? <Button disabled={busy} onClick={onNewPrompt}>Create a new prompt</Button>
-        : !prompt || busy ? <Button disabled>{busy ? pageText("preparing_0b1d6c") : "Waiting for Dot…"}</Button>
+        : dot && connection.problem === "prompt_unavailable" ? <Button disabled={busy} onClick={onNewPrompt}>{pageText("createANewPrompt_fe56a9")}</Button>
+        : !prompt || busy ? <Button disabled>{busy ? pageText("preparing_0b1d6c") : pageText("waitingForDot_e2fea6")}</Button>
         : <AgentSetupPrompt
           key={preset}
           prompt={prompt}
-          label={dot ? pageText("copySetupPrompt_c42e18") : "Copy invitation prompt"}
-          title={dot ? "Connect your Dot" : "Invite your agent"}
-          description={dot ? "Send this whole prompt to your Dot in ChatGPT." : "Send this whole prompt to your agent."}
+          label={dot ? pageText("copySetupPrompt_c42e18") : pageText("copyInvitationPrompt_6f0c7f")}
+          title={dot ? pageText("connectYourDot_d7cfc6") : pageText("inviteYourAgent_b8cc88")}
+          description={dot ? pageText("sendThisWholePromptToYourDotIn_477297") : pageText("sendThisWholePromptToYourAgent_8b84b7")}
           agent={dot ? { name: "Dot", src: "/brands/adapters/openai-dot.svg" } : undefined}
           align="end"
           className="min-w-0 shrink"

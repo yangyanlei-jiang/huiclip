@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation } from "@/i18n";
 import { describeError } from "../api/errors";
@@ -71,8 +72,8 @@ export function ApprovalDetail() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: "Approvals", href: "/approvals" },
-      { label: approval?.id?.slice(0, 8) ?? approvalId ?? "Approval" },
+      { label: interfaceNotice("interface:approvals_deb9d0"), href: "/approvals" },
+      { label: approval?.id?.slice(0, 8) ?? approvalId ?? interfaceNotice("interface:approval_8cc047") },
     ]);
   }, [setBreadcrumbs, approval, approvalId]);
 
@@ -134,7 +135,7 @@ export function ApprovalDetail() {
       setError(null);
       refresh();
     },
-    onError: (err) => setError(err instanceof Error ? err.message : "Comment failed"),
+    onError: (err) => setError(err instanceof Error ? err.message : interfaceNotice("interface:commentFailed_4ccc69")),
   });
 
   const deleteAgentMutation = useMutation({
@@ -144,7 +145,7 @@ export function ApprovalDetail() {
       refresh();
       navigate("/approvals");
     },
-    onError: (err) => setError(err instanceof Error ? err.message : "Delete failed"),
+    onError: (err) => setError(err instanceof Error ? err.message : interfaceNotice("interface:deleteFailed_64513b")),
   });
 
   if (isLoading) return <PageSkeleton variant="detail" />;
@@ -162,17 +163,17 @@ export function ApprovalDetail() {
       ? {
           label:
             (linkedIssues?.length ?? 0) > 1
-              ? "Review linked tasks"
-              : "Review linked task",
+              ? pageText("approvalReviewLinkedTasks")
+              : pageText("approvalReviewLinkedTask"),
           to: `/issues/${primaryLinkedIssue.identifier ?? primaryLinkedIssue.id}`,
         }
       : linkedAgentId
         ? {
-            label: "Open hired agent",
+            label: pageText("approvalOpenHiredAgent"),
             to: `/agents/${linkedAgentId}`,
           }
         : {
-            label: "Back to approvals",
+            label: pageText("approvalReturnToList"),
             to: "/approvals",
           };
 
@@ -188,9 +189,7 @@ export function ApprovalDetail() {
               </div>
               <div>
                 <p className="text-sm text-green-800 dark:text-green-100 font-medium">{t("approvals.confirmed")}</p>
-                <p className="text-xs text-green-700 dark:text-green-200/90">
-                  Requesting agent was notified to review this approval and linked tasks.
-                </p>
+                <p className="text-xs text-green-700 dark:text-green-200/90">{pageText("requestingAgentWasNotifiedToReviewThisApproval_21707a")}</p>
               </div>
             </div>
             <Button
@@ -231,16 +230,14 @@ export function ApprovalDetail() {
             className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors mt-2"
             onClick={() => setShowRawPayload((v) => !v)}
           >
-            <ChevronRight className={`h-3 w-3 transition-transform ${showRawPayload ? "rotate-90" : ""}`} />
-            See full request
-          </button>
+            <ChevronRight className={`h-3 w-3 transition-transform ${showRawPayload ? "rotate-90" : ""}`} />{pageText("seeFullRequest_e78984")}</button>
           {showRawPayload && (
             <pre className="text-xs bg-muted/40 rounded-md p-3 overflow-x-auto">
               {JSON.stringify(payload, null, 2)}
             </pre>
           )}
           {approval.decisionNote && (
-            <p className="text-xs text-muted-foreground">Decision note: {approval.decisionNote}</p>
+            <p className="text-xs text-muted-foreground">{pageText("decisionNote_1d608f") + " "}{approval.decisionNote}</p>
           )}
         </div>
         {error && <p className="text-sm text-destructive">{error}</p>}
@@ -261,9 +258,7 @@ export function ApprovalDetail() {
                 </Link>
               ))}
             </div>
-            <p className="text-(length:--text-micro) text-muted-foreground mt-2">
-              Linked tasks remain open until the requesting agent follows up and closes them.
-            </p>
+            <p className="text-(length:--text-micro) text-muted-foreground mt-2">{pageText("linkedTasksRemainOpenUntilTheRequestingAgent_cd2ebd")}</p>
           </div>
         )}
         <div className="flex flex-wrap items-center gap-2">
@@ -288,8 +283,7 @@ export function ApprovalDetail() {
             </>
           )}
           {isBudgetApproval && approval.status === "pending" && (
-            <p className="text-sm text-muted-foreground">
-              Resolve this budget stop from the budget controls on <Link to="/costs" className="underline underline-offset-2">/costs</Link>.
+            <p className="text-sm text-muted-foreground">{pageText("resolveThisBudgetStopFromTheBudgetControls_d2a193") + " "}<Link to="/costs" className="underline underline-offset-2">/costs</Link>.
             </p>
           )}
           {approval.status === "pending" && (
@@ -306,9 +300,7 @@ export function ApprovalDetail() {
               variant="outline"
               onClick={() => resubmitMutation.mutate()}
               disabled={resubmitMutation.isPending}
-            >
-              Mark resubmitted
-            </Button>
+            >{pageText("markResubmitted_554954")}</Button>
           )}
           {approval.status === "rejected" && approval.type === "hire_agent" && linkedAgentId && (
             <Button
@@ -316,19 +308,17 @@ export function ApprovalDetail() {
               variant="outline"
               className="text-destructive border-destructive/40"
               onClick={() => {
-                if (!window.confirm("Delete this disapproved agent? This cannot be undone.")) return;
+                if (!window.confirm(interfaceNotice("interface:deleteThisDisapprovedAgentThisCannotBeUndone_746ff1"))) return;
                 deleteAgentMutation.mutate(linkedAgentId);
               }}
               disabled={deleteAgentMutation.isPending}
-            >
-              Delete disapproved agent
-            </Button>
+            >{pageText("deleteDisapprovedAgent_b4486f")}</Button>
           )}
         </div>
       </div>
 
       <div className="border border-border rounded-lg p-4 space-y-3">
-        <h3 className="text-sm font-medium">Comments ({comments?.length ?? 0})</h3>
+        <h3 className="text-sm font-medium">{pageText("approvalCommentCount", { count: comments?.length ?? 0 })}</h3>
         <div className="space-y-2">
           {(comments ?? []).map((comment: ApprovalComment) => (
             <div key={comment.id} className="border border-border/60 rounded-md p-3">
@@ -363,7 +353,7 @@ export function ApprovalDetail() {
             onClick={() => addCommentMutation.mutate()}
             disabled={!commentBody.trim() || addCommentMutation.isPending}
           >
-            {addCommentMutation.isPending ? pageText("posting_20c00d") : "Post comment"}
+            {addCommentMutation.isPending ? pageText("posting_20c00d") : pageText("postComment_92323a")}
           </Button>
         </div>
       </div>

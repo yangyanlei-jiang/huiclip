@@ -11,7 +11,7 @@ export function SkillBinaryFile({ file }: { file: CompanySkillFileDetail }) {
     setUrl(href); return () => URL.revokeObjectURL(href);
   }, [file.content]);
   return <div className="flex flex-col items-start gap-3 py-6">
-    <p className="text-sm text-muted-foreground">This asset is stored in its original binary format.</p>
+    <p className="text-sm text-muted-foreground">{pageText("thisAssetIsStoredInItsOriginalBinary_76de00")}</p>
     <Button asChild variant="outline" className="max-w-full"><a href={url} download={file.path.split('/').at(-1)} title={`Download ${file.path.split('/').at(-1)}`}><span className="truncate">{pageText("download_a479c9") + " "}{file.path.split('/').at(-1)}</span></a></Button>
   </div>;
 }

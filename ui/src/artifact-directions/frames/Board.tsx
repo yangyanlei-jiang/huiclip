@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DIRECTION_IDS, KIT_META, type DirectionId } from "../kit";
 import { labSearch, type LabTheme, type LabView } from "../lab-state";
@@ -95,12 +96,13 @@ function KitBoard({ direction, theme, anim }: { direction: DirectionId; theme: L
 
 /** Every kit: one row each, one column per surface. */
 function AllBoard({ theme, anim }: { theme: LabTheme; anim: boolean }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="grid grid-cols-(--gtc-board) items-start gap-x-4 gap-y-8" style={{ "--gtc-board": "7rem repeat(3, minmax(0, 1fr))" } as React.CSSProperties}>
       <span />
-      <ColumnHead>Thread</ColumnHead>
-      <ColumnHead>Panel</ColumnHead>
-      <ColumnHead>Gallery + stack</ColumnHead>
+      <ColumnHead>{pageText("thread_7863f7")}</ColumnHead>
+      <ColumnHead>{pageText("panel_2f4bd7")}</ColumnHead>
+      <ColumnHead>{pageText("galleryStack_367785")}</ColumnHead>
       {DIRECTION_IDS.map((direction) => (
         <div key={direction} className="contents">
           <div className="flex flex-col gap-1">
@@ -120,11 +122,12 @@ function AllBoard({ theme, anim }: { theme: LabTheme; anim: boolean }) {
 }
 
 export function Board({ direction, theme, anim }: { direction: DirectionId | "all"; theme: LabTheme; anim: boolean }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="flex min-h-225 flex-col gap-6 bg-background p-6 text-foreground">
       <header className="flex flex-col gap-1">
-        <p className={LABEL}>Contact sheet · {theme}</p>
-        <h1 className="text-lg font-semibold">{direction === "all" ? "All directions" : KIT_META[direction].name}</h1>
+        <p className={LABEL}>{pageText("contactSheet_859de3") + " "}{theme}</p>
+        <h1 className="text-lg font-semibold">{direction === "all" ? pageText("allDirections_8986c4") : KIT_META[direction].name}</h1>
       </header>
       {direction === "all" ? <AllBoard theme={theme} anim={anim} /> : <KitBoard direction={direction} theme={theme} anim={anim} />}
     </div>

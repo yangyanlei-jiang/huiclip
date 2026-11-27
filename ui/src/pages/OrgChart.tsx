@@ -1,3 +1,4 @@
+import { optionLabel } from "@/i18n/option-label";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { useEffect, useRef, useState, useMemo, useCallback } from "react";
@@ -243,8 +244,8 @@ export function OrgChart({ orgTree: providedOrgTree, agents: providedAgents, emb
   }, [agents]);
 
   useEffect(() => {
-    if (!embedded) setBreadcrumbs([{ label: "Org Chart" }]);
-  }, [embedded, setBreadcrumbs]);
+    if (!embedded) setBreadcrumbs([{ label: optionLabel("Org Chart") }]);
+  }, [embedded, pageText, setBreadcrumbs]);
 
   // Layout computation
   const layout = useMemo(() => layoutForest(orgTree ?? []), [orgTree]);
@@ -470,7 +471,7 @@ export function OrgChart({ orgTree: providedOrgTree, agents: providedAgents, emb
   }, [pan, zoom]);
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Network} message="Select an organization to view the org chart." />;
+    return <EmptyState icon={Network} message={pageText("selectAnOrganizationToViewTheOrgChart_896462")} />;
   }
 
   // Keep a loaded chart on screen through a failed refetch; only a real
@@ -492,7 +493,7 @@ export function OrgChart({ orgTree: providedOrgTree, agents: providedAgents, emb
   }
 
   if (orgTree && orgTree.length === 0) {
-    return <EmptyState icon={Network} message="No organizational hierarchy defined." />;
+    return <EmptyState icon={Network} message={pageText("noOrganizationalHierarchyDefined_10490f")} />;
   }
 
   return (
@@ -512,9 +513,7 @@ export function OrgChart({ orgTree: providedOrgTree, agents: providedAgents, emb
         {showExport ? (
           <Link to="/company/export">
             <Button variant="outline" size="sm">
-              <Download className="mr-1.5 h-3.5 w-3.5" />
-              Export organization
-            </Button>
+              <Download className="mr-1.5 h-3.5 w-3.5" />{pageText("exportOrganization_2ca6dc")}</Button>
           </Link>
         ) : null}
         </div>
@@ -575,8 +574,8 @@ export function OrgChart({ orgTree: providedOrgTree, agents: providedAgents, emb
           <button
             className="flex size-9 items-center justify-center rounded border border-border bg-background text-(length:--text-nano) transition-colors hover:bg-accent sm:size-7"
             onClick={fitToScreen}
-            title="Fit to screen"
-            aria-label="Fit chart to screen"
+            title={pageText("fitToScreen_0b3d8e")}
+            aria-label={pageText("fitChartToScreen_f859f2")}
           >
             <Maximize2 className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
           </button>
@@ -686,5 +685,5 @@ export function OrgChart({ orgTree: providedOrgTree, agents: providedAgents, emb
 const roleLabels: Record<string, string> = AGENT_ROLE_LABELS;
 
 function roleLabel(role: string): string {
-  return roleLabels[role] ?? role;
+  return roleLabels[role] ? optionLabel(roleLabels[role]) : role;
 }

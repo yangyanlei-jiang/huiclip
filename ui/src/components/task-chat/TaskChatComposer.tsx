@@ -1,3 +1,6 @@
+import { controlText } from "@/i18n/controls";
+import { t as interfaceNotice } from "@/i18n";
+import { t as translateDynamic } from "../../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCurrentAccountGuard } from "@/hooks/useAccountBoundMutation";
@@ -321,17 +324,17 @@ function AssigneeIdentityAvatar({
 /** v7 per-mode placeholder copy; `{agent}` is the pending assignee's name. */
 function modePlaceholder(mode: IssueWorkMode, agentName: string, mobile: boolean): string {
   if (mobile) {
-    if (mode === "planning") return `Plan with ${agentName}…`;
-    if (mode === "ask") return `Ask ${agentName}…`;
-    return `Message ${agentName}…`;
+    if (mode === "planning") return controlText("planMobile", { agentName });
+    if (mode === "ask") return controlText("askMobile", { agentName });
+    return controlText("messageMobile", { agentName });
   }
   switch (mode) {
     case "planning":
-      return `Plan with ${agentName} — shapes the plan doc, no code changes…`;
+      return controlText("planDesktop", { agentName });
     case "ask":
-      return `Ask ${agentName} a question — read-only, nothing runs…`;
+      return controlText("askDesktop", { agentName });
     default:
-      return `Message ${agentName} — describe what you want done…`;
+      return controlText("messageDesktop", { agentName });
   }
 }
 
@@ -673,9 +676,9 @@ export function TaskChatComposer({
   const assigneeLabel =
     reassignOptions?.find((o) => o.id === assigneeValue)?.label ?? "Unassigned";
   const assigneeName =
-    assigneeLabel === "Unassigned" ? "the agent" : assigneeLabel;
+    assigneeLabel === "Unassigned" ? controlText("genericAgent") : assigneeLabel;
   const effectivePlaceholder = queuedEdit
-    ? "Edit queued message…"
+    ? controlText("editQueued")
     : (placeholder ?? modePlaceholder(pendingMode, assigneeName, mobile));
   const goalUnavailable = runnerGoalCapability?.availability !== "available";
   const goalCommandOption: ActionCommandOption = {
@@ -931,7 +934,7 @@ export function TaskChatComposer({
       ? ({ matched: false } as const)
       : parseRunnerGoalCommand(submittedBody);
     if (goalCommand.matched && conversationMode) {
-      setActionError("Create a separate task for work that needs an ongoing execution goal.");
+      setActionError(interfaceNotice("interface:createASeparateTaskForWorkThatNeeds_dd974d"));
       return;
     }
     if (goalCommand.matched) {
@@ -940,13 +943,13 @@ export function TaskChatComposer({
         return;
       }
       if (attachmentsRef.current.length > 0) {
-        setActionError("Remove attachments before using /goal.");
+        setActionError(interfaceNotice("interface:removeAttachmentsBeforeUsingGoal_1ead0a"));
         return;
       }
       if (!onRunnerGoalCommand) {
         setActionError(
           runnerGoalCapability?.reason ??
-            "Session goals are unsupported by this agent.",
+            interfaceNotice("interface:sessionGoalsAreUnsupportedByThisAgent_dc4d94"),
         );
         return;
       }
@@ -956,7 +959,7 @@ export function TaskChatComposer({
       ) {
         setActionError(
           runnerGoalCapability.reason ??
-            "Session goals are unsupported by this agent.",
+            interfaceNotice("interface:sessionGoalsAreUnsupportedByThisAgent_dc4d94"),
         );
         return;
       }
@@ -966,7 +969,7 @@ export function TaskChatComposer({
         if (hasReassignment && goalCommand.command.action !== "focus") {
           const reassignment = parseAssigneeValue(assigneeValue);
           if (!reassignment?.assigneeAgentId || !onRunnerGoalReassign) {
-            setActionError("Select an agent before starting a session goal.");
+            setActionError(interfaceNotice("interface:selectAnAgentBeforeStartingASessionGoal_ea9666"));
             return;
           }
           await onRunnerGoalReassign(reassignment);
@@ -984,7 +987,7 @@ export function TaskChatComposer({
         setActionError(
           error instanceof Error
             ? error.message
-            : "The goal action could not be applied.",
+            : interfaceNotice("interface:theGoalActionCouldNotBeApplied_7eeef0"),
         );
       }
       return;
@@ -1224,7 +1227,7 @@ export function TaskChatComposer({
       setTakeoverError(
         cause instanceof Error
           ? cause.message
-          : "This request could not be skipped.",
+          : interfaceNotice("interface:thisRequestCouldNotBeSkipped_1dd742"),
       );
     });
   }
@@ -1239,9 +1242,7 @@ export function TaskChatComposer({
     >
       {takeoverBusy ? (
         <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-      ) : null}
-      Skip
-    </Button>
+      ) : null}{pageText("skip_3da474")}</Button>
   ) : null;
 
   if (pause && (!conversationMode || queuedEdit)) {
@@ -1295,7 +1296,7 @@ export function TaskChatComposer({
               ) : null}
               <div ref={setTakeoverControlsSlot} className="flex shrink-0 items-center" data-testid="task-chat-composer-takeover-controls-slot" />
               <Button type="button" size="icon-xs" variant="ghost" className="text-muted-foreground hover:text-foreground"
-                aria-label={`Dismiss ${takeover.label}`} disabled={takeoverBusy} onClick={takeover.onDismiss}>
+                aria-label={translateDynamic("dynamic:dismiss", { value1: takeover.label })} disabled={takeoverBusy} onClick={takeover.onDismiss}>
                 <X aria-hidden />
               </Button>
             </div>
@@ -1325,7 +1326,7 @@ export function TaskChatComposer({
           className="flex h-11 min-w-0 items-center gap-2 px-2.5"
           data-testid="task-chat-composer-context"
           role="group"
-          aria-label="Task project and worktrees"
+          aria-label={pageText("taskProjectAndWorktrees_3b47e5")}
         >
           {creation.contextBar}
         </TaskChatComposerBar>
@@ -1372,7 +1373,7 @@ export function TaskChatComposer({
         >
           <CircleHelp className="h-4 w-4 shrink-0" aria-hidden />
           <span className="min-w-0 flex-1 truncate">
-            {pendingTakeover?.label ?? takeover?.label ?? "Pending input"}
+            {pendingTakeover?.label ?? takeover?.label ?? pageText("pendingInput_8b017a")}
           </span>
           <span className="shrink-0 font-medium">
             {pendingTakeover?.count ?? takeover?.pendingCount ?? 1}{" " + pageText("pending_e22586")}</span>
@@ -1381,7 +1382,7 @@ export function TaskChatComposer({
           {pause && conversationMode ? (
             <div className="space-y-2">
               <TaskChatPausedTakeover {...pause} hasDraft={Boolean(body.trim() || attachments.length)} />
-              <p className="text-xs text-muted-foreground">Send /new to start a fresh session and resume this conversation.</p>
+              <p className="text-xs text-muted-foreground">{pageText("sendNewToStartAFreshSessionAnd_de0a77")}</p>
             </div>
           ) : null}
           <ComposerImageAttachments
@@ -1403,7 +1404,7 @@ export function TaskChatComposer({
               onChange={changeBody}
               placeholder={
                 disabled
-                  ? (disabledReason ?? "Composer disabled")
+                  ? (disabledReason ?? pageText("composerDisabled_1a701b"))
                   : effectivePlaceholder
               }
               readOnly={disabled || !!uncertainSubmission || Boolean(creation && (submitting || creation.readOnly))}
@@ -1470,9 +1471,9 @@ export function TaskChatComposer({
                       </AttachmentTitle>
                       <AttachmentDescription className="max-w-48">
                         {attachment.status === "uploading"
-                          ? "Uploading…"
+                          ? pageText("uploading_d921a7")
                           : attachment.status === "error"
-                            ? (attachment.error ?? "Upload failed")
+                            ? (attachment.error ?? pageText("uploadFailed_ad0d06"))
                             : [kind.label, sizeLabel]
                                 .filter(Boolean)
                                 .join(" · ")}
@@ -1481,7 +1482,7 @@ export function TaskChatComposer({
                     <AttachmentActions>
                       {attachment.status === "error" && attachment.file ? (
                         <AttachmentAction
-                          aria-label={`Retry ${attachment.name}`}
+                          aria-label={translateDynamic("dynamic:retry", { value1: attachment.name })}
                           disabled={!!uncertainSubmission}
                           onClick={() => retryUpload(attachment)}
                         >
@@ -1489,7 +1490,7 @@ export function TaskChatComposer({
                         </AttachmentAction>
                       ) : null}
                       <AttachmentAction
-                        aria-label={`Remove ${attachment.name}`}
+                        aria-label={translateDynamic("dynamic:remove", { value1: attachment.name })}
                         disabled={!!uncertainSubmission}
                         onClick={() =>
                           setAttachments((prev) =>
@@ -1533,8 +1534,8 @@ export function TaskChatComposer({
             {queuedEdit ? (
               <span className="px-1 text-xs font-medium text-muted-foreground">
                 {queuedEdit.stale
-                  ? "Queued message changed"
-                  : "Editing queued message"}
+                  ? pageText("queuedMessageChanged_255fd8")
+                  : pageText("editingQueuedMessage_4f4e1c")}
               </span>
             ) : (
               <ComposerModeChip mode={pendingMode} onRemove={onWorkModeChange ? () => changeMode("standard") : undefined}
@@ -1574,8 +1575,8 @@ export function TaskChatComposer({
                 options={reassignOptions ?? []}
                 placeholder={pageText("assignee_049e3c")}
                 mobileTitle="Select assignee"
-                noneLabel="No assignee"
-                searchPlaceholder="Search assignees…"
+                noneLabel={interfaceNotice("interface:noAssignee_2ad6e4")}
+                searchPlaceholder={pageText("searchAssignees_dc60b6")}
                 emptyMessage={pageText("noMatches_0be6a2")}
                 onChange={updatePendingAssignee}
                 disabled={disabled}
@@ -1642,28 +1643,28 @@ export function TaskChatComposer({
               title={
                 showStop
                   ? stopControl.stopping
-                    ? "Stopping…"
-                    : "Stop response"
+                    ? pageText("stopping_827c97")
+                    : pageText("stopResponse_68a76b")
                   : queuedEdit
                     ? queuedEdit.stale
-                      ? "Queue as new message"
-                      : "Save queued message"
+                      ? pageText("queueAsNewMessage_0b2f8c")
+                      : pageText("saveQueuedMessage_ed7f1b")
                     : uploadPending
-                      ? "Waiting for upload to finish"
+                      ? pageText("waitingForUploadToFinish_029afc")
                       : uploadFailed
-                        ? "Remove the failed attachment to send"
+                        ? pageText("removeTheFailedAttachmentToSend_4568ce")
                         : `${creation?.submitLabel ?? "Send"} (${submitKey === "mod-enter" ? "⌘/Ctrl+Enter" : "Enter"})`
               }
               aria-label={
                 showStop
                   ? stopControl.stopping
-                    ? "Stopping…"
+                    ? pageText("stopping_827c97")
                     : pageText("stop_9e2534")
                   : queuedEdit
                     ? queuedEdit.stale
-                      ? "Queue as new message"
-                      : "Save queued message"
-                    : creation?.submitLabel ?? "Send"
+                      ? pageText("queueAsNewMessage_0b2f8c")
+                      : pageText("saveQueuedMessage_ed7f1b")
+                    : creation?.submitLabel ?? pageText("send_9bc257")
               }
               aria-busy={submitting}
               className={cn(

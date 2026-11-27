@@ -65,10 +65,8 @@ export function BillerSpendCard({
               {providerDisplayName(row.biller)}
             </CardTitle>
             <CardDescription className="text-xs mt-0.5">
-              <span className="font-mono">{formatTokens(row.inputTokens + row.cachedInputTokens)}</span> in
-              {" · "}
-              <span className="font-mono">{formatTokens(row.outputTokens)}</span> out
-              {" · "}
+              <span className="font-mono">{formatTokens(row.inputTokens + row.cachedInputTokens)}</span>{" " + pageText("in_af10ef")}{" · "}
+              <span className="font-mono">{formatTokens(row.outputTokens)}</span>{" " + pageText("out_f4800d")}{" · "}
               {row.providerCount}{" " + pageText("provider_90c5d1")}{row.providerCount === 1 ? "" : "s"}
               {" · "}
               {row.modelCount}{" " + pageText("model_1d06a0")}{row.modelCount === 1 ? "" : "s"}
@@ -84,7 +82,7 @@ export function BillerSpendCard({
       <CardContent className="px-4 pb-4 pt-3 space-y-4">
         {showBudgetUtilization && budgetMonthlyCents > 0 && (
           <QuotaBar
-            label="Period spend"
+            label={pageText("periodSpend_a79b43")}
             percentUsed={budgetPct}
             leftLabel={formatCents(row.costCents)}
             rightLabel={`${Math.round(budgetPct)}% of company budget`}
@@ -92,22 +90,19 @@ export function BillerSpendCard({
         )}
 
         <div className="text-xs text-muted-foreground">
-          {row.apiRunCount > 0 ? `${row.apiRunCount} metered run${row.apiRunCount === 1 ? "" : "s"}` : "0 metered runs"}
+          {row.apiRunCount > 0 ? `${row.apiRunCount} metered run${row.apiRunCount === 1 ? "" : "s"}` : pageText("0MeteredRuns_864ea0")}
           {" · "}
           {row.subscriptionRunCount > 0
             ? `${row.subscriptionRunCount} subscription run${row.subscriptionRunCount === 1 ? "" : "s"}`
-            : "0 subscription runs"}
+            : pageText("0SubscriptionRuns_5e717c")}
           {" · "}
-          {formatCents(weekSpendCents)} this week
-        </div>
+          {formatCents(weekSpendCents)}{" " + pageText("thisWeek_dae1e5")}</div>
 
         {billingTypeBreakdown.length > 0 && (
           <>
             <div className="border-t border-border" />
             <div className="space-y-2">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                Billing types
-              </p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{pageText("billingTypes_3a5133")}</p>
               <div className="space-y-1.5">
                 {billingTypeBreakdown.map(([billingType, costCents]) => (
                   <div key={billingType} className="flex items-center justify-between gap-2 text-xs">
@@ -124,9 +119,7 @@ export function BillerSpendCard({
           <>
             <div className="border-t border-border" />
             <div className="space-y-2">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                Upstream providers
-              </p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{pageText("upstreamProviders_32f707")}</p>
               <div className="space-y-1.5">
                 {providerBreakdown.map((entry) => (
                   <div key={entry.provider} className="flex items-center justify-between gap-2 text-xs">
@@ -134,8 +127,7 @@ export function BillerSpendCard({
                     <div className="text-right tabular-nums">
                       <div className="font-medium">{formatCents(entry.costCents)}</div>
                       <div className="text-muted-foreground">
-                        {formatTokens(entry.inputTokens + entry.outputTokens)} tok
-                      </div>
+                        {formatTokens(entry.inputTokens + entry.outputTokens)}{" " + pageText("tok_79bead")}</div>
                     </div>
                   </div>
                 ))}

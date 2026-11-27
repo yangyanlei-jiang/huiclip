@@ -51,7 +51,7 @@ export function IssueContinuationHandoff({
           type="button"
           className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-accent/60 hover:text-foreground"
           onClick={() => setExpanded((current) => !current)}
-          aria-label={expanded ? "Collapse continuation handoff" : "Expand continuation handoff"}
+          aria-label={expanded ? pageText("collapseContinuationHandoff_cee6b3") : pageText("expandContinuationHandoff_f804b9")}
           aria-expanded={expanded}
         >
           {expanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
@@ -60,9 +60,7 @@ export function IssueContinuationHandoff({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-sm font-medium text-foreground">{title}</span>
-            <Badge variant="outline" className="border-border font-mono text-(length:--text-nano) uppercase text-muted-foreground">
-              handoff
-            </Badge>
+            <Badge variant="outline" className="border-border font-mono text-(length:--text-nano) uppercase text-muted-foreground">{pageText("handoff_2f45a9")}</Badge>
           </div>
           <div className="text-(length:--text-micro) text-muted-foreground">{pageText("updated_f2f857") + " "}{relativeTime(document.updatedAt)}
             {document.latestRevisionNumber > 0 ? ` - revision ${document.latestRevisionNumber}` : ""}
@@ -70,9 +68,9 @@ export function IssueContinuationHandoff({
         </div>
         <AgentSetupPrompt
           prompt={document.body}
-          label="Continue with an agent"
-          title="Task handoff"
-          description="Paste this into your agent to continue from this handoff."
+          label={pageText("continueWithAnAgent_b6313d")}
+          title={pageText("taskHandoff_b8910e")}
+          description={pageText("pasteThisIntoYourAgentToContinueFrom_74b459")}
           align="end"
         />
       </div>

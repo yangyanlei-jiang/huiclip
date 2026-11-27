@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { readThreadScrollAnchor, threadScrollAnchorDelta, type ThreadScrollAnchor } from "./scroll-anchor";
@@ -54,6 +55,7 @@ interface TaskMessageScrollerProps {
  * while pinned stays instant, so no reflow/jump happens during streaming.
  */
 export function TaskMessageScroller({ children, contentKey, className, scrollingHistory }: TaskMessageScrollerProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const streamlined = useStreamlinedTaskChatPresentation();
   const navigation = useTaskChatScrollNavigation();
@@ -339,7 +341,7 @@ export function TaskMessageScroller({ children, contentKey, className, scrolling
         onPointerDown={() => { pendingHashTarget.current = null; }}
         tabIndex={scrollingHistory ? 0 : undefined}
         role={scrollingHistory ? "region" : undefined}
-        aria-label={scrollingHistory ? "Conversation messages" : undefined}
+        aria-label={scrollingHistory ? pageText("conversationMessages_a4abc9") : undefined}
         onKeyDown={event => {
           if (["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End"].includes(event.key)) pendingHashTarget.current = null;
           if (["ArrowUp", "PageUp", "Home"].includes(event.key) && ref.current && ref.current.scrollTop <= 192) requestEarlierHistory();
@@ -378,9 +380,9 @@ export function TaskMessageScroller({ children, contentKey, className, scrolling
         {scrollingHistory && (scrollingHistory.hasMore || scrollingHistory.loading || scrollingHistory.error) ? (
           <div role="status" className="flex h-8 items-center justify-center gap-2 text-xs text-muted-foreground" data-testid="chat-history-status">
             {scrollingHistory.error ? <>
-              <span>Earlier messages couldn’t load.</span>
+              <span>{pageText("earlierMessagesCouldnTLoad_dd0665")}</span>
               <button type="button" className="underline underline-offset-4" onClick={() => scrollingHistory.load()}>{translateUi("interfaceCopy.retry")}</button>
-            </> : scrollingHistory.loading ? "Loading earlier messages…" : "Scroll up for earlier messages"}
+            </> : scrollingHistory.loading ? pageText("loadingEarlierMessages_e7077a") : pageText("scrollUpForEarlierMessages_acf461")}
           </div>
         ) : null}
         {children}
@@ -389,7 +391,7 @@ export function TaskMessageScroller({ children, contentKey, className, scrolling
       {pillPhase !== "hidden" ? (
         <button
           type="button"
-          aria-label="Scroll to latest"
+          aria-label={pageText("scrollToLatest_85bc5f")}
           onClick={handleJumpToLatest}
           onAnimationEnd={() => {
             if (pillPhase === "out") setPillPhase("hidden");

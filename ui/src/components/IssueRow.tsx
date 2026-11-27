@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { requiresExecutionReconciliation } from "@paperclipai/shared";
@@ -236,9 +237,7 @@ export function IssueRow({
       className="[&>svg]:size-2.5 ml-1.5 gap-0.5 border-amber-500/60 bg-amber-500/15 text-(length:--text-nano) text-amber-700 dark:text-amber-300"
       title={pageText("blockedByParkedWorkAtLeastOneAssigned_1230f7")}
     >
-      <Flag className="h-2.5 w-2.5" aria-hidden />
-      Blocked by parked work
-    </Badge>
+      <Flag className="h-2.5 w-2.5" aria-hidden />{pageText("blockedByParkedWork_2da68c")}</Badge>
   ) : null;
 
   if (presentation === "task") {
@@ -254,7 +253,7 @@ export function IssueRow({
             disableIssueQuicklook
             issuePrefetch={issue}
             onClickCapture={() => rememberIssueDetailLocationState(issuePathId, detailState)}
-            aria-label={`Open task ${identifier} (${statusLabel})`}
+            aria-label={translateDynamic("dynamic:openTaskCount", { value1: identifier, value2: statusLabel })}
             className="task-row-status-link"
             data-slot="task-row-status"
           >
@@ -390,7 +389,7 @@ export function IssueRow({
                   {recoveryIndicator ? (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span tabIndex={0} aria-label="Task recovery status" className="relative z-10 inline-flex text-muted-foreground sm:hidden">
+                        <span tabIndex={0} aria-label={pageText("taskRecoveryStatus_15714b")} className="relative z-10 inline-flex text-muted-foreground sm:hidden">
                           <CircleAlert className="h-4 w-4" />
                         </span>
                       </TooltipTrigger>

@@ -1,3 +1,5 @@
+import { controlText } from "@/i18n/controls";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type { MouseEvent } from "react";
 import { Loader2, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -51,7 +53,8 @@ export function StarToggle({
   className,
   revealClassName,
 }: StarToggleProps) {
-  const ariaLabel = starred ? `Unstar ${resourceName}` : `Star ${resourceName}`;
+  const { t: pageText } = usePageTranslation("interface");
+  const ariaLabel = controlText(starred ? "unstarResource" : "starResource", { name: resourceName });
   const Icon = pending ? Loader2 : Star;
 
   function handleClick(event: MouseEvent<HTMLButtonElement>) {
@@ -73,7 +76,7 @@ export function StarToggle({
         aria-busy={pending ? "true" : undefined}
         disabled={pending}
         onClick={handleClick}
-        title={error ? "Couldn't save — retry" : undefined}
+        title={error ? pageText("couldnTSaveRetry_8d8e4e") : undefined}
         className={cn(
           error
             ? "text-red-500 hover:text-red-500"
@@ -109,7 +112,7 @@ export function StarToggle({
       aria-busy={pending ? "true" : undefined}
       disabled={pending}
       onClick={handleClick}
-      title={error ? "Couldn't save — retry" : undefined}
+      title={error ? pageText("couldnTSaveRetry_8d8e4e") : undefined}
       className={cn(
         "h-6 w-6 shrink-0",
         visible ? "opacity-100" : revealClassName ?? DEFAULT_ROW_REVEAL,

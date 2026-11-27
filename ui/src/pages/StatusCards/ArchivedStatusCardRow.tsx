@@ -36,8 +36,8 @@ export function ArchivedStatusCardRow({
   return (
     <div className="flex items-center justify-between gap-4 rounded-lg border border-border bg-muted/30 px-4 py-3">
       <div className="min-w-0">
-        <p className="truncate text-sm font-semibold">{card.title ?? "Untitled card"}</p>
-        <p className="mt-0.5 text-xs text-muted-foreground" title={card.archivedAt ? formatDateTime(card.archivedAt) : undefined}>{pageText("archived_48f0f9") + " "}{shortDate(card.archivedAt)} · last summary {shortDate(card.lastGeneratedAt)}
+        <p className="truncate text-sm font-semibold">{card.title ?? pageText("untitledCard_f98b51")}</p>
+        <p className="mt-0.5 text-xs text-muted-foreground" title={card.archivedAt ? formatDateTime(card.archivedAt) : undefined}>{pageText("archived_48f0f9") + " "}{shortDate(card.archivedAt)}{" " + pageText("lastSummary_9edf73") + " "}{shortDate(card.lastGeneratedAt)}
           {rollup ? ` · lifetime ${formatTokens(rollup.totalTokens)} / ${formatCents(rollup.totalCostCents)}` : ""}
         </p>
       </div>

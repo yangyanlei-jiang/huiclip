@@ -1,3 +1,5 @@
+import { t as interfaceNotice } from "@/i18n";
+import { t as translateDynamic } from "../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -631,7 +633,7 @@ function TaskTreeNode({
                 <Checkbox
                   checked={isSelected}
                   onCheckedChange={(checked) => onToggleSelection?.(node, checked === true)}
-                  aria-label={`Include ${node.task.title}`}
+                  aria-label={translateDynamic("dynamic:include", { value1: node.task.title })}
                   className="mt-0.5"
                 />
               ) : null}
@@ -649,9 +651,7 @@ function TaskTreeNode({
                   </div>
                 </div>
                 {depth > 0 ? (
-                  <div className="mt-0.5 text-(length:--text-nano) font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-                    Child task
-                  </div>
+                  <div className="mt-0.5 text-(length:--text-nano) font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{pageText("childTask_a78bd2")}</div>
                 ) : null}
                 {node.task.description ? (
                   <p className="mt-0.5 text-sm leading-5 text-muted-foreground">
@@ -681,7 +681,7 @@ function TaskTreeNode({
               <TaskField label={translateUi("interfaceCopy.responsible")} value={assigneeLabel} />
             ) : null}
             {node.task.billingCode ? (
-              <TaskField label="Billing" value={node.task.billingCode} />
+              <TaskField label={pageText("billing_abaec4")} value={node.task.billingCode} />
             ) : null}
             {node.task.projectId ? (
               <TaskField label={translateUi("interfaceCopy.project")} value={node.task.projectId} tone="subtle" />
@@ -697,7 +697,7 @@ function TaskTreeNode({
             <GitBranch className="h-3.5 w-3.5 shrink-0" />
             <span>
               {hiddenChildCount === 1
-                ? "1 follow-on task hidden in preview"
+                ? pageText("1FollowOnTaskHiddenInPreview_939144")
                 : `${hiddenChildCount} follow-on tasks hidden in preview`}
             </span>
           </div>
@@ -857,9 +857,9 @@ function SuggestTasksCard({
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-        <span>{totalTasks === 1 ? "1 draft issue" : `${totalTasks} draft issues`}</span>
+        <span>{totalTasks === 1 ? pageText("1DraftIssue_0fee85") : `${totalTasks} draft issues`}</span>
         {interaction.payload.defaultParentId ? (
-          <TaskField label="Default parent" value={interaction.payload.defaultParentId} tone="subtle" />
+          <TaskField label={pageText("defaultParent_928e3f")} value={interaction.payload.defaultParentId} tone="subtle" />
         ) : null}
       </div>
 
@@ -882,9 +882,7 @@ function SuggestTasksCard({
 
       {interaction.status === "accepted" ? (
         <div className="rounded-sm border border-emerald-500/60 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-900 dark:text-emerald-100">
-          <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-emerald-700">
-            Resolution summary
-          </div>
+          <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-emerald-700">{pageText("resolutionSummary_1f8e4c")}</div>
           <p className="mt-1 leading-6">
             {skippedCount > 0
               ? `Created ${createdCount} draft ${createdCount === 1 ? "issue" : "issues"} and skipped ${skippedCount} during review.`
@@ -895,14 +893,12 @@ function SuggestTasksCard({
 
       {interaction.status === "rejected" ? (
         <div className="rounded-sm border border-rose-500/60 bg-rose-500/10 px-4 py-3 text-sm text-rose-900 dark:text-rose-100">
-          <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-rose-700">
-            Rejection reason
-          </div>
+          <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-rose-700">{pageText("rejectionReason_ee5904")}</div>
           <p className={cn(
             "mt-1 leading-6",
             !interaction.result?.rejectionReason && "text-rose-900/75",
           )}>
-            {interaction.result?.rejectionReason || "No reason provided."}
+            {interaction.result?.rejectionReason || pageText("noReasonProvided_6dc0c7")}
           </p>
         </div>
       ) : null}
@@ -918,8 +914,7 @@ function SuggestTasksCard({
               </span>
               {selectedCount < totalTasks ? (
                 <span>
-                  {totalTasks - selectedCount} will be skipped if you accept this interaction.
-                </span>
+                  {totalTasks - selectedCount}{" " + pageText("willBeSkippedIfYouAcceptThisInteraction_608a5a")}</span>
               ) : null}
             </div>
 
@@ -932,11 +927,9 @@ function SuggestTasksCard({
                 >
                   {working === "accept" ? (
                     <>
-                      <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                      Accepting...
-                    </>
+                      <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />{pageText("accepting_c7cea1")}</>
                   ) : (
-                    selectedCount === totalTasks ? "Accept drafts" : "Accept selected drafts"
+                    selectedCount === totalTasks ? pageText("acceptDrafts_514255") : pageText("acceptSelectedDrafts_67e5ee")
                   )}
                 </Button>
                 <Button
@@ -951,9 +944,7 @@ function SuggestTasksCard({
                     variant="ghost"
                     disabled={working !== null}
                     onClick={() => setSelectedClientKeys(new Set(interaction.payload.tasks.map((task) => task.clientKey)))}
-                  >
-                    Reset selection
-                  </Button>
+                  >{pageText("resetSelection_0b6d54")}</Button>
                 ) : null}
               </div>
             </DecisionCardFooter>
@@ -964,7 +955,7 @@ function SuggestTasksCard({
               <Textarea
                 value={rejectReason}
                 onChange={(event) => setRejectReason(event.target.value)}
-                placeholder="Add a short reason for rejecting this suggestion"
+                placeholder={pageText("addAShortReasonForRejectingThisSuggestion_3b3927")}
                 className="min-h-24 bg-background text-sm"
               />
               <div className="flex justify-end">
@@ -978,7 +969,7 @@ function SuggestTasksCard({
                     <>
                       <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />{pageText("saving_ae7e88")}</>
                   ) : (
-                    "Save rejection"
+                    pageText("saveRejection_91d3fd")
                   )}
                 </Button>
               </div>
@@ -1072,6 +1063,7 @@ function AskUserQuestionsCard({
   ) => Promise<void> | void;
   externalReferences?: MarkdownExternalReferenceMap;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [draftAnswers, setDraftAnswers] = useState<Record<string, string[]>>(() =>
     Object.fromEntries(
       (interaction.result?.answers ?? []).map((answer) => [
@@ -1212,12 +1204,10 @@ function AskUserQuestionsCard({
     <div className="space-y-4">
       {!compact ? <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
         <Badge variant="outline" className="border-border/70 bg-background/70 px-2.5 py-1 uppercase tracking-(--tracking-eyebrow) text-foreground/70">
-          <MessageSquareQuote className="h-3 w-3" />
-          Ask user questions
-        </Badge>
+          <MessageSquareQuote className="h-3 w-3" />{pageText("askUserQuestions_09f86a")}</Badge>
         <span>
           {questions.length === 1
-            ? "1 question"
+            ? pageText("1Question_efa4d9")
             : `${questions.length} questions`}
         </span>
       </div> : null}
@@ -1276,8 +1266,7 @@ function AskUserQuestionsCard({
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  {!compact ? <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-                    Question {index + 1}
+                  {!compact ? <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{pageText("question_002ff5") + " "}{index + 1}
                   </div> : null}
                   <div
                     id={`${interaction.id}-${question.id}-prompt`}
@@ -1293,9 +1282,9 @@ function AskUserQuestionsCard({
                   ) : null}
                 </div>
                 {compact ? <span className="sr-only" id={`${interaction.id}-${question.id}-requirements`}>
-                  {question.selectionMode === "single" ? "Choose one answer." : "Choose one or more answers."} {question.required ? "Required." : "Optional."}
+                  {question.selectionMode === "single" ? pageText("chooseOneAnswer_21767d") : pageText("chooseOneOrMoreAnswers_157d49")} {question.required ? pageText("required_fd6df7") : pageText("optional_a4149a")}
                 </span> : <TaskField
-                  label={question.selectionMode === "single" ? "Pick" : "Pick many"}
+                  label={question.selectionMode === "single" ? pageText("pick_04d241") : pageText("pickMany_2ab6cb")}
                   value={question.required ? "Required" : "Optional"}
                   tone="subtle"
                 />}
@@ -1328,14 +1317,14 @@ function AskUserQuestionsCard({
                         />
                         {isFreeText && optionSelected ? (
                           <Textarea
-                            aria-label={`Describe your answer for ${question.prompt}`}
+                            aria-label={translateDynamic("dynamic:describeYourAnswerFor", { value1: question.prompt })}
                             value={draftOtherAnswers[question.id] ?? ""}
                             onChange={(event) =>
                               setDraftOtherAnswers((current) => ({
                                 ...current,
                                 [question.id]: event.target.value,
                               }))}
-                            placeholder="Type your answer"
+                            placeholder={pageText("typeYourAnswer_2dd63e")}
                             className="min-h-24 bg-background text-sm"
                             autoFocus
                           />
@@ -1364,19 +1353,17 @@ function AskUserQuestionsCard({
                       )}
                       onClick={() =>
                         toggleOption(question.id, OTHER_ANSWER_ID, question.selectionMode)}
-                    >
-                      Other
-                    </button>
+                    >{pageText("other_6e6a6f")}</button>
                     {otherActiveQuestions[question.id] ? (
                       <Textarea
-                        aria-label={`Other answer for ${question.prompt}`}
+                        aria-label={translateDynamic("dynamic:otherAnswerFor", { value1: question.prompt })}
                         value={draftOtherAnswers[question.id] ?? ""}
                         onChange={(event) =>
                           setDraftOtherAnswers((current) => ({
                             ...current,
                             [question.id]: event.target.value,
                           }))}
-                        placeholder="Type your answer"
+                        placeholder={pageText("typeYourAnswer_2dd63e")}
                         className="min-h-24 bg-background text-sm"
                       />
                     ) : null}
@@ -1389,9 +1376,7 @@ function AskUserQuestionsCard({
 
           <DecisionCardFooter leading={footerSlot}>
             <div className={compact ? "flex flex-wrap items-center justify-end gap-3" : "flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/70 bg-background/75 p-4"}>
-              {!compact ? <div className="text-sm text-muted-foreground">
-                Submit once after you finish the full form.
-              </div> : null}
+              {!compact ? <div className="text-sm text-muted-foreground">{pageText("submitOnceAfterYouFinishTheFullForm_9f6b66")}</div> : null}
               <div className="flex flex-wrap items-center gap-2">
                 {onCancelInteraction ? (
                   <Button
@@ -1402,11 +1387,9 @@ function AskUserQuestionsCard({
                   >
                     {cancelling ? (
                       <>
-                        <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                        Cancelling...
-                      </>
+                        <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />{pageText("cancelling_f498a5")}</>
                     ) : (
-                      "Cancel question"
+                      pageText("cancelQuestion_aff7be")
                     )}
                     </Button>
                   ) : null}
@@ -1417,11 +1400,9 @@ function AskUserQuestionsCard({
                 >
                   {working ? (
                     <>
-                      <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                      Submitting...
-                    </>
+                      <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />{pageText("submitting_46a1a6")}</>
                   ) : (
-                    interaction.payload.submitLabel ?? "Submit answers"
+                    interaction.payload.submitLabel ?? pageText("submitAnswers_988c41")
                   )}
                 </Button>
               </div>
@@ -1434,15 +1415,15 @@ function AskUserQuestionsCard({
         <div className="rounded-2xl border border-rose-300/60 bg-rose-50/85 p-4 text-sm leading-6 text-rose-950 dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-100">
           <div className="font-semibold">
             {interaction.result?.outcome === "withdrawn"
-              ? questions.length === 1 ? "Question withdrawn" : "Questions withdrawn"
-              : "Question cancelled"}
+              ? questions.length === 1 ? pageText("questionWithdrawn_303fb5") : pageText("questionsWithdrawn_ae923c")
+              : pageText("questionCancelled_60bb6f")}
           </div>
           {interaction.result?.cancellationReason ? (
             <p className="mt-1">{interaction.result.cancellationReason}</p>
           ) : interaction.result?.reason ? (
             <p className="mt-1">{interaction.result.reason}</p>
           ) : (
-            <p className="mt-1">No answer was recorded.</p>
+            <p className="mt-1">{pageText("noAnswerWasRecorded_781444")}</p>
           )}
         </div>
       ) : interaction.status === "expired" ? (
@@ -1451,24 +1432,22 @@ function AskUserQuestionsCard({
             <AlertTriangle className="h-4 w-4" />
             {interaction.result?.outcome === "issue_closed"
               ? questions.length === 1
-                ? "Question expired when the issue closed"
-                : "Questions expired when the issue closed"
+                ? pageText("questionExpiredWhenTheIssueClosed_8c8195")
+                : pageText("questionsExpiredWhenTheIssueClosed_a69b92")
               : questions.length === 1
-                ? "Question expired by comment"
-                : "Questions expired by comment"}
+                ? pageText("questionExpiredByComment_98339c")
+                : pageText("questionsExpiredByComment_dd890a")}
           </div>
           <p className="mt-1">
             {interaction.result?.outcome === "issue_closed"
-              ? "This question request expired automatically when the issue reached a terminal state."
-              : "A later board/user comment superseded this question request. Create a fresh request if answers are still needed."}
+              ? pageText("thisQuestionRequestExpiredAutomaticallyWhenTheIssue_5eb2ea")
+              : pageText("aLaterBoardUserCommentSupersededThisQuestion_9524bc")}
           </p>
           {interaction.result?.commentId ? (
             <a
               href={`#comment-${interaction.result.commentId}`}
               className="mt-3 inline-flex text-sm font-medium underline underline-offset-4"
-            >
-              Jump to comment
-            </a>
+            >{pageText("jumpToComment_1fd01a")}</a>
           ) : null}
         </div>
       ) : (
@@ -1489,10 +1468,10 @@ function AskUserQuestionsCard({
                 <div className="mt-2 flex flex-wrap gap-2">
                   {labels.length > 0 ? (
                     labels.map((label) => (
-                      <TaskField key={label} label="Answer" value={label} />
+                      <TaskField key={label} label={pageText("answer_a16a4e")} value={label} />
                     ))
                   ) : (
-                    <span className="text-sm text-muted-foreground">No answer recorded.</span>
+                    <span className="text-sm text-muted-foreground">{pageText("noAnswerRecorded_ce9cc5")}</span>
                   )}
                 </div>
               </div>
@@ -1501,9 +1480,7 @@ function AskUserQuestionsCard({
 
           {interaction.result?.summaryMarkdown ? (
             <div className="rounded-2xl border border-emerald-300/60 bg-emerald-50/85 p-4">
-              <div className="mb-2 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-emerald-700">
-                Submitted summary
-              </div>
+              <div className="mb-2 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-emerald-700">{pageText("submittedSummary_95dff4")}</div>
               <MarkdownBody externalReferences={externalReferences}>{interaction.result.summaryMarkdown}</MarkdownBody>
             </div>
           ) : null}
@@ -1599,6 +1576,7 @@ function RequestConfirmationResolution({
 }: {
   interaction: RequestConfirmationInteraction;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const outcome = interaction.result?.outcome;
   const target = interaction.payload.target ?? null;
   const staleTarget = interaction.result?.staleTarget ?? null;
@@ -1609,21 +1587,18 @@ function RequestConfirmationResolution({
       return (
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2 text-sm leading-6 text-foreground">
-            <span className="font-medium">Confirmed</span>
+            <span className="font-medium">{pageText("confirmed_8cc7ac")}</span>
             <RequestConfirmationTargetChip interaction={interaction} target={target} />
           </div>
           <div className="rounded-sm border border-amber-500/60 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-100">
-            <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-amber-700">
-              Agent resume failed
-            </div>
+            <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-amber-700">{pageText("agentResumeFailed_b378cd")}</div>
             <p className="mt-1 leading-6">
               {resumeFailure.status === "retrying"
                 ? `Paperclip is retrying the agent resume after approval (attempt ${resumeFailure.attempt}/${resumeFailure.maxAttempts}).`
-                : "Paperclip needs attention before the agent can resume this approved work."}
+                : pageText("paperclipNeedsAttentionBeforeTheAgentCanResume_1a8077")}
             </p>
             {resumeFailure.errorCode ? (
-              <p className="mt-1 leading-6">
-                Latest cause: <code className="font-mono text-(length:--text-micro)">{resumeFailure.errorCode}</code>
+              <p className="mt-1 leading-6">{pageText("latestCause_a8f227") + " "}<code className="font-mono text-(length:--text-micro)">{resumeFailure.errorCode}</code>
               </p>
             ) : null}
           </div>
@@ -1632,7 +1607,7 @@ function RequestConfirmationResolution({
     }
     return (
       <div className="flex flex-wrap items-center gap-2 text-sm leading-6 text-foreground">
-        <span className="font-medium">Confirmed</span>
+        <span className="font-medium">{pageText("confirmed_8cc7ac")}</span>
         <RequestConfirmationTargetChip interaction={interaction} target={target} />
       </div>
     );
@@ -1642,7 +1617,7 @@ function RequestConfirmationResolution({
     return (
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-2 text-sm leading-6 text-foreground">
-          <span className="font-medium">Declined</span>
+          <span className="font-medium">{pageText("declined_ff59b8")}</span>
           <RequestConfirmationTargetChip interaction={interaction} target={target} />
         </div>
         {interaction.result?.reason ? (
@@ -1661,7 +1636,7 @@ function RequestConfirmationResolution({
     // and no duplicated reason text.
     return (
       <div className="flex flex-wrap items-center gap-2 text-sm leading-6 text-foreground">
-        <span className="font-medium">Withdrawn</span>
+        <span className="font-medium">{pageText("withdrawn_ab014c")}</span>
         <RequestConfirmationTargetChip interaction={interaction} target={target} />
       </div>
     );
@@ -1681,19 +1656,19 @@ function RequestConfirmationResolution({
          */}
         {expiredByIssueClosed ? null : (
           <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-amber-700">
-            {expiredByComment ? "Expired by comment" : "Expired by target change"}
+            {expiredByComment ? pageText("expiredByComment_91ffa2") : pageText("expiredByTargetChange_c43523")}
           </div>
         )}
         <p className="leading-6">
           {expiredByComment
-            ? "A board comment superseded this confirmation before it was resolved."
+            ? pageText("aBoardCommentSupersededThisConfirmationBeforeIt_32fb2c")
             : expiredByIssueClosed
-              ? "This confirmation expired automatically when the issue reached a terminal state."
-              : "The requested target changed before this confirmation was resolved."}
+              ? pageText("thisConfirmationExpiredAutomaticallyWhenTheIssueReached_1b410b")
+              : pageText("theRequestedTargetChangedBeforeThisConfirmationWas_ac2d47")}
         </p>
         {expiredByComment && interaction.result?.commentId ? (
           <Button asChild size="sm" variant="ghost" className="h-7 px-2 text-amber-950 hover:bg-amber-500/15 dark:text-amber-50">
-            <a href={`#comment-${interaction.result.commentId}`}>Jump to comment</a>
+            <a href={`#comment-${interaction.result.commentId}`}>{pageText("jumpToComment_1fd01a")}</a>
           </Button>
         ) : null}
         {expiredByTargetChange ? (
@@ -1716,9 +1691,7 @@ function RequestConfirmationResolution({
 
   if (interaction.status === "failed") {
     return (
-      <p className="text-sm leading-6 text-muted-foreground">
-        This request could not be resolved. Try again or create a new request.
-      </p>
+      <p className="text-sm leading-6 text-muted-foreground">{pageText("thisRequestCouldNotBeResolvedTryAgain_f047cd")}</p>
     );
   }
 
@@ -1732,6 +1705,7 @@ function ToolActionResolution({
   state: ToolActionCardState;
   interaction: RequestConfirmationInteraction;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const result = interaction.result?.toolAction;
   const [resultOpen, setResultOpen] = useState(false);
   const output = state === "executed" ? result?.resultSummary?.trim() : null;
@@ -1755,23 +1729,23 @@ function ToolActionResolution({
   if (state === "failed" && result?.errorCode === "github_access_denied") {
     const connectionId = interaction.payload.toolAction?.connectionId;
     return <div role="alert" className="space-y-2 rounded-lg bg-destructive/10 p-3 text-sm text-foreground">
-      <p className="flex items-center gap-2 font-medium"><AlertTriangle className="size-4 shrink-0 text-destructive" aria-hidden="true" />GitHub access needed</p>
-      <p>This GitHub connection cannot access the requested account or repository. Check the connected account and Paperclip’s repository access, then ask the agent to continue.</p>
-      {connectionId ? <Button asChild size="sm" variant="outline"><Link to={appTabHref(connectionId, "permissions")}>Manage GitHub access</Link></Button> : null}
-      {detail ? <details className="text-xs text-muted-foreground"><summary className="cursor-pointer">Error details</summary><p className="mt-2 break-words">{detail}</p></details> : null}
+      <p className="flex items-center gap-2 font-medium"><AlertTriangle className="size-4 shrink-0 text-destructive" aria-hidden="true" />{pageText("githubAccessNeeded_7c515c")}</p>
+      <p>{pageText("thisGitHubConnectionCannotAccessTheRequestedAccount_425590")}</p>
+      {connectionId ? <Button asChild size="sm" variant="outline"><Link to={appTabHref(connectionId, "permissions")}>{pageText("manageGitHubAccess_324ae6")}</Link></Button> : null}
+      {detail ? <details className="text-xs text-muted-foreground"><summary className="cursor-pointer">{pageText("errorDetails_20be86")}</summary><p className="mt-2 break-words">{detail}</p></details> : null}
     </div>;
   }
   const status = <>
     <Icon className={cn("h-3.5 w-3.5 shrink-0", state === "running" && "animate-spin", state === "failed" && "text-destructive")} />
     {labels[state]}
-    {result?.rememberedAction ? " · Always allowed" : ""}
+    {result?.rememberedAction ? " " + pageText("alwaysAllowed_8113e6") : ""}
   </>;
   return (
     <div className="space-y-1 text-sm text-muted-foreground" aria-live="polite">
       {output ? (
         <Collapsible open={resultOpen} onOpenChange={setResultOpen}>
           <CollapsibleTrigger asChild>
-            <button type="button" className="flex items-center gap-1.5 rounded-sm hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label={resultOpen ? "Hide result details" : "Show result details"}>
+            <button type="button" className="flex items-center gap-1.5 rounded-sm hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label={resultOpen ? pageText("hideResultDetails_869f89") : pageText("showResultDetails_849102")}>
               {status}<ChevronDown className={cn("h-3 w-3", resultOpen && "rotate-180")} />
             </button>
           </CollapsibleTrigger>
@@ -1782,7 +1756,7 @@ function ToolActionResolution({
       ) : <p className="flex items-center gap-1.5">{status}</p>}
       {detail ? <p className={cn("break-words", state === "failed" && "text-destructive")}>{detail}</p> : null}
       {state === "executed" && result?.resultHref?.trim() ? (
-        <a className="inline-flex items-center gap-1 underline underline-offset-4 hover:text-foreground" href={result.resultHref} target="_blank" rel="noreferrer">View result<ExternalLink className="h-3 w-3" /></a>
+        <a className="inline-flex items-center gap-1 underline underline-offset-4 hover:text-foreground" href={result.resultHref} target="_blank" rel="noreferrer">{pageText("viewResult_a4a3e2")}<ExternalLink className="h-3 w-3" /></a>
       ) : null}
     </div>
   );
@@ -1848,29 +1822,27 @@ function RequestToolActionCard({
       </div>
       {isPending ? inspectableArguments ? (
         <details className="mt-3">
-          <summary className="cursor-pointer text-xs font-medium text-muted-foreground">
-            Arguments
-          </summary>
+          <summary className="cursor-pointer text-xs font-medium text-muted-foreground">{pageText("arguments_cbb9fa")}</summary>
           <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-words font-mono text-xs text-foreground">
             {payload.argumentsSummaryJson}
           </pre>
           <ToolActionAuditHashCopy hash={payload.argumentsHash} />
         </details>
-      ) : <p className="mt-3 text-xs text-muted-foreground">Request arguments are unavailable.</p> : null}
+      ) : <p className="mt-3 text-xs text-muted-foreground">{pageText("requestArgumentsAreUnavailable_c74489")}</p> : null}
       {isPending ? (
         <DecisionCardFooter leading={footerSlot} className="mt-3">
           <div className={cn(!footerSlot && "mt-3", "flex flex-wrap items-center justify-end gap-2")}>
           <Button size="sm" variant="ghost" disabled={!onRejectInteraction || working !== null} onClick={() => void decide("reject")}>
-            {working === "reject" ? "Declining…" : pageText("decline_b59cf9")}
+            {working === "reject" ? pageText("declining_4403ae") : pageText("decline_b59cf9")}
           </Button>
-          <div className="inline-flex" role="group" aria-label="Approve request">
+          <div className="inline-flex" role="group" aria-label={pageText("approveRequest_3bb254")}>
             <Button size="sm" variant={variant} className={payload.rememberActionScope ? "rounded-r-none" : undefined} disabled={!onAcceptInteraction || working !== null} onClick={() => void decide("accept")}>
-              {working === "accept" || working === "always" ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />{working === "always" ? pageText("saving_56a228") : "Approving…"}</> : "Approve & run"}
+              {working === "accept" || working === "always" ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />{working === "always" ? pageText("saving_56a228") : pageText("approving_26fb03")}</> : pageText("approveRun_9ea0f3")}
             </Button>
             {payload.rememberActionScope ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button size="icon-sm" variant={variant} className="rounded-l-none border-l border-background/30" aria-label="Approval options" disabled={!onAcceptInteraction || working !== null}>
+                  <Button size="icon-sm" variant={variant} className="rounded-l-none border-l border-background/30" aria-label={pageText("approvalOptions_dd8ed0")} disabled={!onAcceptInteraction || working !== null}>
                     <ChevronDown className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -1926,6 +1898,7 @@ function SecretProposalIdentityHeader({
 }: {
   state: SecretProposalCardState;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const dimmed = state === "declined" || state === "expired";
   return (
     <div className={cn("flex items-start gap-3", dimmed && "opacity-60 grayscale")}>
@@ -1936,9 +1909,7 @@ function SecretProposalIdentityHeader({
         <KeyRound className="h-5 w-5" />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="text-base font-bold leading-tight text-foreground">
-          Bind an existing secret
-        </div>
+        <div className="text-base font-bold leading-tight text-foreground">{pageText("bindAnExistingSecret_3f6e24")}</div>
       </div>
     </div>
   );
@@ -1949,24 +1920,19 @@ function SecretProposalDetails({
 }: {
   payload: NonNullable<RequestConfirmationInteraction["payload"]["secretProposal"]>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <dl className="grid gap-3 rounded-sm border border-border/70 bg-muted/30 p-3 sm:grid-cols-2">
       <div className="min-w-0 space-y-1">
-        <dt className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-          Source secret
-        </dt>
+        <dt className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{pageText("sourceSecret_66f37b")}</dt>
         <dd className="truncate text-sm font-medium text-foreground">{payload.sourceSecretLabel}</dd>
       </div>
       <div className="min-w-0 space-y-1">
-        <dt className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-          Target agent
-        </dt>
+        <dt className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{pageText("targetAgent_2c44aa")}</dt>
         <dd className="truncate text-sm font-medium text-foreground">{payload.targetAgentName}</dd>
       </div>
       <div className="min-w-0 space-y-1 sm:col-span-2">
-        <dt className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-          New config path
-        </dt>
+        <dt className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{pageText("newConfigPath_73070b")}</dt>
         <dd className="break-all font-mono text-sm text-foreground">{payload.configPath}</dd>
       </div>
     </dl>
@@ -1982,6 +1948,7 @@ function SecretProposalResolution({
   state: SecretProposalCardState;
   resolvedByLabel: string | null;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const result = interaction.result?.secretProposal ?? null;
   const who = resolvedByLabel ?? "the board";
   const when = interaction.resolvedAt
@@ -1995,10 +1962,8 @@ function SecretProposalResolution({
       <div aria-live="polite" className="flex items-start gap-2 rounded-sm border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-100">
         <Loader2 className="mt-0.5 h-4 w-4 shrink-0 animate-spin" />
         <div>
-          <div className="font-medium">Approved by {who} — creating the binding</div>
-          <p className="mt-1 text-amber-900/80 dark:text-amber-100/80">
-            Paperclip is re-checking authority and the proposal snapshot before writing.
-          </p>
+          <div className="font-medium">{pageText("approvedBy_b95366") + " "}{who}{" " + pageText("creatingTheBinding_f04280")}</div>
+          <p className="mt-1 text-amber-900/80 dark:text-amber-100/80">{pageText("paperclipIsReCheckingAuthorityAndTheProposal_ede422")}</p>
         </div>
       </div>
     );
@@ -2009,9 +1974,8 @@ function SecretProposalResolution({
       <div aria-live="polite" className="flex items-start gap-2 rounded-sm border border-green-500/50 bg-green-500/10 px-4 py-3 text-sm text-green-900 dark:text-green-100">
         <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
         <div>
-          <div className="font-medium">Binding created · approved by {who}</div>
-          <p className="mt-1 text-green-900/80 dark:text-green-100/80">
-            The target agent can now use the proposed config path{when ? ` · ${when}` : ""}.
+          <div className="font-medium">{pageText("bindingCreatedApprovedBy_af3dc8") + " "}{who}</div>
+          <p className="mt-1 text-green-900/80 dark:text-green-100/80">{pageText("theTargetAgentCanNowUseTheProposed_e0e7a9")}{when ? ` · ${when}` : ""}.
           </p>
         </div>
       </div>
@@ -2025,19 +1989,13 @@ function SecretProposalResolution({
         <div className="flex items-start gap-2">
           <XCircle className="mt-0.5 h-4 w-4 shrink-0" />
           <div>
-            <div className="font-semibold uppercase tracking-(--tracking-eyebrow)">
-              FAILED · binding was not created
-            </div>
-            <p className="mt-1 text-red-900/80 dark:text-red-100/80">
-              The request was accepted, but execution failed closed. No secret value was exposed.
-            </p>
+            <div className="font-semibold uppercase tracking-(--tracking-eyebrow)">{pageText("failedBindingWasNotCreated_257fb9")}</div>
+            <p className="mt-1 text-red-900/80 dark:text-red-100/80">{pageText("theRequestWasAcceptedButExecutionFailedClosed_5a14de")}</p>
           </div>
         </div>
         {errorCode ? (
           <div className="rounded-sm border border-red-500/50 bg-background/60 px-3 py-2">
-            <span className="text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-eyebrow)">
-              Error code
-            </span>{" "}
+            <span className="text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-eyebrow)">{pageText("errorCode_03f5ce")}</span>{" "}
             <code className="font-mono text-foreground">{errorCode}</code>
           </div>
         ) : null}
@@ -2052,8 +2010,8 @@ function SecretProposalResolution({
         <div className="flex items-start gap-2">
           <XCircle className="mt-0.5 h-4 w-4 shrink-0" />
           <div>
-            <div className="font-medium">Rejected by {who}</div>
-            <p className="mt-1 text-red-900/80 dark:text-red-100/80">The binding was not created.</p>
+            <div className="font-medium">{pageText("rejectedBy_d578bf") + " "}{who}</div>
+            <p className="mt-1 text-red-900/80 dark:text-red-100/80">{pageText("theBindingWasNotCreated_2a0352")}</p>
           </div>
         </div>
         {reason ? (
@@ -2069,8 +2027,8 @@ function SecretProposalResolution({
     <div className="flex items-start gap-2 rounded-sm border border-border bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
       <Clock className="mt-0.5 h-4 w-4 shrink-0" />
       <div>
-        <div className="font-medium text-foreground">Proposal expired{when ? ` · ${when}` : ""}</div>
-        <p className="mt-1">The binding was not created. A fresh proposal is required.</p>
+        <div className="font-medium text-foreground">{pageText("proposalExpired_94fcc9")}{when ? ` · ${when}` : ""}</div>
+        <p className="mt-1">{pageText("theBindingWasNotCreatedAFreshProposal_979ee3")}</p>
       </div>
     </div>
   );
@@ -2295,9 +2253,7 @@ function ConfirmationActionRow({
           >
             {working === "accept" ? (
               <>
-                <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                Approving…
-              </>
+                <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />{pageText("approving_26fb03")}</>
             ) : (
               approveLabel
             )}
@@ -2326,9 +2282,7 @@ function ConfirmationActionRow({
             >
               {working === "reject" && !revising ? (
                 <>
-                  <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                  Rejecting…
-                </>
+                  <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />{pageText("rejecting_812b8d")}</>
               ) : (
                 rejectLabel
               )}
@@ -2350,7 +2304,7 @@ function ConfirmationActionRow({
             )}
           />
           {attempted && reasonMissing ? (
-            <p className="text-xs text-destructive">Add a note describing the changes you want.</p>
+            <p className="text-xs text-destructive">{pageText("addANoteDescribingTheChangesYouWant_6dac78")}</p>
           ) : null}
           {revisePanelChildren}
           <DecisionCardFooter leading={footerSlot}>
@@ -2374,7 +2328,7 @@ function ConfirmationActionRow({
                   <>
                     <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />{pageText("sending_cf7655")}</>
                 ) : (
-                  "Send revision"
+                  pageText("sendRevision_21e23c")
                 )}
               </Button>
             </div>
@@ -2591,8 +2545,7 @@ function RequestConnectionAuthorizationCard({
           testId="connection-authorization-connected"
           headline={`${providerName} connected`}
           detail={
-            <>
-              Connected by{" "}
+            <>{pageText("connectedBy_1155b0")}{" "}
               <span className="font-medium text-foreground">
                 {/* "You" is display-cased for a badge; this is mid-sentence. */}
                 {(resolvedByLabel ?? addresseeLabel) === "You" ? pageText("you_8af56d") : resolvedByLabel ?? addresseeLabel}
@@ -2712,7 +2665,7 @@ function RequestConfirmationCard({
       }
       if (uploaded.length > 0) setShots((current) => [...current, ...uploaded]);
     } catch {
-      setUploadError("Couldn't upload that image. Try again.");
+      setUploadError(interfaceNotice("interface:couldnTUploadThatImageTryAgain_4c708b"));
     } finally {
       setUploading(false);
     }
@@ -2815,7 +2768,7 @@ function RequestConfirmationCard({
                         />
                         <button
                           type="button"
-                          aria-label={`Remove ${shot.name}`}
+                          aria-label={translateDynamic("dynamic:remove", { value1: shot.name })}
                           className="absolute right-0.5 top-0.5 rounded-full bg-background/90 p-0.5 text-foreground opacity-0 transition-opacity group-hover:opacity-100"
                           onClick={() =>
                             setShots((current) => current.filter((_, i) => i !== index))
@@ -2847,14 +2800,10 @@ function RequestConfirmationCard({
                 >
                   {uploading ? (
                     <>
-                      <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                      Uploading...
-                    </>
+                      <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />{pageText("uploading_070e32")}</>
                   ) : (
                     <>
-                      <ImagePlus className="mr-2 h-3.5 w-3.5" />
-                      Attach screenshots
-                    </>
+                      <ImagePlus className="mr-2 h-3.5 w-3.5" />{pageText("attachScreenshots_c154e5")}</>
                   )}
                 </Button>
                 {uploadError ? (
@@ -2902,7 +2851,7 @@ function RequestCheckboxConfirmationResolution({
         <div className="flex flex-wrap items-center gap-2 text-sm leading-6 text-foreground">
           <span className="font-medium">
             {selectedCount === 0
-              ? "Confirmed with no options selected"
+              ? pageText("confirmedWithNoOptionsSelected_65cad6")
               : `Confirmed ${selectedCount} of ${totalOptions} ${totalOptions === 1 ? "option" : "options"}`}
           </span>
           <RequestConfirmationTargetChip interaction={interaction} target={target} />
@@ -2941,9 +2890,7 @@ function RequestCheckboxConfirmationResolution({
 
   if (interaction.status === "failed") {
     return (
-      <p className="text-sm leading-6 text-muted-foreground">
-        This request could not be resolved. Try again or create a new request.
-      </p>
+      <p className="text-sm leading-6 text-muted-foreground">{pageText("thisRequestCouldNotBeResolvedTryAgain_f047cd")}</p>
     );
   }
 
@@ -3014,6 +2961,7 @@ function RequestCheckboxConfirmationCard({
   ) => Promise<void> | void;
   externalReferences?: MarkdownExternalReferenceMap;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const options = interaction.payload.options;
   const optionIds = useMemo(() => options.map((option) => option.id), [options]);
   const validOptionIds = useMemo(() => new Set(optionIds), [optionIds]);
@@ -3165,23 +3113,19 @@ function RequestCheckboxConfirmationCard({
               variant="ghost"
               disabled={working !== null || selectedCount === totalOptions || (maxSelected != null && selectedCount >= maxSelected)}
               onClick={handleSelectAll}
-            >
-              Select all
-            </Button>
+            >{pageText("selectAll_913aff")}</Button>
             <Button
               size="sm"
               variant="ghost"
               disabled={working !== null || selectedCount === 0}
               onClick={handleClearSelection}
-            >
-              Clear selection
-            </Button>
+            >{pageText("clearSelection_247fd6")}</Button>
           </div>
         </div>
 
         <div
           role="group"
-          aria-label="Selectable options"
+          aria-label={pageText("selectableOptions_0f56d0")}
           className="max-h-80 overflow-y-auto rounded-sm border border-border/70"
         >
           {options.map((option) => {
@@ -3305,10 +3249,11 @@ function ItemVerdictSegmentedControl({
   disabled: boolean;
   onSelect: (verdict: RequestItemVerdictValue) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div
       role="group"
-      aria-label="Choose a verdict"
+      aria-label={pageText("chooseAVerdict_1fde69")}
       className="flex shrink-0 flex-wrap items-center gap-2"
     >
       {verdicts.map((verdict) => {
@@ -3362,6 +3307,7 @@ function RequestItemVerdictsCard({
   ) => Promise<void> | void;
   externalReferences?: MarkdownExternalReferenceMap;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const payload = interaction.payload;
   const items = payload.items;
   const enabledVerdicts = useMemo<RequestItemVerdictValue[]>(
@@ -3509,22 +3455,20 @@ function RequestItemVerdictsCard({
           <div className="flex items-center gap-2 font-medium">
             <AlertTriangle className="h-4 w-4" aria-hidden />
             {interaction.result?.outcome === "superseded_by_comment"
-              ? "This review expired after a later comment."
+              ? pageText("thisReviewExpiredAfterALaterComment_a82766")
               : interaction.result?.outcome === "stale_target"
-                ? "This review expired after the target changed."
-                : "This review expired."}
+                ? pageText("thisReviewExpiredAfterTheTargetChanged_190081")
+                : pageText("thisReviewExpired_93d32a")}
           </div>
           {progress.decided > 0 ? (
             <p className="mt-1 text-xs leading-5">
-              {progress.decided === 1 ? "1 item was" : `${progress.decided} items were`} already applied and cannot be
-              reverted. Remaining items were cancelled.
-            </p>
+              {progress.decided === 1 ? pageText("1ItemWas_76082c") : `${progress.decided} items were`}{" " + pageText("alreadyAppliedAndCannotBeRevertedRemainingItems_97620f")}</p>
           ) : null}
         </div>
       ) : null}
 
       {/* Item list (S1/S2/S3/S4) */}
-      <ul className="space-y-2" aria-label="Items to review">
+      <ul className="space-y-2" aria-label={pageText("itemsToReview_1b9945")}>
         {items.map((item) => {
           const resolved = resolvedById.get(item.id);
           const applying = applyingItemIds.has(item.id);
@@ -3566,14 +3510,10 @@ function RequestItemVerdictsCard({
                     <VerdictConsequenceChip verdict={resolved.verdict} />
                   ) : applying ? (
                     <span className="inline-flex items-center gap-1.5 rounded-sm border border-border/70 bg-muted/40 px-2 py-0.5 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-                      <Loader2 className="h-3.5 w-3.5 motion-safe:animate-spin" aria-hidden />
-                      Applying…
-                    </span>
+                      <Loader2 className="h-3.5 w-3.5 motion-safe:animate-spin" aria-hidden />{pageText("applying_e578c2")}</span>
                   ) : isTerminal ? (
                     <span className="inline-flex items-center gap-1 rounded-sm border border-border/70 bg-muted/30 px-2 py-0.5 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-                      <CircleDashed className="h-3.5 w-3.5" aria-hidden />
-                      Not decided
-                    </span>
+                      <CircleDashed className="h-3.5 w-3.5" aria-hidden />{pageText("notDecided_f50468")}</span>
                   ) : (
                     <ItemVerdictSegmentedControl
                       itemId={item.id}
@@ -3599,7 +3539,7 @@ function RequestItemVerdictsCard({
                     id={`${interaction.id}-${item.id}-reason`}
                     value={draft.reason}
                     onChange={(event) => setDraftReason(item.id, event.target.value)}
-                    placeholder="Give the agent a reason so it can act on this item."
+                    placeholder={pageText("giveTheAgentAReasonSoItCan_f64672")}
                     aria-invalid={attempted && invalidDraftIds.has(item.id)}
                     className={cn(
                       "min-h-16 bg-background text-sm",
@@ -3607,7 +3547,7 @@ function RequestItemVerdictsCard({
                     )}
                   />
                   {attempted && invalidDraftIds.has(item.id) ? (
-                    <p className="text-xs text-destructive">A reason is required to {VERDICT_LABEL[draft.verdict].toLowerCase()} this item.</p>
+                    <p className="text-xs text-destructive">{pageText("aReasonIsRequiredTo_093e03") + " "}{VERDICT_LABEL[draft.verdict].toLowerCase()}{" " + pageText("thisItem_3d96ab")}</p>
                   ) : null}
                 </div>
               ) : null}
@@ -3621,8 +3561,7 @@ function RequestItemVerdictsCard({
         <div className="flex flex-wrap items-center gap-2 rounded-sm border border-emerald-500/50 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-900 dark:text-emerald-100">
           <CheckCircle2 className="h-4 w-4" aria-hidden />
           <span className="font-medium">
-            {progress.decided} decided · {progress.approved} approved · {progress.rejected} rejected
-            {progress.deferred > 0 ? ` · ${progress.deferred} deferred` : ""}
+            {progress.decided}{" " + pageText("decided_3041d8") + " "}{progress.approved}{" " + pageText("approved_3b8fc5") + " "}{progress.rejected}{" " + pageText("rejected_1f087a")}{progress.deferred > 0 ? ` · ${progress.deferred} deferred` : ""}
           </span>
         </div>
       ) : null}
@@ -3634,7 +3573,7 @@ function RequestItemVerdictsCard({
             <div className="text-xs text-muted-foreground">
               {draftCount > 0
                 ? `${draftCount} draft verdict${draftCount === 1 ? "" : "s"} ready to apply`
-                : "Mark verdicts, then apply them in one pass."}
+                : pageText("markVerdictsThenApplyThemInOnePass_9d60ef")}
             </div>
             <div className="flex flex-wrap items-center gap-2">
               {allowBulkApprove ? (
@@ -3645,9 +3584,7 @@ function RequestItemVerdictsCard({
                   disabled={working || progress.pendingItemIds.length === 0}
                   onClick={handleApproveAll}
                 >
-                  <ThumbsUp className="h-4 w-4" aria-hidden />
-                  Approve all
-                </Button>
+                  <ThumbsUp className="h-4 w-4" aria-hidden />{pageText("approveAll_8818d9")}</Button>
               ) : null}
               <Button
                 type="button"
@@ -3659,9 +3596,7 @@ function RequestItemVerdictsCard({
               >
                 {working ? (
                   <>
-                    <Loader2 className="h-4 w-4 motion-safe:animate-spin" aria-hidden />
-                    Applying…
-                  </>
+                    <Loader2 className="h-4 w-4 motion-safe:animate-spin" aria-hidden />{pageText("applying_e578c2")}</>
                 ) : (
                   applyLabel
                 )}
@@ -3683,15 +3618,14 @@ function VerdictProgressBadge({
   progress: ReturnType<typeof getItemVerdictProgress>;
   pendingReason: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const pct = progress.total > 0 ? Math.round((progress.decided / progress.total) * 100) : 0;
   return (
     <div className="flex items-center gap-2">
       {/* Von Restorff accent when a draft reject is missing its reason */}
       {pendingReason ? (
         <span className="inline-flex items-center gap-1 rounded-sm border border-amber-500/60 bg-amber-500/10 px-1.5 py-0.5 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-eyebrow) text-amber-900 dark:text-amber-100">
-          <AlertTriangle className="h-3 w-3" aria-hidden />
-          Reason needed
-        </span>
+          <AlertTriangle className="h-3 w-3" aria-hidden />{pageText("reasonNeeded_dc7a20")}</span>
       ) : null}
       <div
         className="flex items-center gap-2"
@@ -3699,7 +3633,7 @@ function VerdictProgressBadge({
         aria-valuemin={0}
         aria-valuemax={progress.total}
         aria-valuenow={progress.decided}
-        aria-label={`${progress.decided} of ${progress.total} decided`}
+        aria-label={translateDynamic("dynamic:ofDecided", { value1: progress.decided, value2: progress.total })}
       >
         <div className="h-1.5 w-16 overflow-hidden rounded-full bg-muted">
           <div
@@ -3708,8 +3642,7 @@ function VerdictProgressBadge({
           />
         </div>
         <span className="whitespace-nowrap text-xs font-medium text-muted-foreground">
-          {progress.decided} of {progress.total} decided
-        </span>
+          {progress.decided}{" " + pageText("of_de04fa") + " "}{progress.total}{" " + pageText("decided_d4b8ee")}</span>
       </div>
     </div>
   );
@@ -3925,7 +3858,7 @@ export function IssueThreadInteractionCard({
                 <StatusIcon className={cn("h-3.5 w-3.5", iconSpin && "animate-spin")} />
                 {isSecretProposal ? (
                   <span className="flex flex-col sm:flex-row sm:items-center sm:gap-1">
-                    <span>Secret binding</span>
+                    <span>{pageText("secretBinding_a44cc9")}</span>
                     <span className="hidden text-current/60 sm:inline">/</span>
                     <span>{statusText}</span>
                   </span>
@@ -3950,13 +3883,10 @@ export function IssueThreadInteractionCard({
                       className="gap-1"
                       data-testid="interaction-addressee-badge"
                     >
-                      <Bot className="h-3 w-3" />
-                      For {addresseeLabel}
+                      <Bot className="h-3 w-3" />{pageText("for_f78806") + " "}{addresseeLabel}
                     </Badge>
                   </TooltipTrigger>
-                  <TooltipContent side="bottom" className="max-w-xs text-xs">
-                    Directed to {addresseeLabel}. Agent-addressed interactions are owned by that agent and are kept out of the open organization attention feed.
-                  </TooltipContent>
+                  <TooltipContent side="bottom" className="max-w-xs text-xs">{pageText("directedTo_fd681e") + " "}{addresseeLabel}{pageText("agentAddressedInteractionsAreOwnedByThatAgent_297ce3")}</TooltipContent>
                 </Tooltip>
               ) : null}
             </div>
@@ -3964,27 +3894,27 @@ export function IssueThreadInteractionCard({
             <div className="mt-3 text-lg font-bold text-foreground">
               {interaction.title
                 ?? (interaction.kind === "suggest_tasks"
-                  ? "Suggested task tree"
+                  ? pageText("suggestedTaskTree_e30fc0")
                   : interaction.kind === "ask_user_questions"
                     // Only a human-only card is genuinely "for the operator";
                     // an open card is answerable by any teammate (PAP-17280).
                     ? interaction.payload.title
                       ?? (audience.policy === "human_only"
-                        ? "Questions for the operator"
-                        : "Questions to answer")
+                        ? pageText("questionsForTheOperator_03c0f5")
+                        : pageText("questionsToAnswer_a3f5cd"))
                   : interaction.kind === "request_checkbox_confirmation"
-                    ? "Checkbox confirmation requested"
+                    ? pageText("checkboxConfirmationRequested_0ab13f")
                     : isSecretProposal
-                      ? "Secret binding requested"
+                      ? pageText("secretBindingRequested_bfd417")
                     : connectionAuthorization
                       ? `Connect your ${connectionAuthorization.providerName} to continue`
                     : isToolAction
-                      ? "Tool approval requested"
+                      ? pageText("toolApprovalRequested_81637f")
                       : interaction.kind === "request_item_verdicts"
-                        ? "Review these items"
+                        ? pageText("reviewTheseItems_61e1e0")
                         : isPlan
-                          ? "Plan review"
-                          : "Confirmation requested")}
+                          ? pageText("planReview_4182f9")
+                          : pageText("confirmationRequested_277597"))}
             </div>
             {/* A connection-authorization card composes its own single body
                 below, because the closing sentence depends on whether the
@@ -4004,7 +3934,7 @@ export function IssueThreadInteractionCard({
             <TooltipTrigger asChild>
               <div className="rounded-sm border border-border/70 bg-transparent px-3 py-2 text-right text-xs text-muted-foreground">
                 <div className="font-medium text-foreground">{formatShortDate(interaction.createdAt)}</div>
-                <div>proposed by {createdByLabel}</div>
+                <div>{pageText("proposedBy_75bf99") + " "}{createdByLabel}</div>
               </div>
             </TooltipTrigger>
             <TooltipContent side="bottom" className="text-xs">{pageText("created_accf40") + " "}{formatDateTime(interaction.createdAt)}
@@ -4102,9 +4032,8 @@ export function IssueThreadInteractionCard({
             className="mt-4 border-t border-border/60 pt-3 text-xs text-muted-foreground"
             data-testid="interaction-withdrawn-footer"
           >
-            <div>
-              Withdrawn by{" "}
-              <span className="font-medium text-foreground">{resolvedByLabel ?? "an agent"}</span>
+            <div>{pageText("withdrawnBy_d09dc6")}{" "}
+              <span className="font-medium text-foreground">{resolvedByLabel ?? pageText("anAgent_14ff03")}</span>
               {resolvedByAgent ? <ResolvedByAgentChip /> : null}
               {interaction.resolvedAt ? ` on ${formatShortDate(interaction.resolvedAt)}` : ""}
             </div>
@@ -4128,8 +4057,7 @@ export function IssueThreadInteractionCard({
           <div
             className="mt-4 flex flex-wrap items-center gap-x-1 gap-y-0.5 border-t border-border/60 pt-3 text-xs text-muted-foreground"
             data-testid="interaction-resolved-footer"
-          >
-            Resolved by <span className="font-medium text-foreground">{resolvedByLabel}</span>
+          >{pageText("resolvedBy_5258b0") + " "}<span className="font-medium text-foreground">{resolvedByLabel}</span>
             {resolvedByAgent ? <ResolvedByAgentChip /> : null}
             {interaction.resolvedAt ? ` on ${formatShortDate(interaction.resolvedAt)}` : ""}
           </div>
@@ -4155,9 +4083,7 @@ function ResolvedByAgentChip() {
         >
           <Bot className="h-3 w-3" />{pageText("agent_5ce2e6")}</Badge>
       </TooltipTrigger>
-      <TooltipContent side="bottom" className="max-w-xs text-xs">
-        Resolved by an agent under the organization's interaction governance policy — audit-distinct from a human board resolution.
-      </TooltipContent>
+      <TooltipContent side="bottom" className="max-w-xs text-xs">{pageText("resolvedByAnAgentUnderTheOrganizationS_a820b9")}</TooltipContent>
     </Tooltip>
   );
 }

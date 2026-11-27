@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
@@ -115,29 +116,29 @@ export function ProfileDetail({
     mutationFn: (input: Parameters<typeof toolsApi.updateProfile>[1]) => toolsApi.updateProfile(profileId, input),
     onSuccess: () => {
       invalidate();
-      pushToast({ title: "Profile updated", tone: "success" });
+      pushToast({ title: interfaceNotice("interface:profileUpdated_971353"), tone: "success" });
     },
-    onError: (error: unknown) => pushToast({ title: "Could not update profile", body: errorBody(error), tone: "error" }),
+    onError: (error: unknown) => pushToast({ title: interfaceNotice("interface:couldNotUpdateProfile_fe81b2"), body: errorBody(error), tone: "error" }),
   });
 
   const duplicateProfile = useMutation({
     mutationFn: (input: { name: string; includeAssignments: boolean }) => toolsApi.duplicateProfile(profileId, input),
     onSuccess: (copy) => {
       invalidate();
-      pushToast({ title: "Profile duplicated", body: "The copy is not assigned to anyone yet.", tone: "success" });
+      pushToast({ title: interfaceNotice("interface:profileDuplicated_8c74da"), body: interfaceNotice("interface:theCopyIsNotAssignedToAnyoneYet_330ec0"), tone: "success" });
       navigate(`/apps/advanced/profiles/${copy.id}?created=1`);
     },
-    onError: (error: unknown) => pushToast({ title: "Could not duplicate", body: errorBody(error), tone: "error" }),
+    onError: (error: unknown) => pushToast({ title: interfaceNotice("interface:couldNotDuplicate_dc0469"), body: errorBody(error), tone: "error" }),
   });
 
   const deleteProfile = useMutation({
     mutationFn: () => toolsApi.deleteProfile(profileId),
     onSuccess: () => {
       invalidate();
-      pushToast({ title: "Profile deleted", tone: "success" });
+      pushToast({ title: interfaceNotice("interface:profileDeleted_9f9ebc"), tone: "success" });
       navigate("/apps/advanced/profiles");
     },
-    onError: (error: unknown) => pushToast({ title: "Could not delete", body: errorBody(error), tone: "error" }),
+    onError: (error: unknown) => pushToast({ title: interfaceNotice("interface:couldNotDelete_c2cddf"), body: errorBody(error), tone: "error" }),
   });
 
   const removeAssignment = useMutation({
@@ -146,9 +147,9 @@ export function ProfileDetail({
     onSuccess: () => {
       setAssignmentToRemove(null);
       invalidate();
-      pushToast({ title: "Assignment removed", tone: "success" });
+      pushToast({ title: interfaceNotice("interface:assignmentRemoved_a38363"), tone: "success" });
     },
-    onError: (error: unknown) => pushToast({ title: "Could not remove assignment", body: errorBody(error), tone: "error" }),
+    onError: (error: unknown) => pushToast({ title: interfaceNotice("interface:couldNotRemoveAssignment_a28867"), body: errorBody(error), tone: "error" }),
   });
 
   const reviewNewTools = useMutation({
@@ -164,12 +165,12 @@ export function ProfileDetail({
       setSearchParams({});
       queryClient.invalidateQueries({ queryKey: queryKeys.tools.profiles(companyId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.tools.profileNewTools(profileId) });
-      pushToast({ title: "New tools reviewed", tone: "success" });
+      pushToast({ title: interfaceNotice("interface:newToolsReviewed_843e1b"), tone: "success" });
     },
-    onError: (error: unknown) => pushToast({ title: "Could not submit review", body: errorBody(error), tone: "error" }),
+    onError: (error: unknown) => pushToast({ title: interfaceNotice("interface:couldNotSubmitReview_143b19"), body: errorBody(error), tone: "error" }),
   });
 
-  if (data.profiles.isLoading || profilesView.kind === "reconnecting") return <LoadingState label="Loading profile..." />;
+  if (data.profiles.isLoading || profilesView.kind === "reconnecting") return <LoadingState label={pageText("loadingProfile_a9e1ee")} />;
   if (profilesView.kind === "error") {
     return (
       <QueryErrorState
@@ -184,8 +185,8 @@ export function ProfileDetail({
   if (!profile) {
     return (
       <div className="space-y-4">
-        <ToolsPageHeader title="Profile not found" description="This access profile may have been deleted." />
-        <Button variant="outline" onClick={() => navigate("/apps/advanced/profiles")}>Back to profiles</Button>
+        <ToolsPageHeader title={pageText("profileNotFound_c009b4")} description={pageText("thisAccessProfileMayHaveBeenDeleted_ef6f48")} />
+        <Button variant="outline" onClick={() => navigate("/apps/advanced/profiles")}>{pageText("backToProfiles_ab9778")}</Button>
       </div>
     );
   }
@@ -197,15 +198,13 @@ export function ProfileDetail({
     <div className="space-y-6">
       <ToolsPageHeader
         title={profile.name}
-        description={profile.description ?? "No description yet."}
+        description={profile.description ?? pageText("noDescriptionYet_37e7a4")}
         actions={
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" disabled={archived} onClick={() => setDialog("edit")}>
               <Pencil className="mr-1.5 h-4 w-4" />{pageText("edit_530164")}</Button>
             <Button variant="outline" disabled={archived} onClick={() => setDialog("duplicate")}>
-              <Copy className="mr-1.5 h-4 w-4" />
-              Duplicate
-            </Button>
+              <Copy className="mr-1.5 h-4 w-4" />{pageText("duplicate_972d57")}</Button>
             {archived ? (
               <Button variant="outline" onClick={() => setDialog("restore")}>
                 <ArchiveRestore className="mr-1.5 h-4 w-4" />{pageText("restore_3cbe6d")}</Button>
@@ -227,24 +226,20 @@ export function ProfileDetail({
       {created ? (
         <div className="flex items-center justify-between gap-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3">
           <div>
-            <p className="text-sm font-medium text-foreground">Profile saved</p>
+            <p className="text-sm font-medium text-foreground">{pageText("profileSaved_e9983d")}</p>
             <p className="text-sm text-muted-foreground">
-              {unassigned ? "Assign it to agents before it changes their access." : "Assignments are active now."}
+              {unassigned ? pageText("assignItToAgentsBeforeItChangesTheir_0a6462") : pageText("assignmentsAreActiveNow_1f4f97")}
             </p>
           </div>
           <div className="flex gap-2">
-            <Button size="sm" onClick={() => navigate(`/apps/advanced/profiles/${profile.id}/edit?step=3`)}>
-              Assign
-            </Button>
+            <Button size="sm" onClick={() => navigate(`/apps/advanced/profiles/${profile.id}/edit?step=3`)}>{pageText("assign_244492")}</Button>
             <Button size="sm" variant="ghost" onClick={() => setSearchParams({})}>{pageText("dismiss_70afe9")}</Button>
           </div>
         </div>
       ) : null}
 
       {archived ? (
-        <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-          This profile is archived. It does not apply to agents until it is restored.
-        </div>
+        <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">{pageText("thisProfileIsArchivedItDoesNotApply_880ebb")}</div>
       ) : null}
 
       {pendingNewTools > 0 ? (
@@ -258,7 +253,7 @@ export function ProfileDetail({
 
       <section className="space-y-3">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-base font-semibold text-foreground">What it allows</h2>
+          <h2 className="text-base font-semibold text-foreground">{pageText("whatItAllows_e708e5")}</h2>
           <Button variant="outline" size="sm" disabled={archived} onClick={() => navigate(`/apps/advanced/profiles/${profile.id}/edit?step=2`)}>{pageText("editTools_57d24f")}</Button>
         </div>
         <AllowList rows={allowRows} total={profile.summary.totalToolCount} />
@@ -266,10 +261,8 @@ export function ProfileDetail({
 
       <section className="space-y-3">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-base font-semibold text-foreground">Who has it</h2>
-          <Button variant="outline" size="sm" disabled={archived} onClick={() => navigate(`/apps/advanced/profiles/${profile.id}/edit?step=3`)}>
-            Assign
-          </Button>
+          <h2 className="text-base font-semibold text-foreground">{pageText("whoHasIt_592781")}</h2>
+          <Button variant="outline" size="sm" disabled={archived} onClick={() => navigate(`/apps/advanced/profiles/${profile.id}/edit?step=3`)}>{pageText("assign_244492")}</Button>
         </div>
         <Assignments
           profile={profile}
@@ -281,7 +274,7 @@ export function ProfileDetail({
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-base font-semibold text-foreground">New tools that appear later</h2>
+        <h2 className="text-base font-semibold text-foreground">{pageText("newToolsThatAppearLater_317215")}</h2>
         <NewToolsSetting
           value={profile.defaultAction}
           disabled={archived || updateProfile.isPending}
@@ -290,9 +283,7 @@ export function ProfileDetail({
       </section>
 
       <Button variant="link" className="h-auto px-0" onClick={() => navigate("/apps/advanced/profiles?check=1")}>
-        <ShieldCheck className="mr-1.5 h-4 w-4" />
-        Check what an agent can actually do
-      </Button>
+        <ShieldCheck className="mr-1.5 h-4 w-4" />{pageText("checkWhatAnAgentCanActuallyDo_ffcaa3")}</Button>
 
       <ProfileDialogs
         kind={dialog}
@@ -345,15 +336,16 @@ function NewToolsReviewBanner({
   loading: boolean;
   onReview: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const appLabel = newToolsAppLabel(tools);
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
       <div>
         <p className="font-medium">
-          {loading ? "New tools need review" : `${appLabel} added ${count} new ${count === 1 ? "tool" : "tools"} since your last review`}
+          {loading ? pageText("newToolsNeedReview_a4d74b") : `${appLabel} added ${count} new ${count === 1 ? "tool" : "tools"} since your last review`}
         </p>
-        <p className="text-amber-900/80">Choose which ones this profile should allow.</p>
+        <p className="text-amber-900/80">{pageText("chooseWhichOnesThisProfileShouldAllow_de26da")}</p>
       </div>
       <Button size="sm" onClick={onReview}>{translateUi("interfaceCopy.review")}</Button>
     </div>
@@ -386,24 +378,21 @@ function NewToolsReviewDialog({
   onDecision: (catalogEntryId: string, decision: ToolProfileNewToolReviewDecision) => void;
   onSubmit: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Review new tools</DialogTitle>
-          <DialogDescription>
-            Allow the tools this profile should use. Keep the rest blocked.
-          </DialogDescription>
+          <DialogTitle>{pageText("reviewNewTools_d82671")}</DialogTitle>
+          <DialogDescription>{pageText("allowTheToolsThisProfileShouldUseKeep_8eda46")}</DialogDescription>
         </DialogHeader>
         {loading ? (
-          <LoadingState label="Loading new tools..." />
+          <LoadingState label={pageText("loadingNewTools_7b9f94")} />
         ) : error ? (
           <QueryErrorState error={error} action="load new tools" onRetry={onRetry} retrying={retrying} />
         ) : tools.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
-            There are no new tools waiting for review.
-          </div>
+          <div className="rounded-lg border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">{pageText("thereAreNoNewToolsWaitingForReview_af9200")}</div>
         ) : (
           <div className="max-h-(--sz-52vh) divide-y divide-border overflow-y-auto rounded-lg border border-border">
             {tools.map((tool) => (
@@ -419,7 +408,7 @@ function NewToolsReviewDialog({
                     <p className="mt-1 text-sm text-muted-foreground">{tool.description}</p>
                   ) : null}
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {tool.applicationName ?? tool.connectionName ?? "App tool"} · added {formatShortDate(tool.addedAt)}
+                    {tool.applicationName ?? tool.connectionName ?? pageText("appTool_7e811e")}{" " + pageText("added_a6dc6c") + " "}{formatShortDate(tool.addedAt)}
                   </p>
                 </div>
                 <div className="flex items-center gap-2 sm:justify-end">
@@ -429,18 +418,14 @@ function NewToolsReviewDialog({
                       name={`review-${tool.catalogEntryId}`}
                       checked={(decisions[tool.catalogEntryId] ?? "keep_blocked") === "allow"}
                       onChange={() => onDecision(tool.catalogEntryId, "allow")}
-                    />
-                    Allow
-                  </label>
+                    />{pageText("allow_3ad0e3")}</label>
                   <label className="inline-flex items-center gap-1.5 text-sm">
                     <input
                       type="radio"
                       name={`review-${tool.catalogEntryId}`}
                       checked={(decisions[tool.catalogEntryId] ?? "keep_blocked") === "keep_blocked"}
                       onChange={() => onDecision(tool.catalogEntryId, "keep_blocked")}
-                    />
-                    Keep blocked
-                  </label>
+                    />{pageText("keepBlocked_74d095")}</label>
                 </div>
               </div>
             ))}
@@ -448,9 +433,7 @@ function NewToolsReviewDialog({
         )}
         <DialogFooter>
           <Button variant="ghost" onClick={onClose}>{translateUi("interfaceCopy.cancel")}</Button>
-          <Button disabled={pending || loading || tools.length === 0} onClick={onSubmit}>
-            Submit review
-          </Button>
+          <Button disabled={pending || loading || tools.length === 0} onClick={onSubmit}>{pageText("submitReview_44cddb")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -462,9 +445,7 @@ function AllowList({ rows, total }: { rows: AllowRow[]; total: number }) {
   const { t: translateUi } = useUiTranslation();
   if (rows.length === 0) {
     return (
-      <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">
-        This profile allows 0 tools. Agents with only this profile will not be able to use app tools.
-      </div>
+      <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-950">{pageText("thisProfileAllows0ToolsAgentsWithOnly_aa6263")}</div>
     );
   }
   return (
@@ -473,7 +454,7 @@ function AllowList({ rows, total }: { rows: AllowRow[]; total: number }) {
         <thead>
           <tr className="border-b border-border bg-muted/40 text-left text-xs font-medium text-muted-foreground">
             <th className="px-3 py-2 font-medium">{translateUi("interfaceCopy.tool")}</th>
-            <th className="px-3 py-2 font-medium">App</th>
+            <th className="px-3 py-2 font-medium">{pageText("app_fc4a69")}</th>
             <th className="px-3 py-2 font-medium">{translateUi("interfaceCopy.capabilities")}</th>
             <th className="px-3 py-2 font-medium">{translateUi("interfaceCopy.source")}</th>
           </tr>
@@ -492,7 +473,7 @@ function AllowList({ rows, total }: { rows: AllowRow[]; total: number }) {
               </td>
               <td className="px-3 py-2">
                 <span>{row.app}</span>
-                {row.degraded ? <span className="ml-2 text-xs text-muted-foreground">{row.app} is disconnected</span> : null}
+                {row.degraded ? <span className="ml-2 text-xs text-muted-foreground">{row.app}{" " + pageText("isDisconnected_66f45a")}</span> : null}
               </td>
               <td className="px-3 py-2 text-muted-foreground">{row.capabilities}</td>
               <td className="px-3 py-2">
@@ -502,8 +483,7 @@ function AllowList({ rows, total }: { rows: AllowRow[]; total: number }) {
                   <span className="text-muted-foreground">{row.source}</span>
                 )}
                 {row.autoAddedAt ? (
-                  <div className="mt-0.5 text-xs text-muted-foreground">
-                    added automatically · {formatShortDate(row.autoAddedAt)}
+                  <div className="mt-0.5 text-xs text-muted-foreground">{pageText("addedAutomatically_21ed2f") + " "}{formatShortDate(row.autoAddedAt)}
                   </div>
                 ) : null}
               </td>
@@ -512,13 +492,9 @@ function AllowList({ rows, total }: { rows: AllowRow[]; total: number }) {
         </tbody>
       </table>
       {rows.length > 80 ? (
-        <p className="border-t border-border px-3 py-2 text-xs text-muted-foreground">
-          Showing 80 of {rows.length} allowed tools.
-        </p>
+        <p className="border-t border-border px-3 py-2 text-xs text-muted-foreground">{pageText("showing80Of_760a10") + " "}{rows.length}{" " + pageText("allowedTools_78b6de")}</p>
       ) : (
-        <p className="border-t border-border px-3 py-2 text-xs text-muted-foreground">
-          Allows {rows.length} of {total} known tools.
-        </p>
+        <p className="border-t border-border px-3 py-2 text-xs text-muted-foreground">{pageText("allows_bf343d") + " "}{rows.length}{" " + pageText("of_de04fa") + " "}{total}{" " + pageText("knownTools_bcf790")}</p>
       )}
     </div>
   );
@@ -541,8 +517,8 @@ function Assignments({
   if (profile.bindings.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-border px-4 py-5">
-        <p className="text-sm font-medium text-foreground">Not assigned yet</p>
-        <p className="text-sm text-muted-foreground">Assign this profile before it changes access.</p>
+        <p className="text-sm font-medium text-foreground">{pageText("notAssignedYet_9e526e")}</p>
+        <p className="text-sm text-muted-foreground">{pageText("assignThisProfileBeforeItChangesAccess_2ea390")}</p>
       </div>
     );
   }
@@ -552,7 +528,7 @@ function Assignments({
         <div key={binding.id} className="flex items-center justify-between gap-3 px-3 py-2.5">
           <div className="flex min-w-0 items-center gap-3">
             <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
-              {binding.targetType === "company" ? "Or" : binding.targetType.slice(0, 2).toUpperCase()}
+              {binding.targetType === "company" ? pageText("or_e72184") : binding.targetType.slice(0, 2).toUpperCase()}
             </span>
             <div className="min-w-0">
               <p className="truncate text-sm font-medium text-foreground">{assignmentLabel(binding, companyId, maps)}</p>
@@ -631,6 +607,7 @@ function ProfileDialogs({
   onRestore: () => void;
   onDelete: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [name, setName] = useState(profile.name);
   const [description, setDescription] = useState(profile.description ?? "");
@@ -650,14 +627,14 @@ function ProfileDialogs({
       <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit profile</DialogTitle>
-            <DialogDescription>Update the profile name and description.</DialogDescription>
+            <DialogTitle>{pageText("editProfile_15141e")}</DialogTitle>
+            <DialogDescription>{pageText("updateTheProfileNameAndDescription_fa3a75")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
               <Label htmlFor="edit-profile-name">{translateUi("interfaceCopy.name")}</Label>
               <Input id="edit-profile-name" value={name} onChange={(e) => setName(e.target.value)} />
-              {duplicateName ? <p className="text-xs text-destructive">Another profile already uses this name.</p> : null}
+              {duplicateName ? <p className="text-xs text-destructive">{pageText("anotherProfileAlreadyUsesThisName_46f691")}</p> : null}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="edit-profile-description">{translateUi("interfaceCopy.description")}</Label>
@@ -666,7 +643,7 @@ function ProfileDialogs({
             <button type="button" className="text-sm font-medium text-muted-foreground hover:text-foreground" onClick={() => setAdvancedOpen((v) => !v)}>{translateUi("interfaceCopy.advanced")}</button>
             {advancedOpen ? (
               <div className="space-y-1.5">
-                <Label htmlFor="edit-profile-key">Identifier</Label>
+                <Label htmlFor="edit-profile-key">{pageText("identifier_06b6ac")}</Label>
                 <Input id="edit-profile-key" value={profileKey} onChange={(e) => setProfileKey(e.target.value)} className="font-mono text-xs" />
               </div>
             ) : null}
@@ -685,25 +662,21 @@ function ProfileDialogs({
       <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Duplicate profile</DialogTitle>
-            <DialogDescription>The copy starts unassigned unless you choose to copy assignments too.</DialogDescription>
+            <DialogTitle>{pageText("duplicateProfile_c84001")}</DialogTitle>
+            <DialogDescription>{pageText("theCopyStartsUnassignedUnlessYouChooseTo_8c4cff")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
               <Label htmlFor="copy-profile-name">{translateUi("interfaceCopy.name")}</Label>
               <Input id="copy-profile-name" value={copyName} onChange={(e) => setCopyName(e.target.value)} />
-              {duplicateCopyName ? <p className="text-xs text-destructive">Another profile already uses this name.</p> : null}
+              {duplicateCopyName ? <p className="text-xs text-destructive">{pageText("anotherProfileAlreadyUsesThisName_46f691")}</p> : null}
             </div>
             <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={copyAssignments} onChange={(e) => setCopyAssignments(e.target.checked)} />
-              Also copy assignments?
-            </label>
+              <input type="checkbox" checked={copyAssignments} onChange={(e) => setCopyAssignments(e.target.checked)} />{pageText("alsoCopyAssignments_20e331")}</label>
           </div>
           <DialogFooter>
             <Button variant="ghost" onClick={onClose}>{translateUi("interfaceCopy.cancel")}</Button>
-            <Button disabled={!copyName.trim() || duplicateCopyName || pending} onClick={() => onDuplicate({ name: copyName.trim(), includeAssignments: copyAssignments })}>
-              Duplicate
-            </Button>
+            <Button disabled={!copyName.trim() || duplicateCopyName || pending} onClick={() => onDuplicate({ name: copyName.trim(), includeAssignments: copyAssignments })}>{pageText("duplicate_972d57")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -736,15 +709,16 @@ function RemoveAssignmentDialog({
   onClose: () => void;
   onConfirm: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   return (
     <Dialog open={Boolean(binding)} onOpenChange={(next) => !next && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Remove assignment</DialogTitle>
+          <DialogTitle>{pageText("removeAssignment_20f8ab")}</DialogTitle>
           <DialogDescription>
             {binding?.targetType === "company"
-              ? "Removing the organization default changes access for every agent that relies on it."
+              ? pageText("removingTheOrganizationDefaultChangesAccessForEvery_8677c8")
               : `Remove this profile from ${label}.`}
           </DialogDescription>
         </DialogHeader>

@@ -1,3 +1,5 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { t as translateDynamic } from "../i18n";
 import { useMemo, useState } from "react";
 import { ChevronDown } from "lucide-react";
 import type { Agent } from "@paperclipai/shared";
@@ -11,6 +13,7 @@ import { agentRouteRef } from "@/lib/utils";
 /** Switching opens the existing conversation or its unsaved draft view.
  * The production chat controller persists it only when the user sends. */
 export function CoordinatorAgentSwitcher({ agent }: { agent: Agent }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [open, setOpen] = useState(false);
   const { agents, chats } = useAgentChatNavigation();
   const navigate = useNavigate();
@@ -29,7 +32,7 @@ export function CoordinatorAgentSwitcher({ agent }: { agent: Agent }) {
       open={open}
       onOpenChange={setOpen}
       trigger={
-        <Button variant="ghost" size="sm" className="min-w-0 max-w-full gap-1.5 px-1.5 text-foreground" aria-label={`Switch agent. Currently ${agent.name}`} aria-current="page" title="Switch agent">
+        <Button variant="ghost" size="sm" className="min-w-0 max-w-full gap-1.5 px-1.5 text-foreground" aria-label={translateDynamic("dynamic:switchAgentCurrently", { value1: agent.name })} aria-current="page" title={pageText("switchAgent_82be5a")}>
           <AgentAvatar agent={agent} size={24} />
           <span data-agent-name className="truncate">{agent.name}</span>
           <ChevronDown className="size-4" />

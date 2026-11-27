@@ -126,9 +126,7 @@ export function IssueColumnPicker({
       <DropdownMenuContent align="end" className="w-(--sz-300px) rounded-xl border-border/70 p-1.5 shadow-xl shadow-black/10">
         <DropdownMenuLabel className="px-2 pb-1 pt-1.5">
           <div className="space-y-1">
-            <div className="text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
-              Desktop task rows
-            </div>
+            <div className="text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">{pageText("desktopTaskRows_aef4db")}</div>
             <div className="text-sm font-medium text-foreground">
               {title}
             </div>
@@ -161,12 +159,8 @@ export function IssueColumnPicker({
             className="items-start rounded-lg px-3 py-2.5 pl-8"
           >
             <span className="flex flex-col gap-0.5">
-              <span className="text-sm font-medium text-foreground">
-                Date group separators
-              </span>
-              <span className="text-xs leading-relaxed text-muted-foreground">
-                Show Today, Yesterday, and Earlier rules on newest-first task lists.
-              </span>
+              <span className="text-sm font-medium text-foreground">{pageText("dateGroupSeparators_44f432")}</span>
+              <span className="text-xs leading-relaxed text-muted-foreground">{pageText("showTodayYesterdayAndEarlierRulesOnNewest_2f7486")}</span>
             </span>
           </DropdownMenuCheckboxItem>
         ) : null}
@@ -174,9 +168,7 @@ export function IssueColumnPicker({
         <DropdownMenuItem
           onSelect={onResetColumns}
           className="rounded-lg px-3 py-2 text-sm"
-        >
-          Reset defaults
-          <span className="ml-auto text-xs text-muted-foreground">status, id, updated</span>
+        >{pageText("resetDefaults_7871b3")}<span className="ml-auto text-xs text-muted-foreground">{pageText("statusIdUpdated_991ee7")}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -202,6 +194,7 @@ export function InboxIssueMetaLeading({
   statusSlot?: ReactNode;
   checklistStepNumber?: number | string | null;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   return (
     <>
@@ -260,8 +253,7 @@ export function InboxIssueMetaLeading({
             aria-hidden="true"
           />
           <span className="hidden text-(length:--text-micro) font-medium text-muted-foreground sm:inline">
-            {subtreeLiveCount} live below
-          </span>
+            {subtreeLiveCount}{" " + pageText("liveBelow_c8d79e")}</span>
         </Badge>
       )}
     </>
@@ -478,9 +470,7 @@ export function InboxIssueTrailingColumns({
                       {workspaceName}
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent side="top" sideOffset={6}>
-                    Filter by workspace
-                  </TooltipContent>
+                  <TooltipContent side="top" sideOffset={6}>{pageText("filterByWorkspace_be8b62")}</TooltipContent>
                 </Tooltip>
               ) : (
                 workspaceName
@@ -499,7 +489,7 @@ export function InboxIssueTrailingColumns({
               {parentIdentifier ? (
                 <span className="font-mono">{parentIdentifier}</span>
               ) : (
-                <span className="italic">Sub-task</span>
+                <span className="italic">{pageText("subTask_adc6c4")}</span>
               )}
             </span>
           );

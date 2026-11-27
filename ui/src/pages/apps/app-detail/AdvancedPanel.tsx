@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
@@ -110,6 +111,7 @@ function KeySection({
   canReplace: boolean;
   unavailableMessage: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
   return (
@@ -120,7 +122,7 @@ function KeySection({
           <div>
             <h2 className="text-sm font-medium text-foreground">{translateUi("interfaceCopy.reconnect")}</h2>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              {canReplace ? "Replace the stored credential." : unavailableMessage}
+              {canReplace ? pageText("replaceTheStoredCredential_3a6988") : unavailableMessage}
             </p>
           </div>
         </div>
@@ -176,7 +178,7 @@ export function ReconnectCard({
         await authorization.open(start);
       } catch (error) {
         pushToast({
-          title: "Couldn’t start sign-in",
+          title: interfaceNotice("interface:couldnTStartSignIn_6da48b"),
           body: describeError(error).body,
           tone: "error",
         });
@@ -185,7 +187,7 @@ export function ReconnectCard({
     onError: (error) => {
       authorization.cancel();
       pushToast({
-        title: "Couldn’t start sign-in",
+        title: interfaceNotice("interface:couldnTStartSignIn_6da48b"),
         body: describeError(error).body,
         tone: "error",
       });
@@ -195,14 +197,14 @@ export function ReconnectCard({
     mutationFn: () => toolsApi.checkConnectionHealth(connection.id),
     onSuccess: () => {
       pushToast({
-        title: "Vercel credential verified",
+        title: interfaceNotice("interface:vercelCredentialVerified_9dd646"),
         body: `${humanizeConnectionDisplayName(connection)} is back online.`,
         tone: "success",
       });
       onReconnected();
     },
     onError: (error) => pushToast({
-      title: "Credential still needs attention",
+      title: interfaceNotice("interface:credentialStillNeedsAttention_556633"),
       body: describeError(error).body,
       tone: "error",
     }),
@@ -216,34 +218,31 @@ export function ReconnectCard({
       {authorization.fallback}
       <div className="min-w-0">
         <h2 className="text-sm font-semibold text-amber-900 dark:text-amber-100">
-          {methodUnavailable ? "Connection no longer supported" : oauth ? "Reconnect required" : "This app needs reconnecting"}
+          {methodUnavailable ? pageText("connectionNoLongerSupported_440ac3") : oauth ? pageText("reconnectRequired_c8e1da") : pageText("thisAppNeedsReconnecting_806b03")}
         </h2>
         <p className="mt-0.5 text-sm text-amber-800 dark:text-amber-200">
           {methodUnavailable
-            ? "Add a supported connection from Connectors, then remove this connection."
+            ? pageText("addASupportedConnectionFromConnectorsThenRemove_f387c9")
             : connection.healthMessage?.trim() || (oauth
-            ? "Authorization expired or was revoked. Sign in again to restore access."
-            : "The key stopped working. Paste a new one to get it back online.")}
+            ? pageText("authorizationExpiredOrWasRevokedSignInAgain_190b7a")
+            : pageText("theKeyStoppedWorkingPasteANewOne_da47e6"))}
         </p>
       </div>
       <div className="shrink-0">
         {!canReconnect ? (
           <p className="text-sm text-amber-800 dark:text-amber-200">
-            {reconnectUnavailableMessage ?? "You don't have permission to reconnect this identity."}
+            {reconnectUnavailableMessage ?? pageText("youDonTHavePermissionToReconnectThis_a8adf0")}
           </p>
         ) : methodUnavailable ? (
           <Button size="sm" variant="outline" asChild>
-            <Link to={`/apps/connect?source=${encodeURIComponent(galleryEntry!.slug)}`}>
-              Add supported connection
-            </Link>
+            <Link to={`/apps/connect?source=${encodeURIComponent(galleryEntry!.slug)}`}>{pageText("addSupportedConnection_63a34d")}</Link>
           </Button>
         ) : onReconnect ? (
           <Button size="sm" variant="outline" onClick={onReconnect}>{translateUi("interfaceCopy.reconnect")}</Button>
         ) : managedByVercel && !oauth ? (
           <div className="flex items-center gap-2">
             <Button type="button" size="sm" variant="outline" asChild>
-              <a href="https://vercel.com/connect" target="_blank" rel="noreferrer">
-                Manage in Vercel <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
+              <a href="https://vercel.com/connect" target="_blank" rel="noreferrer">{pageText("manageInVercel_f530ac") + " "}<ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
               </a>
             </Button>
             <Button
@@ -262,7 +261,7 @@ export function ReconnectCard({
             onClick={() => { authorization.reserve(); reconnectOAuth.mutate(); }}
           >
             {reconnectOAuth.isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-            {reconnectOAuth.isPending ? "Opening sign-in…" : pageText("reconnect_6988b1")}
+            {reconnectOAuth.isPending ? pageText("openingSignIn_fc76c4") : pageText("reconnect_6988b1")}
           </Button>
         ) : (
           <ReconnectForm connection={connection} galleryEntry={galleryEntry} onReconnected={onReconnected} />
@@ -321,22 +320,22 @@ function ReconnectForm({
         result.connection.healthStatus === "ok" || result.connection.healthStatus === "healthy" || result.connection.healthStatus === "unknown";
       if (healthy) {
         pushToast({
-          title: "Reconnected",
+          title: interfaceNotice("interface:reconnected_43e3de"),
           body: `${humanizeConnectionDisplayName(connection)} is back online.`,
           tone: "success",
         });
         onReconnected();
       } else {
         pushToast({
-          title: "Still not working",
-          body: result.connection.healthMessage?.trim() || "That key didn't check out. Try another.",
+          title: interfaceNotice("interface:stillNotWorking_46fc2f"),
+          body: result.connection.healthMessage?.trim() || interfaceNotice("interface:thatKeyDidnTCheckOutTryAnother_8c12ab"),
           tone: "error",
         });
       }
     },
     onError: (error) =>
       pushToast({
-        title: "That key didn't work",
+        title: interfaceNotice("interface:thatKeyDidnTWork_332d66"),
         body: describeError(error).body,
         tone: "error",
       }),
@@ -348,9 +347,7 @@ function ReconnectForm({
 
   if (connection.credentialSource === "vercel_connect") {
     return (
-      <p className="text-sm text-muted-foreground">
-        Credentials for this connection are managed in Vercel Connect.
-      </p>
+      <p className="text-sm text-muted-foreground">{pageText("credentialsForThisConnectionAreManagedInVercel_31cf3a")}</p>
     );
   }
 
@@ -375,8 +372,7 @@ function ReconnectForm({
                 target="_blank"
                 rel="noreferrer"
                 className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-foreground underline underline-offset-2"
-              >
-                Where do I find this? <ArrowUpRight className="h-3 w-3" />
+              >{pageText("whereDoIFindThis_78c640") + " "}<ArrowUpRight className="h-3 w-3" />
               </a>
             )}
           </div>
@@ -384,18 +380,18 @@ function ReconnectForm({
       ) : (
         <Input
           type="password"
-          aria-label="App key"
+          aria-label={pageText("appKey_6d3fb6")}
           autoComplete="off"
           value={single}
           onChange={(e) => setSingle(e.target.value)}
-          placeholder="Paste your new key"
+          placeholder={pageText("pasteYourNewKey_65469a")}
           className="h-10 font-mono"
         />
       )}
       <div className="flex items-center gap-2">
         <Button size="sm" disabled={!filled || reconnect.isPending} onClick={() => reconnect.mutate()}>
           {reconnect.isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-          {reconnect.isPending ? pageText("checking_494d0f") : "Check & reconnect"}
+          {reconnect.isPending ? pageText("checking_494d0f") : pageText("checkReconnect_b8ed4f")}
         </Button>
         {onCancel && (
           <Button size="sm" variant="ghost" onClick={onCancel} disabled={reconnect.isPending}>{translateUi("interfaceCopy.cancel")}</Button>
@@ -406,6 +402,7 @@ function ReconnectForm({
 }
 
 function TechnicalDetails({ connection }: { connection: ToolConnection }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
   return (
@@ -413,7 +410,7 @@ function TechnicalDetails({ connection }: { connection: ToolConnection }) {
       <section>
         <CollapsibleTrigger asChild>
           <button type="button" className="flex w-full items-center gap-3 py-1 text-left">
-            <span className="min-w-0 flex-1 text-sm font-medium text-foreground">Connection details</span>
+            <span className="min-w-0 flex-1 text-sm font-medium text-foreground">{pageText("connectionDetails_ab30a5")}</span>
             <ChevronRight
               className={cn("h-4 w-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-90")}
             />
@@ -421,7 +418,7 @@ function TechnicalDetails({ connection }: { connection: ToolConnection }) {
         </CollapsibleTrigger>
         <CollapsibleContent>
           <dl className="mt-4 grid gap-2 pb-2 text-xs sm:grid-cols-(--gtc-59)">
-            <dt className="text-muted-foreground">Address</dt>
+            <dt className="text-muted-foreground">{pageText("address_d70f93")}</dt>
             <dd className="break-all font-mono text-foreground">{connectionAddress(connection)}</dd>
             <dt className="text-muted-foreground">{translateUi("interfaceCopy.type")}</dt>
             <dd className="text-foreground">{connectionTransportLabel(connection.transport)}</dd>
@@ -505,9 +502,9 @@ export function DangerZone({
           <div className="mt-3 divide-y divide-border border-t border-border">
             {connection && onToggleConnection ? (
               <div className="flex items-center justify-between gap-4 py-4">
-                <h2 className="text-sm font-medium text-foreground">Pause connection</h2>
+                <h2 className="text-sm font-medium text-foreground">{pageText("pauseConnection_b2e7c2")}</h2>
                 <ToggleSwitch
-                  aria-label="Pause connection"
+                  aria-label={pageText("pauseConnection_b2e7c2")}
                   checked={paused}
                   disabled={toggleDisabled}
                   onCheckedChange={onToggleConnection}
@@ -555,10 +552,8 @@ export function DangerZone({
               && onRevokeIdentity ? (
                 <div className="flex flex-wrap items-center justify-between gap-3 py-4">
                   <div>
-                    <p className="text-sm font-medium text-foreground">Revoke identity</p>
-                    <p className="text-xs text-muted-foreground">
-                      Disconnect the identity currently used by this app.
-                    </p>
+                    <p className="text-sm font-medium text-foreground">{pageText("revokeIdentity_38a6af")}</p>
+                    <p className="text-xs text-muted-foreground">{pageText("disconnectTheIdentityCurrentlyUsedByThisApp_ecc247")}</p>
                   </div>
                   <Button
                     variant="destructive"
@@ -570,7 +565,7 @@ export function DangerZone({
 
             <div className="flex flex-wrap items-center justify-between gap-3 py-4">
               <div>
-                <p className="text-sm font-medium text-foreground">Remove this app</p>
+                <p className="text-sm font-medium text-foreground">{pageText("removeThisApp_8c21bb")}</p>
                 <p className="text-xs text-muted-foreground">
                   {`Deletes credentials for ${appName} and removes agent access. Reconnecting requires a new sign-in or key.`}
                 </p>
@@ -579,14 +574,10 @@ export function DangerZone({
                 <div className="flex items-center gap-2">
                   <Button variant="ghost" size="sm" onClick={() => setConfirming(false)} disabled={removing}>{translateUi("interfaceCopy.cancel")}</Button>
                   <Button variant="destructive" size="sm" onClick={onRemove} disabled={removing}>
-                    {removing && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-                    Yes, remove it
-                  </Button>
+                    {removing && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}{pageText("yesRemoveIt_5289fd")}</Button>
                 </div>
               ) : (
-                <Button variant="destructive" size="sm" onClick={() => setConfirming(true)}>
-                  Remove app
-                </Button>
+                <Button variant="destructive" size="sm" onClick={() => setConfirming(true)}>{pageText("removeApp_55d5b0")}</Button>
               )}
             </div>
           </div>

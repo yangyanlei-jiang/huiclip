@@ -1,3 +1,5 @@
+import { optionLabel } from "@/i18n/option-label";
+import { t as translateDynamic } from "../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation } from "@/i18n";
 import { PrimaryAgentIndicator } from "@/components/primary-agent/PrimaryAgentPresentation";
@@ -148,9 +150,9 @@ function describeEnvironment(
 
 function describeMissingEnvironment(environmentId: string): EnvironmentDescriptor {
   return {
-    label: "Unknown environment",
+    label: translateDynamic("dynamic:unknownEnvironment"),
     detail: environmentId.slice(0, 8),
-    title: `Unknown environment - ${environmentId}`,
+    title: translateDynamic("dynamic:unknownEnvironmentId", { id: environmentId }),
   };
 }
 
@@ -395,7 +397,7 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
         titleClassName="agent-pin-text flex-1"
         titleTextClassName="truncate"
         subtitleClassName="truncate"
-        subtitle={`${roleLabels[agent.role] ?? agent.role}${agent.title ? ` - ${agent.title}` : ""}`}
+        subtitle={`${roleLabels[agent.role] ? optionLabel(roleLabels[agent.role]) : agent.role}${agent.title ? ` - ${agent.title}` : ""}`}
         to={agentUrl(agent)}
         className="agent-roster-identity group py-3 group-hover/agent-pin:bg-accent/50 group-focus-within/agent-pin:bg-accent/50"
         leading={hasInvalidOrgChain ? (
@@ -464,7 +466,7 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
                   <button
                     type="button"
                     className="inline-flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover/agent-row:opacity-100 focus-visible:opacity-100"
-                    aria-label={`Chat with ${agent.name}`}
+                    aria-label={translateDynamic("dynamic:chatWith", { value1: agent.name })}
                     onClick={() => navigate(`/chats/${agentRouteRef(agent)}`)}
                   >
                     <MessagesSquare className="size-3.5" aria-hidden />{pageText("chat_2ced57")}</button>
@@ -483,15 +485,11 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
       )}
 
       {effectiveView === "org" && orgTree && orgTree.length > 0 && filteredOrg.length === 0 && (
-        <p className="text-sm text-muted-foreground text-center py-8">
-          No agents match your search and selected status.
-        </p>
+        <p className="text-sm text-muted-foreground text-center py-8">{pageText("noAgentsMatchYourSearchAndSelectedStatus_f10065")}</p>
       )}
 
       {effectiveView === "org" && orgTree && orgTree.length === 0 && (
-        <p className="text-sm text-muted-foreground text-center py-8">
-          No organizational hierarchy defined.
-        </p>
+        <p className="text-sm text-muted-foreground text-center py-8">{pageText("noOrganizationalHierarchyDefined_10490f")}</p>
       )}
       {configureState && selectedCompanyId && (
         <Suspense fallback={null}>
@@ -556,7 +554,7 @@ function OrgTreeNode({
           <div className="min-w-(--sz-7rem) truncate">
             <span className="text-sm font-medium">{node.name}</span>
             <span className="text-xs text-muted-foreground ml-2">
-              {roleLabels[node.role] ?? node.role}
+              {roleLabels[node.role] ? optionLabel(roleLabels[node.role]) : node.role}
               {agent?.title ? ` - ${agent.title}` : ""}
             </span>
           </div>

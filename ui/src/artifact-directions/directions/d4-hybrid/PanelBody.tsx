@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useMemo, useState } from "react";
 import type { LabArtifact } from "../../kit";
 import { PanelIndex } from "./PanelIndex";
@@ -22,12 +23,13 @@ import { buildSections, type PanelFilter } from "./panel-model";
  * the list scrolls.
  */
 export function PanelBody({ artifacts }: { artifacts: LabArtifact[] }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [filter, setFilter] = useState<PanelFilter>("all");
   const sections = useMemo(() => buildSections(artifacts, filter), [artifacts, filter]);
 
   if (artifacts.length === 0) {
     // The shipped empty state, word for word.
-    return <p className="px-1 py-6 text-sm text-(--hy-ink-2)">No artifacts yet. Work products, documents, and agent-produced files will appear here.</p>;
+    return <p className="px-1 py-6 text-sm text-(--hy-ink-2)">{pageText("noArtifactsYetWorkProductsDocumentsAndAgent_35c17e")}</p>;
   }
 
   return (

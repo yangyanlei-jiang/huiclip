@@ -79,7 +79,7 @@ export function TaskWorkspaceFilePanel({
               {copied ? <Check aria-hidden /> : <Copy aria-hidden />}
             </Button>
           ) : null}
-          {renderedPreview && contentQuery.data ? <FilePreviewModeToggle mode={previewMode} onChange={setPreviewMode} label="File preview mode" /> : null}
+          {renderedPreview && contentQuery.data ? <FilePreviewModeToggle mode={previewMode} onChange={setPreviewMode} label={pageText("filePreviewMode_3f322e")} /> : null}
           {downloadUrl ? (
             <Button asChild variant="ghost" size="icon-sm">
               <a href={downloadUrl} download={resource?.title} aria-label={pageText("downloadFile_774025")} title={pageText("downloadFile_774025")}>

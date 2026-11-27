@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../i18n";
 import { t as interfaceMessage } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
@@ -272,7 +273,7 @@ function RecentTasksList({
                     type="button"
                     variant="ghost"
                     size="icon-xs"
-                    aria-label={`More actions for ${entry.title}`}
+                    aria-label={translateDynamic("dynamic:moreActionsFor", { value1: entry.title })}
                     className="sidebar-action-menu absolute right-2 top-(--pct-50) z-10 -translate-y-(--pct-50) text-muted-foreground pointer-events-none opacity-0 transition-opacity hover:bg-sidebar-accent dark:hover:bg-sidebar-accent hover:text-foreground focus-visible:pointer-events-auto focus-visible:opacity-100 pointer-coarse:pointer-events-auto pointer-coarse:opacity-100 pointer-coarse:before:hidden group-hover/recent-task:pointer-events-auto group-hover/recent-task:opacity-100 group-focus-within/recent-task:pointer-events-auto group-focus-within/recent-task:opacity-100 data-[state=open]:pointer-events-auto data-[state=open]:bg-sidebar-accent data-[state=open]:text-foreground data-[state=open]:opacity-100"
                   >
                     <MoreHorizontal aria-hidden="true" />
@@ -299,9 +300,7 @@ function RecentTasksList({
                     disabled={pendingAction !== null}
                     onSelect={() => void toggleTaskPause(entry)}
                   >
-                    <RefreshCw aria-hidden="true" />
-                    Pause/Restart
-                  </DropdownMenuItem>
+                    <RefreshCw aria-hidden="true" />{pageText("pauseRestart_083bf1")}</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : null}
@@ -319,11 +318,11 @@ function RecentTasksList({
           <form className="grid gap-4" onSubmit={(event) => void submitRename(event)}>
             <DialogHeader>
               <DialogTitle>{pageText("renameTask_e827be")}</DialogTitle>
-              <DialogDescription>Choose a short, clear name for this task.</DialogDescription>
+              <DialogDescription>{pageText("chooseAShortClearNameForThisTask_dc8e68")}</DialogDescription>
             </DialogHeader>
             <Input
               autoFocus
-              aria-label="Task name"
+              aria-label={pageText("taskName_c78d2f")}
               value={renameValue}
               disabled={pendingAction === "rename"}
               onChange={(event) => setRenameValue(event.target.value)}

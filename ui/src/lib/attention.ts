@@ -1,3 +1,4 @@
+import { controlText } from "@/i18n/controls";
 import type {
   AttentionDetailImage,
   AttentionFeed,
@@ -189,6 +190,13 @@ function quote(text: string | null | undefined): string | null {
 
 function countNoun(count: number, singular: string): string {
   return `${count} ${count === 1 ? singular : `${singular}s`}`;
+}
+
+export function attentionReason(item: AttentionItem): string {
+  if (item.sourceKind === "approval" && item.whyNow === "Approval is pending a board decision.") {
+    return controlText("pendingBoardDecision");
+  }
+  return item.whyNow;
 }
 
 /**

@@ -1,3 +1,6 @@
+import { controlText } from "@/i18n/controls";
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { Copy } from "lucide-react";
 import { CopyText } from "./CopyText";
 
@@ -9,6 +12,7 @@ export function RoutineSectionHeading({
   /** Description markdown to copy. Omit the button when this is null. */
   copyText?: string | null;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="mb-4 flex items-center gap-1">
       <h2 id="routine-section-title" className="text-lg font-semibold">
@@ -17,9 +21,9 @@ export function RoutineSectionHeading({
       {copyText != null ? (
         <CopyText
           text={copyText}
-          ariaLabel="Copy description"
-          title="Copy description"
-          copiedLabel="Description copied"
+          ariaLabel={interfaceNotice("interface:copyDescription_a25c63")}
+          title={pageText("copyDescription_a25c63")}
+          copiedLabel={controlText("Description copied")}
           className="inline-flex size-6 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
         >
           <Copy className="size-3.5" aria-hidden="true" />

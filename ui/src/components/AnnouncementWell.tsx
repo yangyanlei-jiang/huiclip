@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ONBOARDING_FIRST_TASK_ORIGIN_KIND } from "@paperclipai/shared";
@@ -54,6 +55,7 @@ function useOnboardingInProgress(companyId: string | null) {
 export type AnnouncementPlacement = "sidebar" | "floating";
 
 export function AnnouncementWell({ health, placement = "floating" }: { health?: HealthStatus; placement?: AnnouncementPlacement }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { userId: accountId, settled } = useAccountIdentity();
   const { selectedCompanyId, loading } = useCompany();
   const { onboardingOpen } = useDialogState();
@@ -74,7 +76,7 @@ export function AnnouncementWell({ health, placement = "floating" }: { health?: 
   if (!announcement || modalOpen || (toasts?.length ?? 0) > 0) return null;
   return (
     <aside
-      aria-label="Paperclip announcements"
+      aria-label={pageText("paperclipAnnouncements_524cd8")}
       data-placement={placement}
       className={cn(
         "announcement-well",

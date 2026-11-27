@@ -118,13 +118,12 @@ export function DocumentFrameHeader({
                     "h-auto px-1.5 py-0 text-(length:--text-micro) font-normal text-muted-foreground hover:text-foreground",
                     revisionMenu.historicalPreview && "text-amber-700 hover:text-amber-800 dark:text-amber-300 dark:hover:text-amber-200",
                   )}
-                >
-                  rev {revisionMenu.displayedRevisionNumber}
+                >{pageText("rev_03e404") + " "}{revisionMenu.displayedRevisionNumber}
                   <ChevronDown className="h-3 w-3" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-72">
-                <DropdownMenuLabel>Revision history</DropdownMenuLabel>
+                <DropdownMenuLabel>{pageText("revisionHistory_b9d26d")}</DropdownMenuLabel>
                 {revisionMenu.loading && revisionMenu.revisions.length === 0 ? (
                   <DropdownMenuItem disabled>{pageText("loadingRevisions_496692")}</DropdownMenuItem>
                 ) : revisionMenu.revisions.length > 0 ? (
@@ -140,7 +139,7 @@ export function DocumentFrameHeader({
                         >
                           <div className="flex min-w-0 flex-col">
                             <div className="flex items-center gap-2">
-                              <span className="font-medium">rev {revision.revisionNumber}</span>
+                              <span className="font-medium">{pageText("rev_03e404") + " "}{revision.revisionNumber}</span>
                               {isCurrentRevision ? (
                                 <Badge variant="outline" className="border-border px-1.5 text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{pageText("current_4fc0e2")}</Badge>
                               ) : null}
@@ -157,7 +156,7 @@ export function DocumentFrameHeader({
                     })}
                   </DropdownMenuRadioGroup>
                 ) : (
-                  <DropdownMenuItem disabled>No revisions yet</DropdownMenuItem>
+                  <DropdownMenuItem disabled>{pageText("noRevisionsYet_1c34fb")}</DropdownMenuItem>
                 )}
               </DropdownMenuContent>
             </DropdownMenu>

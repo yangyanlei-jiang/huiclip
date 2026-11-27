@@ -1,3 +1,5 @@
+import { t as interfaceNotice } from "@/i18n";
+import { t as translateDynamic } from "../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { usePrimaryAgentPresentation } from "@/components/primary-agent/PrimaryAgentPresentation";
@@ -192,7 +194,7 @@ function SidebarAgentItem({
       }
       trailingLabel={trailingLabel}
       liveAccessory={
-        agent.pauseReason === "budget" ? <BudgetSidebarMarker title="Agent paused by budget" /> : undefined
+        agent.pauseReason === "budget" ? <BudgetSidebarMarker title={pageText("agentPausedByBudget_ddfc8f")} /> : undefined
       }
     />
   );
@@ -232,7 +234,7 @@ function SidebarAgentItem({
                 ? "opacity-100"
                 : "pointer-events-none opacity-0 group-hover/agent:pointer-events-auto group-hover/agent:opacity-100 group-focus-within/agent:pointer-events-auto group-focus-within/agent:opacity-100",
             )}
-            aria-label={`Open actions for ${agent.name}`}
+            aria-label={translateDynamic("dynamic:openActionsFor", { value1: agent.name })}
           >
             <MoreHorizontal className="h-3.5 w-3.5" />
           </Button>
@@ -252,7 +254,7 @@ function SidebarAgentItem({
                 ) : (
                   <Star className={cn("size-4", starred && "fill-amber-500 text-amber-500")} />
                 )}
-                <span>{starred ? pageText("removeFromStarred_93e94f") : "Star agent"}</span>
+                <span>{starred ? pageText("removeFromStarred_93e94f") : pageText("starAgent_f58763")}</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
             </>
@@ -275,7 +277,7 @@ function SidebarAgentItem({
               onPauseResume(agent, isPaused ? "resume" : "pause");
             }}
             disabled={pauseResumeDisabled}
-            title={isBudgetPaused ? "Agent was paused by budget limits" : undefined}
+            title={isBudgetPaused ? pageText("agentWasPausedByBudgetLimits_05f15b") : undefined}
           >
             {isPaused ? <PlayCircle className="size-4" /> : <PauseCircle className="size-4" />}
             <span>{pauseResumeDisabledLabel}</span>
@@ -289,7 +291,7 @@ function SidebarAgentItem({
             disabled={leaving}
           >
             {leaving ? <Loader2 className="size-4 motion-safe:animate-spin" /> : <LogOut className="size-4" />}
-            <span>{leaving ? "Leaving..." : "Leave agent"}</span>
+            <span>{leaving ? pageText("leaving_08f850") : pageText("leaveAgent_992390")}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -544,14 +546,14 @@ export function SidebarAgents({ streamlined = false }: { streamlined?: boolean }
         queryClient.invalidateQueries({ queryKey: queryKeys.agents.detail(agentRouteRef(agent)) }),
       ]);
       pushToast({
-        title: action === "pause" ? "Agent paused" : "Agent resumed",
+        title: action === "pause" ? interfaceNotice("interface:agentPaused_6cbb08") : interfaceNotice("interface:agentResumed_f35cc6"),
         body: agent.name,
         tone: "success",
       });
     },
     onError: (error, { agent, action }) => {
       pushToast({
-        title: action === "pause" ? "Could not pause agent" : "Could not resume agent",
+        title: action === "pause" ? interfaceNotice("interface:couldNotPauseAgent_5ce826") : interfaceNotice("interface:couldNotResumeAgent_6bc7fa"),
         body: error instanceof Error ? error.message : agent.name,
         tone: "error",
       });

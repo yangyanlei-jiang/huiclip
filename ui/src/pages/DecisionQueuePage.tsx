@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -131,7 +132,7 @@ export function DecisionQueuePage() {
   }, [agents]);
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Decisions", href: "/decisions" }, { label: queue?.title ?? queueKey }]);
+    setBreadcrumbs([{ label: interfaceNotice("interface:decisions_af2f32"), href: "/decisions" }, { label: queue?.title ?? queueKey }]);
   }, [setBreadcrumbs, queue?.title, queueKey]);
 
   // Re-hydrate per-company preferences when the company changes.
@@ -210,7 +211,7 @@ export function DecisionQueuePage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.decisionQueues.list(selectedCompanyId!) }),
     onError: (err) =>
       pushToast({
-        title: "Could not update seeding",
+        title: interfaceNotice("interface:couldNotUpdateSeeding_396957"),
         body: describeError(err).body,
         tone: "error",
       }),
@@ -282,17 +283,15 @@ export function DecisionQueuePage() {
 
       {isEmpty ? (
         <div className="rounded-xl border border-dashed border-border py-14 text-center">
-          <p className="text-sm font-medium text-foreground">This queue is empty.</p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Decisions land here when they match the queue's rules or an agent adds them.
-          </p>
+          <p className="text-sm font-medium text-foreground">{pageText("thisQueueIsEmpty_1ba8ef")}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{pageText("decisionsLandHereWhenTheyMatchTheQueue_25ad17")}</p>
         </div>
       ) : (
         <div className="space-y-4">
           {visibleCount === 0 ? (
             <div className="rounded-xl border border-dashed border-border py-10 text-center">
-              <p className="text-sm font-medium text-foreground">No decisions match your search or filters.</p>
-              <p className="mt-1 text-xs text-muted-foreground">Adjust or clear your search and filters to see the rest.</p>
+              <p className="text-sm font-medium text-foreground">{pageText("noDecisionsMatchYourSearchOrFilters_68c41f")}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{pageText("adjustOrClearYourSearchAndFiltersTo_18d322")}</p>
             </div>
           ) : (
             groups.map((group) => {
@@ -338,14 +337,12 @@ export function DecisionQueuePage() {
 
           {agingItems.length > 0 && (
             <Curtain
-              label="Aging"
+              label={pageText("aging_6ea92a")}
               count={agingItems.length}
               open={agingOpen}
               onToggle={() => setAgingOpen((prev) => !prev)}
             >
-              <p className="text-xs text-muted-foreground">
-                Idle past {ATTENTION_AGING_DAYS} days — kept off the queue. Keep any you still want surfaced.
-              </p>
+              <p className="text-xs text-muted-foreground">{pageText("idlePast_cdfc77") + " "}{ATTENTION_AGING_DAYS}{" " + pageText("daysKeptOffTheQueueKeepAnyYou_daff47")}</p>
               {agingItems.map((item) => (
                 <AgingItemRow
                   key={item.id}
@@ -393,11 +390,11 @@ function SeedRulesCard({
         <div className="flex min-w-0 items-start gap-2">
           <Settings2 className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
           <div className="min-w-0 space-y-1">
-            <p className="text-sm font-medium text-foreground">Auto-seeding is {enabled ? pageText("on_db3d40") : pageText("off_da7a68")}</p>
+            <p className="text-sm font-medium text-foreground">{pageText("autoSeedingIs_4cfbc9") + " "}{enabled ? pageText("on_db3d40") : pageText("off_da7a68")}</p>
             <p className="text-xs text-muted-foreground">
               {enabled
-                ? "This queue fills itself automatically. Decisions are added the moment they match any of its rules:"
-                : "Automatic adds are paused. These rules would add decisions to the queue when on:"}
+                ? pageText("thisQueueFillsItselfAutomaticallyDecisionsAreAdded_05286d")
+                : pageText("automaticAddsArePausedTheseRulesWouldAdd_cd67e7")}
             </p>
             <ul className="mt-0.5 space-y-0.5">
               {rules.map((rule) => (
@@ -409,8 +406,8 @@ function SeedRulesCard({
             </ul>
             <p className="text-(length:--text-nano) text-muted-foreground">
               {enabled
-                ? "Turning it off stops new automatic adds only — decisions already here stay, and you can still add or remove decisions by hand."
-                : "Adding or removing decisions by hand still works while automatic seeding is off."}
+                ? pageText("turningItOffStopsNewAutomaticAddsOnly_5924b2")
+                : pageText("addingOrRemovingDecisionsByHandStillWorks_03d09a")}
             </p>
           </div>
         </div>
@@ -448,6 +445,7 @@ function QueueItemRow({
   onSnooze: (item: AttentionItem, snoozedUntil: string) => void;
   onExcluded: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { pushToast } = useToastActions();
   const [open, setOpen] = useState(false);
@@ -465,12 +463,12 @@ function QueueItemRow({
     onSuccess: () => {
       setOpen(false);
       setReason("");
-      pushToast({ title: "Removed from queue", body: item.subject.title ?? undefined, tone: "info" });
+      pushToast({ title: interfaceNotice("interface:removedFromQueue_31a181"), body: item.subject.title ?? undefined, tone: "info" });
       onExcluded();
     },
     onError: (err) =>
       pushToast({
-        title: "Could not exclude",
+        title: interfaceNotice("interface:couldNotExclude_430470"),
         body: describeError(err).body,
         tone: "error",
       }),
@@ -482,16 +480,14 @@ function QueueItemRow({
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <Button type="button" variant="ghost" size="xs" className="h-7 gap-1 text-muted-foreground">
-              <X className="h-3.5 w-3.5" />
-              Exclude
-            </Button>
+              <X className="h-3.5 w-3.5" />{pageText("exclude_f4c16b")}</Button>
           </PopoverTrigger>
           <PopoverContent align="end" className="w-64 space-y-2 p-3">
-            <p className="text-xs font-medium text-foreground">Remove from this queue</p>
+            <p className="text-xs font-medium text-foreground">{pageText("removeFromThisQueue_b1f33f")}</p>
             <textarea
               value={reason}
               onChange={(event) => setReason(event.target.value)}
-              placeholder="Reason (optional)…"
+              placeholder={pageText("reasonOptional_72c526")}
               className="min-h-16 w-full rounded-sm border border-border bg-background px-2 py-1 text-xs"
             />
             <div className="flex justify-end gap-1">
@@ -503,9 +499,7 @@ function QueueItemRow({
                 disabled={exclude.isPending}
                 onClick={() => exclude.mutate()}
               >
-                {exclude.isPending && <Loader2 className="h-3 w-3 animate-spin" />}
-                Exclude
-              </Button>
+                {exclude.isPending && <Loader2 className="h-3 w-3 animate-spin" />}{pageText("exclude_f4c16b")}</Button>
             </div>
           </PopoverContent>
         </Popover>

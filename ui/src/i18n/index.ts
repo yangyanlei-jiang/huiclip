@@ -25,6 +25,8 @@ const i18nextOptions: InitOptions = {
   fallbackLng: "en",
   supportedLngs: supportedLocales,
   defaultNS: "translation",
+  // Built-in control labels can contain spaces after their namespace prefix.
+  nsSeparator: ":",
   interpolation: { escapeValue: false },
   returnObjects: false,
   initAsync: false,

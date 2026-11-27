@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type { ReactNode } from "react";
 import type { ProviderFailure } from "@paperclipai/shared";
 import { InlineBanner } from "./InlineBanner";
@@ -12,17 +13,18 @@ const labels: Record<ProviderFailure["category"], string> = {
 export function ProviderFailureNotice({ failure, actions, children, className }: {
   failure: ProviderFailure; actions?: ReactNode; children?: ReactNode; className?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const provider = ({ anthropic: "Claude", openai: "OpenAI", sandbox: "Sandbox provider" } as Record<string, string>)[failure.provider] ?? failure.provider;
   return (
     <InlineBanner tone="danger" title={`${provider}: ${labels[failure.category]}`} actions={actions} className={className}>
       <div className="flex flex-col gap-2">
         <p className="whitespace-pre-wrap break-words">{failure.message}</p>
         <p className="text-xs text-muted-foreground">
-          {failure.phase === "startup" ? "Failed before work started" : "Failed during work"}
+          {failure.phase === "startup" ? pageText("failedBeforeWorkStarted_870619") : pageText("failedDuringWork_1a06d7")}
           {failure.httpStatus ? ` · HTTP ${failure.httpStatus}` : ""}
           {failure.providerCode ? ` · ${failure.providerCode}` : ""}
         </p>
-        {failure.requestId && <p className="font-mono text-xs text-muted-foreground">Request: {failure.requestId}</p>}
+        {failure.requestId && <p className="font-mono text-xs text-muted-foreground">{pageText("request_ec0e7c") + " "}{failure.requestId}</p>}
         {children}
       </div>
     </InlineBanner>

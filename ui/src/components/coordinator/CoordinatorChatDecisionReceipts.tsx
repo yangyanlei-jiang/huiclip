@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -49,13 +50,14 @@ export function CoordinatorChatDecisionReceipt({ receipt }: { receipt: DecisionH
 }
 
 export function CoordinatorChatReceiptStatus({ query, scroll = false }: { scroll?: boolean; query: ReturnType<typeof useCoordinatorChatDecisionReceipts> }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   if (!query.enabled) return null;
   if (query.isError) return <div role="status" className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-    <span>Decision updates couldn’t load.</span><Button size="sm" variant="ghost" onClick={() => void query.refetch()}>{translateUi("interfaceCopy.retry")}</Button>
+    <span>{pageText("decisionUpdatesCouldnTLoad_64d33f")}</span><Button size="sm" variant="ghost" onClick={() => void query.refetch()}>{translateUi("interfaceCopy.retry")}</Button>
   </div>;
   if (!scroll && query.hasNextPage) return <Button size="sm" variant="ghost" disabled={query.isFetchingNextPage} onClick={() => void query.fetchNextPage()}>
-    {query.isFetchingNextPage ? "Loading earlier decisions…" : "Load earlier decisions"}
+    {query.isFetchingNextPage ? pageText("loadingEarlierDecisions_9b6957") : pageText("loadEarlierDecisions_e8658c")}
   </Button>;
   return null;
 }

@@ -1,3 +1,6 @@
+import { controlText } from "@/i18n/controls";
+import { t as plainText } from "@/i18n";
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -180,7 +183,7 @@ function renderImportFileExtra(node: FileTreeNode, checked: boolean, renameMap: 
       "text-(length:--text-nano) uppercase tracking-wide",
       ACTION_COLORS[node.action] ?? ACTION_COLORS.skip,
     )}>
-      {checked ? node.action : "skip"}
+      {checked ? node.action : plainText("interface:skip_c7e168")}
     </Badge>
   ) : null;
 
@@ -217,9 +220,10 @@ function ImportPreviewPane({
   action: string | null;
   renamedTo: string | null;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (!selectedFile || content === null) {
     return (
-      <EmptyState icon={Package} message="Select a file to preview its contents." />
+      <EmptyState icon={Package} message={pageText("selectAFileToPreviewItsContents_2fbd54")} />
     );
   }
 
@@ -280,9 +284,7 @@ function ImportPreviewPane({
             <code>{textContent}</code>
           </pre>
         ) : (
-          <div className="rounded-lg border border-border bg-accent/10 px-4 py-3 text-sm text-muted-foreground">
-            Binary asset preview is not available for this file type.
-          </div>
+          <div className="rounded-lg border border-border bg-accent/10 px-4 py-3 text-sm text-muted-foreground">{pageText("binaryAssetPreviewIsNotAvailableForThis_51bc18")}</div>
         )}
       </div>
     </div>
@@ -460,9 +462,7 @@ function ConflictResolutionList({
     <div className="mx-5 mt-3">
       <div className="rounded-md border border-border">
         <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
-          <h3 className="text-sm font-medium">
-            Renames
-          </h3>
+          <h3 className="text-sm font-medium">{pageText("renames_df24ce")}</h3>
           <span className="text-xs text-muted-foreground">
             {conflicts.length}{" " + pageText("item_3a7d97")}{conflicts.length === 1 ? "" : "s"}
           </span>
@@ -492,7 +492,7 @@ function ConflictResolutionList({
                   )}
                   onClick={() => onToggleSkip(item.slug, item.filePath)}
                 >
-                  {isSkipped ? pageText("skipped_413a93") : "skip"}
+                  {isSkipped ? pageText("skipped_413a93") : pageText("skip_c7e168")}
                 </button>
 
                 <Badge variant="outline" className={cn(
@@ -544,11 +544,9 @@ function ConflictResolutionList({
                   >
                     {isConfirmed ? (
                       <>
-                        <Check className="h-3 w-3" />
-                        confirmed
-                      </>
+                        <Check className="h-3 w-3" />{pageText("confirmed_d35ce8")}</>
                     ) : (
-                      "confirm rename"
+                      pageText("confirmRename_65da09")
                     )}
                   </button>
                 )}
@@ -709,7 +707,7 @@ function AdapterPickerList({
                       </option>
                     ))}
                     {!adapterOptions.some((option) => option.value === selectedType) && (
-                      <option value={selectedType}>{agent.adapterChoice === "openai_dot" ? "OpenAI Dot (experimental)" : `${getAdapterLabel(selectedType)} (${agentHarnessType(agent.adapterType, agent.adapterConfig)})`}</option>
+                      <option value={selectedType}>{agent.adapterChoice === "openai_dot" ? pageText("openaiDotExperimental_97654f") : `${getAdapterLabel(selectedType)} (${agentHarnessType(agent.adapterType, agent.adapterConfig)})`}</option>
                     )}
                   </select>
                   <button
@@ -722,15 +720,11 @@ function AdapterPickerList({
                     )}
                     onClick={() => onToggleExpand(agent.slug)}
                   >
-                    <ChevronRight className={cn("h-3 w-3 transition-transform", isExpanded && "rotate-90")} />
-                    configure adapter
-                  </button>
+                    <ChevronRight className={cn("h-3 w-3 transition-transform", isExpanded && "rotate-90")} />{pageText("configureAdapter_c04161")}</button>
                 </div>
                 {agent.fallbackAdapterType && (
                   <div className="mx-4 mb-2.5 rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2">
-                    <p className="text-xs text-amber-500">
-                      source adapter {agent.adapterChoice === "openai_dot" ? "OpenAI Dot" : agent.adapterChoice === "muse" ? "Muse — Personal agent" : agent.adapterType} is not installed here — this agent
-                      will use {adapterLabels[selectedType] ?? getAdapterLabel(selectedType)}
+                    <p className="text-xs text-amber-500">{pageText("sourceAdapter_3c2dfc") + " "}{agent.adapterChoice === "openai_dot" ? "OpenAI Dot" : agent.adapterChoice === "muse" ? pageText("musePersonalAgent_9c8bd1") : agent.adapterType}{" " + pageText("isNotInstalledHereThisAgentWillUse_ae9fe6") + " "}{adapterLabels[selectedType] ?? getAdapterLabel(selectedType)}
                     </p>
                   </div>
                 )}
@@ -1123,9 +1117,9 @@ export function CompanyImport() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: selectedCompany?.name ?? "Company", href: "/dashboard" },
-      { label: "Settings", href: "/company/settings" },
-      { label: "Import" },
+      { label: selectedCompany?.name ?? interfaceNotice("interface:company_7a1994"), href: "/dashboard" },
+      { label: interfaceNotice("interface:settings_c7f73b"), href: "/company/settings" },
+      { label: interfaceNotice("interface:import_d6fbc9") },
     ]);
   }, [selectedCompany?.name, setBreadcrumbs]);
 
@@ -1246,7 +1240,7 @@ export function CompanyImport() {
       if (generation !== previewGenerationRef.current) return;
       pushToast({
         tone: "error",
-        title: "Preview failed",
+        title: interfaceNotice("interface:previewFailed_d7f276"),
         body: describeError(err).body,
       });
     },
@@ -1365,8 +1359,8 @@ export function CompanyImport() {
         });
         pushToast({
           tone: "success",
-          title: "Import completed",
-          body: "Open the organization to view it.",
+          title: interfaceNotice("interface:importCompleted_0b6e52"),
+          body: interfaceNotice("interface:openTheOrganizationToViewIt_04a32e"),
         });
         return;
       }
@@ -1400,7 +1394,7 @@ export function CompanyImport() {
       setResumedWatchJobId(null);
       pushToast({
         tone: "error",
-        title: "Import failed",
+        title: interfaceNotice("interface:importFailed_fbae89"),
         body: describeError(err).body,
       });
     },
@@ -1454,7 +1448,7 @@ export function CompanyImport() {
     } catch (err) {
       pushToast({
         tone: "error",
-        title: "Package read failed",
+        title: interfaceNotice("interface:packageReadFailed_c62bdd"),
         body: describeError(err).body,
       });
     }
@@ -1674,7 +1668,7 @@ export function CompanyImport() {
     if (failureCount > 0) {
       pushToast({
         tone: "error",
-        title: "Some items were not activated",
+        title: interfaceNotice("interface:someItemsWereNotActivated_887bab"),
         body: `${failureCount} item${failureCount === 1 ? "" : "s"} failed to activate; the rest were activated.`,
       });
     }
@@ -1747,7 +1741,7 @@ export function CompanyImport() {
       if (configVals && (selectedType !== agent.adapterChoice || adapterConfigEditedSlugs.has(agent.slug))) {
         const provider = configVals.adapterSchemaValues?.provider;
         if (configVals.adapterType === "paperclip_runner" && provider !== undefined && !isPaperclipRunnerProvider(provider)) {
-          throw new Error(`Unknown Paperclip Runner provider ${String(provider)}. Keep the package configuration or explicitly choose another harness.`);
+          throw new Error(controlText("Unknown Paperclip Runner provider {{provider}}. Keep the package configuration or explicitly choose another harness.", { provider: String(provider) }));
         }
         if (selectedType === "openai_dot" && configVals.adapterSchemaValues?.allowUnmeteredProvider !== true) {
           throw new Error("OpenAI Dot requires acknowledgement of external billing. Configure the Dot adapter and enable Allow externally billed provider.");
@@ -1826,16 +1820,14 @@ export function CompanyImport() {
     return (
       <div className="max-w-6xl space-y-4 px-5 py-5">
         <div>
-          <h2 className="text-base font-semibold">Import completed</h2>
+          <h2 className="text-base font-semibold">{pageText("importCompleted_0b6e52")}</h2>
           <p className="text-xs text-muted-foreground mt-1">
             {importOutcome.companyName
-              ? <>The import finished and <span className="font-medium text-foreground">{importOutcome.companyName}</span> is ready. Its detailed summary is no longer available.</>
-              : "The import finished and your organization is ready. Its detailed summary is no longer available, but the organization has been added — select it from the organization switcher to view it."}
+              ? <>{pageText("theImportFinishedAnd_5d2585") + " "}<span className="font-medium text-foreground">{importOutcome.companyName}</span>{" " + pageText("isReadyItsDetailedSummaryIsNoLonger_ab881d")}</>
+              : pageText("theImportFinishedAndYourOrganizationIsReady_683261")}
           </p>
           {importOutcome.pausedAutomations ? (
-            <p className="text-xs text-muted-foreground mt-1">
-              Imported agents arrived paused — resume them from the company's Agents page so assigned tasks can start.
-            </p>
+            <p className="text-xs text-muted-foreground mt-1">{pageText("importedAgentsArrivedPausedResumeThemFromThe_b8b8bb")}</p>
           ) : null}
         </div>
         {importOutcome.dashboardPath ? (
@@ -1847,9 +1839,7 @@ export function CompanyImport() {
               // Force a fresh dashboard load so newly imported agents are
               // immediately visible (same reason as the full-outcome CTA).
               onClick={() => window.location.assign(importOutcome.dashboardPath!)}
-            >
-              Open organization dashboard
-            </Button>
+            >{pageText("openOrganizationDashboard_43d18d")}</Button>
           </div>
         ) : null}
       </div>
@@ -1866,19 +1856,18 @@ export function CompanyImport() {
     return (
       <div className="max-w-6xl space-y-4 px-5 py-5">
         <div>
-          <h2 className="text-base font-semibold">Import complete</h2>
+          <h2 className="text-base font-semibold">{pageText("importComplete_133f50")}</h2>
           <p className="text-xs text-muted-foreground mt-1">
             {result.company.name}: {result.agents.length}{" " + pageText("agent_0608c4")}{result.agents.length === 1 ? "" : "s"},{" "}
             {skillResults.length}{" " + pageText("skill_34b33e")}{skillResults.length === 1 ? "" : "s"},{" "}
-            {result.projects.length}{" " + pageText("project_98f541")}{result.projects.length === 1 ? "" : "s"}, and{" "}
-            {result.routines.length}{" " + pageText("routine_012da8")}{result.routines.length === 1 ? "" : "s"} processed.
-          </p>
+            {result.projects.length}{" " + pageText("project_98f541")}{result.projects.length === 1 ? "" : "s"}{pageText("and_8278d2")}{" "}
+            {result.routines.length}{" " + pageText("routine_012da8")}{result.routines.length === 1 ? "" : "s"}{" " + pageText("processed_ef41be")}</p>
         </div>
 
         {skillResults.length > 0 && (
           <div className="rounded-md border border-border">
             <div className="border-b border-border px-4 py-2.5">
-              <h3 className="text-sm font-medium">Skill import results</h3>
+              <h3 className="text-sm font-medium">{pageText("skillImportResults_57c966")}</h3>
             </div>
             <div className="divide-y divide-border">
               {skillResults.map((skill) => (
@@ -1886,7 +1875,7 @@ export function CompanyImport() {
                   <span className="min-w-0 flex-1 truncate">{skill.originalSlug}</span>
                   <span className="shrink-0 text-xs text-muted-foreground">{skill.action}</span>
                   {skill.slug !== skill.originalSlug && (
-                    <span className="shrink-0 text-xs text-muted-foreground">as {skill.slug}</span>
+                    <span className="shrink-0 text-xs text-muted-foreground">{pageText("as_df211c") + " "}{skill.slug}</span>
                   )}
                 </div>
               ))}
@@ -1905,8 +1894,8 @@ export function CompanyImport() {
         {activationItems.length > 0 && (
           <div className="rounded-md border border-border">
             <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
-              <h3 className="text-sm font-medium">Activate imported agents and routines</h3>
-              <span className="text-xs text-muted-foreground">imported paused</span>
+              <h3 className="text-sm font-medium">{pageText("activateImportedAgentsAndRoutines_3369a8")}</h3>
+              <span className="text-xs text-muted-foreground">{pageText("importedPaused_77b4d0")}</span>
             </div>
             <div className="divide-y divide-border">
               {activationItems.map((item) => {
@@ -1931,9 +1920,9 @@ export function CompanyImport() {
                     </Badge>
                     <span className="min-w-0 flex-1 truncate">{item.name}</span>
                     {isActivated ? (
-                      <span className="shrink-0 text-xs text-emerald-500">activated</span>
+                      <span className="shrink-0 text-xs text-emerald-500">{pageText("activated_0a2a5f")}</span>
                     ) : failure ? (
-                      <span className="shrink-0 text-xs text-destructive">failed: {failure}</span>
+                      <span className="shrink-0 text-xs text-destructive">{pageText("failed_461f01") + " "}{failure}</span>
                     ) : (
                       <span className="shrink-0 text-xs text-muted-foreground">{pageText("paused_11b1b5")}</span>
                     )}
@@ -1947,16 +1936,14 @@ export function CompanyImport() {
                 onClick={() => void handleActivateSelected()}
                 disabled={isActivating || pendingCount === 0}
               >
-                {isActivating ? "Activating..." : `Activate selected (${pendingCount})`}
+                {isActivating ? pageText("activating_5e6f8a") : `Activate selected (${pendingCount})`}
               </Button>
             </div>
           </div>
         )}
 
         {importOutcome.pausedAutomations ? (
-          <p className="text-xs text-muted-foreground">
-            Anything left paused here stays visible on the company's Agents and Routines pages, which offer the same resume actions — nothing is lost if you leave this page.
-          </p>
+          <p className="text-xs text-muted-foreground">{pageText("anythingLeftPausedHereStaysVisibleOnThe_c290f0")}</p>
         ) : null}
 
         {/* Force a fresh dashboard load so newly imported agents are immediately visible. */}
@@ -1965,9 +1952,7 @@ export function CompanyImport() {
             size="sm"
             variant="outline"
             onClick={() => window.location.assign(dashboardPath)}
-          >
-            Go to dashboard
-          </Button>
+          >{pageText("goToDashboard_e5fa87")}</Button>
         </div>
       </div>
     );
@@ -1980,23 +1965,19 @@ export function CompanyImport() {
     return (
       <div className="max-w-6xl space-y-4 px-5 py-5">
         <div>
-          <h2 className="text-base font-semibold">Resume watching import</h2>
-          <p className="text-xs text-muted-foreground mt-1">
-            An import you started earlier is still running on the server.
-          </p>
+          <h2 className="text-base font-semibold">{pageText("resumeWatchingImport_21e993")}</h2>
+          <p className="text-xs text-muted-foreground mt-1">{pageText("anImportYouStartedEarlierIsStillRunning_3b94e6")}</p>
         </div>
         <div className="flex items-start gap-2 rounded-md border border-border bg-muted/30 px-3 py-2.5">
           <Loader2 className="mt-0.5 h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground" />
-          <p className="text-xs text-muted-foreground">
-            Import running on the server — safe to keep waiting; reconnecting won&apos;t lose it.
-          </p>
+          <p className="text-xs text-muted-foreground">{pageText("importRunningOnTheServerSafeToKeep_7f6fe9")}</p>
         </div>
       </div>
     );
   }
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Download} message="Select an organization to import into." />;
+    return <EmptyState icon={Download} message={pageText("selectAnOrganizationToImportInto_90fb5e")} />;
   }
 
   return (
@@ -2004,17 +1985,15 @@ export function CompanyImport() {
       {/* Source form section */}
       <div className="border-b border-border px-5 py-5 space-y-4">
         <div>
-          <h2 className="text-base font-semibold">Import source</h2>
-          <p className="text-xs text-muted-foreground mt-1">
-            Choose a GitHub repo or upload a local Paperclip zip package.
-          </p>
+          <h2 className="text-base font-semibold">{pageText("importSource_472e28")}</h2>
+          <p className="text-xs text-muted-foreground mt-1">{pageText("chooseAGitHubRepoOrUploadALocal_35a661")}</p>
         </div>
 
         <div className="grid gap-2 md:grid-cols-2">
           {(
             [
-              { key: "github", icon: GithubIcon, label: "GitHub repo" },
-              { key: "local", icon: Upload, label: "Local zip" },
+              { key: "github", icon: GithubIcon, label: controlText("GitHub repo") },
+              { key: "local", icon: Upload, label: controlText("Local zip") },
             ] as const
           ).map(({ key, icon: Icon, label }) => (
             <button
@@ -2056,12 +2035,10 @@ export function CompanyImport() {
                 variant="outline"
                 onClick={() => packageInputRef.current?.click()}
                 disabled={importMutation.isPending}
-              >
-                Choose zip
-              </Button>
+              >{pageText("chooseZip_bbb9c8")}</Button>
               {localPackage && (
                 <span className="text-xs text-muted-foreground">
-                  {localPackage.name} with{" "}
+                  {localPackage.name}{" " + pageText("with_8fcd25")}{" "}
                   {Object.keys(localPackage.files).length}{" " + pageText("file_971c41")}{Object.keys(localPackage.files).length === 1 ? "" : "s"}
                   {localCompressedBytes !== null ? ` (${formatMegabytes(localCompressedBytes)} zip)` : ""}
                 </span>
@@ -2075,8 +2052,8 @@ export function CompanyImport() {
           </div>
         ) : (
           <Field
-            label="GitHub URL"
-            hint="Repo tree path or blob URL to COMPANY.md (e.g. github.com/owner/repo/tree/main/company)."
+            label={pageText("githubURL_7dc2b8")}
+            hint={pageText("repoTreePathOrBlobURLToCOMPANY_d9e6a6")}
           >
             <input
               className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
@@ -2092,7 +2069,7 @@ export function CompanyImport() {
           </Field>
         )}
 
-        <Field label="Target" hint="Import into this organization or create a new one.">
+        <Field label={pageText("target_61ad50")} hint={pageText("importIntoThisOrganizationOrCreateANew_e5aa21")}>
           <select
             className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
             value={targetMode}
@@ -2102,17 +2079,16 @@ export function CompanyImport() {
               resetImportFlowState();
             }}
           >
-            <option value="new">Create new organization</option>
-            <option value="existing">
-              Existing company: {selectedCompany?.name}
+            <option value="new">{pageText("createNewOrganization_64f148")}</option>
+            <option value="existing">{pageText("existingCompany_443262") + " "}{selectedCompany?.name}
             </option>
           </select>
         </Field>
 
         {targetMode === "new" && (
           <Field
-            label="New organization name"
-            hint="Optional override. Leave blank to use the package name."
+            label={pageText("newOrganizationName_b56799")}
+            hint={pageText("optionalOverrideLeaveBlankToUseThePackage_76132e")}
           >
             <input
               className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
@@ -2122,14 +2098,14 @@ export function CompanyImport() {
                 setNewCompanyName(e.target.value);
                 resetMutationState();
               }}
-              placeholder="Imported Organization"
+              placeholder={pageText("importedOrganization_efedac")}
             />
           </Field>
         )}
 
         <Field
-          label="Collision strategy"
-          hint="Board imports can rename, skip, or replace matching organization content."
+          label={pageText("collisionStrategy_68f53e")}
+          hint={pageText("boardImportsCanRenameSkipOrReplaceMatching_a709f3")}
         >
           <select
             className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
@@ -2140,9 +2116,9 @@ export function CompanyImport() {
               resetImportFlowState();
             }}
           >
-            <option value="rename">Rename on conflict</option>
-            <option value="skip">Skip on conflict</option>
-            <option value="replace">Replace existing</option>
+            <option value="rename">{pageText("renameOnConflict_277719")}</option>
+            <option value="skip">{pageText("skipOnConflict_960523")}</option>
+            <option value="replace">{pageText("replaceExisting_15a86f")}</option>
           </select>
         </Field>
 
@@ -2155,17 +2131,13 @@ export function CompanyImport() {
               previewMutation.isPending || importMutation.isPending || !hasSource
             }
           >
-            {previewMutation.isPending ? "Previewing..." : "Preview import"}
+            {previewMutation.isPending ? pageText("previewing_fa2245") : pageText("previewImport_d3f3ef")}
           </Button>
           {!hasSource && !previewMutation.isPending && (
-            <span className="text-xs text-muted-foreground">
-              Choose a package above to enable the preview.
-            </span>
+            <span className="text-xs text-muted-foreground">{pageText("chooseAPackageAboveToEnableThePreview_361388")}</span>
           )}
           {importMutation.isPending && (
-            <span className="text-xs text-muted-foreground">
-              Import in progress — the package and settings unlock when it finishes.
-            </span>
+            <span className="text-xs text-muted-foreground">{pageText("importInProgressThePackageAndSettingsUnlock_0a6329")}</span>
           )}
         </div>
         {previewMutation.isPending && (
@@ -2184,11 +2156,8 @@ export function CompanyImport() {
           !previewMutation.isPending &&
           previewMutation.variables === previewGenerationRef.current && (
           <div className="mt-3 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2.5">
-            <p className="text-xs text-destructive">
-              Preview failed:{" "}
-              {describeError(previewMutation.error).body}{" "}
-              Retry, or re-export the package without large attachments to shrink it.
-            </p>
+            <p className="text-xs text-destructive">{pageText("previewFailed_4a2591")}{" "}
+              {describeError(previewMutation.error).body}{" "}{pageText("retryOrReExportThePackageWithoutLarge_1706eb")}</p>
           </div>
         )}
       </div>
@@ -2204,7 +2173,7 @@ export function CompanyImport() {
                 {selectedCount} / {totalFiles}{" " + pageText("file_971c41")}{totalFiles === 1 ? "" : "s"}{" " + pageText("selected_835f3b")}</span>
               {conflicts.length > 0 && (
                 <span className="text-amber-500">
-                  {conflicts.length} conflict{conflicts.length === 1 ? "" : "s"}
+                  {conflicts.length}{" " + pageText("conflict_ae2145")}{conflicts.length === 1 ? "" : "s"}
                 </span>
               )}
               {importPreview.errors.length > 0 && (
@@ -2249,9 +2218,7 @@ export function CompanyImport() {
                   resetMutationState();
                 }}
                 className="accent-foreground"
-              />
-              Start imported agents and routines paused
-            </label>
+              />{pageText("startImportedAgentsAndRoutinesPaused_f05040")}</label>
             <Button
               size="sm"
               onClick={() => importMutation.mutate({ previewForImport: importPreview, pauseAutomations })}
@@ -2259,7 +2226,7 @@ export function CompanyImport() {
             >
               <Download className="mr-1.5 h-3.5 w-3.5" />
               {importMutation.isPending
-                ? "Importing..."
+                ? pageText("importing_b7353a")
                 : `Import ${selectedCount} file${selectedCount === 1 ? "" : "s"}`}
             </Button>
           </div>
@@ -2269,18 +2236,14 @@ export function CompanyImport() {
               <p className="text-xs text-muted-foreground">
                 {transferProgress
                   ? `${formatTransferProgress(transferProgress)} An interrupted upload resumes from the finished parts.`
-                  : "Import running on the server — safe to keep waiting; reconnecting won't lose it. Large packages can take several minutes."}
+                  : pageText("importRunningOnTheServerSafeToKeep_5f861a")}
               </p>
             </div>
           )}
           {importMutation.isError && !importMutation.isPending && ( // query-error-ok: mutation outcome for the import the user just started, not a read
             <div className="mx-5 mt-3 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2.5">
-              <p className="text-xs text-destructive">
-                Import failed:{" "}
-                {describeError(importMutation.error).body}{" "}
-                Nothing may have been created, or the import stopped partway — check the target company
-                before retrying.
-              </p>
+              <p className="text-xs text-destructive">{pageText("importFailed_3d4acf")}{" "}
+                {describeError(importMutation.error).body}{" "}{pageText("nothingMayHaveBeenCreatedOrTheImport_5e0757")}</p>
             </div>
           )}
 
@@ -2306,7 +2269,7 @@ export function CompanyImport() {
           <div className="grid gap-4 xl:h-(--sz-calc-31) xl:grid-cols-(--gtc-25) xl:gap-0">
             <aside className="flex max-h-(--sz-24rem) flex-col overflow-hidden border-b border-border xl:max-h-none xl:border-b-0 xl:border-r">
               <div className="border-b border-border px-4 py-3 shrink-0">
-                <h2 className="text-base font-semibold">Package files</h2>
+                <h2 className="text-base font-semibold">{pageText("packageFiles_20c64f")}</h2>
               </div>
               <div className="flex-1 overflow-y-auto">
                 <FileTree

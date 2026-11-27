@@ -52,7 +52,7 @@ export function AgentLifecycleStatus({ agent, onRetry, retryPending, refreshErro
   const phase = pendingPhase(agent.lifecycleState);
   if (!phase && !refreshError) return null;
   return <div role="status" aria-live="polite" className="space-y-2 text-sm">
-    {refreshError && <p className="text-destructive">Could not refresh agent lifecycle status.</p>}
+    {refreshError && <p className="text-destructive">{pageText("couldNotRefreshAgentLifecycleStatus_e0772e")}</p>}
     {phase && <div className="flex flex-wrap items-center gap-2">
       <Badge variant={agent.lifecycleError ? "destructive" : "secondary"}>
         {!agent.lifecycleError && <Loader2 aria-hidden="true" className="mr-1 size-3 animate-spin motion-reduce:animate-none" />}
@@ -67,7 +67,7 @@ export function AgentLifecycleStatus({ agent, onRetry, retryPending, refreshErro
       </Button>
     </div>}
     {phase && agent.lifecycleError && <p className="text-muted-foreground">{agent.lifecycleState === "verifying"
-      ? "Retry now checks the saved configuration again immediately."
-      : "Paperclip retries automatically; Retry now checks again immediately."}</p>}
+      ? pageText("retryNowChecksTheSavedConfigurationAgainImmediately_020517")
+      : pageText("paperclipRetriesAutomaticallyRetryNowChecksAgainImmediately_32dc18")}</p>}
   </div>;
 }

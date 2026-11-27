@@ -1,3 +1,5 @@
+import { controlText } from "@/i18n/controls";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type { DashboardRunActivityDay, HeartbeatRun } from "@paperclipai/shared";
 
 /* ---- Utilities ---- */
@@ -119,6 +121,7 @@ function resolveRunActivity(props: RunChartProps): DashboardRunActivityDay[] {
 }
 
 export function RunActivityChart(props: RunChartProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const activity = resolveRunActivity(props);
   const days = activity.length > 0 ? activity.map((day) => day.date) : getLast14Days();
   const grouped = new Map(activity.map((day) => [day.date, day]));
@@ -127,7 +130,7 @@ export function RunActivityChart(props: RunChartProps) {
   const hasData = activity.some(v => v.total > 0);
   const hasRecovered = activity.some(v => v.recovered > 0);
 
-  if (!hasData) return <p className="text-xs text-muted-foreground">No runs yet</p>;
+  if (!hasData) return <p className="text-xs text-muted-foreground">{pageText("noRunsYet_578f60")}</p>;
 
   const legendItems = [
     { color: runSegmentColors.succeeded, label: "Succeeded" },
@@ -175,6 +178,7 @@ const priorityColors: Record<string, string> = {
 const priorityOrder = ["critical", "high", "medium", "low"] as const;
 
 export function PriorityChart({ issues }: { issues: { priority: string; createdAt: Date }[] }) {
+  const { t: pageText } = usePageTranslation("interface");
   const days = getLast14Days();
   const grouped = new Map<string, Record<string, number>>();
   for (const day of days) grouped.set(day, { critical: 0, high: 0, medium: 0, low: 0 });
@@ -188,7 +192,7 @@ export function PriorityChart({ issues }: { issues: { priority: string; createdA
   const maxValue = Math.max(...Array.from(grouped.values()).map(v => Object.values(v).reduce((a, b) => a + b, 0)), 1);
   const hasData = Array.from(grouped.values()).some(v => Object.values(v).reduce((a, b) => a + b, 0) > 0);
 
-  if (!hasData) return <p className="text-xs text-muted-foreground">No tasks</p>;
+  if (!hasData) return <p className="text-xs text-muted-foreground">{pageText("noTasks_e54269")}</p>;
 
   return (
     <div>
@@ -198,7 +202,7 @@ export function PriorityChart({ issues }: { issues: { priority: string; createdA
           const total = Object.values(entry).reduce((a, b) => a + b, 0);
           const heightPct = (total / maxValue) * 100;
           return (
-            <div key={day} className="flex-1 h-full flex flex-col justify-end" title={`${day}: ${total} issues`}>
+            <div key={day} className="flex-1 h-full flex flex-col justify-end" title={controlText("dailyIssueCount", { day, total })}>
               {total > 0 ? (
                 <div className="flex flex-col-reverse gap-px overflow-hidden" style={{ height: `${heightPct}%`, minHeight: 2 }}>
                   {priorityOrder.map(p => entry[p] > 0 ? (
@@ -247,6 +251,7 @@ const statusLabels: Record<string, string> = {
 };
 
 export function IssueStatusChart({ issues }: { issues: { status: string; createdAt: Date }[] }) {
+  const { t: pageText } = usePageTranslation("interface");
   const days = getLast14Days();
   const allStatuses = new Set<string>();
   const grouped = new Map<string, Record<string, number>>();
@@ -263,7 +268,7 @@ export function IssueStatusChart({ issues }: { issues: { status: string; created
   const maxValue = Math.max(...Array.from(grouped.values()).map(v => Object.values(v).reduce((a, b) => a + b, 0)), 1);
   const hasData = allStatuses.size > 0;
 
-  if (!hasData) return <p className="text-xs text-muted-foreground">No tasks</p>;
+  if (!hasData) return <p className="text-xs text-muted-foreground">{pageText("noTasks_e54269")}</p>;
 
   return (
     <div>
@@ -273,7 +278,7 @@ export function IssueStatusChart({ issues }: { issues: { status: string; created
           const total = Object.values(entry).reduce((a, b) => a + b, 0);
           const heightPct = (total / maxValue) * 100;
           return (
-            <div key={day} className="flex-1 h-full flex flex-col justify-end" title={`${day}: ${total} issues`}>
+            <div key={day} className="flex-1 h-full flex flex-col justify-end" title={controlText("dailyIssueCount", { day, total })}>
               {total > 0 ? (
                 <div className="flex flex-col-reverse gap-px overflow-hidden" style={{ height: `${heightPct}%`, minHeight: 2 }}>
                   {statusOrder.map(s => (entry[s] ?? 0) > 0 ? (
@@ -288,18 +293,19 @@ export function IssueStatusChart({ issues }: { issues: { status: string; created
         })}
       </div>
       <DateLabels days={days} />
-      <ChartLegend items={statusOrder.map(s => ({ color: statusColors[s] ?? "var(--hex-6b7280)", label: statusLabels[s] ?? s }))} />
+      <ChartLegend items={statusOrder.map(s => ({ color: statusColors[s] ?? "var(--hex-6b7280)", label: statusLabels[s] ? controlText(statusLabels[s]) : s }))} />
     </div>
   );
 }
 
 export function SuccessRateChart(props: RunChartProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const activity = resolveRunActivity(props);
   const days = activity.length > 0 ? activity.map((day) => day.date) : getLast14Days();
   const grouped = new Map(activity.map((day) => [day.date, day]));
 
   const hasData = activity.some(v => v.total > 0);
-  if (!hasData) return <p className="text-xs text-muted-foreground">No runs yet</p>;
+  if (!hasData) return <p className="text-xs text-muted-foreground">{pageText("noRunsYet_578f60")}</p>;
 
   return (
     <div>

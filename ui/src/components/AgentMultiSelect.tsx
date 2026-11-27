@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { AgentAvatar, type AvatarAgent } from "@/components/AgentAvatar";
@@ -93,7 +94,7 @@ export function AgentSelect({
                 key={agent.id}
                 type="button"
                 className="flex w-full items-start gap-2 px-3 py-2 text-left hover:bg-accent/30"
-                aria-label={`Select ${agent.name}`}
+                aria-label={translateDynamic("dynamic:select", { value1: agent.name })}
                 onClick={() => {
                   onChange(agent.id);
                   setOpen(false);
@@ -260,7 +261,7 @@ export function AgentMultiSelect({
                   <Checkbox
                     checked={workingAgentIds.has(agent.id)}
                     disabled={optionDisabled}
-                    aria-label={`Allow ${agent.name}`}
+                    aria-label={translateDynamic("dynamic:allow", { value1: agent.name })}
                     onCheckedChange={(checked) => {
                       const next = new Set(workingAgentIds);
                       if (checked) next.add(agent.id);
@@ -286,7 +287,7 @@ export function AgentMultiSelect({
         )}
           <div className="flex items-center justify-between border-t border-border px-3 py-2">
             <span className="text-xs text-muted-foreground">
-              {workingAgentIds.size === 0 ? "No agents selected" : `${workingAgentIds.size} selected`}
+              {workingAgentIds.size === 0 ? pageText("noAgentsSelected_28f5d7") : `${workingAgentIds.size} selected`}
             </span>
             <div className="flex items-center gap-2">
               {staged ? (
@@ -316,7 +317,7 @@ export function AgentMultiSelect({
             </div>
           ))}
           {selectedAgents.length > 3 ? (
-            <p className="px-1.5 pt-0.5 text-xs text-muted-foreground">and {selectedAgents.length - 3}{" " + pageText("more_e7c95b")}</p>
+            <p className="px-1.5 pt-0.5 text-xs text-muted-foreground">{pageText("and_cffa50") + " "}{selectedAgents.length - 3}{" " + pageText("more_e7c95b")}</p>
           ) : null}
         </div>
       ) : null}

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import type { CaseSummary } from "@/api/cases";
 import { AgentIdentity } from "@/components/AgentIdentity";
@@ -18,6 +19,7 @@ export function CaseListRow({
   search?: string;
   columns?: readonly CaseColumn[];
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const caseHref = useCaseHref();
   const task = caseData.workIssue;
@@ -29,7 +31,7 @@ export function CaseListRow({
   const work = task ? <>
     {show.has("phase") && caseData.phase ? <span className="text-xs text-muted-foreground">{caseData.phase}</span> : null}
     {show.has("assignee") && (assignee ? <AgentIdentity agent={assignee} size="xs" /> : <span className="text-xs text-muted-foreground">{translateUi("interfaceCopy.unassigned")}</span>)}
-  </> : <span className="text-xs text-muted-foreground">{caseData.workIssueId ? "Task unavailable" : "No task linked"}</span>;
+  </> : <span className="text-xs text-muted-foreground">{caseData.workIssueId ? pageText("taskUnavailable_cfd1de") : pageText("noTaskLinked_1feec7")}</span>;
   const subtitle = [show.has("identifier") ? caseData.identifier : null, show.has("type") ? caseData.caseType : null,
     show.has("project") ? projectName : null].filter(Boolean);
 

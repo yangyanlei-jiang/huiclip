@@ -27,7 +27,7 @@ export function TaskChatPlanView({ plan }: { plan: TaskChatPlan }) {
     <div className="flex flex-col gap-2 py-2">
       <div className="flex items-center gap-2 px-1 text-xs text-muted-foreground">
         <span className="font-medium text-foreground">{pageText("plan_ae2f98")}</span>
-        <span>· rev {plan.revision}</span>
+        <span>{pageText("rev_f933de") + " "}{plan.revision}</span>
         <span className="ml-auto">
           {done}/{plan.entries.length}{" " + pageText("done_e5fd9c")}</span>
       </div>

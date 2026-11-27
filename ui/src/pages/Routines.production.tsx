@@ -1,3 +1,5 @@
+import { controlText } from "@/i18n/controls";
+import { t as interfaceNotice } from "@/i18n";
 import { t as interfaceMessage } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
@@ -197,7 +199,7 @@ export function buildRoutineGroups(
       })
       .map((key) => ({
         key,
-        label: key === "__unfiled" ? "Unfiled" : (folderById.get(key)?.name ?? "Unknown folder"),
+        label: key === "__unfiled" ? controlText("Unfiled") : (folderById.get(key)?.name ?? controlText("Unknown folder")),
         items: groups[key]!,
       }));
   }
@@ -375,7 +377,7 @@ export function Routines() {
   const folderSelection = normalizeFolderSelection(searchParams.get("folder"));
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Routines" }]);
+    setBreadcrumbs([{ label: interfaceNotice("interface:routines_a445e5") }]);
   }, [setBreadcrumbs]);
 
   useEffect(() => {
@@ -465,10 +467,10 @@ export function Routines() {
       setAdvancedOpen(false);
       await queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedCompanyId!) });
       pushToast({
-        title: "Routine created",
+        title: interfaceNotice("interface:routineCreated_137d88"),
         body: routine.assigneeAgentId
-          ? "Add the first trigger to turn it into a live workflow."
-          : "Draft saved. Add a default agent before enabling automation.",
+          ? interfaceNotice("interface:addTheFirstTriggerToTurnItInto_6f9622")
+          : interfaceNotice("interface:draftSavedAddADefaultAgentBeforeEnabling_904765"),
         tone: "success",
       });
       navigate(`/routines/${routine.id}?tab=triggers`);
@@ -494,7 +496,7 @@ export function Routines() {
           ]);
         } catch (moveError) {
           pushToast({
-            title: "Folder created, move failed",
+            title: interfaceNotice("interface:folderCreatedMoveFailed_5ce405"),
             body: describeError(moveError, { action: "move the selected routines" }).body,
             tone: "error",
           });
@@ -503,7 +505,7 @@ export function Routines() {
       } else {
         setFolderSelection(folder.id);
       }
-      pushToast({ title: "Folder created", body: folder.name, tone: "success" });
+      pushToast({ title: interfaceNotice("interface:folderCreated_d757fe"), body: folder.name, tone: "success" });
     },
     onError: (mutationError) => {
       pushToast({
@@ -523,7 +525,7 @@ export function Routines() {
     },
     onError: (mutationError) => {
       pushToast({
-        title: "Folder save failed",
+        title: interfaceNotice("interface:folderSaveFailed_1f54f8"),
         body: describeError(mutationError, { action: "update the folder" }).body,
         tone: "error",
       });
@@ -538,11 +540,11 @@ export function Routines() {
         queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedCompanyId!) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.folders.list(selectedCompanyId!, "routine") }),
       ]);
-      pushToast({ title: "Folder deleted", body: "Items moved to Unfiled.", tone: "success" });
+      pushToast({ title: interfaceNotice("interface:folderDeleted_80fa73"), body: interfaceNotice("interface:itemsMovedToUnfiled_b28028"), tone: "success" });
     },
     onError: (mutationError) => {
       pushToast({
-        title: "Folder delete failed",
+        title: interfaceNotice("interface:folderDeleteFailed_f8771f"),
         body: describeError(mutationError, { action: "delete the folder" }).body,
         tone: "error",
       });
@@ -559,7 +561,7 @@ export function Routines() {
     },
     onError: (mutationError) => {
       pushToast({
-        title: "Move failed",
+        title: interfaceNotice("interface:moveFailed_795434"),
         body: describeError(mutationError, { action: "move the routine" }).body,
         tone: "error",
       });
@@ -624,7 +626,7 @@ export function Routines() {
     },
     onError: (mutationError) => {
       pushToast({
-        title: "Routine run failed",
+        title: interfaceNotice("interface:routineRunFailed_9221cb"),
         body: describeError(mutationError, { action: "start the routine run" }).body,
         tone: "error",
       });
@@ -770,7 +772,7 @@ export function Routines() {
         queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedCompanyId!) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.folders.list(selectedCompanyId!, "routine") }),
       ]);
-      pushToast({ title: "Routines moved", body: `${ids.length} routine${ids.length === 1 ? "" : "s"} filed.`, tone: "success" });
+      pushToast({ title: interfaceNotice("interface:routinesMoved_bbcd55"), body: `${ids.length} routine${ids.length === 1 ? "" : "s"} filed.`, tone: "success" });
     } catch (moveError) {
       pushToast({
         title: interfaceMessage("interface:errorFailedToMoveRoutines"),
@@ -787,8 +789,8 @@ export function Routines() {
   function handleToggleEnabled(routine: RoutineListItem, enabled: boolean) {
     if (!enabled && !routine.assigneeAgentId) {
       pushToast({
-        title: "Default agent required",
-        body: "Set a default agent before enabling routine automation.",
+        title: interfaceNotice("interface:defaultAgentRequired_982397"),
+        body: interfaceNotice("interface:setADefaultAgentBeforeEnablingRoutineAutomation_27f60c"),
         tone: "warn",
       });
       return;
@@ -807,7 +809,7 @@ export function Routines() {
   }
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Repeat} message="Select a company to view routines." />;
+    return <EmptyState icon={Repeat} message={pageText("selectACompanyToViewRoutines_b126f4")} />;
   }
 
   // Keep loaded routines on screen through a failed refetch; only a real
@@ -821,9 +823,7 @@ export function Routines() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight">{pageText("routines_a445e5")}</h1>
-          <p className="text-sm text-muted-foreground">
-            Recurring work definitions that materialize into auditable execution tasks.
-          </p>
+          <p className="text-sm text-muted-foreground">{pageText("recurringWorkDefinitionsThatMaterializeIntoAuditableExecution_e3053a")}</p>
         </div>
         <Button onClick={openCreateRoutine}>
           <Plus className="mr-2 h-4 w-4" />{pageText("createRoutine_ff3a76")}</Button>
@@ -878,7 +878,7 @@ export function Routines() {
                         <span>{label}</span>
                         {routineViewState.sortField === field ? (
                           <span className="text-xs text-muted-foreground">
-                            {routineViewState.sortDir === "asc" ? "Asc" : "Desc"}
+                            {routineViewState.sortDir === "asc" ? pageText("asc_4fee0a") : pageText("desc_01e635")}
                           </span>
                         ) : null}
                       </button>
@@ -933,7 +933,7 @@ export function Routines() {
               <FolderChip
                 result={railFolderResult}
                 selection={folderSelection}
-                allLabel="All routines"
+                allLabel={interfaceMessage("interface:allRoutines_609567")}
                 onClick={() => setMobileFoldersOpen(true)}
               />
             </div>
@@ -971,9 +971,7 @@ export function Routines() {
           <div className="shrink-0 flex flex-wrap items-center justify-between gap-3 border-b border-border/60 px-5 py-3">
             <div>
               <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">{pageText("newRoutine_32809d")}</p>
-              <p className="text-sm text-muted-foreground">
-                Define the recurring work first. Default project and agent are optional for draft routines.
-              </p>
+              <p className="text-sm text-muted-foreground">{pageText("defineTheRecurringWorkFirstDefaultProjectAnd_fb199c")}</p>
             </div>
             <Button
               variant="ghost"
@@ -991,7 +989,7 @@ export function Routines() {
               <textarea
                 ref={titleInputRef}
                 className="w-full resize-none overflow-hidden bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/50"
-                placeholder="Routine title"
+                placeholder={pageText("routineTitle_6ed0d9")}
                 rows={1}
                 value={draft.title}
                 onChange={(event) => {
@@ -1024,14 +1022,14 @@ export function Routines() {
             <div className="px-5 pb-3">
               <div className="overflow-x-auto overscroll-x-contain">
                 <div className="inline-flex min-w-full flex-wrap items-center gap-2 text-sm text-muted-foreground sm:min-w-max sm:flex-nowrap">
-                  <span>For</span>
+                  <span>{pageText("for_f78806")}</span>
                   <InlineEntitySelector
                     ref={assigneeSelectorRef}
                     value={draft.assigneeAgentId}
                     options={assigneeOptions}
                     recentOptionIds={recentAssigneeIds}
                     placeholder={translateUi("interfaceCopy.responsible")}
-                    noneLabel="No responsible"
+                    noneLabel={interfaceNotice("interface:noResponsible_797e99")}
                     searchPlaceholder={pageText("searchResponsible_bc9f7f")}
                     emptyMessage={pageText("noResponsibleFound_a275f8")}
                     onChange={(assigneeAgentId) => {
@@ -1070,14 +1068,14 @@ export function Routines() {
                       );
                     }}
                   />
-                  <span>in</span>
+                  <span>{pageText("in_af10ef")}</span>
                   <InlineEntitySelector
                     ref={projectSelectorRef}
                     value={draft.projectId}
                     options={projectOptions}
                     recentOptionIds={recentProjectIds}
                     placeholder={translateUi("interfaceCopy.project")}
-                    noneLabel="No project"
+                    noneLabel={interfaceNotice("interface:noProject_c326b7")}
                     searchPlaceholder={pageText("searchProjects_469d78")}
                     emptyMessage={pageText("noProjectsFound_ca7870")}
                     onChange={(projectId) => {
@@ -1112,7 +1110,7 @@ export function Routines() {
                       );
                     }}
                   />
-                  <span>filed in</span>
+                  <span>{pageText("filedIn_876431")}</span>
                   <Select
                     value={draft.folderId ?? "__unfiled"}
                     onValueChange={(value) => setDraft((current) => ({
@@ -1157,8 +1155,8 @@ export function Routines() {
               <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
                 <CollapsibleTrigger className="flex w-full items-center justify-between text-left">
                   <div>
-                    <p className="text-sm font-medium">Advanced delivery settings</p>
-                    <p className="text-sm text-muted-foreground">Keep policy controls secondary to the work definition.</p>
+                    <p className="text-sm font-medium">{pageText("advancedDeliverySettings_b3f899")}</p>
+                    <p className="text-sm text-muted-foreground">{pageText("keepPolicyControlsSecondaryToTheWorkDefinition_d8b78d")}</p>
                   </div>
                   {advancedOpen ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
                 </CollapsibleTrigger>
@@ -1182,7 +1180,7 @@ export function Routines() {
                       <p className="text-xs text-muted-foreground">{concurrencyPolicyDescriptions[draft.concurrencyPolicy]}</p>
                     </div>
                     <div className="space-y-2">
-                      <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">Catch-up</p>
+                      <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">{pageText("catchUp_5b8ae5")}</p>
                       <Select
                         value={draft.catchUpPolicy}
                         onValueChange={(catchUpPolicy) => setDraft((current) => ({ ...current, catchUpPolicy }))}
@@ -1205,9 +1203,7 @@ export function Routines() {
           </div>
 
           <div className="shrink-0 flex flex-col gap-3 border-t border-border/60 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-sm text-muted-foreground">
-              After creation, Paperclip takes you straight to trigger setup. Draft routines stay paused until you add a default agent.
-            </div>
+            <div className="text-sm text-muted-foreground">{pageText("afterCreationPaperclipTakesYouStraightToTrigger_c16042")}</div>
             <div className="flex flex-col gap-2 sm:items-end">
               <Button
                 onClick={() => createRoutine.mutate()}
@@ -1244,7 +1240,7 @@ export function Routines() {
             <FolderRail
               result={railFolderResult}
               selection={folderSelection}
-              allLabel="All routines"
+              allLabel={interfaceMessage("interface:allRoutines_609567")}
               itemLabelPlural="routines"
               loading={foldersLoading}
               onSelect={setFolderSelection}
@@ -1260,7 +1256,7 @@ export function Routines() {
           <div className="min-w-0 flex-1">
           {routineViewState.groupBy === "folder" && hasRoutineFolders ? (
             <div className="mb-3 flex flex-wrap items-center gap-2">
-              {folderSelection === "all" ? <FolderIconHeader label="All routines" count={sortedRoutines.length} /> : (
+              {folderSelection === "all" ? <FolderIconHeader label={pageText("allRoutines_609567")} count={sortedRoutines.length} /> : (
                 <div className="flex min-w-0 items-center gap-2 text-sm">
                   <FolderSwatch color={activeFolder?.color} />
                   <span className="truncate font-medium">{folderSelection === "unfiled" ? pageText("unfiled_c1aca7") : activeFolder?.name ?? pageText("folder_30baa2")}</span>
@@ -1293,21 +1289,19 @@ export function Routines() {
             <div className="py-12">
               <EmptyState
                 icon={Repeat}
-                message="No active routines. Use Create routine to define the first recurring workflow."
+                message={pageText("noActiveRoutinesUseCreateRoutineToDefine_835f4c")}
               />
             </div>
           ) : sortedRoutines.length === 0 ? (
             <div className="py-12">
               <EmptyState
                 icon={Repeat}
-                message={folderSelection === "all" ? "No routines match this view." : "This folder is empty."}
+                message={folderSelection === "all" ? pageText("noRoutinesMatchThisView_ccd395") : pageText("thisFolderIsEmpty_60db81")}
               />
               {folderSelection !== "all" ? (
                 <div className="mt-3 flex justify-center">
                   <Button size="sm" onClick={openCreateRoutine}>
-                    <Plus className="mr-2 h-3.5 w-3.5" />
-                    New routine in this folder
-                  </Button>
+                    <Plus className="mr-2 h-3.5 w-3.5" />{pageText("newRoutineInThisFolder_ab98ae")}</Button>
                 </div>
               ) : null}
             </div>
@@ -1366,13 +1360,13 @@ export function Routines() {
                                 const previousFolderId = routine.folderId ?? null;
                                 moveRoutineToFolder.mutate({ itemId: routine.id, folderId });
                                 pushToast({
-                                  title: "Routine moved",
+                                  title: interfaceNotice("interface:routineMoved_bffc10"),
                                   body: folderId
-                                    ? `Moved "${routine.title}" to ${routineFolders?.folders.find((folder) => folder.id === folderId)?.name ?? "folder"}.`
-                                    : `Moved "${routine.title}" to Unfiled.`,
+                                    ? controlText("Moved \"{{name}}\" to {{folder}}.", { name: routine.title, folder: routineFolders?.folders.find((folder) => folder.id === folderId)?.name ?? controlText("folder") })
+                                    : controlText("Moved \"{{name}}\" to Unfiled.", { name: routine.title }),
                                   tone: "success",
                                   action: {
-                                    label: "Undo",
+                                    label: interfaceNotice("interface:undo_39fc72"),
                                     onClick: () => moveRoutineToFolder.mutate({ itemId: routine.id, folderId: previousFolderId }),
                                   },
                                 });
@@ -1420,7 +1414,7 @@ export function Routines() {
         onOpenChange={setMobileFoldersOpen}
         result={railFolderResult}
         selection={folderSelection}
-        allLabel="All routines"
+        allLabel={interfaceMessage("interface:allRoutines_609567")}
         itemLabelPlural="Routines"
         onSelect={setFolderSelection}
         onCreate={() => openCreateFolder()}

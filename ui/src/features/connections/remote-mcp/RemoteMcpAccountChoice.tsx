@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { Button } from "@/components/ui/button";
 import { InlineBanner } from "@/components/InlineBanner";
@@ -23,6 +24,7 @@ export function RemoteMcpAccountChoice({
   onCancel?: () => void;
   onConnectNew: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   return (
     <div className="space-y-5">
@@ -32,18 +34,11 @@ export function RemoteMcpAccountChoice({
             ? `Connect ${upstreamServiceName} through ${providerName}`
             : `Connect ${providerName}`}
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Use an existing connection or connect a new account. Existing access
-          stays unchanged.
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground">{pageText("useAnExistingConnectionOrConnectANew_2573a6")}</p>
       </div>
       {upstreamServiceName && (
         <InlineBanner compact>
-          {providerName} is an external service that handles the connection and
-          requests to {upstreamServiceName}. Reusing this account does not yet
-          verify app access; the agent will check it and guide any additional
-          authorization.
-        </InlineBanner>
+          {providerName}{" " + pageText("isAnExternalServiceThatHandlesTheConnection_7ae124") + " "}{upstreamServiceName}{pageText("reusingThisAccountDoesNotYetVerifyApp_c0e335")}</InlineBanner>
       )}
       <ConnectionChoiceList
         choices={connections.map((connection) => ({
@@ -64,9 +59,7 @@ export function RemoteMcpAccountChoice({
           disabled={Boolean(pendingId)}
           onClick={onCancel}
         >{translateUi("interfaceCopy.cancel")}</Button>
-        <Button disabled={Boolean(pendingId)} onClick={onConnectNew}>
-          Connect new
-        </Button>
+        <Button disabled={Boolean(pendingId)} onClick={onConnectNew}>{pageText("connectNew_e6e8ab")}</Button>
       </div>
     </div>
   );

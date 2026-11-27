@@ -1,3 +1,5 @@
+import { controlText } from "@/i18n/controls";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type { ArtifactGroupBy, ArtifactKindFilter } from "@/api/artifacts";
 import { TabFilters, type TabBarItem } from "@/components/TabBar";
 
@@ -22,5 +24,6 @@ export const ARTIFACTS_V1_VIEWS: TabBarItem<ArtifactsV1View>[] = [
 export const artifactsV1View = (groupBy: ArtifactGroupBy, kind: ArtifactKindFilter): ArtifactsV1View => (groupBy !== "none" ? "tasks" : kind);
 
 export function ArtifactsV1Filters({ view, onViewChange }: { view: ArtifactsV1View; onViewChange: (view: ArtifactsV1View) => void }) {
-  return <TabFilters items={ARTIFACTS_V1_VIEWS} value={view} onValueChange={onViewChange} size="standard" label="Show artifacts by task or by type" />;
+  const { t: pageText } = usePageTranslation("interface");
+  return <TabFilters items={ARTIFACTS_V1_VIEWS.map(item => ({ ...item, label: typeof item.label === "string" ? controlText(item.label) : item.label }))} value={view} onValueChange={onViewChange} size="standard" label={pageText("showArtifactsByTaskOrByType_005588")} />;
 }

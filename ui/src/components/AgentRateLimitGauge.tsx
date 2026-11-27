@@ -1,3 +1,5 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { t as translateDynamic } from "../i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { ChevronRight, Clock } from "lucide-react";
 import {
@@ -51,6 +53,7 @@ export function AgentRateLimitPanel({ snapshot, summary, now }: {
   summary: ProviderRateLimitSummary;
   now: number;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const reachedId = summary.limited ? snapshot.limitReached?.windowId ?? null : null;
   const creditTone = summary.usingCredits ? "warn" : null;
   const credits = snapshot.credits;
@@ -66,7 +69,7 @@ export function AgentRateLimitPanel({ snapshot, summary, now }: {
               <span className={cn("shrink-0 tabular-nums", textClass[tone])}>
                 {Math.round(pct)}%
                 {window.resetsAt && (
-                  <span className="text-muted-foreground"> · resets {formatRateLimitClock(window.resetsAt, now)}</span>
+                  <span className="text-muted-foreground">{" " + pageText("resets_5de1b0") + " "}{formatRateLimitClock(window.resetsAt, now)}</span>
                 )}
               </span>
             </div>
@@ -75,11 +78,11 @@ export function AgentRateLimitPanel({ snapshot, summary, now }: {
         );
       })}
       {summary.usingCredits && (
-        <div className="text-xs text-(--status-task-icon-todo)">Limit reached; work continues on account credits.</div>
+        <div className="text-xs text-(--status-task-icon-todo)">{pageText("limitReachedWorkContinuesOnAccountCredits_a88e31")}</div>
       )}
       {credits && (credits.unlimited || credits.balance !== null || credits.hasCredits === false) && (
         <div className="text-xs text-muted-foreground">
-          {credits.unlimited ? "Unlimited credits" : credits.hasCredits === false ? "No credits remaining" : `${credits.balance} credits`}
+          {credits.unlimited ? pageText("unlimitedCredits_5d56be") : credits.hasCredits === false ? pageText("noCreditsRemaining_4b79be") : `${credits.balance} credits`}
         </div>
       )}
     </div>
@@ -100,6 +103,7 @@ export function AgentRateLimitPropertyValue({ snapshot, now = Date.now(), defaul
   detailsHref?: string;
   className?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const summary = summarizeProviderRateLimits(snapshot, now);
   if (!snapshot || !summary) return null;
@@ -119,7 +123,7 @@ export function AgentRateLimitPropertyValue({ snapshot, now = Date.now(), defaul
             textClass[tone],
             className,
           )}
-          aria-label={`Provider usage limit: ${label}`}
+          aria-label={translateDynamic("dynamic:providerUsageLimit", { value1: label })}
         >
           {summary.limited
             ? <Clock className="h-3.5 w-3.5 shrink-0" aria-hidden />
@@ -129,10 +133,10 @@ export function AgentRateLimitPropertyValue({ snapshot, now = Date.now(), defaul
         </button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-72 space-y-3 p-3">
-        <div className="text-xs font-medium">{snapshot.provider === "openai" ? "Codex" : "Claude"} usage limits</div>
+        <div className="text-xs font-medium">{snapshot.provider === "openai" ? "Codex" : "Claude"}{" " + pageText("usageLimits_980f63")}</div>
         <AgentRateLimitPanel snapshot={snapshot} summary={summary} now={now} />
         <div className="flex items-center justify-between gap-3 text-(length:--text-micro) text-muted-foreground">
-          <span>Reported {formatRateLimitClock(snapshot.observedAt, now)}</span>
+          <span>{pageText("reported_73c20d") + " "}{formatRateLimitClock(snapshot.observedAt, now)}</span>
           {detailsHref && <Link to={detailsHref} className="hover:text-foreground hover:underline">{translateUi("interfaceCopy.viewAgent")}</Link>}
         </div>
       </PopoverContent>

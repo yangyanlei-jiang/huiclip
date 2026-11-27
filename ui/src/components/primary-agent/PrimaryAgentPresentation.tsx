@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { createContext, useContext, useRef, useState, type CSSProperties } from "react";
@@ -92,13 +93,13 @@ export function PrimaryAgentCrownButton({ agent }: {
   const control = primary.error ? (
     <Tooltip {...tooltip}>
       <TooltipTrigger asChild>
-        <Button type="button" variant="ghost" size="icon-sm" aria-label="Retry loading primary agent" onClick={primary.onRetry}
+        <Button type="button" variant="ghost" size="icon-sm" aria-label={pageText("retryLoadingPrimaryAgent_0c4376")} onClick={primary.onRetry}
           onPointerMove={wakeTooltip} onBlur={wakeTooltip}
           className={cn(crownClass, "text-destructive")}>
           <Crown aria-hidden="true" className="size-5" />
         </Button>
       </TooltipTrigger>
-      <TooltipContent>Couldn't load your primary agent. Select to retry.</TooltipContent>
+      <TooltipContent>{pageText("couldnTLoadYourPrimaryAgentSelectTo_5f9e42")}</TooltipContent>
     </Tooltip>
   ) : selected && !loading ? (
     <Tooltip {...tooltip}>
@@ -119,13 +120,13 @@ export function PrimaryAgentCrownButton({ agent }: {
   ) : (
     <Tooltip {...tooltip}>
       <TooltipTrigger asChild>
-        <Button ref={buttonRef} type="button" variant="ghost" size="icon-sm" aria-label="Set as my primary" disabled={busy} onClick={request}
+        <Button ref={buttonRef} type="button" variant="ghost" size="icon-sm" aria-label={pageText("setAsMyPrimary_3ed404")} disabled={busy} onClick={request}
           onPointerMove={wakeTooltip} onBlur={wakeTooltip}
           className={cn(crownClass, "text-muted-foreground/50 hover:text-foreground")}>
           <Crown aria-hidden="true" className="size-5" />
         </Button>
       </TooltipTrigger>
-      <TooltipContent>{loading ? "Loading your primary agent…" : "Set as my primary"}</TooltipContent>
+      <TooltipContent>{loading ? pageText("loadingYourPrimaryAgent_9d02d5") : pageText("setAsMyPrimary_3ed404")}</TooltipContent>
     </Tooltip>
   );
 
@@ -140,30 +141,28 @@ export function PrimaryAgentCrownButton({ agent }: {
       }}>
         <div className="flex items-start justify-center gap-5 pt-2">
           <div className="flex min-w-0 flex-1 flex-col items-center gap-2 text-center">
-            <AgentAvatar agent={replacing} size={64} label={`${replacing.name} avatar`} />
+            <AgentAvatar agent={replacing} size={64} label={translateDynamic("dynamic:avatar", { value1: replacing.name })} />
             <span className="max-w-full break-words text-sm font-medium">{replacing.name}</span>
           </div>
           <ArrowRight aria-hidden="true" className="mt-5 size-6 shrink-0 text-muted-foreground" />
           <div className="flex min-w-0 flex-1 flex-col items-center gap-2 text-center">
-            <AgentAvatar agent={agent} size={64} label={`${agent.name} avatar`}
+            <AgentAvatar agent={agent} size={64} label={translateDynamic("dynamic:avatar", { value1: agent.name })}
               className="rounded-xl ring-1 ring-primary ring-offset-2 ring-offset-background" />
             <span className="flex max-w-full items-center justify-center gap-1.5 text-sm font-medium">
               <span className="min-w-0 break-words">{agent.name}</span>
-              <span role="img" aria-label="New primary agent" className="inline-flex shrink-0 text-primary">
+              <span role="img" aria-label={pageText("newPrimaryAgent_e794a9")} className="inline-flex shrink-0 text-primary">
                 <Crown aria-hidden="true" className="size-3.5" />
               </span>
             </span>
           </div>
         </div>
         <AlertDialogHeader>
-          <AlertDialogTitle>Change your primary agent?</AlertDialogTitle>
-          <AlertDialogDescription className="break-words">
-            This will make {agent.name} your primary agent, do you want to do this?
-          </AlertDialogDescription>
+          <AlertDialogTitle>{pageText("changeYourPrimaryAgent_06e23b")}</AlertDialogTitle>
+          <AlertDialogDescription className="break-words">{pageText("thisWillMake_ab7b16") + " "}{agent.name}{" " + pageText("yourPrimaryAgentDoYouWantToDo_3a71c6")}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex-row justify-between sm:justify-between">
           <AlertDialogCancel>{translateUi("interfaceCopy.cancel")}</AlertDialogCancel>
-          <AlertDialogAction disabled={busy} onClick={() => choose("after-dialog")}>Set as my primary</AlertDialogAction>
+          <AlertDialogAction disabled={busy} onClick={() => choose("after-dialog")}>{pageText("setAsMyPrimary_3ed404")}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog> : null}

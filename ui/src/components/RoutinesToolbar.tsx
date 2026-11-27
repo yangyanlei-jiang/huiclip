@@ -26,7 +26,7 @@ export function RoutinesToolbar({ query, onQueryChange, sortField, sortDir, grou
 }) {
   const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
-  return <div data-canonical-toolbar="routines" role="toolbar" aria-label="Routines controls" className="flex flex-wrap items-center gap-4">
+  return <div data-canonical-toolbar="routines" role="toolbar" aria-label={pageText("routinesControls_6e183e")} className="flex flex-wrap items-center gap-4">
     <ToolbarSearch query={query} onQueryChange={onQueryChange} label={pageText("searchRoutines_703609")} placeholder={pageText("searchRoutines_fca721")} />
     <Popover>
       <PopoverTrigger asChild>
@@ -60,7 +60,7 @@ export function RoutinesToolbar({ query, onQueryChange, sortField, sortDir, grou
               <span>{label}</span>
               {sortField === field ? (
                 <span className="text-xs text-muted-foreground">
-                  {sortDir === "asc" ? "Asc" : "Desc"}
+                  {sortDir === "asc" ? pageText("asc_4fee0a") : pageText("desc_01e635")}
                 </span>
               ) : null}
             </button>
@@ -102,7 +102,7 @@ export function RoutinesToolbar({ query, onQueryChange, sortField, sortDir, grou
     </Popover>
     <div className="design-toolbar-actions">
       {onToggleSelect && <Button variant="outline" size="sm" onClick={onToggleSelect}>{selectMode ? pageText("done_e9b450") : pageText("select_859822")}</Button>}
-      {tasksHref && <Button variant="outline" size="sm" asChild><Link data-toolbar-control to={tasksHref}>View all tasks</Link></Button>}
+      {tasksHref && <Button variant="outline" size="sm" asChild><Link data-toolbar-control to={tasksHref}>{pageText("viewAllTasks_806e80")}</Link></Button>}
       {onNewFolder && <Button variant="outline" size="sm" onClick={onNewFolder}><Plus className="h-4 w-4" />{pageText("newFolder_a71199")}</Button>}
       <Button variant="outline" size="sm" data-toolbar-primary onClick={onCreateRoutine}><Plus className="h-4 w-4" />{pageText("createRoutine_ff3a76")}</Button>
     </div>

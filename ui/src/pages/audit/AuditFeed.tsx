@@ -1,3 +1,5 @@
+import { controlText } from "@/i18n/controls";
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { AgentAvatar } from "@/components/AgentAvatar";
@@ -18,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Identity } from "@/components/Identity";
-import { cn, relativeTime } from "@/lib/utils";
+import { cn, formatDateTime, relativeTime } from "@/lib/utils";
 import { queryKeys } from "@/lib/queryKeys";
 import { formatActivityVerb } from "@/lib/activity-format";
 import { buildCompanyUserProfileMap, type CompanyUserProfile } from "@/lib/company-members";
@@ -172,12 +174,13 @@ function AuditActor({
  * that would duplicate the verb.
  */
 function AuditEntityNode({ record }: { record: AuditActionRecord }) {
+  const { t: pageText } = usePageTranslation("interface");
   const caseHref = useCaseHref();
   if (record.entityType === "case") {
     const caseRef = record.entity.case;
     return (
       <Link to={caseHref(caseRef?.identifier ?? record.entityId)} className="font-medium text-primary hover:underline">
-        {caseRef ? `${caseRef.identifier} · ${caseRef.title}` : "the case"}
+        {caseRef ? `${caseRef.identifier} · ${caseRef.title}` : pageText("theCase_482b0a")}
       </Link>
     );
   }
@@ -187,7 +190,7 @@ function AuditEntityNode({ record }: { record: AuditActionRecord }) {
   if (issueRef) {
     return (
       <Link to={`/issues/${issueRef}`} className="font-medium text-primary hover:underline">
-        {issue?.identifier ? `${issue.identifier}${issue.title ? ` · ${issue.title}` : ""}` : "the task"}
+        {issue?.identifier ? `${issue.identifier}${issue.title ? ` · ${issue.title}` : ""}` : pageText("theTask_e872c7")}
       </Link>
     );
   }
@@ -201,9 +204,7 @@ function AuditEntityNode({ record }: { record: AuditActionRecord }) {
       : null;
   if (connectionId) {
     return (
-      <Link to={`/apps/${connectionId}/permissions`} className="font-medium text-primary hover:underline">
-        the connection
-      </Link>
+      <Link to={`/apps/${connectionId}/permissions`} className="font-medium text-primary hover:underline">{pageText("theConnection_539b1c")}</Link>
     );
   }
   // Non-linkable entities (company, agent, goal, …) — show a plain descriptor.
@@ -256,14 +257,12 @@ function AuditRow({
             {" → "}{workflowTransition.to.name ?? pageText("caseInstructions_0df6da")} · {workflowTransition.to.phase}
           </p> : null}
           {documentKey ? (
-            <p className="text-xs text-muted-foreground">
-              Document <span className="font-mono text-(length:--text-micro)">{documentKey}</span>
+            <p className="text-xs text-muted-foreground">{pageText("document_e214b8") + " "}<span className="font-mono text-(length:--text-micro)">{documentKey}</span>
             </p>
           ) : null}
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             {showOnBehalf && responsibleLabel ? (
-              <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5">
-                on behalf of {responsibleLabel}
+              <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5">{pageText("onBehalfOf_308287") + " "}{responsibleLabel}
               </span>
             ) : null}
             {record.runId && record.agentId ? (
@@ -278,7 +277,7 @@ function AuditRow({
         <time
           className="shrink-0 whitespace-nowrap text-xs text-muted-foreground"
           dateTime={record.createdAt}
-          title={new Date(record.createdAt).toLocaleString()}
+          title={formatDateTime(record.createdAt, { includeSeconds: true })}
         >
           {relativeTime(record.createdAt)}
         </time>
@@ -289,19 +288,15 @@ function AuditRow({
 
 /** The permission-denied / upsell state shown when the caller lacks the grant. */
 function AuditUpsell() {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <Card>
       <CardContent className="flex flex-col items-center gap-3 py-14 text-center">
         <ShieldAlert className="h-10 w-10 text-muted-foreground/50" />
         <div>
-          <p className="text-sm font-medium text-foreground">Agent audit is a Paperclip Enterprise view</p>
-          <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-            The agent audit log gives you a searchable, exportable record of everything your agents
-            did — every comment, task change, approval, and run — with the responsible person for
-            each action. Ask an administrator to grant you the{" "}
-            <span className="font-mono text-(length:--text-micro)">audit:view_agent_actions</span>{" "}
-            permission to view it.
-          </p>
+          <p className="text-sm font-medium text-foreground">{pageText("agentAuditIsAPaperclipEnterpriseView_0edf8e")}</p>
+          <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">{pageText("theAgentAuditLogGivesYouASearchable_029e9b")}{" "}
+            <span className="font-mono text-(length:--text-micro)">audit:view_agent_actions</span>{" "}{pageText("permissionToViewIt_b1aec3")}</p>
         </div>
       </CardContent>
     </Card>
@@ -546,10 +541,10 @@ export function AuditFeed({
       // Browsers may read blob URLs lazily after click(), so keep the URL alive
       // long enough for the download to start.
       window.setTimeout(() => URL.revokeObjectURL(url), 5_000);
-      pushToast({ title: "Audit exported", body: "Your CSV download has started.", tone: "success" });
+      pushToast({ title: interfaceNotice("interface:auditExported_14004e"), body: interfaceNotice("interface:yourCSVDownloadHasStarted_a4c8c8"), tone: "success" });
     } catch (error) {
       pushToast({
-        title: "Export failed",
+        title: interfaceNotice("interface:exportFailed_d6c17e"),
         body: describeError(error, { action: "export the audit log" }).body,
         tone: "error",
       });
@@ -570,8 +565,8 @@ export function AuditFeed({
             <h2 className="text-lg font-semibold text-foreground">{translateUi("interfaceCopy.activity")}</h2>
             <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
               {resolvedMode === "agents"
-                ? "Every recorded agent action, newest first — with the responsible person and run behind each one."
-                : "Everything happening in your organization, newest first — people, agents, and the system. Each line is one recorded action."}
+                ? pageText("everyRecordedAgentActionNewestFirstWithThe_aa49a8")
+                : pageText("everythingHappeningInYourOrganizationNewestFirstPeople_791932")}
             </p>
           </div>
         </div>
@@ -584,10 +579,8 @@ export function AuditFeed({
             <TabsTrigger
               value="agents"
               disabled={accessTier === "basic"}
-              title={accessTier === "basic" ? "Agent Actions requires audit access" : undefined}
-            >
-              Agent Actions
-            </TabsTrigger>
+              title={accessTier === "basic" ? pageText("agentActionsRequiresAuditAccess_e6f37b") : undefined}
+            >{pageText("agentActions_c065a3")}</TabsTrigger>
           </TabsList>
         </Tabs>
       ) : null}
@@ -597,14 +590,14 @@ export function AuditFeed({
           {lockedRunId
             ? `Scoped to run ${lockedRunId.slice(0, 8)}`
             : lockedAgentId
-              ? "Scoped to one agent"
+              ? pageText("scopedToOneAgent_8f4d7b")
               : scopedCase
-                ? <>Case <Link to={caseHref(scopedCase.identifier)} className="font-medium text-primary hover:underline">{scopedCase.identifier} · {scopedCase.title}</Link></>
+                ? <>{pageText("case_9254c4") + " "}<Link to={caseHref(scopedCase.identifier)} className="font-medium text-primary hover:underline">{scopedCase.identifier} · {scopedCase.title}</Link></>
                 : `Scoped to ${lockedEntity?.label ?? lockedEntity?.type ?? "entity"}`}
         </div>
       ) : null}
 
-      <div data-canonical-toolbar="audit-activity" role="toolbar" aria-label="Audit filters" className="flex flex-wrap items-end gap-3 border-y border-border py-3">
+      <div data-canonical-toolbar="audit-activity" role="toolbar" aria-label={pageText("auditFilters_e673ef")} className="flex flex-wrap items-end gap-3 border-y border-border py-3">
         {canUseAdvancedControls && !lockedAgentId && !lockedRunId ? (
           <label className="grid gap-1 text-(length:--text-micro) font-medium text-muted-foreground">
             <span>{translateUi("interfaceCopy.agent")}</span>
@@ -632,7 +625,7 @@ export function AuditFeed({
                 <SelectValue placeholder={pageText("responsibleUser_59fcd1")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={ALL}>All responsible users</SelectItem>
+                <SelectItem value={ALL}>{pageText("allResponsibleUsers_40e9bb")}</SelectItem>
                 {(userDirectory.data?.users ?? []).map((u) => (
                   <SelectItem key={u.principalId} value={u.principalId}>
                     {u.user?.name ?? u.user?.email ?? u.principalId.slice(0, 8)}
@@ -651,7 +644,7 @@ export function AuditFeed({
             <SelectContent>
               {ACTION_DOMAINS.map((d) => (
                 <SelectItem key={d.value} value={d.value}>
-                  {d.label}
+                  {controlText(d.label)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -659,15 +652,15 @@ export function AuditFeed({
         </label>
         {!lockedEntity ? (
           <label className="grid gap-1 text-(length:--text-micro) font-medium text-muted-foreground">
-            <span>Entity</span>
+            <span>{pageText("entity_c7fb31")}</span>
             <Select value={entityType} onValueChange={setEntityType}>
               <SelectTrigger className="w-40">
-                <SelectValue placeholder="Entity" />
+                <SelectValue placeholder={pageText("entity_c7fb31")} />
               </SelectTrigger>
               <SelectContent>
                 {ENTITY_TYPES.map((e) => (
                   <SelectItem key={e.value} value={e.value}>
-                    {e.label}
+                    {controlText(e.label)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -676,10 +669,10 @@ export function AuditFeed({
         ) : null}
         {!lockedEntity && entityType === "case" ? (
           <label className="grid gap-1 text-(length:--text-micro) font-medium text-muted-foreground">
-            <span>Case</span>
+            <span>{pageText("case_9254c4")}</span>
             <Input
               type="search"
-              aria-label="Case ID or identifier"
+              aria-label={pageText("caseIDOrIdentifier_56ade7")}
               placeholder="CAS-C1"
               value={entityIdDraft}
               onChange={event => {
@@ -698,10 +691,10 @@ export function AuditFeed({
           </label>
         ) : null}
         <label className="grid gap-1 text-(length:--text-micro) font-medium text-muted-foreground">
-          <span>From</span>
+          <span>{pageText("from_3f6605")}</span>
           <Input
             type="date"
-            aria-label="From date"
+            aria-label={pageText("fromDate_3b5d11")}
             value={dateFrom}
             max={dateTo || undefined}
             onChange={(e) => setDateFrom(e.target.value)}
@@ -709,10 +702,10 @@ export function AuditFeed({
           />
         </label>
         <label className="grid gap-1 text-(length:--text-micro) font-medium text-muted-foreground">
-          <span>To</span>
+          <span>{pageText("to_ae79ea")}</span>
           <Input
             type="date"
-            aria-label="To date"
+            aria-label={pageText("toDate_af244d")}
             value={dateTo}
             min={dateFrom || undefined}
             onChange={(e) => setDateTo(e.target.value)}
@@ -731,16 +724,14 @@ export function AuditFeed({
             disabled={exporting || feed.isLoading || items.length === 0}
           >
             <Download className="mr-1.5 h-4 w-4" />
-            {exporting ? "Exporting…" : "Export CSV"}
+            {exporting ? pageText("exporting_583ccc") : pageText("exportCSV_5755f9")}
           </Button>
         ) : null}
       </div>
 
       {recoveringFromAccessDowngrade || fallingBackToAllActivity ? (
         <Card>
-          <CardContent className="py-14 text-center text-sm text-muted-foreground">
-            Refreshing audit access…
-          </CardContent>
+          <CardContent className="py-14 text-center text-sm text-muted-foreground">{pageText("refreshingAuditAccess_8a8f91")}</CardContent>
         </Card>
       ) : feedView.kind === "loading" || feedView.kind === "reconnecting" ? (
         <Card>
@@ -759,14 +750,14 @@ export function AuditFeed({
             <ScrollText className="h-10 w-10 text-muted-foreground/40" />
             <div>
               <p className="text-sm font-medium text-foreground">
-                {hasActiveFilters ? "No actions match these filters" : "Nothing here yet"}
+                {hasActiveFilters ? pageText("noActionsMatchTheseFilters_d93143") : pageText("nothingHereYet_e89225")}
               </p>
               <p className="mt-1 max-w-md text-sm text-muted-foreground">
                 {hasActiveFilters
-                  ? "Try a wider date range or different filters."
+                  ? pageText("tryAWiderDateRangeOrDifferentFilters_5af673")
                   : resolvedMode === "agents"
-                    ? "As soon as your agents start doing things, their actions show up here."
-                    : "As soon as anyone in your organization does something, it shows up here."}
+                    ? pageText("asSoonAsYourAgentsStartDoingThings_ecd112")
+                    : pageText("asSoonAsAnyoneInYourOrganizationDoes_68d3c2")}
               </p>
             </div>
             {hasActiveFilters ? (
@@ -776,7 +767,7 @@ export function AuditFeed({
         </Card>
       ) : (
         <div className="border-y border-border">
-          <ul className={cn("divide-y divide-border")} aria-label="Audit activity">
+          <ul className={cn("divide-y divide-border")} aria-label={pageText("auditActivity_72cba9")}>
             {items.map((record) => (
               <AuditRow
                 key={record.id}
@@ -803,9 +794,7 @@ export function AuditFeed({
         </div>
       ) : null}
 
-      <p className="text-xs text-muted-foreground">
-        Recorded by Paperclip — entries can't be edited. Sensitive values are never stored.
-      </p>
+      <p className="text-xs text-muted-foreground">{pageText("recordedByPaperclipEntriesCanTBeEdited_032d0d")}</p>
     </div>
   );
 }

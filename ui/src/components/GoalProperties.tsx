@@ -1,3 +1,5 @@
+import { controlText } from "@/i18n/controls";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { Link } from "@/lib/router";
@@ -35,11 +37,13 @@ function label(s: string): string {
 function PickerButton({
   current,
   options,
+  displayLabel,
   onChange,
   children,
 }: {
   current: string;
   options: readonly string[];
+  displayLabel: (value: string) => string;
   onChange: (value: string) => void;
   children: React.ReactNode;
 }) {
@@ -63,7 +67,7 @@ function PickerButton({
               setOpen(false);
             }}
           >
-            {label(opt)}
+            {displayLabel(opt)}
           </Button>
         ))}
       </PopoverContent>
@@ -72,6 +76,7 @@ function PickerButton({
 }
 
 export function GoalProperties({ goal, onUpdate }: GoalPropertiesProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { selectedCompanyId } = useCompany();
 
@@ -103,6 +108,7 @@ export function GoalProperties({ goal, onUpdate }: GoalPropertiesProps) {
             <PickerButton
               current={goal.status}
               options={GOAL_STATUSES}
+              displayLabel={value => pageText("status_" + value, { defaultValue: label(value) })}
               onChange={(status) => onUpdate({ status })}
             >
               <StatusBadge status={goal.status} />
@@ -112,17 +118,18 @@ export function GoalProperties({ goal, onUpdate }: GoalPropertiesProps) {
           )}
         </PropertyRow>
 
-        <PropertyRow label="Level">
+        <PropertyRow label={pageText("level_7c7f5d")}>
           {onUpdate ? (
             <PickerButton
               current={goal.level}
               options={GOAL_LEVELS}
+              displayLabel={value => controlText("goalLevel_" + value)}
               onChange={(level) => onUpdate({ level })}
             >
-              <span className="text-sm capitalize">{goal.level}</span>
+              <span className="text-sm capitalize">{controlText("goalLevel_" + goal.level)}</span>
             </PickerButton>
           ) : (
-            <span className="text-sm capitalize">{goal.level}</span>
+            <span className="text-sm capitalize">{controlText("goalLevel_" + goal.level)}</span>
           )}
         </PropertyRow>
 
@@ -140,7 +147,7 @@ export function GoalProperties({ goal, onUpdate }: GoalPropertiesProps) {
         </PropertyRow>
 
         {goal.parentId && (
-          <PropertyRow label="Parent Goal">
+          <PropertyRow label={pageText("parentGoal_116828")}>
             <Link
               to={`/goals/${goal.parentId}`}
               className="text-sm hover:underline"

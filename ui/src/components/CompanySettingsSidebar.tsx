@@ -97,7 +97,7 @@ export function CompanySettingsSidebar() {
         className="flex h-(--sz-60px) shrink-0 items-center px-3"
       >
         <div data-slot="settings-back-group" className={`${primarySidebarStyles.group} w-full`}>
-          <SidebarNavItem to="/dashboard" label="Back to app" icon={ArrowLeft} />
+          <SidebarNavItem to="/dashboard" label={pageText("backToApp_8a68b2")} icon={ArrowLeft} />
         </div>
       </div>
       <nav
@@ -156,10 +156,10 @@ export function CompanySettingsSidebar() {
             />
           )}
           {showPage("company.export") && (
-            <SidebarNavItem to="/company/export" label="Export" icon={Download} />
+            <SidebarNavItem to="/company/export" label={pageText("export_f3e4fa")} icon={Download} />
           )}
           {!isCloud && showPage("company.import") && (
-            <SidebarNavItem to="/company/import" label="Import" icon={Upload} end />
+            <SidebarNavItem to="/company/import" label={pageText("import_d6fbc9")} icon={Upload} end />
           )}
           {showPage("instance.experimental") && (
             <SidebarNavItem

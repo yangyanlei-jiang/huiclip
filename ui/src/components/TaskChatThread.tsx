@@ -1,3 +1,5 @@
+import { controlText } from "@/i18n/controls";
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { imagePreparationReceiptIds } from "./task-chat/image-resources";
@@ -547,7 +549,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
     showComposer = true,
     composerPause,
     composerDisabledReason,
-    emptyMessage = "No messages yet.",
+    emptyMessage,
     companyId,
     linkedRuns,
     liveRuns,
@@ -2981,7 +2983,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
           disabled={isInterrupting}
           onClick={() => void onInterruptQueued(runId)}
         >
-          {isInterrupting ? "Interrupting…" : pageText("interrupt_d5db45")}
+          {isInterrupting ? pageText("interrupting_af800e") : pageText("interrupt_d5db45")}
         </Button>
       );
     },
@@ -3049,7 +3051,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
   const historyControl = props.historyControl ?? (
     props.compactHistory && props.onExpandHistory
     && (deferredTranscriptRunIds.size > 0 || logRuns.some((run) => truncatedRunIds?.has(run.id)))
-      ? <Button type="button" variant="ghost" size="sm" onClick={props.onExpandHistory}>More run output</Button>
+      ? <Button type="button" variant="ghost" size="sm" onClick={props.onExpandHistory}>{pageText("moreRunOutput_ffc75c")}</Button>
       : null
   );
   const renderBrief = useCallback(
@@ -3124,7 +3126,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
                   setTakeoverMode("normal");
                 }
               } catch (error) {
-                setDismissError(error instanceof Error ? error.message : "Unable to dismiss this request. Try again.");
+                setDismissError(error instanceof Error ? error.message : interfaceNotice("interface:unableToDismissThisRequestTryAgain_38f469"));
               }
             })();
           },
@@ -3331,7 +3333,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
                   role="status"
                   className="absolute inset-x-0 top-0 z-20 mx-auto flex w-full max-w-(--tc-shell-max-w) items-center gap-2 border border-border bg-background px-4 py-2 text-sm text-muted-foreground"
                 >
-                  {historyError ? "Some task history could not be loaded." : "Some task history is still loading."}
+                  {historyError ? pageText("someTaskHistoryCouldNotBeLoaded_fc64b8") : pageText("someTaskHistoryIsStillLoading_0bbd55")}
                   {historyError ? (
                     <Button variant="ghost" size="sm" onClick={retryHistory}>{translateUi("interfaceCopy.retry")}</Button>
                   ) : null}
@@ -3366,7 +3368,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
                           </div>
                         ) : null}
                         <div role={historyPending ? "status" : undefined} className="px-3 py-10 text-center text-sm text-muted-foreground">
-                          {historyPending ? "Loading task history…" : emptyMessage}
+                          {historyPending ? pageText("loadingTaskHistory_33381c") : (emptyMessage ?? controlText("noMessages"))}
                         </div>
                         {bottomBlockerLinks ? (
                           <div
@@ -3477,15 +3479,15 @@ export function TaskChatThread(props: TaskChatThreadProps) {
                                         items={tailItems}
                                         emptyMessage={
                                           tailStatus === "queued"
-                                            ? "Waiting to start..."
+                                            ? pageText("waitingToStart_f52fbc")
                                             : (liveRun && liveRun.id === tailRunId
                                                 ? liveRun.currentStatusMessage
                                                 : null) ||
                                               (tailStatus === "failed"
                                                 ? linkedRunMetaById.get(tailRunId ?? "")?.errorCode?.startsWith("workspace_git_scan_")
-                                                  ? "Workspace setup failed before the agent started."
-                                                  : "This run stopped before a response was available. Review the task’s connection or recovery action below."
-                                                : "Waiting for transcript...")
+                                                  ? pageText("workspaceSetupFailedBeforeTheAgentStarted_58669e")
+                                                  : pageText("thisRunStoppedBeforeAResponseWasAvailable_40b683")
+                                                : pageText("waitingForTranscript_83ca5d"))
                                         }
                                       />
                                     </TaskChatShimmerScope>

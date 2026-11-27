@@ -48,28 +48,28 @@ export function ComposioAppSetup({ name, toolkit, connections, onClose, onBack, 
 
   return <div className="space-y-4">
     <div className="space-y-2">
-      <Label htmlFor="composio-app-account">Composio account</Label>
+      <Label htmlFor="composio-app-account">{pageText("composioAccount_b94cc3")}</Label>
       <select id="composio-app-account" value={connectionId} disabled={busy} onChange={event => {
         setConnectionId(event.target.value); setResult(null); setError(null);
       }} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
         {connections.map(candidate => <option key={candidate.id} value={candidate.id}>{candidate.name}</option>)}
-        <option value="__new__">Connect a new account…</option>
+        <option value="__new__">{pageText("connectANewAccount_aa9521")}</option>
       </select>
     </div>
     {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
-    {result ? <p role="status" className="text-sm text-muted-foreground">Finish connecting {name} in Composio, then return here.</p> : null}
+    {result ? <p role="status" className="text-sm text-muted-foreground">{pageText("finishConnecting_1899b2") + " "}{name}{" " + pageText("inComposioThenReturnHere_0d5059")}</p> : null}
     {result?.authorizationUrl ? <Button asChild variant="outline" className="w-full">
-      <a href={result.authorizationUrl} target="_blank" rel="noopener noreferrer">{pageText("connect_b65463") + " "}{name} in Composio<ExternalLink className="size-4" /></a>
+      <a href={result.authorizationUrl} target="_blank" rel="noopener noreferrer">{pageText("connect_b65463") + " "}{name}{" " + pageText("inComposio_b2d6c9")}<ExternalLink className="size-4" /></a>
     </Button> : null}
     <div className="flex items-center justify-between gap-2">
       <Button variant="ghost" disabled={busy} onClick={onBack ?? onClose}>{onBack ? pageText("back_b52b36") : pageText("cancel_77dfd2")}</Button>
       <div className="flex items-center gap-2">
-      {result && result.status !== "connected" ? <Button variant="ghost" disabled={busy} onClick={() => void submit({ action: "start" })}>Get a new link</Button> : null}
+      {result && result.status !== "connected" ? <Button variant="ghost" disabled={busy} onClick={() => void submit({ action: "start" })}>{pageText("getANewLink_b49020")}</Button> : null}
       <Button disabled={!settled || busy || (!connection && connectionId !== "__new__")} onClick={() => {
         if (connectionId === "__new__") onConnectNew();
         else void submit(result ? { action: "complete" } : { action: "start" });
       }}>
-        {busy ? pageText("checking_820d60") : connectionId === "__new__" ? "Connect new account" : result ? "I’ve connected it" : pageText("continue_2e0262")}
+        {busy ? pageText("checking_820d60") : connectionId === "__new__" ? pageText("connectNewAccount_93ceea") : result ? pageText("iVeConnectedIt_245f96") : pageText("continue_2e0262")}
       </Button>
       </div>
     </div>

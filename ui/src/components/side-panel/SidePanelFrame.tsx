@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type { CSSProperties, ReactNode } from "react";
 import { Maximize2, Minimize2, PanelRightClose, PanelRightOpen, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -148,6 +149,7 @@ export function SidePanelWindowControls({
   onToggle: () => void;
   closeControl?: "toggle" | "close";
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <>
       <Button
@@ -156,8 +158,8 @@ export function SidePanelWindowControls({
         size="icon-sm"
         className="h-(--side-panel-tab-height) w-(--side-panel-tab-height) text-muted-foreground hover:text-foreground focus-visible:text-foreground"
         onClick={() => onMaximizedChange(!maximized)}
-        aria-label={maximized ? "Restore side panel" : "Maximize side panel"}
-        title={maximized ? "Restore side panel" : "Maximize side panel"}
+        aria-label={maximized ? pageText("restoreSidePanel_ad3fd6") : pageText("maximizeSidePanel_829a7a")}
+        title={maximized ? pageText("restoreSidePanel_ad3fd6") : pageText("maximizeSidePanel_829a7a")}
       >
         {maximized ? <Minimize2 aria-hidden /> : <Maximize2 aria-hidden />}
       </Button>
@@ -168,8 +170,8 @@ export function SidePanelWindowControls({
           size="icon-sm"
           className="h-(--side-panel-tab-height) w-(--side-panel-tab-height) text-muted-foreground hover:text-foreground focus-visible:text-foreground"
           onClick={onToggle}
-          aria-label="Close side panel"
-          title="Close side panel"
+          aria-label={pageText("closeSidePanel_60a3a7")}
+          title={pageText("closeSidePanel_60a3a7")}
         >
           <X aria-hidden />
         </Button>

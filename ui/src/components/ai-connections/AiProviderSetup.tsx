@@ -246,18 +246,13 @@ export function AiProviderSetup({
     />
   );
   const modelSettings = (
-    <label className="block space-y-2 text-xs text-muted-foreground">
-      Model IDs (comma separated)
-      <Input
-        aria-label="Model IDs"
+    <label className="block space-y-2 text-xs text-muted-foreground">{pageText("modelIDsCommaSeparated_c67e79")}<Input
+        aria-label={pageText("modelIDs_f47692")}
         value={models}
         onChange={(e) => setModels(e.target.value)}
         disabled={Boolean(reconnect)}
       />
-      <span className="block">
-        Use the provider’s model ID or your gateway’s alias. You can
-        also enter one on the agent.
-      </span>
+      <span className="block">{pageText("useTheProviderSModelIDOrYour_d15f11")}</span>
     </label>
   );
   const accessDefaults = !reconnect ? (
@@ -280,14 +275,14 @@ export function AiProviderSetup({
     />
   ) : undefined;
   const cancel = () => reconnect || initialProvider ? onCancel() : setStep("provider");
-  if (!reconnect && (accounts.isPending || accountsView.kind === "reconnecting")) return <p role="status">Loading connection permissions…</p>;
+  if (!reconnect && (accounts.isPending || accountsView.kind === "reconnecting")) return <p role="status">{pageText("loadingConnectionPermissions_a1e26e")}</p>;
   if (!reconnect && accountsView.kind === "error") return <QueryErrorState error={accounts.error} action="load connection permissions" onRetry={accountsView.retry} retrying={accountsView.isFetching} />;
   return (
     <div className="mx-auto w-full max-w-2xl space-y-6" onSubmit={(event) => event.stopPropagation()}>
       <div className="space-y-2">
         <h2 className="text-xl font-semibold">
           {step === "provider"
-            ? "Connect a model provider"
+            ? pageText("connectAModelProvider_3447ed")
             : `${reconnect ? "Reconnect" : "Connect"} ${label}`}
         </h2>
       </div>
@@ -297,9 +292,7 @@ export function AiProviderSetup({
           {advancedOnly ? choices(true) : <>
           {choices(false)}
           <details>
-            <summary className="cursor-pointer text-sm text-muted-foreground">
-              Advanced providers
-            </summary>
+            <summary className="cursor-pointer text-sm text-muted-foreground">{pageText("advancedProviders_376152")}</summary>
             <div className="pt-4">{choices(true)}</div>
           </details>
           </>}
@@ -333,10 +326,8 @@ export function AiProviderSetup({
         >
           {(provider === "gateway" || provider === "local") && (
             <>
-              <label className="block space-y-2 text-xs text-muted-foreground">
-                Provider URL
-                <Input
-                  aria-label="Provider URL"
+              <label className="block space-y-2 text-xs text-muted-foreground">{pageText("providerURL_de1f83")}<Input
+                  aria-label={pageText("providerURL_de1f83")}
                   placeholder={
                     provider === "local"
                       ? "http://localhost:11434/v1"
@@ -347,9 +338,7 @@ export function AiProviderSetup({
                   disabled={Boolean(reconnect)}
                 />
               </label>
-              <label className="block space-y-2 text-xs text-muted-foreground">
-                API format
-                <Select
+              <label className="block space-y-2 text-xs text-muted-foreground">{pageText("apiFormat_ba7636")}<Select
                   value={protocol}
                   onValueChange={(v) => {
                     setProtocol(v as typeof protocol);
@@ -358,7 +347,7 @@ export function AiProviderSetup({
                   }}
                   disabled={Boolean(reconnect) || Boolean(initialProtocol)}
                 >
-                  <SelectTrigger aria-label="API format" className="w-full">
+                  <SelectTrigger aria-label={pageText("apiFormat_ba7636")} className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -377,10 +366,8 @@ export function AiProviderSetup({
             </>
           )}
           {provider === "bedrock" && (
-            <label className="block space-y-2 text-xs text-muted-foreground">
-              AWS region
-              <Input
-                aria-label="AWS region"
+            <label className="block space-y-2 text-xs text-muted-foreground">{pageText("awsRegion_81664b")}<Input
+                aria-label={pageText("awsRegion_81664b")}
                 value={region}
                 onChange={(e) => setRegion(e.target.value)}
                 disabled={Boolean(reconnect)}
@@ -399,17 +386,15 @@ export function AiProviderSetup({
                 <SelectContent>
                   <SelectItem value="bearer">
                     {provider === "bedrock"
-                      ? "Bedrock API key"
-                      : "Bearer token"}
+                      ? pageText("bedrockAPIKey_59d65e")
+                      : pageText("bearerToken_ffa64b")}
                   </SelectItem>
                   {provider !== "bedrock" && (
                     <>
                       {protocol === "messages" && (
-                        <SelectItem value="api_key">
-                          API key · x-api-key
-                        </SelectItem>
+                        <SelectItem value="api_key">{pageText("apiKeyXApiKey_ded25b")}</SelectItem>
                       )}
-                      <SelectItem value="none">No authentication</SelectItem>
+                      <SelectItem value="none">{pageText("noAuthentication_9cd50f")}</SelectItem>
                     </>
                   )}
                 </SelectContent>
@@ -428,15 +413,12 @@ export function AiProviderSetup({
               </label>
             )
           }
-          {reconnect && <details><summary className="cursor-pointer text-sm text-muted-foreground">Model settings</summary>{modelSettings}</details>}
-          <p className="text-xs text-muted-foreground">
-            Test the connection with your chosen model in the agent’s execution
-            environment after connecting.
-          </p>
+          {reconnect && <details><summary className="cursor-pointer text-sm text-muted-foreground">{pageText("modelSettings_d96087")}</summary>{modelSettings}</details>}
+          <p className="text-xs text-muted-foreground">{pageText("testTheConnectionWithYourChosenModelIn_e91446")}</p>
           {save.error && (
             <p role="alert" className="text-sm text-destructive">
               {save.error instanceof Error && save.error.name === "ZodError"
-                ? "Check the URL, API format, and authentication fields."
+                ? pageText("checkTheURLAPIFormatAndAuthenticationFields_92b3eb")
                 : describeError(save.error).body}
             </p>
           )}

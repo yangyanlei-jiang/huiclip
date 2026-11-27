@@ -64,20 +64,18 @@ function RunDetailPreview({
   streaming: boolean;
   density: TranscriptDensity;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="overflow-hidden rounded-xl border border-border/70 bg-background/80 shadow-[0_24px_60px_rgba(15,23,42,0.08)]">
       <div className="border-b border-border/60 bg-background/90 px-5 py-4">
         <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="outline" className="uppercase tracking-(--tracking-caps) text-(length:--text-nano)">
-            Run Detail
-          </Badge>
+          <Badge variant="outline" className="uppercase tracking-(--tracking-caps) text-(length:--text-nano)">{pageText("runDetail_befef8")}</Badge>
           <StatusBadge status={streaming ? "running" : "succeeded"} />
           <span className="text-xs text-muted-foreground">
             {formatDateTime(runTranscriptFixtureMeta.startedAt)}
           </span>
         </div>
-        <div className="mt-2 text-sm font-medium">
-          Transcript ({runTranscriptFixtureEntries.length})
+        <div className="mt-2 text-sm font-medium">{pageText("transcript_901c5d")}{runTranscriptFixtureEntries.length})
         </div>
       </div>
       <div className="max-h-(--sz-720px) overflow-y-auto bg-[radial-gradient(circle_at_top_left,rgba(8,145,178,0.08),transparent_36%),radial-gradient(circle_at_bottom_right,rgba(245,158,11,0.10),transparent_28%)] p-5">
@@ -105,12 +103,8 @@ function LiveWidgetPreview({
   return (
     <div className="overflow-hidden rounded-xl border border-cyan-500/25 bg-background/85 shadow-[0_20px_50px_rgba(6,182,212,0.10)]">
       <div className="border-b border-border/60 bg-cyan-500/[0.05] px-5 py-4">
-        <div className="text-xs font-semibold uppercase tracking-(--tracking-caps) text-cyan-700 dark:text-cyan-300">
-          Live Runs
-        </div>
-        <div className="mt-1 text-xs text-muted-foreground">
-          Compact live transcript stream for the issue detail page.
-        </div>
+        <div className="text-xs font-semibold uppercase tracking-(--tracking-caps) text-cyan-700 dark:text-cyan-300">{pageText("liveRuns_69ec6f")}</div>
+        <div className="mt-1 text-xs text-muted-foreground">{pageText("compactLiveTranscriptStreamForTheIssueDetail_075a79")}</div>
       </div>
       <div className="px-5 py-4">
         <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -150,6 +144,7 @@ function DashboardPreview({
   mode: TranscriptMode;
   density: TranscriptDensity;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="max-w-md">
       <div className={cn(
@@ -169,7 +164,7 @@ function DashboardPreview({
                 <Identity name={runTranscriptFixtureMeta.agentName} size="sm" />
               </div>
               <div className="mt-2 text-(length:--text-micro) text-muted-foreground">
-                {streaming ? "Live now" : "Finished 2m ago"}
+                {streaming ? pageText("liveNow_6235bf") : pageText("finished2mAgo_7d2b17")}
               </div>
             </div>
             <Badge variant="outline" className="[&>svg]:size-2.5 border-border/70 bg-background/70 py-1 text-(length:--text-nano) text-muted-foreground">
@@ -195,6 +190,7 @@ function DashboardPreview({
 }
 
 export function RunTranscriptUxLab() {
+  const { t: pageText } = usePageTranslation("interface");
   const [selectedSurface, setSelectedSurface] = useState<SurfaceId>("detail");
   const [detailMode, setDetailMode] = useState<TranscriptMode>("nice");
   const [streaming, setStreaming] = useState(true);
@@ -209,13 +205,9 @@ export function RunTranscriptUxLab() {
           <aside className="border-b border-border/60 bg-background/75 p-5 lg:border-b-0 lg:border-r">
             <div className="mb-5">
               <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/25 bg-cyan-500/[0.08] px-3 py-1 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-caps) text-cyan-700 dark:text-cyan-300">
-                <FlaskConical className="h-3.5 w-3.5" />
-                UX Lab
-              </div>
-              <h1 className="mt-4 text-2xl font-semibold tracking-tight">Run Transcript Fixtures</h1>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Built from a real Paperclip development run, then sanitized so no secrets, local paths, or environment details survive into the fixture.
-              </p>
+                <FlaskConical className="h-3.5 w-3.5" />{pageText("uxLab_f1af17")}</div>
+              <h1 className="mt-4 text-2xl font-semibold tracking-tight">{pageText("runTranscriptFixtures_c1937e")}</h1>
+              <p className="mt-2 text-sm text-muted-foreground">{pageText("builtFromARealPaperclipDevelopmentRunThen_009f46")}</p>
             </div>
 
             <div className="space-y-2">
@@ -266,8 +258,7 @@ export function RunTranscriptUxLab() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="outline" className="rounded-full px-3 py-1 text-(length:--text-nano) uppercase tracking-(--tracking-caps)">
-                  Source run {runTranscriptFixtureMeta.sourceRunId.slice(0, 8)}
+                <Badge variant="outline" className="rounded-full px-3 py-1 text-(length:--text-nano) uppercase tracking-(--tracking-caps)">{pageText("sourceRun_9932aa") + " "}{runTranscriptFixtureMeta.sourceRunId.slice(0, 8)}
                 </Badge>
                 <Badge variant="outline" className="rounded-full px-3 py-1 text-(length:--text-nano) uppercase tracking-(--tracking-caps)">
                   {runTranscriptFixtureMeta.issueIdentifier}
@@ -276,9 +267,7 @@ export function RunTranscriptUxLab() {
             </div>
 
             <div className="mb-5 flex flex-wrap items-center gap-2">
-              <span className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
-                Controls
-              </span>
+              <span className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">{pageText("controls_bee75c")}</span>
               <div className="inline-flex rounded-full border border-border/70 bg-background/80 p-1">
                 {(["nice", "raw"] as const).map((mode) => (
                   <button
@@ -315,7 +304,7 @@ export function RunTranscriptUxLab() {
                 className="rounded-full"
                 onClick={() => setStreaming((value) => !value)}
               >
-                {streaming ? "Show settled state" : "Show streaming state"}
+                {streaming ? pageText("showSettledState_b52311") : pageText("showStreamingState_d5f291")}
               </Button>
             </div>
 

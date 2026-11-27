@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useId } from "react";
 import { Bot, ChevronRight } from "lucide-react";
 import { MarkdownBody } from "@/components/MarkdownBody";
@@ -79,6 +80,7 @@ function SubagentMeta({ subagent }: { subagent: TaskChatSubagent }) {
 }
 
 function SubagentBody({ subagent }: { subagent: TaskChatSubagent }) {
+  const { t: pageText } = usePageTranslation("interface");
   const running = subagent.status === "running";
   const phase: TaskChatActivityPhaseItem = {
     id: `${subagent.id}:activity`,
@@ -92,8 +94,7 @@ function SubagentBody({ subagent }: { subagent: TaskChatSubagent }) {
       {subagent.prompt ? (
         <details className="group min-w-0 text-xs text-muted-foreground">
           <summary className="flex cursor-pointer list-none items-center gap-1 hover:text-foreground">
-            <ChevronRight className="size-3.5 shrink-0 group-open:rotate-90" aria-hidden />
-            Prompt{subagent.model ? <span className="font-mono"> · {subagent.model}</span> : null}
+            <ChevronRight className="size-3.5 shrink-0 group-open:rotate-90" aria-hidden />{pageText("prompt_a817d7")}{subagent.model ? <span className="font-mono"> · {subagent.model}</span> : null}
           </summary>
           <div className="mt-1 whitespace-pre-wrap break-words rounded-md bg-muted/40 p-2 leading-relaxed">{subagent.prompt}</div>
         </details>
@@ -176,6 +177,7 @@ export function TaskChatSubagentCard({
 /** Parallel subagents dispatched together, shown as a small tree. A single
  * subagent renders as its own card with no group header. */
 export function TaskChatSubagentTree({ subagents }: { subagents: readonly TaskChatSubagent[] }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (subagents.length === 0) return null;
   if (subagents.length === 1) return <TaskChatSubagentCard subagent={subagents[0]!} />;
   const running = subagents.filter((subagent) => subagent.status === "running").length;
@@ -191,7 +193,7 @@ export function TaskChatSubagentTree({ subagents }: { subagents: readonly TaskCh
         <span className="flex size-5 items-center justify-center"><Bot className="size-3.5" aria-hidden /></span>
         <span className={cn(running > 0 && "text-foreground")}>{label}</span>
       </div>
-      <ol className="ml-5 flex min-w-0 flex-col gap-0.5 border-l border-border py-1 pl-2 pr-1 pb-2" aria-label="Subagents">
+      <ol className="ml-5 flex min-w-0 flex-col gap-0.5 border-l border-border py-1 pl-2 pr-1 pb-2" aria-label={pageText("subagents_c44b69")}>
         {subagents.map((subagent) => (
           <li key={subagent.id} className="min-w-0">
             <TaskChatSubagentCard subagent={subagent} nested />

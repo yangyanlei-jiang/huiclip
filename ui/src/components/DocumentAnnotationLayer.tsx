@@ -547,7 +547,7 @@ export function DocumentAnnotationLayer({
                 data-status={rect.status}
                 data-focused={isFocused || undefined}
                 data-hovered={isHovered || undefined}
-                aria-label="Open annotation thread"
+                aria-label={pageText("openAnnotationThread_3f6f74")}
                 className={cn(
                   "paperclip-doc-annotation-hit-target pointer-events-auto absolute cursor-pointer rounded-none bg-transparent transition-colors",
                   isFocused && "ring-1 ring-transparent",
@@ -587,7 +587,7 @@ export function DocumentAnnotationLayer({
                   width: 16,
                   height: 16,
                 }}
-                title="Anchor moved — needs review"
+                title={pageText("anchorMovedNeedsReview_70c54c")}
               >
                 <AlertTriangle className="h-3 w-3" />
               </span>
@@ -597,7 +597,7 @@ export function DocumentAnnotationLayer({
             <div
               data-testid="document-annotation-selection-toolbar"
               role="toolbar"
-              aria-label="Selection actions"
+              aria-label={pageText("selectionActions_292f13")}
               className="paperclip-doc-annotation-selection-toolbar pointer-events-auto absolute z-10 flex items-center gap-1 rounded-md border border-border bg-popover px-1 py-1 shadow-md"
               style={{ top: toolbarPosition.top, left: toolbarPosition.left }}
               onMouseDown={(event) => event.preventDefault()}
@@ -611,7 +611,7 @@ export function DocumentAnnotationLayer({
                 disabled={newCommentDisabled}
                 title={newCommentDisabled
                   ? newCommentDisabledReason ?? undefined
-                  : "Add comment on selection (⌘⇧M)"}
+                  : pageText("addCommentOnSelectionM_9165c4")}
               >
                 <MessageSquarePlus className="h-3.5 w-3.5" aria-hidden="true" />{pageText("comment_153d7a")}</Button>
             </div>

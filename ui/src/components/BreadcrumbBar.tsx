@@ -74,8 +74,8 @@ export function BreadcrumbBar({ taskDetailLayout = false, showPropertiesToggle =
       size="icon-sm"
       className="ml-5 size-9 shrink-0 text-muted-foreground"
       onClick={toggleTaskPanel}
-      aria-label={taskPanelOpen ? "Hide properties" : pageText("showProperties_5248c7")}
-      title={taskPanelOpen ? "Hide properties" : pageText("showProperties_5248c7")}
+      aria-label={taskPanelOpen ? pageText("hideProperties_9423fa") : pageText("showProperties_5248c7")}
+      title={taskPanelOpen ? pageText("hideProperties_9423fa") : pageText("showProperties_5248c7")}
     >
       {taskPanelOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRightOpen className="h-4 w-4" />}
     </Button>
@@ -118,14 +118,14 @@ export function BreadcrumbBar({ taskDetailLayout = false, showPropertiesToggle =
       size="icon-sm"
       className="mr-2 shrink-0"
       onClick={toggleSidebar}
-      aria-label="Open sidebar"
+      aria-label={pageText("openSidebar_24d219")}
     >
       <Menu className="h-5 w-5" />
     </Button>
   );
 
   const currentCrumb = breadcrumbs[breadcrumbs.length - 1];
-  if (isMobile && breadcrumbs[0]?.label === "Tasks" && currentCrumb.identifier) {
+  if (isMobile && (breadcrumbs[0]?.href === "/issues" || breadcrumbs[0]?.label === "Tasks") && currentCrumb.identifier) {
     return (
       <div className="h-(--sz-60px) shrink-0 flex items-center border-b border-border px-4">
         {menuButton}

@@ -31,11 +31,11 @@ export function BuiltInLifecycleChip({
       )}
       title={
         isPendingApproval
-          ? "Waiting on board hire approval before the feature can run"
-          : "Needs adapter/model setup before the feature can run"
+          ? pageText("waitingOnBoardHireApprovalBeforeTheFeature_2181b6")
+          : pageText("needsAdapterModelSetupBeforeTheFeatureCan_19070f")
       }
     >
-      {isPendingApproval ? (compact ? pageText("approval_8cc047") : "Pending approval") : compact ? "Setup" : "Needs setup"}
+      {isPendingApproval ? (compact ? pageText("approval_8cc047") : pageText("pendingApproval_25d1b4")) : compact ? pageText("setup_cdd7bb") : pageText("needsSetup_522eba")}
     </Badge>
   );
 }

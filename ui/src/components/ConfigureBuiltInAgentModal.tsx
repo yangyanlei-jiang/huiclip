@@ -163,18 +163,15 @@ export function ConfigureBuiltInAgentModal({
     <Dialog open={open} onOpenChange={(next) => (provision.isPending ? undefined : onOpenChange(next))}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Set up the {definition.displayName}</DialogTitle>
+          <DialogTitle>{pageText("setUpThe_043bda") + " "}{definition.displayName}</DialogTitle>
           <DialogDescription>{definition.shortPurpose}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
-          <InlineBanner tone="info" compact>
-            Creates <strong>{definition.displayName}</strong> in your roster, badged{" "}
-            <strong>Built-in</strong>. Organizations that require hire approval will queue this for the
-            board.
-          </InlineBanner>
+          <InlineBanner tone="info" compact>{pageText("creates_4e852e") + " "}<strong>{definition.displayName}</strong>{" " + pageText("inYourRosterBadged_f5f916")}{" "}
+            <strong>{pageText("builtIn_20f409")}</strong>{pageText("organizationsThatRequireHireApprovalWillQueueThis_26c128")}</InlineBanner>
 
-          <Field label="Harness">
+          <Field label={pageText("harness_2b7cfd")}>
             <AdapterTypeDropdown
               value={adapterType}
               onChange={(next) => {
@@ -208,13 +205,10 @@ export function ConfigureBuiltInAgentModal({
           )}
 
           {!setupSupportedInModal && (
-            <InlineBanner tone="warning" compact>
-              This adapter needs command or endpoint fields before it can run. Provision the
-              built-in row now, then finish those fields from the full agent configuration.
-            </InlineBanner>
+            <InlineBanner tone="warning" compact>{pageText("thisAdapterNeedsCommandOrEndpointFieldsBefore_e931c6")}</InlineBanner>
           )}
 
-          <Field label="Monthly budget (optional)" hint="Leave blank for no cap.">
+          <Field label={pageText("monthlyBudgetOptional_7b65f9")} hint={pageText("leaveBlankForNoCap_9a5b94")}>
             <div className="flex items-center gap-2">
               <span className="text-sm text-muted-foreground">$</span>
               <Input
@@ -227,7 +221,7 @@ export function ConfigureBuiltInAgentModal({
                 onChange={(event) => setBudgetDollars(event.target.value)}
                 className="w-32"
               />
-              <span className="text-sm text-muted-foreground">/ month</span>
+              <span className="text-sm text-muted-foreground">{pageText("month_f7fa5d")}</span>
             </div>
           </Field>
 
@@ -251,7 +245,7 @@ export function ConfigureBuiltInAgentModal({
             }}
             disabled={!canSubmit || provision.isPending}
           >
-            {provision.isPending ? "Configuring…" : submitLabel}
+            {provision.isPending ? pageText("configuring_adc866") : submitLabel}
           </Button>
         </DialogFooter>
       </DialogContent>

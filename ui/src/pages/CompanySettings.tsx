@@ -1,3 +1,5 @@
+import { controlText } from "@/i18n/controls";
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { ChangeEvent, useEffect, useState } from "react";
@@ -198,16 +200,14 @@ export function CompanySettings() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: selectedCompany?.name ?? "Company", href: "/dashboard" },
-      { label: "Settings" }
+      { label: selectedCompany?.name ?? interfaceNotice("interface:company_7a1994"), href: "/dashboard" },
+      { label: interfaceNotice("interface:settings_c7f73b") }
     ]);
   }, [setBreadcrumbs, selectedCompany?.name]);
 
   if (!selectedCompany) {
     return (
-      <div className="text-sm text-muted-foreground">
-        No organization selected. Select an organization from the switcher above.
-      </div>
+      <div className="text-sm text-muted-foreground">{pageText("noOrganizationSelectedSelectAnOrganizationFromThe_160135")}</div>
     );
   }
 
@@ -229,7 +229,7 @@ export function CompanySettings() {
       <div className="max-w-2xl space-y-4">
         <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{translateUi("interfaceCopy.general")}</div>
         <div className="space-y-3">
-          <Field label="Organization name" hint="The display name for your organization.">
+          <Field label={pageText("organizationName_9eab9e")} hint={pageText("theDisplayNameForYourOrganization_cabcc0")}>
             <input
               className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
               type="text"
@@ -237,15 +237,12 @@ export function CompanySettings() {
               onChange={(e) => setCompanyName(e.target.value)}
             />
             {isCloudManaged && (
-              <p className="mt-1 text-xs text-muted-foreground">
-                Renaming can change this company's task ID prefix. Existing task IDs are
-                renumbered and old task links stop resolving.
-              </p>
+              <p className="mt-1 text-xs text-muted-foreground">{pageText("renamingCanChangeThisCompanySTaskID_f94fbe")}</p>
             )}
           </Field>
           <Field
             label={translateUi("interfaceCopy.description")}
-            hint="Optional description shown in the organization profile."
+            hint={pageText("optionalDescriptionShownInTheOrganizationProfile_5f7f6e")}
           >
             <input
               className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
@@ -260,9 +257,7 @@ export function CompanySettings() {
 
       {/* Appearance */}
       <div className="max-w-2xl space-y-4">
-        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          Appearance
-        </div>
+        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{pageText("appearance_41def7")}</div>
         <div className="space-y-3">
           <div className="flex items-start gap-4">
             <div className="shrink-0">
@@ -274,8 +269,8 @@ export function CompanySettings() {
             </div>
             <div className="flex-1 space-y-3">
               <Field
-                label="Logo"
-                hint="Upload a PNG, JPEG, WEBP, GIF, or SVG logo image."
+                label={pageText("logo_83fce8")}
+                hint={pageText("uploadAPNGJPEGWEBPGIFOrSVG_cde5cc")}
               >
                 <div className="space-y-2">
                   <input
@@ -292,7 +287,7 @@ export function CompanySettings() {
                         onClick={handleClearLogo}
                         disabled={clearLogoMutation.isPending}
                       >
-                        {clearLogoMutation.isPending ? pageText("removing_2a76d4") : "Remove logo"}
+                        {clearLogoMutation.isPending ? pageText("removing_2a76d4") : pageText("removeLogo_a42817")}
                       </Button>
                     </div>
                   )}
@@ -307,7 +302,7 @@ export function CompanySettings() {
                     </span>
                   )}
                   {logoUploadMutation.isPending && (
-                    <span className="text-xs text-muted-foreground">Uploading logo...</span>
+                    <span className="text-xs text-muted-foreground">{pageText("uploadingLogo_5b3e69")}</span>
                   )}
                 </div>
               </Field>
@@ -339,13 +334,11 @@ export function CompanySettings() {
 
       {/* Hiring */}
       <div className="max-w-2xl space-y-4" data-testid="company-settings-team-section">
-        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          Hiring
-        </div>
+        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{pageText("hiring_9ce5d6")}</div>
         <div>
           <ToggleField
-            label="Require board approval for new hires"
-            hint="New agent hires stay pending until approved by board."
+            label={pageText("requireBoardApprovalForNewHires_4cfbce")}
+            hint={pageText("newAgentHiresStayPendingUntilApprovedBy_fa48b6")}
             checked={!!selectedCompany.requireBoardApprovalForNewAgents}
             onChange={(v) => settingsMutation.mutate(v)}
             toggleTestId="company-settings-team-approval-toggle"
@@ -369,10 +362,7 @@ export function CompanySettings() {
       <div className="space-y-4">
         <div className="text-xs font-medium text-destructive uppercase tracking-wide">{pageText("dangerZone_8fc83a")}</div>
         <div className="space-y-3 bg-destructive/5 px-4 py-4">
-          <p className="text-sm text-muted-foreground">
-            Archive this organization to hide it from the sidebar. This persists in
-            the database.
-          </p>
+          <p className="text-sm text-muted-foreground">{pageText("archiveThisOrganizationToHideItFromThe_e66ae4")}</p>
           <div className="flex items-center gap-2">
             <Button
               size="sm"
@@ -384,16 +374,16 @@ export function CompanySettings() {
               onClick={() => {
                 if (!selectedCompanyId) return;
                 const confirmed = window.confirm(
-                  `Archive organization "${selectedCompany.name}"? It will be hidden from the sidebar.`
+                  controlText("Archive organization \"{{name}}\"? It will be hidden from the sidebar.", { name: selectedCompany.name })
                 );
                 if (!confirmed) return;
                 archiveMutation.mutate({ companyId: selectedCompanyId });
               }}
             >
               {archiveMutation.isPending
-                ? "Archiving..."
+                ? pageText("archiving_c47aa0")
                 : selectedCompany.status === "archived"
-                ? "Already archived"
+                ? pageText("alreadyArchived_0c389d")
                 : pageText("archiveOrganization_26b2c4")}
             </Button>
             {archiveMutation.error && (

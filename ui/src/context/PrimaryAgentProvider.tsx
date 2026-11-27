@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useRef, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAccountBoundMutation } from "@/hooks/useAccountBoundMutation";
@@ -38,8 +39,8 @@ export function PrimaryAgentProvider({ children }: { children: ReactNode }) {
     onError: (error, choice, context) => {
       if (context) client.setQueryData(keyFor(choice), context.previous);
       if (!isCurrentScope(choice)) return;
-      pushToast({ title: "Couldn't change your primary agent.", body: describeError(error).body, tone: "error",
-        action: { label: "Retry", onClick: () => { if (isCurrentScope(choice)) mutation.mutate(choice); } } });
+      pushToast({ title: interfaceNotice("interface:couldnTChangeYourPrimaryAgent_362132"), body: describeError(error).body, tone: "error",
+        action: { label: interfaceNotice("interface:retry_9f5cd8"), onClick: () => { if (isCurrentScope(choice)) mutation.mutate(choice); } } });
     },
     onSuccess: (data, choice) => client.setQueryData(keyFor(choice), data),
     onFinished: (choice, context) => {

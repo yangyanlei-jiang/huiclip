@@ -1,3 +1,5 @@
+import { controlText } from "@/i18n/controls";
+
 export type TaskDateGroup = "today" | "yesterday" | "earlier";
 
 export const taskDateGroupLabels: Record<TaskDateGroup, string> = {
@@ -33,5 +35,5 @@ export function taskDateGroupSeparator(
 ): string | null {
   if (previous === current) return null;
   if (previous === null && current === "earlier") return null;
-  return taskDateGroupLabels[current];
+  return controlText(taskDateGroupLabels[current]);
 }

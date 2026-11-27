@@ -254,6 +254,7 @@ function CollapsedFeedGroup({
   entityNameMap: Map<string, string>;
   entityTitleMap: Map<string, string>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [expanded, setExpanded] = useState(false);
   const actor = group.latestEvent.actorType === "agent"
     ? agentMap.get(group.latestEvent.actorId)
@@ -288,7 +289,7 @@ function CollapsedFeedGroup({
         }
         <span className="flex-1 min-w-0 truncate">
           <span data-fc="actor" className="font-medium text-(--hex-959596) group-hover:text-white">{actorName}</span>
-          <span data-fc="verb" className="ml-1 text-(--hex-959596)">made {group.events.length} updates to</span>
+          <span data-fc="verb" className="ml-1 text-(--hex-959596)">{pageText("made_e572f9") + " "}{group.events.length}{" " + pageText("updatesTo_292d2e")}</span>
           <span data-fc="title" className="ml-1 text-(--hex-959596) group-hover:text-white">{entityName ?? group.entityId}</span>
         </span>
         <span data-fc="time" className="text-muted-foreground shrink-0">
@@ -621,10 +622,8 @@ export function ActivityFeed({ className }: ActivityFeedProps) {
           aria-hidden
         />
         <div className="min-w-0 flex-1">
-          <h3 className="text-sm font-semibold">Agent Feed</h3>
-          <p className="text-xs text-muted-foreground">
-            Live activity from your agents
-          </p>
+          <h3 className="text-sm font-semibold">{pageText("agentFeed_d1ad64")}</h3>
+          <p className="text-xs text-muted-foreground">{pageText("liveActivityFromYourAgents_f294b7")}</p>
         </div>
         <div className="flex items-center gap-1">
           {/* Group toggle */}
@@ -635,14 +634,14 @@ export function ActivityFeed({ className }: ActivityFeedProps) {
                 variant={groupMode === "by-task" ? "secondary" : "ghost"}
                 size="icon-sm"
                 className="shrink-0 text-muted-foreground"
-                aria-label="group by task"
+                aria-label={pageText("groupByTask_1498cf")}
                 onClick={() => setGroupMode((m) => (m === "flat" ? "by-task" : "flat"))}
               >
                 <Layers className="h-3.5 w-3.5" />
               </Button>
             </TooltipTrigger>
             <TooltipContent side="bottom">
-              {groupMode === "flat" ? "Group by task" : "Show flat"}
+              {groupMode === "flat" ? pageText("groupByTask_3d9fd9") : pageText("showFlat_62418c")}
             </TooltipContent>
           </Tooltip>
 
@@ -656,13 +655,13 @@ export function ActivityFeed({ className }: ActivityFeedProps) {
                     variant={filter !== "all" || showAllActivity ? "secondary" : "ghost"}
                     size="icon-sm"
                     className="shrink-0 text-muted-foreground"
-                    aria-label="filter by"
+                    aria-label={pageText("filterBy_30e718")}
                   >
                     <ListFilter className="h-3.5 w-3.5" />
                   </Button>
                 </DropdownMenuTrigger>
               </TooltipTrigger>
-              <TooltipContent side="bottom">Filter by</TooltipContent>
+              <TooltipContent side="bottom">{pageText("filterBy_5b8d97")}</TooltipContent>
             </Tooltip>
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuRadioGroup
@@ -679,9 +678,7 @@ export function ActivityFeed({ className }: ActivityFeedProps) {
               <DropdownMenuCheckboxItem
                 checked={showAllActivity}
                 onCheckedChange={(v) => setShowAllActivity(!!v)}
-              >
-                Show all activity
-              </DropdownMenuCheckboxItem>
+              >{pageText("showAllActivity_78600f")}</DropdownMenuCheckboxItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -703,7 +700,7 @@ export function ActivityFeed({ className }: ActivityFeedProps) {
                 </span>
               )}
               <p className="text-center text-sm text-muted-foreground">
-                {emptyMessage?.text ?? "Activity from your agents will appear here."}
+                {emptyMessage?.text ?? pageText("activityFromYourAgentsWillAppearHere_ebdf8f")}
               </p>
             </div>
           </div>

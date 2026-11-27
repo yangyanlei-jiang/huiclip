@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Issue } from "@paperclipai/shared";
 import type { IssueSiblingNavigation as IssueSiblingNavigationState } from "@/lib/issue-detail-subissues";
@@ -13,11 +14,12 @@ type IssueSiblingNavigationProps = {
 };
 
 export function IssueSiblingNavigation({ navigation, linkState }: IssueSiblingNavigationProps) {
+  const { t: pageText } = usePageTranslation("interface");
   if (!navigation) return null;
 
   return (
     <nav
-      aria-label="Sub-task navigation"
+      aria-label={pageText("subTaskNavigation_aa0d26")}
       className="mt-4 flex flex-col gap-3 sm:mt-6 sm:grid sm:grid-cols-2"
     >
       {navigation.previous ? (

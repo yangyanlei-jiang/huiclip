@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useMemo } from "react";
 import { useParams } from "@/lib/router";
@@ -44,7 +45,7 @@ export function CompanySettingsPluginPage() {
   useEffect(() => {
     if (!pageSlot) return;
     setBreadcrumbs([
-      { label: "Settings", href: "/company/settings" },
+      { label: interfaceNotice("interface:settings_c7f73b"), href: "/company/settings" },
       { label: pageSlot.displayName },
     ]);
   }, [pageSlot, setBreadcrumbs]);
@@ -53,7 +54,7 @@ export function CompanySettingsPluginPage() {
     if (hasInvalidCompanyPrefix) {
       return <NotFoundPage scope="invalid_company_prefix" requestedPrefix={routeCompanyPrefix} />;
     }
-    return <div className="text-sm text-muted-foreground">Select an organization to view this page.</div>;
+    return <div className="text-sm text-muted-foreground">{pageText("selectAnOrganizationToViewThisPage_99d8e8")}</div>;
   }
 
   if (!settingsRoutePath || isLoading) {
@@ -67,9 +68,7 @@ export function CompanySettingsPluginPage() {
 
   if (pageSlots.length > 1) {
     return (
-      <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-        Multiple plugins declare the company settings route <code>{settingsRoutePath}</code>. Disable one plugin or change its route.
-      </div>
+      <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">{pageText("multiplePluginsDeclareTheCompanySettingsRoute_1f3b75") + " "}<code>{settingsRoutePath}</code>{pageText("disableOnePluginOrChangeItsRoute_30782c")}</div>
     );
   }
 

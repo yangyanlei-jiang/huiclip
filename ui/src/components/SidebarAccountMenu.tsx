@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../i18n";
 import { useTranslation } from "@/i18n";
 import { LanguageSelect } from "@/i18n/LanguageSelect";
 import { useState, type CSSProperties } from "react";
@@ -228,7 +229,7 @@ export function SidebarAccountMenu({
                     href={`https://github.com/paperclipai/paperclip/commit/${stagingCommit}`}
                     target="_blank"
                     rel="noreferrer"
-                    aria-label={`View commit ${stagingCommit} on GitHub`}
+                    aria-label={translateDynamic("dynamic:viewCommitOnGitHub", { value1: stagingCommit })}
                     title={stagingCommit}
                   >
                     SHA {stagingCommit.slice(0, 7)}

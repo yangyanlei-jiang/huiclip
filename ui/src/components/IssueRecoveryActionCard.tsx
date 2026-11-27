@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { isNativeWorkspaceExportRepairCause } from "@paperclipai/shared";
@@ -421,6 +422,7 @@ function BranchFacet({
   branch: string | null;
   sha: string | null;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const shortSha = formatShortSha(sha);
   return (
     <div className="min-w-0 rounded-md border border-border/70 bg-background/60 px-2.5 py-2">
@@ -432,7 +434,7 @@ function BranchFacet({
         {branch ? (
           <code className="truncate font-mono text-xs text-foreground/90">{branch}</code>
         ) : (
-          <span className="text-xs italic text-muted-foreground">detached / unknown</span>
+          <span className="text-xs italic text-muted-foreground">{pageText("detachedUnknown_405505")}</span>
         )}
       </div>
       <div className="mt-0.5 pl-5 font-mono text-(length:--text-micro) text-muted-foreground">
@@ -449,6 +451,7 @@ function DivergenceDiagnosis({
   divergence: WorkspaceDivergence;
   dividerClass: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const badge = ANCESTRY_BADGE[divergence.ancestryVerdict ?? "unknown"];
   return (
     <div
@@ -459,9 +462,7 @@ function DivergenceDiagnosis({
       )}
     >
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-          Divergence diagnosis
-        </span>
+        <span className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{pageText("divergenceDiagnosis_465eb4")}</span>
         <Badge variant="outline"
           data-testid="recovery-ancestry-verdict"
           className={cn(
@@ -474,12 +475,12 @@ function DivergenceDiagnosis({
       </div>
       <div className="grid gap-2 sm:grid-cols-2">
         <BranchFacet
-          label="Expected · recorded"
+          label={pageText("expectedRecorded_0cc0a5")}
           branch={divergence.expectedBranch}
           sha={divergence.expectedHeadSha}
         />
         <BranchFacet
-          label="Live · checked out"
+          label={pageText("liveCheckedOut_a3820e")}
           branch={divergence.liveBranch}
           sha={divergence.liveHeadSha}
         />
@@ -493,12 +494,9 @@ function DivergenceDiagnosis({
           className="flex items-start gap-1.5 rounded-md border border-amber-400/40 bg-amber-500/5 px-2.5 py-1.5 text-xs leading-5 text-amber-900 dark:text-amber-200"
         >
           <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
-          <span>
-            Worktree claimed by{" "}
+          <span>{pageText("worktreeClaimedBy_d796b4")}{" "}
             <code className="font-mono text-foreground/90">{contentionLabel(divergence.contention)}</code>{" "}
-            {divergence.contention.hasActiveRun ? "(active run)" : "(claim held)"} — the lossless repair
-            can&apos;t run while another workspace holds the live branch.
-          </span>
+            {divergence.contention.hasActiveRun ? pageText("activeRun_351160") : pageText("claimHeld_dcaadc")}{" " + pageText("theLosslessRepairCanTRunWhileAnother_c2e03d")}</span>
         </p>
       ) : null}
     </div>
@@ -546,9 +544,7 @@ function BreakGlassOverride({
           data-testid="recovery-action-breakglass-trigger"
           className="border-red-400/60 text-red-700 hover:bg-red-500/10 dark:border-red-500/40 dark:text-red-300"
         >
-          <OctagonAlert className="h-3.5 w-3.5" aria-hidden />
-          I&apos;ve verified this — reconcile anyway
-        </Button>
+          <OctagonAlert className="h-3.5 w-3.5" aria-hidden />{pageText("iVeVerifiedThisReconcileAnyway_716717")}</Button>
       </PopoverTrigger>
       <PopoverContent
         align="start"
@@ -561,47 +557,41 @@ function BreakGlassOverride({
             id="recovery-breakglass-title"
             className="flex items-center gap-1.5 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-red-700 dark:text-red-300"
           >
-            <OctagonAlert className="h-3.5 w-3.5" aria-hidden />
-            Break-glass reconciliation
-          </div>
-          <p className="text-xs leading-5 text-muted-foreground">
-            This overrides Paperclip&apos;s safety check and points the recorded workspace at the live
-            branch{" "}
-            <span className="font-medium text-foreground/80">without an ancestry proof</span>. Confirm
-            the divergence below and record why before continuing.
-          </p>
+            <OctagonAlert className="h-3.5 w-3.5" aria-hidden />{pageText("breakGlassReconciliation_23ab76")}</div>
+          <p className="text-xs leading-5 text-muted-foreground">{pageText("thisOverridesPaperclipSSafetyCheckAndPoints_4f8c31")}{" "}
+            <span className="font-medium text-foreground/80">{pageText("withoutAnAncestryProof_207f03")}</span>{pageText("confirmTheDivergenceBelowAndRecordWhyBefore_918422")}</p>
         </div>
         <dl
           data-testid="recovery-breakglass-restated-divergence"
           className="space-y-1.5 rounded-md border border-red-400/40 bg-red-500/5 px-2.5 py-2 text-(length:--text-micro)"
         >
           <div className="flex items-center justify-between gap-2">
-            <dt className="shrink-0 text-muted-foreground">Recorded · expected</dt>
+            <dt className="shrink-0 text-muted-foreground">{pageText("recordedExpected_6ccf30")}</dt>
             <dd className="min-w-0 truncate font-mono text-foreground/90">
-              {divergence.expectedBranch ?? "detached"}
+              {divergence.expectedBranch ?? pageText("detached_69520c")}
               {expectedSha ? ` @ ${expectedSha}` : ""}
             </dd>
           </div>
           <div className="flex items-center justify-between gap-2">
-            <dt className="shrink-0 text-muted-foreground">Live · checked out</dt>
+            <dt className="shrink-0 text-muted-foreground">{pageText("liveCheckedOut_a3820e")}</dt>
             <dd className="min-w-0 truncate font-mono text-foreground/90">
-              {divergence.liveBranch ?? "detached"}
+              {divergence.liveBranch ?? pageText("detached_69520c")}
               {liveSha ? ` @ ${liveSha}` : ""}
             </dd>
           </div>
           <div className="flex items-center justify-between gap-2">
-            <dt className="shrink-0 text-muted-foreground">Ancestry verdict</dt>
+            <dt className="shrink-0 text-muted-foreground">{pageText("ancestryVerdict_c65734")}</dt>
             <dd className="font-medium">{verdictBadge.label}</dd>
           </div>
         </dl>
         <div className="space-y-1">
-          <Label htmlFor="recovery-breakglass-reason" className="text-(length:--text-micro) text-muted-foreground">{pageText("reason_f219cc") + " "}<span className="text-red-600 dark:text-red-400">(required — recorded in the audit log)</span>
+          <Label htmlFor="recovery-breakglass-reason" className="text-(length:--text-micro) text-muted-foreground">{pageText("reason_f219cc") + " "}<span className="text-red-600 dark:text-red-400">{pageText("requiredRecordedInTheAuditLog_d261af")}</span>
           </Label>
           <Textarea
             id="recovery-breakglass-reason"
             value={reason}
             onChange={(event) => setReason(event.target.value)}
-            placeholder="e.g. Verified the live branch carries only the intended follow-up commits; safe to adopt."
+            placeholder={pageText("eGVerifiedTheLiveBranchCarriesOnly_bd7066")}
             className="min-h-20 text-xs"
             data-testid="recovery-breakglass-reason"
             aria-required="true"
@@ -619,7 +609,7 @@ function BreakGlassOverride({
             onConfirm(trimmedReason);
           }}
         >
-          {pending ? "Reconciling…" : "Reconcile anyway (break-glass)"}
+          {pending ? pageText("reconciling_4bfc2e") : pageText("reconcileAnywayBreakGlass_7c6056")}
         </Button>
       </PopoverContent>
     </Popover>
@@ -647,6 +637,7 @@ function RepairWorkspace({
   disabled: boolean;
   disabledReason: string | null;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const dirtyCount = divergence.dirtyFileCount;
   const dirtyLabel =
     dirtyCount === null
@@ -665,9 +656,7 @@ function RepairWorkspace({
         <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
       ) : (
         <Wrench className="h-3.5 w-3.5" aria-hidden />
-      )}
-      Repair workspace — quarantine changes &amp; restore branch
-    </Button>
+      )}{pageText("repairWorkspaceQuarantineChangesRestoreBranch_5b3e20")}</Button>
   );
   if (disabled) {
     // Contended: the server refuses the repair, so render a plainly disabled control with the reason
@@ -697,46 +686,40 @@ function RepairWorkspace({
             id="recovery-repair-title"
             className="flex items-center gap-1.5 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-sky-700 dark:text-sky-300"
           >
-            <Wrench className="h-3.5 w-3.5" aria-hidden />
-            Repair workspace
-          </div>
-          <p className="text-xs leading-5 text-muted-foreground">
-            This is lossless — no reason required. Your uncommitted changes are committed onto a fresh
-            rescue branch, then the recorded branch is restored so the task can resume. The live branch
-            is left exactly as it is.
-          </p>
+            <Wrench className="h-3.5 w-3.5" aria-hidden />{pageText("repairWorkspace_7a7bb2")}</div>
+          <p className="text-xs leading-5 text-muted-foreground">{pageText("thisIsLosslessNoReasonRequiredYourUncommitted_8de63d")}</p>
         </div>
         <dl
           data-testid="recovery-repair-restated"
           className="space-y-1.5 rounded-md border border-sky-400/30 bg-sky-500/5 px-2.5 py-2 text-(length:--text-micro)"
         >
           <div className="flex items-center justify-between gap-2">
-            <dt className="shrink-0 text-muted-foreground">Dirty changes</dt>
+            <dt className="shrink-0 text-muted-foreground">{pageText("dirtyChanges_a6de8b")}</dt>
             <dd data-testid="recovery-repair-dirty-count" className="font-medium text-foreground/90">
               {dirtyLabel}
             </dd>
           </div>
           <div className="flex items-center justify-between gap-2">
-            <dt className="shrink-0 text-muted-foreground">Live branch</dt>
+            <dt className="shrink-0 text-muted-foreground">{pageText("liveBranch_e1ca1f")}</dt>
             <dd className="min-w-0 truncate font-mono text-foreground/90">
-              {divergence.liveBranch ?? "detached"}
-              <span className="ml-1 font-sans text-muted-foreground">(left untouched)</span>
+              {divergence.liveBranch ?? pageText("detached_69520c")}
+              <span className="ml-1 font-sans text-muted-foreground">{pageText("leftUntouched_fb111e")}</span>
             </dd>
           </div>
           <div className="flex items-center justify-between gap-2">
-            <dt className="shrink-0 text-muted-foreground">Rescue branch</dt>
+            <dt className="shrink-0 text-muted-foreground">{pageText("rescueBranch_428ebd")}</dt>
             <dd
               data-testid="recovery-repair-rescue-branch"
               className="min-w-0 truncate font-mono text-foreground/90"
             >
               {divergence.rescueBranchPreview}
-              <span className="text-muted-foreground">&lt;timestamp&gt;</span>
+              <span className="text-muted-foreground">{pageText("timestamp_a0a1bc")}</span>
             </dd>
           </div>
           <div className="flex items-center justify-between gap-2">
-            <dt className="shrink-0 text-muted-foreground">Restore to</dt>
+            <dt className="shrink-0 text-muted-foreground">{pageText("restoreTo_55a3ef")}</dt>
             <dd className="min-w-0 truncate font-mono text-foreground/90">
-              {divergence.expectedBranch ?? "recorded branch"}
+              {divergence.expectedBranch ?? pageText("recordedBranch_50bb39")}
             </dd>
           </div>
         </dl>
@@ -751,7 +734,7 @@ function RepairWorkspace({
             onConfirm();
           }}
         >
-          {pending ? "Repairing…" : "Quarantine changes & restore branch"}
+          {pending ? pageText("repairing_0c43c3") : pageText("quarantineChangesRestoreBranch_6c517d")}
         </Button>
       </PopoverContent>
     </Popover>
@@ -1129,7 +1112,7 @@ export function IssueRecoveryActionCard({
   return (
     <section
       role="status"
-      aria-label={`Recovery action: ${ariaState}`}
+      aria-label={translateDynamic("dynamic:recoveryAction", { value1: ariaState })}
       data-recovery-state={cardState}
       data-recovery-kind={action.kind}
       data-recovery-lane={lineage?.lane}
@@ -1172,7 +1155,7 @@ export function IssueRecoveryActionCard({
       <dl className={cn("border-t bg-background/40 dark:bg-background/20", tone.divider)}>
         {lineage ? (
           <>
-            <MetadataRow label="Task owner">
+            <MetadataRow label={pageText("taskOwner_becc94")}>
               <span
                 className="inline-flex flex-wrap items-center gap-1.5"
                 data-testid="recovery-source-owner"
@@ -1182,39 +1165,39 @@ export function IssueRecoveryActionCard({
                   agentMap={agentMap}
                   fallback="unassigned"
                 />
-                <span className="text-muted-foreground">keeps this task</span>
+                <span className="text-muted-foreground">{pageText("keepsThisTask_066370")}</span>
               </span>
             </MetadataRow>
-            <MetadataRow label="Recovery owner">
+            <MetadataRow label={pageText("recoveryOwner_3d9025")}>
               <span
                 className="inline-flex flex-wrap items-center gap-1.5"
                 data-testid="recovery-recovery-owner"
               >
                 {lineage.lane === "native_run" && (action.ownerType !== "board" || Boolean(lineage.liveRunId)) ? (
                   <>
-                    <span className="font-medium">Paperclip</span>
-                    <span className="text-muted-foreground">recovers the existing run</span>
+                    <span className="font-medium">{pageText("paperclip_f504c7")}</span>
+                    <span className="text-muted-foreground">{pageText("recoversTheExistingRun_ac93d5")}</span>
                   </>
                 ) : recoveryOwnerIsSourceOwner ? (
-                  <span className="font-medium">Original owner — retrying itself</span>
+                  <span className="font-medium">{pageText("originalOwnerRetryingItself_7a3b1d")}</span>
                 ) : action.ownerType === "agent" && action.ownerAgentId ? (
                   <>
                     <AgentLink agentId={action.ownerAgentId} agentMap={agentMap} />
-                    <span className="text-muted-foreground">repairs the next step only</span>
+                    <span className="text-muted-foreground">{pageText("repairsTheNextStepOnly_f13062")}</span>
                   </>
                 ) : action.ownerType === "board" ? (
                   <>
                     <span className="font-medium">{pageText("board_e879b0")}</span>
-                    <span className="text-muted-foreground">decides the next step only</span>
+                    <span className="text-muted-foreground">{pageText("decidesTheNextStepOnly_a7de41")}</span>
                   </>
                 ) : action.ownerType === "user" && action.ownerUserId ? (
                   <span className="font-medium">{pageText("user_12dea9") + " "}{action.ownerUserId.slice(0, 6)}</span>
                 ) : (
-                  <span className="text-muted-foreground">unassigned — pick one to wake them</span>
+                  <span className="text-muted-foreground">{pageText("unassignedPickOneToWakeThem_46bab1")}</span>
                 )}
               </span>
             </MetadataRow>
-            <MetadataRow label="Retry progress">
+            <MetadataRow label={pageText("retryProgress_ded208")}>
               <span
                 className="inline-flex flex-wrap items-center gap-x-2 gap-y-1"
                 data-testid="recovery-retry-progress"
@@ -1223,15 +1206,13 @@ export function IssueRecoveryActionCard({
                 data-recovery-max-attempts={lineage.maxAttempts ?? undefined}
               >
                 <AttemptMeter lineage={lineage} />
-                <span>{attemptLabel ?? "Attempts not bounded"}</span>
+                <span>{attemptLabel ?? pageText("attemptsNotBounded_3e2bb3")}</span>
                 {lineage.liveRunId ? (
                   <span
                     className={RETRY_PILL_CLASS}
                     title={formatTimeAbsolute(lineage.nextRetryAt) ?? undefined}
                     data-testid="recovery-next-retry"
-                  >
-                    Attempt running now
-                  </span>
+                  >{pageText("attemptRunningNow_3fa50b")}</span>
                 ) : lineage.retryExpired ? (
                   // The due time is stated plainly as missed. Rendering it as "Next try 5m
                   // ago" is what made an abandoned lane read as healthy recovery.
@@ -1241,7 +1222,7 @@ export function IssueRecoveryActionCard({
                     data-testid="recovery-next-retry"
                     data-recovery-retry-expired="true"
                   >
-                    {retryOffset ? `Retry missed ${retryOffset}` : "Retry missed"}
+                    {retryOffset ? `Retry missed ${retryOffset}` : pageText("retryMissed_41d389")}
                   </span>
                 ) : retryOffset ? (
                   <span
@@ -1249,21 +1230,17 @@ export function IssueRecoveryActionCard({
                     title={formatTimeAbsolute(lineage.nextRetryAt) ?? undefined}
                     data-testid="recovery-next-retry"
                   >
-                    {retryOffset === "now" ? "Next try now" : `Next try ${retryOffset}`}
+                    {retryOffset === "now" ? pageText("nextTryNow_caac09") : `Next try ${retryOffset}`}
                   </span>
                 ) : lineage.exhausted ? (
-                  <span className={RETRY_PILL_CLASS} data-testid="recovery-next-retry">
-                    Automatic retries used up
-                  </span>
+                  <span className={RETRY_PILL_CLASS} data-testid="recovery-next-retry">{pageText("automaticRetriesUsedUp_189824")}</span>
                 ) : null}
               </span>
             </MetadataRow>
             {lineage.lane !== "source_owner" && lineage.sourceMaxAttempts !== null ? (
-              <MetadataRow label="Owner retries">
-                <span data-testid="recovery-source-attempts">
-                  The original owner used {lineage.sourceAttempt ?? lineage.sourceMaxAttempts} of{" "}
-                  {lineage.sourceMaxAttempts} automatic attempts.
-                </span>
+              <MetadataRow label={pageText("ownerRetries_537e6f")}>
+                <span data-testid="recovery-source-attempts">{pageText("theOriginalOwnerUsed_c6611c") + " "}{lineage.sourceAttempt ?? lineage.sourceMaxAttempts}{" " + pageText("of_de04fa")}{" "}
+                  {lineage.sourceMaxAttempts}{" " + pageText("automaticAttempts_a68e74")}</span>
               </MetadataRow>
             ) : null}
           </>
@@ -1272,7 +1249,7 @@ export function IssueRecoveryActionCard({
           <span className="inline-flex flex-wrap items-center gap-1.5">
             {action.ownerType === "agent" && action.ownerAgentId ? (
               <>
-                <span className="text-muted-foreground">Recovery:</span>
+                <span className="text-muted-foreground">{pageText("recovery_0a43a1")}</span>
                 <AgentLink agentId={action.ownerAgentId} agentMap={agentMap} />
               </>
             ) : action.ownerType === "board" ? (
@@ -1280,28 +1257,28 @@ export function IssueRecoveryActionCard({
             ) : action.ownerType === "user" && action.ownerUserId ? (
               <span className="font-medium">{pageText("user_12dea9") + " "}{action.ownerUserId.slice(0, 6)}</span>
             ) : action.ownerType === "system" ? (
-              <span className="font-medium">System</span>
+              <span className="font-medium">{pageText("system_bc0792")}</span>
             ) : (
-              <span className="text-muted-foreground">unassigned — pick one to wake them</span>
+              <span className="text-muted-foreground">{pageText("unassignedPickOneToWakeThem_46bab1")}</span>
             )}
             {action.returnOwnerAgentId ? (
               <>
-                <span className="text-muted-foreground">→ Returns to:</span>
+                <span className="text-muted-foreground">{pageText("returnsTo_79a714")}</span>
                 <AgentLink agentId={action.returnOwnerAgentId} agentMap={agentMap} />
               </>
             ) : null}
           </span>
         </MetadataRow>
         )}
-        <MetadataRow label="Source run">
+        <MetadataRow label={pageText("sourceRun_9932aa")}>
           <RunChip runId={sourceRunId} agentId={action.previousOwnerAgentId} />
         </MetadataRow>
         {correctiveRunId ? (
-          <MetadataRow label="Corrective run">
+          <MetadataRow label={pageText("correctiveRun_401801")}>
             <RunChip runId={correctiveRunId} agentId={action.previousOwnerAgentId} />
           </MetadataRow>
         ) : null}
-        <MetadataRow label="Evidence">
+        <MetadataRow label={pageText("evidence_7ea014")}>
           {evidenceSummary ? (
             evidenceSummary.isCode ? (
               <span className="break-words font-mono text-(length:--text-micro) text-foreground/80">
@@ -1314,27 +1291,25 @@ export function IssueRecoveryActionCard({
             <MissingValue />
           )}
         </MetadataRow>
-        <MetadataRow label="Next action">
+        <MetadataRow label={pageText("nextAction_d816c3")}>
           {action.nextAction ? <span>{action.nextAction}</span> : <MissingValue />}
         </MetadataRow>
         <MetadataRow label={pageText("followUp_a931af")}>
           <span className="inline-flex flex-wrap items-center gap-1.5">
             {wakeSummary ? <span>{wakeSummary}</span> : <MissingValue />}
             {showAttempt ? (
-              <span className="rounded-md border border-border/50 bg-background/60 px-1.5 py-0.5 text-(length:--text-micro) text-muted-foreground">{pageText("attempt_38e4e4") + " "}{action.attemptCount} of {action.maxAttempts}
+              <span className="rounded-md border border-border/50 bg-background/60 px-1.5 py-0.5 text-(length:--text-micro) text-muted-foreground">{pageText("attempt_38e4e4") + " "}{action.attemptCount}{" " + pageText("of_de04fa") + " "}{action.maxAttempts}
               </span>
             ) : null}
             {showTimeoutInline ? (
-              <span className="rounded-md border border-border/50 bg-background/60 px-1.5 py-0.5 text-(length:--text-micro) text-muted-foreground">
-                Times out {formatTimeShort(action.timeoutAt) ?? "soon"}
+              <span className="rounded-md border border-border/50 bg-background/60 px-1.5 py-0.5 text-(length:--text-micro) text-muted-foreground">{pageText("timesOut_7fb217") + " "}{formatTimeShort(action.timeoutAt) ?? pageText("soon_3f934e")}
               </span>
             ) : null}
           </span>
         </MetadataRow>
         {cardState === "resolved" && action.outcome ? (
-          <MetadataRow label="Resolution">
-            <span className={cn("font-medium", tone.labelClass)}>
-              Resolved as {OUTCOME_LABEL[action.outcome]}
+          <MetadataRow label={pageText("resolution_516aae")}>
+            <span className={cn("font-medium", tone.labelClass)}>{pageText("resolvedAs_c3ce7e") + " "}{OUTCOME_LABEL[action.outcome]}
               {action.resolvedAt ? ` · ${formatTimeShort(action.resolvedAt) ?? ""}` : ""}
             </span>
           </MetadataRow>
@@ -1352,19 +1327,15 @@ export function IssueRecoveryActionCard({
                   size="sm"
                   variant="default"
                   data-testid="recovery-action-resolve-trigger"
-                  aria-label="Resolve recovery"
-                >
-                  Resolve…
-                </Button>
+                  aria-label={pageText("resolveRecovery_801281")}
+                >{pageText("resolve_b80d36")}</Button>
               </PopoverTrigger>
               <PopoverContent
                 align="start"
                 sideOffset={6}
                 className="w-72 p-1.5"
               >
-                <div className="px-2 py-1 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-                  Resolve recovery
-                </div>
+                <div className="px-2 py-1 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{pageText("resolveRecovery_801281")}</div>
                 <div className="flex flex-col">
                   {visibleResolveOptions.map((option) => (
                     <button
@@ -1398,9 +1369,7 @@ export function IssueRecoveryActionCard({
                 <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
               ) : (
                 <RefreshCw className="h-3.5 w-3.5" aria-hidden />
-              )}
-              Reconcile forward &amp; continue
-            </Button>
+              )}{pageText("reconcileForwardContinue_734692")}</Button>
           ) : null}
           {showRepairAction && divergence ? (
             <RepairWorkspace
@@ -1426,27 +1395,18 @@ export function IssueRecoveryActionCard({
                     <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
                   ) : (
                     <GitBranchPlus className="h-3.5 w-3.5" aria-hidden />
-                  )}
-                  Re-issue on isolated workspace
-                  {reissueRecommended ? (
+                  )}{pageText("reIssueOnIsolatedWorkspace_e44217")}{reissueRecommended ? (
                     <span
                       data-testid="recovery-reissue-recommended"
                       className="ml-1 rounded-sm bg-background/25 px-1.5 py-0.5 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-label)"
-                    >
-                      Recommended
-                    </span>
+                    >{pageText("recommended_9ef937")}</span>
                   ) : null}
                 </Button>
               </PopoverTrigger>
               <PopoverContent align="start" sideOffset={6} className="w-80 space-y-3 p-3">
                 <div className="space-y-1">
-                  <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-                    Re-issue on isolated workspace
-                  </div>
-                  <p className="text-xs leading-5 text-muted-foreground">
-                    Creates a fresh copy of this task on an isolated git worktree based on the live
-                    branch. Your current workspace and its commits are left untouched.
-                  </p>
+                  <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{pageText("reIssueOnIsolatedWorkspace_e44217")}</div>
+                  <p className="text-xs leading-5 text-muted-foreground">{pageText("createsAFreshCopyOfThisTaskOn_acc609")}</p>
                 </div>
                 <dl className="space-y-1 rounded-md border border-border/70 bg-muted/30 px-2.5 py-2 text-(length:--text-micro)">
                   <div className="flex items-center justify-between gap-2">
@@ -1454,14 +1414,14 @@ export function IssueRecoveryActionCard({
                     <dd className="min-w-0 truncate font-mono text-foreground/90">{reissueBaseRef}</dd>
                   </div>
                   <div className="flex items-center justify-between gap-2">
-                    <dt className="text-muted-foreground">Recorded</dt>
+                    <dt className="text-muted-foreground">{pageText("recorded_d5383e")}</dt>
                     <dd className="min-w-0 truncate font-mono text-foreground/80">
                       {divergence.expectedBranch ?? "—"}
                     </dd>
                   </div>
                   {reissueVerdictBadge ? (
                     <div className="flex items-center justify-between gap-2">
-                      <dt className="text-muted-foreground">Ancestry</dt>
+                      <dt className="text-muted-foreground">{pageText("ancestry_444742")}</dt>
                       <dd className="font-medium">{reissueVerdictBadge.label}</dd>
                     </div>
                   ) : null}
@@ -1481,7 +1441,7 @@ export function IssueRecoveryActionCard({
                     })
                   }
                 >
-                  {reissuePending ? pageText("creating_94d7d8") : "Create isolated re-issue"}
+                  {reissuePending ? pageText("creating_94d7d8") : pageText("createIsolatedReIssue_ea714a")}
                 </Button>
               </PopoverContent>
             </Popover>
@@ -1495,13 +1455,9 @@ export function IssueRecoveryActionCard({
           ) : null}
           {showResolveActions ? (
             cardState === "observe_only" ? (
-              <span className="text-(length:--text-micro) text-muted-foreground">
-                Recovery is observing without interrupting the live run.
-              </span>
+              <span className="text-(length:--text-micro) text-muted-foreground">{pageText("recoveryIsObservingWithoutInterruptingTheLiveRun_544655")}</span>
             ) : (
-              <span className="text-(length:--text-micro) text-muted-foreground">
-                The card stays open until an explicit decision is recorded.
-              </span>
+              <span className="text-(length:--text-micro) text-muted-foreground">{pageText("theCardStaysOpenUntilAnExplicitDecision_349fbd")}</span>
             )
           ) : null}
         </div>

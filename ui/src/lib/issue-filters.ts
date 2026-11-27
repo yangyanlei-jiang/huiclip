@@ -1,3 +1,4 @@
+import { optionLabel } from "@/i18n/option-label";
 import { isAgentCreatedIssue, type ExternalObjectSummary, type Issue } from "@paperclipai/shared";
 
 export type IssueFilterWorkspaceLookup = {
@@ -77,7 +78,7 @@ const EXTERNAL_OBJECT_FILTER_LABELS: Record<string, string> = {
 };
 
 export function externalObjectFilterLabel(value: string): string {
-  return EXTERNAL_OBJECT_FILTER_LABELS[value] ?? issueFilterLabel(value);
+  return EXTERNAL_OBJECT_FILTER_LABELS[value] ? optionLabel(EXTERNAL_OBJECT_FILTER_LABELS[value]) : issueFilterLabel(value);
 }
 
 export const issueStatusOrder = ["in_progress", "monitoring", "todo", "backlog", "in_review", "blocked", "done", "cancelled"];
@@ -91,7 +92,8 @@ export const issueQuickFilterPresets = [
 ];
 
 export function issueFilterLabel(value: string): string {
-  return value.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+  const label = value.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+  return issueStatusOrder.includes(value) || issuePriorityOrder.includes(value) ? optionLabel(label) : label;
 }
 
 export function issueFilterArraysEqual(a: string[], b: string[]): boolean {

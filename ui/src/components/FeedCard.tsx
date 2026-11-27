@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { Link } from "@/lib/router";
 import { timeAgo } from "../lib/timeAgo";
@@ -425,6 +426,7 @@ export function FeedCard({
   isPinned = false,
   className,
 }: FeedCardProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const details = event.details as Record<string, unknown> | null;
   const content = resolveContent(event, agentMap, entityNameMap, entityTitleMap);
   const verb = formatVerb(event.action, details, isPinned ? "pinned" : "chronological");
@@ -468,7 +470,7 @@ export function FeedCard({
         )}
       </span>
       {isPinned && (
-        <span className="shrink-0 text-xs text-muted-foreground">Review →</span>
+        <span className="shrink-0 text-xs text-muted-foreground">{pageText("review_2d28dc")}</span>
       )}
       <span data-fc="time" className="shrink-0 text-muted-foreground">
         {timeAgo(event.createdAt)}

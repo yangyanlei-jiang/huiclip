@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo } from "react";
 import {
@@ -39,6 +40,7 @@ function RecentActivity({
   appName,
   userLabelById,
 }: ActivityPanelProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const nameById = useMemo(() => new Map(agents.map((a) => [a.id, a.name])), [agents]);
 
@@ -96,8 +98,7 @@ function RecentActivity({
                 <span className="block text-foreground">{row.primary}</span>
                 <span className="block truncate text-xs text-muted-foreground">
                   {row.issue ? (
-                    <>
-                      while working on{" "}
+                    <>{pageText("whileWorkingOn_40c4aa")}{" "}
                       <Link
                         to={`/issues/${row.issue.identifier}`}
                         className="font-medium text-muted-foreground hover:text-foreground hover:underline"

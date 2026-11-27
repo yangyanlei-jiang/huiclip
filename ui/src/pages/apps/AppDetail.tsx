@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { AppNotFound, AppReadError } from "./app-detail/AppReadError";
@@ -105,6 +106,7 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
   renderConnectionSettings?: (connection: ToolConnection) => ReactNode;
   onReconnect?: (connection: ToolConnection) => void;
 } = {}) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { connectionId = "", tab } = useParams<{ connectionId: string; tab?: string }>();
   const navigate = useNavigate();
@@ -264,7 +266,7 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
       : null;
     pushToast({
       title: `${appName} connected`,
-      body: skillSourcePath ? "Choose a repository to import your skills." : "The connection is ready. Review permissions or test an action below.",
+      body: skillSourcePath ? interfaceNotice("interface:chooseARepositoryToImportYourSkills_6eddeb") : interfaceNotice("interface:theConnectionIsReadyReviewPermissionsOrTest_9ba0a2"),
       tone: "success",
     });
     navigate(skillSourcePath ?? appTabHref(connection.id, "permissions"), { replace: true });
@@ -273,7 +275,7 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
   useEffect(() => {
     if (!activeTab) return;
     setBreadcrumbs([
-      { label: "Connectors", href: "/apps" },
+      { label: interfaceNotice("interface:connectors_4b1e95"), href: "/apps" },
       { label: appName, href: appTabHref(connectionId, "permissions") },
       { label: appTabLabel(activeTab) },
     ]);
@@ -306,7 +308,7 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
       queryClient.invalidateQueries({ queryKey: queryKeys.apps.attention(selectedCompanyId!) });
       navigate("/apps");
     },
-    onError: (error) => pushToast({ title: "Couldn't disconnect", body: describeError(error).body, tone: "error" }),
+    onError: (error) => pushToast({ title: interfaceNotice("interface:couldnTDisconnect_7daa76"), body: describeError(error).body, tone: "error" }),
   });
   const [pending, setPending] = useState(false);
   const persist = useMutation({
@@ -338,7 +340,7 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
     },
     onError: (error) =>
       pushToast({
-        title: "Couldn't save that",
+        title: interfaceNotice("interface:couldnTSaveThat_ea05af"),
         body: describeError(error).body,
         tone: "error",
       }),
@@ -357,7 +359,7 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
     },
     onError: (error) =>
       pushToast({
-        title: "Couldn't rename the app",
+        title: interfaceNotice("interface:couldnTRenameTheApp_024979"),
         body: describeError(error).body,
         tone: "error",
       }),
@@ -371,7 +373,7 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
         await authorization.open(start);
       } catch (error) {
         pushToast({
-          title: "Couldn't start sign-in",
+          title: interfaceNotice("interface:couldnTStartSignIn_7ead71"),
           body: describeError(error).body,
           tone: "error",
         });
@@ -380,7 +382,7 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
     onError: (error) => {
       authorization.cancel();
       pushToast({
-        title: "Couldn't start sign-in",
+        title: interfaceNotice("interface:couldnTStartSignIn_7ead71"),
         body: describeError(error).body,
         tone: "error",
       });
@@ -411,7 +413,7 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
         await authorization.open({ authorizationUrl: url, handoff });
       } catch (error) {
         pushToast({
-          title: "Couldn't start sign-in",
+          title: interfaceNotice("interface:couldnTStartSignIn_7ead71"),
           body: describeError(error).body,
           tone: "error",
         });
@@ -420,7 +422,7 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
     onError: (error) => {
       authorization.cancel();
       pushToast({
-        title: "Couldn't start sign-in",
+        title: interfaceNotice("interface:couldnTStartSignIn_7ead71"),
         body: describeError(error).body,
         tone: "error",
       });
@@ -439,9 +441,9 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
       invalidateGrants();
       setAudienceOpenGrantId(null);
       pushToast({
-        title: "Audience saved",
+        title: interfaceNotice("interface:audienceSaved_f96b2b"),
         body: (grant.members?.length ?? 0) === 0
-          ? "Every organization member can use this identity."
+          ? interfaceNotice("interface:everyOrganizationMemberCanUseThisIdentity_df3747")
           : `${grant.members?.length} ${grant.members?.length === 1 ? "member" : "members"} can use this identity.`,
         tone: "success",
       });
@@ -471,7 +473,7 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
     },
     onError: (error) =>
       pushToast({
-        title: "Couldn't refresh actions",
+        title: interfaceNotice("interface:couldnTRefreshActions_3aa059"),
         body: describeError(error).body,
         tone: "error",
       }),
@@ -483,8 +485,8 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
       queryClient.invalidateQueries({ queryKey: queryKeys.tools.connectionGrants(connectionId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.apps.attention(selectedCompanyId!) });
       pushToast({
-        title: "GitHub access refreshed",
-        body: "Account, installation, and repository access are current.",
+        title: interfaceNotice("interface:githubAccessRefreshed_a16018"),
+        body: interfaceNotice("interface:accountInstallationAndRepositoryAccessAreCurrent_801337"),
         tone: "success",
       });
     },
@@ -494,7 +496,7 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
       queryClient.invalidateQueries({ queryKey: queryKeys.tools.connection(connectionId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.apps.attention(selectedCompanyId!) });
       pushToast({
-        title: "Couldn't refresh GitHub access",
+        title: interfaceNotice("interface:couldnTRefreshGitHubAccess_890707"),
         body: describeError(error).body,
         tone: "error",
       });
@@ -557,10 +559,10 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
     return <div className="max-w-4xl space-y-6 pb-12">
       <h1 className="text-xl font-semibold">{appName}</h1>
       <section role="status" className="space-y-3 rounded-lg border border-border bg-muted p-4">
-        <h2 className="text-sm font-semibold">Connection retired</h2>
+        <h2 className="text-sm font-semibold">{pageText("connectionRetired_53d5eb")}</h2>
         <p className="text-sm text-muted-foreground">{RETIRED_COMPOSIO_MESSAGE}</p>
-        <p className="text-sm text-muted-foreground">Remove each obsolete connection separately. Removing this one does not remove other connections.</p>
-        <Button variant="outline" onClick={() => navigate("/apps/connect?source=composio")}>Add Composio MCP connection</Button>
+        <p className="text-sm text-muted-foreground">{pageText("removeEachObsoleteConnectionSeparatelyRemovingThisOne_bbbc9f")}</p>
+        <Button variant="outline" onClick={() => navigate("/apps/connect?source=composio")}>{pageText("addComposioMCPConnection_3fe190")}</Button>
       </section>
       {grantsQuery.data?.capabilities.canConfigure === true && <DangerZone
         appName={appName}
@@ -707,10 +709,8 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
                 onReplaceAudience={(grant, memberUserIds) =>
                   replaceAudience.mutate({ grantId: grant.id, memberUserIds })}
               />
-              {connection.config?.sourceTemplateKey === "composio" ? <p className="text-sm text-muted-foreground">
-                These permissions apply to all apps available through this Composio connection. Manage app accounts and sign-in in Composio.
-              </p> : null}
-              {connection.config?.sourceTemplateKey !== "composio" && isRemoteMcpConnectorMethod(connection.config?.sourceTemplateKey, connection.config?.connectionMethodKey) && <p className="text-sm text-muted-foreground">Paperclip controls access to the tools listed here. App and action permissions inside these tools are managed in {baseAppName}.</p>}
+              {connection.config?.sourceTemplateKey === "composio" ? <p className="text-sm text-muted-foreground">{pageText("thesePermissionsApplyToAllAppsAvailableThrough_3734de")}</p> : null}
+              {connection.config?.sourceTemplateKey !== "composio" && isRemoteMcpConnectorMethod(connection.config?.sourceTemplateKey, connection.config?.connectionMethodKey) && <p className="text-sm text-muted-foreground">{pageText("paperclipControlsAccessToTheToolsListedHere_b2c91d") + " "}{baseAppName}.</p>}
               <PermissionsPanel
                 afterAgentAccess={<>{logoEntry?.agentInstructions && <ConnectionInstructionsSettings key={connection.id} connection={connection} provider={logoEntry.name} template={logoEntry.agentInstructions} canConfigure={grantsQuery.data?.capabilities?.canConfigure ?? false} />}{renderAgentSettings?.(connection)}</>}
                 actions={actionsContent}
@@ -821,7 +821,7 @@ export function AppDetailHeader({
               }}
             >
               <Input
-                aria-label="App name"
+                aria-label={pageText("appName_c877cb")}
                 value={nameDraft}
                 onChange={(event) => onNameDraftChange(event.target.value)}
                 className="h-9 w-64 text-lg font-bold"
@@ -839,7 +839,7 @@ export function AppDetailHeader({
                 variant="ghost"
                 size="icon"
                 className="h-7 w-7 text-muted-foreground"
-                aria-label="Rename app"
+                aria-label={pageText("renameApp_c5ca9d")}
                 disabled={!canRename}
                 onClick={onRenameStart}
               >
@@ -851,8 +851,7 @@ export function AppDetailHeader({
             <StatusBadge status={status} />
             {connection.config?.provider !== "agentmail" && actionCount !== null && (
               <span className="text-xs text-muted-foreground">
-                {actionCount} {actionCount === 1 ? pageText("action_34eb4c") : pageText("actions_326b42")} available
-              </span>
+                {actionCount} {actionCount === 1 ? pageText("action_34eb4c") : pageText("actions_326b42")}{" " + pageText("available_7b231a")}</span>
             )}
             {connectionDisplaySecondaryHint(connection) ? (
               <span className="text-xs text-muted-foreground">
@@ -873,7 +872,7 @@ function ToolsLoading({ mcpActions = false }: { mcpActions?: boolean }) {
   return (
     <div className="flex items-center gap-2 py-8 text-sm text-muted-foreground" role="status">
       <Loader2 className="h-4 w-4 animate-spin" />
-      {mcpActions ? "Loading MCP actions, this may take a minute." : pageText("loadingTools_8237fc")}
+      {mcpActions ? pageText("loadingMCPActionsThisMayTakeAMinute_7e59d6") : pageText("loadingTools_8237fc")}
     </div>
   );
 }

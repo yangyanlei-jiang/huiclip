@@ -99,7 +99,7 @@ function Sidebar({ nav }: { nav: ShellNav }) {
   const { t: pageText } = usePageTranslation("interface");
   return (
     // SidebarShell.tsx:15 (240px), Sidebar.tsx:128 — no right border; the edge is the surface change.
-    <aside className="flex w-60 shrink-0 flex-col primary-sidebar-surface" aria-label="Primary">
+    <aside className="flex w-60 shrink-0 flex-col primary-sidebar-surface" aria-label={pageText("primary_a9a96e")}>
       {/* Sidebar.tsx:142 + SidebarCompanyMenu.tsx:268-291 */}
       <div className="flex h-(--sz-60px) shrink-0 items-center gap-1 px-3">
         <span className="flex h-9 min-w-0 flex-1 items-center justify-start gap-2 rounded-md px-4 text-left">
@@ -159,12 +159,11 @@ function Sidebar({ nav }: { nav: ShellNav }) {
  * screenshots as a ghost button.
  */
 export function SupportButton() {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <span className="ml-auto flex shrink-0 items-center gap-1 pl-2">
       <span className="inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-medium text-muted-foreground">
-        <LifeBuoy className="size-4" />
-        Support
-      </span>
+        <LifeBuoy className="size-4" />{pageText("support_f32d5a")}</span>
     </span>
   );
 }

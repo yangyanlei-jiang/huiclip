@@ -1,3 +1,5 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { t as interfaceNotice } from "@/i18n";
 import { useState, type ReactNode } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Loader2, RotateCcw, Undo2 } from "lucide-react";
@@ -54,6 +56,7 @@ export function StalledReviewActions({
   approveLabel = "Approve",
   className,
 }: StalledReviewActionsProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const [note, setNote] = useState("");
@@ -74,8 +77,8 @@ export function StalledReviewActions({
     },
     onError: (error) => {
       pushToast({
-        title: "Could not record the review decision",
-        body: error instanceof Error ? error.message : "Please try again.",
+        title: interfaceNotice("interface:couldNotRecordTheReviewDecision_4c812b"),
+        body: error instanceof Error ? error.message : interfaceNotice("interface:pleaseTryAgain_83a6fd"),
         tone: "error",
       });
     },
@@ -107,7 +110,7 @@ export function StalledReviewActions({
       <Textarea
         value={note}
         onChange={(event) => setNote(event.target.value)}
-        placeholder="Add a note — required to request changes, optional otherwise…"
+        placeholder={pageText("addANoteRequiredToRequestChangesOptional_6a168e")}
         className="min-h-16 text-sm"
         data-testid="stalled-review-note"
         disabled={pending}
@@ -128,16 +131,14 @@ export function StalledReviewActions({
               <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
             ) : (
               <Undo2 className="h-3.5 w-3.5" aria-hidden />
-            )}
-            Send back to work
-          </Button>
+            )}{pageText("sendBackToWork_16b569")}</Button>
           <Button
             type="button"
             variant="outline"
             size="sm"
             className="w-full border-amber-400/70 text-amber-900 hover:bg-amber-100 dark:border-amber-500/50 dark:text-amber-100 dark:hover:bg-amber-500/15 sm:w-auto sm:flex-1 @xl:flex-none"
             disabled={pending || noteEmpty}
-            title={noteEmpty ? "Add a note to request changes" : undefined}
+            title={noteEmpty ? pageText("addANoteToRequestChanges_a586f1") : undefined}
             onClick={() => decide.mutate("request_changes")}
             data-testid="stalled-review-request-changes"
           >
@@ -145,9 +146,7 @@ export function StalledReviewActions({
               <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
             ) : (
               <RotateCcw className="h-3.5 w-3.5" aria-hidden />
-            )}
-            Request changes
-          </Button>
+            )}{pageText("requestChanges_bbd071")}</Button>
           <Button
             type="button"
             size="sm"

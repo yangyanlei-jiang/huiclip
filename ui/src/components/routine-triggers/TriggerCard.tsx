@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useId, type ReactNode } from "react";
 import { Trash2 } from "lucide-react";
@@ -50,8 +51,8 @@ export function RoutineTriggerCard({
           <Button
             variant="ghost"
             size="icon"
-            aria-label={`Remove ${kind}`}
-            title={`Remove ${kind}`}
+            aria-label={translateDynamic("dynamic:remove", { value1: kind })}
+            title={translateDynamic("dynamic:remove", { value1: kind })}
             onClick={onRemove}
           >
             <Trash2 className="h-3.5 w-3.5" />

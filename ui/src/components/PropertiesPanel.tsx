@@ -186,6 +186,7 @@ function ResizablePropertiesPanel({
   maximizeRequested,
   clearMaximizeRequest,
 }: ResizablePropertiesPanelProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const productionPaneWidth = taskDetailLayout
     ? TASK_DETAIL_DEFAULT_PANE_WIDTH
     : DEFAULT_PANE_WIDTH;
@@ -409,7 +410,7 @@ function ResizablePropertiesPanel({
           <div
             role="separator"
             aria-orientation="vertical"
-            aria-label="Resize panel"
+            aria-label={pageText("resizePanel_c3689b")}
             data-dragging={dragging ? "" : undefined}
             className="pane-resize-handle group absolute inset-y-0 z-10 max-w-full cursor-col-resize touch-none"
             style={{ left: -4, width: 8 }}

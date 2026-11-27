@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { Download, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -38,18 +39,18 @@ export function OutputRow({ item, creatorName }: OutputRowProps) {
             item.degraded ? "text-destructive" : "text-muted-foreground",
           )}
         >
-          {item.degraded ? "File details unavailable" : metaBits.join(" · ")}
+          {item.degraded ? pageText("fileDetailsUnavailable_8168bd") : metaBits.join(" · ")}
         </p>
       </div>
       {meta ? (
         <div className="flex shrink-0 items-center gap-1">
           <Button asChild variant="ghost" size="icon-sm" title={pageText("openInNewTab_71bf47")}>
-            <a href={meta.openPath} target="_blank" rel="noreferrer" aria-label={`Open ${filename}`}>
+            <a href={meta.openPath} target="_blank" rel="noreferrer" aria-label={translateDynamic("dynamic:open", { value1: filename })}>
               <ExternalLink className="h-4 w-4" />
             </a>
           </Button>
           <Button asChild variant="ghost" size="icon-sm" title={pageText("download_a479c9")}>
-            <a href={meta.downloadPath} aria-label={`Download ${filename}`}>
+            <a href={meta.downloadPath} aria-label={translateDynamic("dynamic:download", { value1: filename })}>
               <Download className="h-4 w-4" />
             </a>
           </Button>

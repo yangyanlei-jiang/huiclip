@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { ChevronRight, Loader2, ShieldQuestion, OctagonX, Ban, Scissors } from "lucide-react";
@@ -289,6 +290,7 @@ export function TaskChatStatusPill({
   chevronOpen,
   onToggle,
 }: TaskChatStatusPillProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { Icon, spin, tone } = CONFIG[item.status];
   const awaiting = item.status === "awaiting_approval";
   const live = item.status === "running" || item.status === "working";
@@ -356,8 +358,7 @@ export function TaskChatStatusPill({
           ) : null}
           {item.tokens ? (
             <span className="ml-auto shrink-0 font-mono text-(length:--text-micro)">
-              {item.tokens.used.toLocaleString()}/{item.tokens.size.toLocaleString()} ctx
-            </span>
+              {item.tokens.used.toLocaleString()}/{item.tokens.size.toLocaleString()}{" " + pageText("ctx_402470")}</span>
           ) : null}
         </span>
       </div>
@@ -422,8 +423,7 @@ export function TaskChatStatusPill({
           {elapsed ? <span>{elapsed}</span> : null}
           {item.tokens ? (
             <span>
-              {item.tokens.used.toLocaleString()}/{item.tokens.size.toLocaleString()} ctx
-            </span>
+              {item.tokens.used.toLocaleString()}/{item.tokens.size.toLocaleString()}{" " + pageText("ctx_402470")}</span>
           ) : null}
         </span>
       </div>

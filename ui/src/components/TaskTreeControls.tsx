@@ -44,13 +44,13 @@ export function TaskTreeControlMenuItems({
       {canPause ? (
         <button disabled={pending} className={itemClass} onClick={onPause}>
           <PauseCircle className="h-3 w-3" />
-          {scope === "leaf" ? "Pause work" : "Pause subtree"}
+          {scope === "leaf" ? pageText("pauseWork_bf31e5") : pageText("pauseSubtree_3e3657")}
         </button>
       ) : null}
       {canResume ? (
         <button disabled={pending} className={itemClass} onClick={onResume}>
           <PlayCircle className="h-3 w-3" />
-          {scope === "leaf" ? "Resume work" : pageText("resumeSubtree_614751")}
+          {scope === "leaf" ? pageText("resumeWork_7183f8") : pageText("resumeSubtree_614751")}
         </button>
       ) : null}
       {canCancel ? (
@@ -59,15 +59,11 @@ export function TaskTreeControlMenuItems({
           className={`${itemClass} text-destructive`}
           onClick={onCancel}
         >
-          <XCircle className="h-3 w-3" />
-          Cancel subtree...
-        </button>
+          <XCircle className="h-3 w-3" />{pageText("cancelSubtree_62d01e")}</button>
       ) : null}
       {canRestore ? (
         <button disabled={pending} className={itemClass} onClick={onRestore}>
-          <Repeat className="h-3 w-3" />
-          Restore subtree...
-        </button>
+          <Repeat className="h-3 w-3" />{pageText("restoreSubtree_4c18a7")}</button>
       ) : null}
     </>
   );
@@ -159,8 +155,7 @@ export function TaskTreeControlDialog({
               checked={wakeAgents && affectedAgentCount > 0}
               disabled={pending || loading || affectedAgentCount === 0}
               onChange={(event) => onWakeAgentsChange(event.target.checked)}
-            />
-            Wake affected agents ({affectedAgentCount})
+            />{pageText("wakeAffectedAgents_db7f7e")}{affectedAgentCount})
           </label>
         ) : null}
         {!loading ? warnings.map((warning) => (
@@ -172,7 +167,7 @@ export function TaskTreeControlDialog({
             disabled={pending}
             onClick={() => onOpenChange(false)}
           >
-            {cancel ? "Keep tasks" : pageText("close_bbfa77")}
+            {cancel ? pageText("keepTasks_b0ebe3") : pageText("close_bbfa77")}
           </Button>
           <Button
             variant={cancel ? "destructive" : "default"}
@@ -180,7 +175,7 @@ export function TaskTreeControlDialog({
             onClick={onApply}
           >
             {pending
-              ? "Applying…"
+              ? pageText("applying_e578c2")
               : cancel
                 ? `Cancel ${tasks}`
                 : mode === "restore"
@@ -217,7 +212,7 @@ export function TaskPauseNotice({
       )}
     >
       <span>
-        {scope === "subtree" ? "Subtree is paused." : "Task is paused."}
+        {scope === "subtree" ? pageText("subtreeIsPaused_44a184") : pageText("taskIsPaused_13ac82")}
       </span>
       {resumeLink ??
         (onResume ? (
@@ -227,7 +222,7 @@ export function TaskPauseNotice({
             disabled={pending}
             onClick={onResume}
           >
-            {scope === "subtree" ? pageText("resumeSubtree_614751") : "Resume work"}
+            {scope === "subtree" ? pageText("resumeSubtree_614751") : pageText("resumeWork_7183f8")}
           </Button>
         ) : null)}
     </div>

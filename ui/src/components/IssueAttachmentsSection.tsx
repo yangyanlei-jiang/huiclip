@@ -1,3 +1,5 @@
+import { controlText } from "@/i18n/controls";
+import { t as translateDynamic } from "../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { FILE_DROP_TARGET_ATTRIBUTE } from "@/lib/file-drop-target";
@@ -44,7 +46,7 @@ async function fetchAttachmentText(attachment: IssueAttachment) {
     headers: { Accept: "text/markdown,text/plain;q=0.9,*/*;q=0.1" },
   });
   if (!response.ok) {
-    throw new Error(`Unable to load attachment preview (${response.status})`);
+    throw new Error(controlText("Unable to load attachment preview ({{status}})", { status: response.status }));
   }
   return response.text();
 }
@@ -72,20 +74,20 @@ function AttachmentActions({
         <Button
           variant="ghost"
           size="icon-sm"
-          title="Browse gallery"
-          aria-label={`Browse ${filename} in gallery`}
+          title={pageText("browseGallery_d8e8b0")}
+          aria-label={translateDynamic("dynamic:browseInGallery", { value1: filename })}
           onClick={() => onPreview(attachment)}
         >
           <Maximize2 className="h-4 w-4" />
         </Button>
       ) : null}
       <Button asChild variant="ghost" size="icon-sm" title={pageText("openInNewTab_71bf47")}>
-        <a href={attachmentOpenPath(attachment)} onClick={openInPanel} target="_blank" rel="noreferrer" aria-label={`Open ${filename}`}>
+        <a href={attachmentOpenPath(attachment)} onClick={openInPanel} target="_blank" rel="noreferrer" aria-label={translateDynamic("dynamic:open", { value1: filename })}>
           <ExternalLink className="h-4 w-4" />
         </a>
       </Button>
       <Button asChild variant="ghost" size="icon-sm" title={pageText("download_a479c9")}>
-        <a href={attachmentDownloadPath(attachment)} aria-label={`Download ${filename}`}>
+        <a href={attachmentDownloadPath(attachment)} aria-label={translateDynamic("dynamic:download", { value1: filename })}>
           <Download className="h-4 w-4" />
         </a>
       </Button>
@@ -106,9 +108,9 @@ function AttachmentActions({
 }
 
 function AttachmentMeta({ attachment }: { attachment: IssueAttachment }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
-    <p className="mt-0.5 text-(length:--text-micro) text-muted-foreground">
-      Attachment · {attachment.contentType} · {formatBytes(attachment.byteSize)}
+    <p className="mt-0.5 text-(length:--text-micro) text-muted-foreground">{pageText("attachment_1c9f05") + " "}{attachment.contentType} · {formatBytes(attachment.byteSize)}
     </p>
   );
 }
@@ -149,7 +151,7 @@ function MarkdownAttachmentCard({
         {isLoading ? (
           <p className="px-1 py-2 text-xs text-muted-foreground">{pageText("loadingPreview_ebd862")}</p>
         ) : error ? (
-          <p className="px-1 py-2 text-xs text-destructive">Could not load markdown preview.</p>
+          <p className="px-1 py-2 text-xs text-destructive">{pageText("couldNotLoadMarkdownPreview_c74fc2")}</p>
         ) : (
           <FoldCurtain>
             <MarkdownBody className="paperclip-edit-in-place-content min-h-(--sz-220px) text-sm leading-7" softBreaks={false}>
@@ -202,6 +204,7 @@ function GenericAttachmentRow({
   onDelete?: (attachmentId: string) => void;
   deletePending?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const openText = useContext(TextAttachmentContext);
   const openInPanel = (event: React.MouseEvent) => {
     if (openText && isTextAttachment(attachment) && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) { event.preventDefault(); openText(attachment.id, attachmentFilename(attachment)); }
@@ -220,8 +223,7 @@ function GenericAttachmentRow({
         >
           {filename}
         </a>
-        <p className="truncate text-(length:--text-micro) text-muted-foreground">
-          Attachment · {attachment.contentType} · {formatBytes(attachment.byteSize)}
+        <p className="truncate text-(length:--text-micro) text-muted-foreground">{pageText("attachment_1c9f05") + " "}{attachment.contentType} · {formatBytes(attachment.byteSize)}
         </p>
       </div>
       <AttachmentActions attachment={attachment} onDelete={onDelete} deletePending={deletePending} />
@@ -309,7 +311,7 @@ export function IssueAttachmentsSection({
             >
               <img
                 src={attachment.contentPath}
-                alt={attachment.originalFilename ?? "attachment"}
+                alt={attachment.originalFilename ?? pageText("attachment_1625e5")}
                 className="h-full w-full object-cover"
                 loading="lazy"
               />
@@ -319,7 +321,7 @@ export function IssueAttachmentsSection({
                   className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-black/60"
                   onClick={(event) => event.stopPropagation()}
                 >
-                  <p className="text-xs font-medium text-white">Delete?</p>
+                  <p className="text-xs font-medium text-white">{pageText("delete_042dc9")}</p>
                   <div className="flex gap-1.5">
                     <button
                       type="button"
@@ -400,7 +402,7 @@ export function IssueAttachmentsSection({
 
       {onDelete && confirmDeleteId && !imageAttachments.some((attachment) => attachment.id === confirmDeleteId) ? (
         <div className="flex items-center justify-between gap-3 rounded-md border border-destructive/20 bg-destructive/5 px-4 py-3">
-          <p className="text-sm font-medium text-destructive">Delete this attachment? This cannot be undone.</p>
+          <p className="text-sm font-medium text-destructive">{pageText("deleteThisAttachmentThisCannotBeUndone_36687f")}</p>
           <div className="flex shrink-0 items-center gap-2">
             <Button variant="ghost" size="sm" onClick={() => setConfirmDeleteId(null)} disabled={deletePending}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button variant="destructive" size="sm" onClick={() => confirmDelete(confirmDeleteId)} disabled={deletePending}>

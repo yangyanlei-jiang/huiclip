@@ -52,15 +52,12 @@ export function TaskChatMarker({
         className="tc-enter-marker flex w-full items-start gap-3 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm">
         <KeyRound className="mt-0.5 size-5 shrink-0 text-destructive" aria-hidden />
         <div className="flex min-w-0 flex-1 flex-col gap-2">
-          <p className="font-semibold text-destructive">{agentName} couldn’t start</p>
+          <p className="font-semibold text-destructive">{agentName}{" " + pageText("couldnTStart_c90efe")}</p>
           <p className="break-words font-medium text-foreground">
-            {agentName} is configured to use {credentialName || "an AI credential"}, but {deniedUser === "you" ? "you don’t" : `${deniedUser} doesn’t`} have access to that credential.
-          </p>
-          <p className="text-muted-foreground">
-            Choose an AI connection {deniedUser === "you" ? "you can" : `${deniedUser} can`} use, or ask an administrator to update {agentName}’s connection. Then try again.
-          </p>
+            {agentName}{" " + pageText("isConfiguredToUse_bdf8a6") + " "}{credentialName || pageText("anAICredential_aa43e2")}{pageText("but_dede3f") + " "}{deniedUser === "you" ? pageText("youDonT_8c0c5e") : `${deniedUser} doesn’t`}{" " + pageText("haveAccessToThatCredential_5ef4b0")}</p>
+          <p className="text-muted-foreground">{pageText("chooseAnAIConnection_6802cc") + " "}{deniedUser === "you" ? pageText("youCan_978e59") : `${deniedUser} can`}{" " + pageText("useOrAskAnAdministratorToUpdate_8106e5") + " "}{agentName}{pageText("sConnectionThenTryAgain_47b37c")}</p>
           <div className="flex flex-wrap items-center gap-2 pt-1">
-            <Button asChild variant="outline" size="sm"><Link to={settingsHref}>Change AI connection</Link></Button>
+            <Button asChild variant="outline" size="sm"><Link to={settingsHref}>{pageText("changeAIConnection_0a8a53")}</Link></Button>
             {item.runHref && <Button asChild variant="ghost" size="sm"><Link to={item.runHref}>{translateUi("interfaceCopy.viewRun")}</Link></Button>}
           </div>
         </div>
@@ -129,7 +126,7 @@ export function TaskChatMarker({
               <div className="flex items-center justify-end gap-2 border-t border-border/70 bg-background/50 px-3 py-2 dark:bg-background/30">
                 {item.planHref ? (
                   <Button asChild variant="ghost" size="xs">
-                    <Link to={item.planHref}>View saved plan</Link>
+                    <Link to={item.planHref}>{pageText("viewSavedPlan_8c6185")}</Link>
                   </Button>
                 ) : null}
                 {item.runHref ? (

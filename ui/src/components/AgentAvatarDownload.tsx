@@ -72,9 +72,7 @@ export function AgentAvatarDownload({
         </a>
       </Button>
       {failed && (
-        <p role="alert" className="text-sm text-destructive">
-          Couldn’t download the avatar. Try downloading it again.
-        </p>
+        <p role="alert" className="text-sm text-destructive">{pageText("couldnTDownloadTheAvatarTryDownloadingIt_d137aa")}</p>
       )}
     </div>
   );

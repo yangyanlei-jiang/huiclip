@@ -46,10 +46,10 @@ export function AuditHub({ section }: { section: AuditSection }) {
   useEffect(() => {
     const current = AUDIT_SECTIONS.find((candidate) => candidate.value === section);
     setBreadcrumbs([
-      { label: "Audit", href: section === "activity" ? undefined : "/activity" },
-      ...(section === "activity" || !current ? [] : [{ label: current.label }]),
+      { label: pageText("auditHub"), href: section === "activity" ? undefined : "/activity" },
+      ...(section === "activity" || !current ? [] : [{ label: pageText(`auditTab_${current.value}`) }]),
     ]);
-  }, [section, setBreadcrumbs]);
+  }, [pageText, section, setBreadcrumbs]);
 
   const handleModeChange = useCallback(
     (next: AuditFeedMode) => {
@@ -111,7 +111,7 @@ export function AuditHub({ section }: { section: AuditSection }) {
   }, [setSearchParams]);
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={History} message="Select an organization to view Audit." />;
+    return <EmptyState icon={History} message={pageText("selectAnOrganizationToViewAudit_22434d")} />;
   }
 
   return (
@@ -127,7 +127,7 @@ export function AuditHub({ section }: { section: AuditSection }) {
           navigate(auditSectionHref(next, scope));
         }}
       >
-        <PageTabBar items={AUDIT_SECTIONS} value={section} align="start" />
+        <PageTabBar items={AUDIT_SECTIONS.map(tab => ({ ...tab, label: pageText(`auditTab_${tab.value}`) }))} value={section} align="start" />
       </Tabs>
 
       {section === "commentary" ? (

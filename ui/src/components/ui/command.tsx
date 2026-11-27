@@ -1,6 +1,6 @@
-import { useTranslation as useUiTranslation } from "@/i18n";
 "use client"
 
+import { useTranslation as useUiTranslation } from "@/i18n";
 import * as React from "react"
 import { Command as CommandPrimitive } from "cmdk"
 import { SearchIcon, XIcon } from "lucide-react"
@@ -32,8 +32,8 @@ function Command({
 }
 
 function CommandDialog({
-  title = "Command Palette",
-  description = "Search for a command to run...",
+  title,
+  description,
   children,
   className,
   showCloseButton = true,
@@ -48,8 +48,8 @@ function CommandDialog({
   return (
     <Dialog {...props}>
       <DialogHeader className="sr-only">
-        <DialogTitle>{title}</DialogTitle>
-        <DialogDescription>{description}</DialogDescription>
+        <DialogTitle>{title ?? translateUi("interface:commandPaletteTitle")}</DialogTitle>
+        <DialogDescription>{description ?? translateUi("interface:commandPaletteDescription")}</DialogDescription>
       </DialogHeader>
       <DialogContent
         className={cn("overflow-hidden p-0", className)}

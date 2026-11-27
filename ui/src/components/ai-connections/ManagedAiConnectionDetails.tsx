@@ -25,14 +25,15 @@ export function ManagedAiConnectionRow({
 }: {
   connection: ToolConnection;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const metadata = connection.config?.ai as AiConnectionMetadata | undefined;
   if (!metadata) return null;
   return (
     <p className="text-xs text-muted-foreground">
       {metadata.routing ? metadata.routing.kind === "bedrock" ? `Bedrock · ${metadata.routing.region}` : metadata.routing.kind === "openrouter" ? "OpenRouter" : metadata.routing.baseUrl : aiMethodLabel(metadata.provider, metadata.method)} ·{" "}
       {connection.credentialPolicy === "per_user"
-        ? "Personal"
-        : "Company shared"}
+        ? pageText("personal_40f073")
+        : pageText("companyShared_62c755")}
     </p>
   );
 }
@@ -107,8 +108,8 @@ export function ManagedAiConnectionDetails({
     return (
       <p role="status" className="text-sm text-muted-foreground">
         {accounts.isPending || grants.isPending || sessionView.kind === "reconnecting" || accountsView.kind === "reconnecting" || grantsView.kind === "reconnecting"
-          ? "Loading AI account…"
-          : "This account is not available to you."}
+          ? pageText("loadingAIAccount_0e6e68")
+          : pageText("thisAccountIsNotAvailableToYou_c5283e")}
       </p>
     );
   return (
@@ -118,7 +119,7 @@ export function ManagedAiConnectionDetails({
       {defaults.error && defaults.failedProvider && <AiDefaultError provider={AI_PROVIDERS[defaults.failedProvider].name}
         pending={defaults.pending(defaults.failedProvider)} onRetry={defaults.retry} />}
       <AiConnectionAccountDetails account={account} grant={grant} />
-      {account.routing && <details className="rounded-lg border border-border p-4"><summary className="cursor-pointer text-sm font-medium">Provider settings</summary><dl className="mt-4 grid grid-cols-2 gap-3 text-sm"><dt className="text-muted-foreground">Destination</dt><dd className="break-all">{account.routing.baseUrl ?? (account.routing.kind === "bedrock" ? account.routing.region : "OpenRouter")}</dd><dt className="text-muted-foreground">API format</dt><dd>{account.routing.kind === "openrouter" ? "Selected by harness" : account.routing.protocol}</dd><dt className="text-muted-foreground">{pageText("authentication_ee1acf")}</dt><dd>{account.routing.auth}</dd><dt className="text-muted-foreground">{pageText("models_f3798f")}</dt><dd>{account.routing.models.map(m => m.label ?? m.id).join(", ") || "Enter a model ID on the agent"}</dd></dl></details>}
+      {account.routing && <details className="rounded-lg border border-border p-4"><summary className="cursor-pointer text-sm font-medium">{pageText("providerSettings_afda9c")}</summary><dl className="mt-4 grid grid-cols-2 gap-3 text-sm"><dt className="text-muted-foreground">{pageText("destination_d42713")}</dt><dd className="break-all">{account.routing.baseUrl ?? (account.routing.kind === "bedrock" ? account.routing.region : "OpenRouter")}</dd><dt className="text-muted-foreground">{pageText("apiFormat_ba7636")}</dt><dd>{account.routing.kind === "openrouter" ? pageText("selectedByHarness_ecfb34") : account.routing.protocol}</dd><dt className="text-muted-foreground">{pageText("authentication_ee1acf")}</dt><dd>{account.routing.auth}</dd><dt className="text-muted-foreground">{pageText("models_f3798f")}</dt><dd>{account.routing.models.map(m => m.label ?? m.id).join(", ") || pageText("enterAModelIDOnTheAgent_bd6fb4")}</dd></dl></details>}
       <AiConnectionAccountControls
         account={account}
         grant={grant}
@@ -150,9 +151,7 @@ export function ManagedAiConnectionDetails({
                   size="sm"
                   disabled={stop.isPending}
                   onClick={() => stop.mutate(run.id)}
-                >
-                  Stop run
-                </Button>
+                >{pageText("stopRun_3fa97b")}</Button>
               </div>
             ))}
           </div>

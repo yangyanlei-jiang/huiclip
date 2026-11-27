@@ -1,3 +1,5 @@
+import { controlText } from "@/i18n/controls";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -70,6 +72,7 @@ export function RoutineContextualSidebar({
   routineId?: string;
   title?: string;
 } = {}) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const params = useParams<{ routineId?: string }>();
   const routineId = routineIdProp ?? params.routineId ?? "";
@@ -89,22 +92,20 @@ export function RoutineContextualSidebar({
       showHeader={false}
       className="border-r border-border bg-background"
     >
-      <nav className="min-h-0 flex-1 overflow-y-auto px-3 py-2" aria-label="Routine navigation">
+      <nav className="min-h-0 flex-1 overflow-y-auto px-3 py-2" aria-label={pageText("routineNavigation_0f7c70")}>
         <div className="flex flex-col gap-0.5">
           {ROUTINE_CONTEXTUAL_NAV_ITEMS.map((item) => (
             <SidebarNavItem
               key={item.view}
               to={routineDetailHref(routineId, item.view)}
-              label={item.label}
+              label={controlText(item.label)}
               icon={item.icon}
               end
             />
           ))}
         </div>
 
-        <p className="px-4 pb-1 pt-5 text-(length:--text-nano) font-mono font-medium uppercase tracking-widest text-muted-foreground/60">
-          Operate
-        </p>
+        <p className="px-4 pb-1 pt-5 text-(length:--text-nano) font-mono font-medium uppercase tracking-widest text-muted-foreground/60">{pageText("operate_3c1a1d")}</p>
         <div className="flex flex-col gap-0.5">
           <SidebarNavItem
             to={routineDetailHref(routineId, "runs")}

@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
@@ -67,7 +68,7 @@ function AuthAttempt({
   };
   return (
     <section
-      aria-label={`Connect ${info.name}`}
+      aria-label={translateDynamic("dynamic:connect", { value1: info.name })}
       className="flex flex-col gap-4"
     >
       <div className="flex flex-col gap-1">
@@ -78,10 +79,8 @@ function AuthAttempt({
       </div>
       {state.phase === "connected" ? (
         <>
-          <p role="status" className="text-sm">
-            Connected. This account is saved in Connections and can be reused.
-          </p>
-          <Button onClick={onDone}>Use connection</Button>
+          <p role="status" className="text-sm">{pageText("connectedThisAccountIsSavedInConnectionsAnd_845d20")}</p>
+          <Button onClick={onDone}>{pageText("useConnection_e48414")}</Button>
         </>
       ) : (
         <>
@@ -89,7 +88,7 @@ function AuthAttempt({
             <p role="status" className="text-sm text-muted-foreground">
               {state.phase === "unsupported"
                 ? state.message
-                : "This provider does not offer a subscription connection."}
+                : pageText("thisProviderDoesNotOfferASubscriptionConnection_eb9f33")}
             </p>
           ) : (
             <>
@@ -99,9 +98,7 @@ function AuthAttempt({
                 </p>
               )}
               {state.phase === "cancelled" && (
-                <p role="status" className="text-sm text-muted-foreground">
-                  Sign-in cancelled. No connection was created.
-                </p>
+                <p role="status" className="text-sm text-muted-foreground">{pageText("signInCancelledNoConnectionWasCreated_b15358")}</p>
               )}
               {method === "api_key" ? (
                 <ProviderApiKeyCard
@@ -146,8 +143,7 @@ function AuthAttempt({
                   )}
                 </ProviderSubscriptionCard>
               ) : (
-                <p className="text-sm text-muted-foreground">
-                  Sign in with your {info.subscriptionName}.
+                <p className="text-sm text-muted-foreground">{pageText("signInWithYour_85ddba") + " "}{info.subscriptionName}.
                 </p>
               )}
             </>
@@ -169,9 +165,7 @@ function AuthAttempt({
                 provider === "anthropic" ? (
                   <Button disabled={!value.trim()} onClick={submit}>{pageText("submitCode_32aefb")}</Button>
                 ) : (
-                  <span role="status" className="text-sm text-muted-foreground">
-                    Waiting for sign-in…
-                  </span>
+                  <span role="status" className="text-sm text-muted-foreground">{pageText("waitingForSignIn_6c3c69")}</span>
                 )
               ) : (
                 <Button disabled={busy} onClick={onStart}>

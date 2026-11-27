@@ -1,3 +1,6 @@
+import { t as interfaceNotice } from "@/i18n";
+import { controlText } from "@/i18n/controls";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { ArrowLeft, Layers, Package } from "lucide-react";
@@ -39,6 +42,7 @@ function parseKind(value: string | null): ArtifactKindFilter {
 }
 
 export function Artifacts() {
+  const { t: pageText } = usePageTranslation("interface");
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -219,16 +223,16 @@ export function Artifacts() {
   useEffect(() => {
     if (viewingSelectedStack && selectedGroup) {
       setBreadcrumbs([
-        { label: "Artifacts", href: "/artifacts" },
+        { label: interfaceNotice("interface:artifacts_a5b79f"), href: "/artifacts" },
         { label: `${selectedGroup.issue.identifier} · ${selectedGroup.title}` },
       ]);
     } else {
-      setBreadcrumbs([{ label: "Artifacts" }]);
+      setBreadcrumbs([{ label: interfaceNotice("interface:artifacts_a5b79f") }]);
     }
   }, [setBreadcrumbs, viewingSelectedStack, selectedGroup]);
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Package} message="Select an organization to view artifacts." />;
+    return <EmptyState icon={Package} message={pageText("selectAnOrganizationToViewArtifacts_0bbfd3")} />;
   }
 
   const showGroupCards = viewingStackList;
@@ -236,15 +240,15 @@ export function Artifacts() {
 
   const emptyMessage = showGroupCards
     ? searching
-      ? "No artifact stacks match this search."
-      : "No artifact stacks yet."
+      ? controlText("noStacksMatch")
+      : controlText("noStacks")
     : searching
-      ? "No artifacts match this search."
+      ? controlText("noArtifactsMatch")
       : viewingSelectedStack
-        ? "No artifacts in this stack match the current filters."
+        ? controlText("noFilteredArtifacts")
         : kind === "all"
-          ? "No artifacts yet. Outputs attached to tasks will appear here."
-          : "No artifacts of this type yet.";
+          ? controlText("noArtifacts")
+          : controlText("noArtifactsKind");
 
   return (
     <div className="w-full max-w-6xl space-y-5">
@@ -265,9 +269,7 @@ export function Artifacts() {
             data-testid="artifact-stack-back"
             className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
           >
-            <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
-            All stacks
-          </Link>
+            <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />{pageText("allStacks_bf264c")}</Link>
           {selectedGroup ? (
             <span className="truncate text-muted-foreground">
               <span className="text-foreground/80">{selectedGroup.issue.identifier}</span>{" "}
@@ -319,7 +321,7 @@ export function Artifacts() {
                 ))}
           </ArtifactTileGrid>
           <div ref={loadMoreRef} className="flex min-h-10 items-center justify-center pb-2 text-xs text-muted-foreground">
-            {isFetchingNextPage ? "Loading more artifacts..." : hasNextPage ? null : isFetching ? "Updating artifacts..." : null}
+            {isFetchingNextPage ? pageText("loadingMoreArtifacts_01b727") : hasNextPage ? null : isFetching ? pageText("updatingArtifacts_aa3246") : null}
           </div>
         </>
       ) : (
@@ -335,11 +337,11 @@ export function Artifacts() {
           </div>
           <div ref={loadMoreRef} className="flex min-h-10 items-center justify-center pb-2 text-xs text-muted-foreground">
             {isFetchingNextPage
-              ? "Loading more artifacts..."
+              ? pageText("loadingMoreArtifacts_01b727")
               : hasNextPage
                 ? null
                 : isFetching
-                  ? "Updating artifacts..."
+                  ? pageText("updatingArtifacts_aa3246")
                   : null}
           </div>
         </>

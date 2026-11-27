@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { isPatchFile } from "@/lib/patch";
 import { loadAttachmentText, TEXT_PREVIEW_MAX_BYTES } from "@/lib/text-preview";
@@ -67,11 +68,9 @@ export function IssueArtifactFile(props: IssueArtifactFileProps) {
     <Button
       variant="outline"
       size="sm"
-      aria-label={`Open in tab: ${props.title}`}
+      aria-label={translateDynamic("dynamic:openInTab", { value1: props.title })}
       onClick={() => openTextAttachment(attachmentId, props.filename)}
-    >
-      Open in tab
-    </Button>
+    >{pageText("openInTab_081787")}</Button>
   ) : null;
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [csvRequested, setCsvRequested] = useState(false);
@@ -190,7 +189,7 @@ export function IssueArtifactFile(props: IssueArtifactFileProps) {
             {openTextAction}
             {patchEligible && patchView.kind !== "error" ? (
               <Button variant="outline" size="sm" disabled={patchData.isFetching} onClick={() => setPatchRequested(true)}>
-                {patchData.isFetching ? pageText("loadingPreview_1b6d8c") : "Preview patch"}
+                {patchData.isFetching ? pageText("loadingPreview_1b6d8c") : pageText("previewPatch_44d5f8")}
               </Button>
             ) : null}
             {localCsv && !tooLarge && dataView.kind !== "error" ? (
@@ -200,7 +199,7 @@ export function IssueArtifactFile(props: IssueArtifactFileProps) {
                 disabled={data.isFetching}
                 onClick={() => setCsvRequested(true)}
               >
-                {data.isFetching ? pageText("loadingPreview_1b6d8c") : "Preview data"}
+                {data.isFetching ? pageText("loadingPreview_1b6d8c") : pageText("previewData_4403fd")}
               </Button>
             ) : null}
           </>
@@ -208,14 +207,14 @@ export function IssueArtifactFile(props: IssueArtifactFileProps) {
       />
       {patchEligible && patchView.kind === "error" ? (
         <QueryErrorState size="inline" error={patchView.error} action="load the patch preview" onRetry={patchView.retry} retrying={patchView.isFetching} />
-      ) : patchEligible && patchData.isFetching ? <p role="status" className="text-xs text-muted-foreground">Loading patch preview…</p> : null}
+      ) : patchEligible && patchData.isFetching ? <p role="status" className="text-xs text-muted-foreground">{pageText("loadingPatchPreview_4b2b1f")}</p> : null}
       {csv && (tooLarge || dataView.kind === "error" || !localCsv) && (
         <div className="px-2 text-xs text-muted-foreground" role="status">
           {tooLarge
-            ? "CSV is too large to preview. Download the file to view it."
+            ? pageText("csvIsTooLargeToPreviewDownloadThe_d47060")
             : dataView.kind === "error"
               ? <QueryErrorState size="inline" error={dataView.error} action="load the CSV preview" onRetry={dataView.retry} retrying={dataView.isFetching} />
-              : "CSV preview is unavailable. Download the file to view it."}
+              : pageText("csvPreviewIsUnavailableDownloadTheFileTo_5fb06f")}
         </div>
       )}
     </div>
@@ -229,6 +228,7 @@ export function IssueWorkProductArtifactCard({
   workProduct: IssueWorkProduct;
   author: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const m = wp.metadata;
   const href = artifactUrl(workProductHref(wp));
   const chip = stateChipFor(wp.type, wp.status, wp.reviewState);
@@ -239,7 +239,7 @@ export function IssueWorkProductArtifactCard({
     updatedAt: formatDateTime(wp.updatedAt),
     statusBadge:
       wp.healthStatus === "unhealthy" ? (
-        <Badge variant="destructive">Unhealthy</Badge>
+        <Badge variant="destructive">{pageText("unhealthy_718edf")}</Badge>
       ) : chip ? (
         <Badge variant="outline">{chip.label}</Badge>
       ) : undefined,

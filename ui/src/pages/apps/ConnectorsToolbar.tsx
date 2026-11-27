@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { ToolbarSearch } from "@/components/ToolbarSearch";
 import { CatalogSourceFilters, type CatalogSource } from "./CatalogSourceFilters";
 
@@ -8,9 +9,10 @@ export function ConnectorsToolbar({ query, onQueryChange, source, onSourceChange
   source: CatalogSource;
   onSourceChange: (value: CatalogSource) => void;
 }) {
-  return <header data-canonical-toolbar="connectors" role="toolbar" aria-label="Connectors controls" className="flex flex-wrap items-center gap-3">
+  const { t: pageText } = usePageTranslation("interface");
+  return <header data-canonical-toolbar="connectors" role="toolbar" aria-label={pageText("connectorsControls_350cc1")} className="flex flex-wrap items-center gap-3">
     <div className="w-full">
-      <ToolbarSearch query={query} onQueryChange={onQueryChange} label="Search connectors" placeholder="Search connectors…" inputType="search" />
+      <ToolbarSearch query={query} onQueryChange={onQueryChange} label={pageText("searchConnectors_9ffb52")} placeholder={pageText("searchConnectors_99e1c5")} inputType="search" />
     </div>
     <CatalogSourceFilters source={source} onChange={onSourceChange} />
   </header>;

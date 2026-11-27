@@ -47,7 +47,7 @@ export function ReusableExecutionWorkspaceSelect<TWorkspace extends ReusableExec
       onValueChange={onValueChange}
       placeholder={placeholder}
       searchPlaceholder={pageText("searchWorkspaces_838c97")}
-      emptyMessage={error ? "Workspaces failed to load." : "No matching workspaces."}
+      emptyMessage={error ? pageText("workspacesFailedToLoad_983838") : pageText("noMatchingWorkspaces_c300e0")}
       loadingMessage="Loading workspaces..."
       loading={loading}
       disabled={disabled}

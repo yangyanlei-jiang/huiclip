@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useRef, useState } from "react";
@@ -95,7 +96,7 @@ export function RoutineTriggers() {
       setError(
         cause instanceof Error
           ? cause.message
-          : "Couldn’t save the trigger. Please try again.",
+          : interfaceNotice("interface:couldnTSaveTheTriggerPleaseTryAgain_0ec695"),
       );
     } finally {
       setBusy(false);
@@ -107,28 +108,20 @@ export function RoutineTriggers() {
     const trigger = routine.triggers.find((item) => item.id === setupId);
     if (setupId !== "new" && !trigger)
       return (
-        <p role="alert">
-          This trigger is no longer available.{" "}
-          <Button variant="link" onClick={closeSetup}>
-            Back to triggers
-          </Button>
+        <p role="alert">{pageText("thisTriggerIsNoLongerAvailable_6d5ea4")}{" "}
+          <Button variant="link" onClick={closeSetup}>{pageText("backToTriggers_c3725e")}</Button>
         </p>
       );
     if (trigger && !trigger.setupPending)
       return (
-        <p>
-          This trigger is ready.{" "}
-          <Button variant="link" onClick={closeSetup}>
-            Back to triggers
-          </Button>
+        <p>{pageText("thisTriggerIsReady_7d0bd7")}{" "}
+          <Button variant="link" onClick={closeSetup}>{pageText("backToTriggers_c3725e")}</Button>
         </p>
       );
     return (
       <div className="space-y-4">
         {statusError && (
-          <p role="alert" className="text-sm text-destructive">
-            Connection status is unavailable. Retrying…
-          </p>
+          <p role="alert" className="text-sm text-destructive">{pageText("connectionStatusIsUnavailableRetrying_8c1def")}</p>
         )}
         <TriggerSetup
           key={routine.id}
@@ -147,16 +140,14 @@ export function RoutineTriggers() {
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
           {routine.triggers.length}{" "}
-          {routine.triggers.length === 1 ? "trigger" : "triggers"}
+          {routine.triggers.length === 1 ? pageText("trigger_63d62d") : pageText("triggers_0d850d")}
         </p>
         <Button size="sm" onClick={() => startSetup("new")}>
-          <Plus className="mr-1.5 h-3.5 w-3.5" />
-          Add trigger
-        </Button>
+          <Plus className="mr-1.5 h-3.5 w-3.5" />{pageText("addTrigger_4e63e6")}</Button>
       </div>
       {(error || statusError) && (
         <p role="alert" className="text-sm text-destructive">
-          {error || "Connection status is unavailable. Retrying…"}
+          {error || pageText("connectionStatusIsUnavailableRetrying_8c1def")}
         </p>
       )}
       {removed.map((trigger) => (
@@ -169,10 +160,8 @@ export function RoutineTriggers() {
             {trigger.kind === "schedule"
               ? pageText("schedule_0a8ada")
               : trigger.kind === "api"
-                ? "API trigger"
-                : "Webhook"}{" "}
-            removed.
-          </span>
+                ? pageText("apiTrigger_892bcd")
+                : "Webhook"}{" "}{pageText("removed_61b70d")}</span>
           <Button
             variant="ghost"
             size="sm"
@@ -187,9 +176,7 @@ export function RoutineTriggers() {
                 );
               })
             }
-          >
-            Undo
-          </Button>
+          >{pageText("undo_39fc72")}</Button>
         </div>
       ))}
       {ctx.secretMessage && (
@@ -198,16 +185,14 @@ export function RoutineTriggers() {
           {ctx.secretMessage.entries.map((entry) => (
             <div key={entry.webhookUrl} className="space-y-3">
               <CopyField label={pageText("webhookURL_fa7517")} value={entry.webhookUrl} />
-              <CopyField label="Secret key" value={entry.webhookSecret} />
+              <CopyField label={pageText("secretKey_341f53")} value={entry.webhookSecret} />
             </div>
           ))}
           <Button variant="outline" onClick={() => ctx.setSecretMessage(null)}>{translateUi("interfaceCopy.done")}</Button>
         </div>
       )}
       {routine.triggers.length === 0 && (
-        <p className="py-6 text-sm text-muted-foreground">
-          Run this routine on a schedule or when another app sends a webhook.
-        </p>
+        <p className="py-6 text-sm text-muted-foreground">{pageText("runThisRoutineOnAScheduleOrWhen_5c41bf")}</p>
       )}
       <fieldset disabled={busy} className="min-w-0 space-y-3">
         {routine.triggers.map((trigger) => (
@@ -231,9 +216,9 @@ export function RoutineTriggers() {
               trigger.kind === "schedule"
                 ? (describeCron(trigger.cronExpression) ?? pageText("schedule_0a8ada"))
                 : trigger.kind === "api"
-                  ? "API trigger"
+                  ? pageText("apiTrigger_892bcd")
                   : trigger.signingMode === "github_hmac"
-                    ? "GitHub webhook"
+                    ? pageText("githubWebhook_e77f98")
                     : "Webhook"
             }
             summary={
@@ -267,9 +252,7 @@ export function RoutineTriggers() {
             }
           >
             {trigger.setupPending ? (
-              <Button onClick={() => startSetup(trigger.id)}>
-                Resume setup
-              </Button>
+              <Button onClick={() => startSetup(trigger.id)}>{pageText("resumeSetup_e79929")}</Button>
             ) : trigger.kind === "schedule" ? (
               <ScheduleSettings
                 trigger={trigger}
@@ -281,9 +264,7 @@ export function RoutineTriggers() {
                 onCancel={() => setExpanded(null)}
               />
             ) : trigger.kind === "api" ? (
-              <p className="text-sm text-muted-foreground">
-                This trigger starts the routine through the API.
-              </p>
+              <p className="text-sm text-muted-foreground">{pageText("thisTriggerStartsTheRoutineThroughTheAPI_d6c4a5")}</p>
             ) : (
               <WebhookSettings
                 trigger={trigger}
@@ -303,7 +284,7 @@ export function RoutineTriggers() {
                   })
                 }
               >
-                {trigger.enabled ? "Pause trigger" : "Enable trigger"}
+                {trigger.enabled ? pageText("pauseTrigger_14bcf7") : pageText("enableTrigger_508b8b")}
               </Button>
             )}
           </RoutineTriggerCard>
@@ -450,6 +431,7 @@ function ScheduleSettings({
   onSave: (patch: Record<string, unknown>) => Promise<void>;
   onCancel: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [cronExpression, setCron] = useState(
     trigger.cronExpression ?? "0 9 * * *",
@@ -465,9 +447,7 @@ function ScheduleSettings({
         onChange={setCron}
         onValidityChange={setValid}
       />
-      <Label>
-        Time zone
-        <Input
+      <Label>{pageText("timeZone_eea79a")}<Input
           value={timezone}
           onChange={(event) => setTimezone(event.target.value)}
         />
@@ -489,15 +469,13 @@ function ScheduleSettings({
               setError(
                 cause instanceof Error
                   ? cause.message
-                  : "Couldn’t save schedule.",
+                  : interfaceNotice("interface:couldnTSaveSchedule_d25bf5"),
               );
             } finally {
               setBusy(false);
             }
           }}
-        >
-          Save schedule
-        </Button>
+        >{pageText("saveSchedule_f22020")}</Button>
         <Button variant="outline" onClick={onCancel}>{translateUi("interfaceCopy.cancel")}</Button>
       </div>
     </fieldset>
@@ -545,56 +523,39 @@ function WebhookSettings({
             <CopyField
               label={
                 trigger.signingMode === "bearer"
-                  ? "Authorization header value"
-                  : "Secret key"
+                  ? pageText("authorizationHeaderValue_f531af")
+                  : pageText("secretKey_341f53")
               }
               value={
                 trigger.signingMode === "bearer" ? `Bearer ${secret}` : secret
               }
             />
           ) : (
-            <p className="text-sm text-muted-foreground">
-              The secret key is hidden.
-            </p>
+            <p className="text-sm text-muted-foreground">{pageText("theSecretKeyIsHidden_722341")}</p>
           )}
-          <Button variant="outline" size="sm" onClick={() => setReplace(true)}>
-            Replace key
-          </Button>
+          <Button variant="outline" size="sm" onClick={() => setReplace(true)}>{pageText("replaceKey_a55aa9")}</Button>
           {secret && (
-            <Button variant="ghost" size="sm" onClick={() => setSecret("")}>
-              Hide key
-            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setSecret("")}>{pageText("hideKey_772f80")}</Button>
           )}
         </div>
       )}
       {trigger.signingMode === "none" && (
-        <p className="text-sm text-muted-foreground">
-          This webhook uses its URL as the shared secret.
-        </p>
+        <p className="text-sm text-muted-foreground">{pageText("thisWebhookUsesItsURLAsTheShared_e3cbc3")}</p>
       )}
       {trigger.signingMode === "hmac_sha256" && (
-        <p className="text-sm text-muted-foreground">
-          Sign the timestamp, a period, and the exact JSON body with
-          HMAC-SHA256. Send X-Paperclip-Timestamp and X-Paperclip-Signature:
-          sha256=&lt;signature&gt;.
-        </p>
+        <p className="text-sm text-muted-foreground">{pageText("signTheTimestampAPeriodAndTheExact_29ae91")}</p>
       )}
       <Button
         variant="outline"
         onClick={() =>
           setCheckBaseline(trigger.lastWebhookDelivery?.receivedAt ?? "")
         }
-      >
-        Check connection
-      </Button>
+      >{pageText("checkConnection_14caef")}</Button>
       <Dialog open={replace} onOpenChange={setReplace}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Replace the webhook key?</DialogTitle>
-            <DialogDescription>
-              The old key will stop working. Update your sending app with the
-              new key.
-            </DialogDescription>
+            <DialogTitle>{pageText("replaceTheWebhookKey_aa1287")}</DialogTitle>
+            <DialogDescription>{pageText("theOldKeyWillStopWorkingUpdateYour_64b633")}</DialogDescription>
           </DialogHeader>
           {error && (
             <p role="alert" className="text-sm text-destructive">
@@ -617,15 +578,13 @@ function WebhookSettings({
                 setError(
                   cause instanceof Error
                     ? cause.message
-                    : "Couldn’t replace the key.",
+                    : interfaceNotice("interface:couldnTReplaceTheKey_cb96cb"),
                 );
               } finally {
                 setBusy(false);
               }
             }}
-          >
-            Replace key
-          </Button>
+          >{pageText("replaceKey_a55aa9")}</Button>
         </DialogContent>
       </Dialog>
       <Dialog
@@ -636,18 +595,15 @@ function WebhookSettings({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Check connection</DialogTitle>
-            <DialogDescription>
-              This webhook is already enabled. Events sent now can start the
-              routine. Send an event from your app to check delivery.
-            </DialogDescription>
+            <DialogTitle>{pageText("checkConnection_14caef")}</DialogTitle>
+            <DialogDescription>{pageText("thisWebhookIsAlreadyEnabledEventsSentNow_da3b5e")}</DialogDescription>
           </DialogHeader>
           <p role="status" className="text-sm">
             {checked
               ? delivery.status === "received"
-                ? "Event received · Authentication passed"
-                : "Event arrived, but authentication failed. Check the key in your app."
-              : "Waiting for an event from your app…"}
+                ? pageText("eventReceivedAuthenticationPassed_2cfbee")
+                : pageText("eventArrivedButAuthenticationFailedCheckTheKey_a67c3b")
+              : pageText("waitingForAnEventFromYourApp_14fff5")}
           </p>
         </DialogContent>
       </Dialog>

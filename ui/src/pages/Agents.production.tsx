@@ -1,3 +1,6 @@
+import { t as interfaceNotice } from "@/i18n";
+import { optionLabel } from "@/i18n/option-label";
+import { t as translateDynamic } from "../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { PrimaryAgentIndicator } from "@/components/primary-agent/PrimaryAgentPresentation";
 import { AgentBulkRoster } from "@/components/agents/AgentBulkRoster";
@@ -133,9 +136,9 @@ function describeEnvironment(
 
 function describeMissingEnvironment(environmentId: string): EnvironmentDescriptor {
   return {
-    label: "Unknown environment",
+    label: translateDynamic("dynamic:unknownEnvironment"),
     detail: environmentId.slice(0, 8),
-    title: `Unknown environment - ${environmentId}`,
+    title: translateDynamic("dynamic:unknownEnvironmentId", { id: environmentId }),
   };
 }
 
@@ -300,7 +303,7 @@ export function Agents() {
   }, [agents, environmentsById, environmentCapabilities, instanceSettings?.defaultEnvironmentId]);
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Agents" }]);
+    setBreadcrumbs([{ label: interfaceNotice("interface:agents_64acf7") }]);
   }, [setBreadcrumbs]);
 
   useEffect(() => {
@@ -310,7 +313,7 @@ export function Agents() {
   }, [navigate, requestedTab]);
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Bot} message="Select a company to view agents." />;
+    return <EmptyState icon={Bot} message={pageText("selectACompanyToViewAgents_d78737")} />;
   }
 
   // Keep a loaded list on screen through a failed refetch; only a real
@@ -380,7 +383,7 @@ export function Agents() {
         titleClassName="flex-1"
         titleTextClassName="whitespace-normal break-words xl:truncate xl:whitespace-nowrap"
         subtitleClassName="whitespace-normal break-words xl:truncate xl:whitespace-nowrap"
-        subtitle={`${roleLabels[agent.role] ?? agent.role}${agent.title ? ` - ${agent.title}` : ""}`}
+        subtitle={`${roleLabels[agent.role] ? optionLabel(roleLabels[agent.role]) : agent.role}${agent.title ? ` - ${agent.title}` : ""}`}
         to={agentUrl(agent)}
         className="agent-roster-identity group py-3"
         leading={hasInvalidOrgChain ? (
@@ -496,15 +499,11 @@ export function Agents() {
       )}
 
       {effectiveView === "org" && orgTree && orgTree.length > 0 && filteredOrg.length === 0 && (
-        <p className="text-sm text-muted-foreground text-center py-8">
-          No agents match the selected status.
-        </p>
+        <p className="text-sm text-muted-foreground text-center py-8">{pageText("noAgentsMatchTheSelectedStatus_436e26")}</p>
       )}
 
       {effectiveView === "org" && orgTree && orgTree.length === 0 && (
-        <p className="text-sm text-muted-foreground text-center py-8">
-          No organizational hierarchy defined.
-        </p>
+        <p className="text-sm text-muted-foreground text-center py-8">{pageText("noOrganizationalHierarchyDefined_10490f")}</p>
       )}
       {configureState && selectedCompanyId && (
         <Suspense fallback={null}>
@@ -567,7 +566,7 @@ function OrgTreeNode({
           <div className="min-w-(--sz-7rem) truncate">
             <span className="text-sm font-medium">{node.name}</span>
             <span className="text-xs text-muted-foreground ml-2">
-              {roleLabels[node.role] ?? node.role}
+              {roleLabels[node.role] ? optionLabel(roleLabels[node.role]) : node.role}
               {agent?.title ? ` - ${agent.title}` : ""}
             </span>
           </div>

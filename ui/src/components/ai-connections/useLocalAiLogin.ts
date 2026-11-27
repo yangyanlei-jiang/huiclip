@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useEffect, useRef, useState } from "react";
 import type { AiConnectionLoginIntent, LocalAiLoginAttempt, LocalAiLoginStatus } from "@paperclipai/shared";
 import { aiConnectionsApi } from "@/api/ai-connections";
@@ -64,7 +65,7 @@ export function useLocalAiLogin(companyId: string | null, intent: AiConnectionLo
         setAuthorizationUrl(next.authorizationUrl ?? null);
         setCode(next.code ?? null);
         setAccountLabel(next.accountLabel ?? null);
-        setError(next.error ?? (next.status === "expired" ? "This sign-in attempt expired. Start sign-in again." : null));
+        setError(next.error ?? (next.status === "expired" ? interfaceNotice("interface:thisSignInAttemptExpiredStartSignIn_f63cc1") : null));
         // Stop polling a verified account. Focus rechecks after the provider
         // browser visit; sign-in never requires repeated Connect clicks.
         if (next.status === "sign_in_required") timer = setTimeout(() => void check(), 5000);
@@ -108,7 +109,7 @@ export function useLocalAiLogin(companyId: string | null, intent: AiConnectionLo
       try {
         await aiConnectionsApi.submitLocalLoginCode(companyId, attempt.sessionId, browserCode);
       } catch (cause) {
-        setError("Could not submit the authorization code. Start sign-in again.");
+        setError(interfaceNotice("interface:couldNotSubmitTheAuthorizationCodeStartSign_755d40"));
         throw cause;
       }
     },

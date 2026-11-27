@@ -191,7 +191,7 @@ export function SearchFilterSheet({
             onToggle={(value) => toggleSingle("updatedWithin", value)}
           />
           <div className="space-y-1.5">
-            <div className="text-xs font-medium text-muted-foreground">Sort by</div>
+            <div className="text-xs font-medium text-muted-foreground">{pageText("sortBy_a2a5bd")}</div>
             <div className="flex flex-wrap gap-1.5">
               {COMPANY_SEARCH_SORTS.map((value) => (
                 <button

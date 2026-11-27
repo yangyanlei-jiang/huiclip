@@ -98,8 +98,7 @@ export function DocumentDiffModal({
       <DialogContent className="!max-w-(--pct-90) w-full max-h-(--sz-85vh) overflow-hidden flex flex-col">
         <div className="flex items-center justify-between gap-4">
           <DialogHeader className="shrink-0">
-            <DialogTitle>
-              Diff — <span className="font-mono text-sm">{documentKey}</span>
+            <DialogTitle>{pageText("diff_0decad") + " "}<span className="font-mono text-sm">{documentKey}</span>
             </DialogTitle>
           </DialogHeader>
 
@@ -147,9 +146,9 @@ export function DocumentDiffModal({
           {!revisions ? (
             <div className="p-6 text-center text-muted-foreground text-sm">{pageText("loadingRevisions_496692")}</div>
           ) : !leftRevision || !rightRevision ? (
-            <div className="p-6 text-center text-muted-foreground text-sm">Select two revisions to compare.</div>
+            <div className="p-6 text-center text-muted-foreground text-sm">{pageText("selectTwoRevisionsToCompare_a6b919")}</div>
           ) : leftRevision.id === rightRevision.id ? (
-            <div className="p-6 text-center text-muted-foreground text-sm">Both sides are the same revision.</div>
+            <div className="p-6 text-center text-muted-foreground text-sm">{pageText("bothSidesAreTheSameRevision_c6a358")}</div>
           ) : (
             <div className="font-mono text-xs leading-6">
               <div className="grid grid-cols-(--gtc-1) border-b border-border/60 bg-muted/30 px-3 py-2 text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">

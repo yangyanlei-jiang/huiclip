@@ -257,7 +257,7 @@ export function SecretPicker({
       disablePortal={disablePortal}
       placeholder={pageText("selectSecret_2e1106")}
       searchPlaceholder={pageText("searchSecrets_5fa681")}
-      emptyMessage="No matching secrets"
+      emptyMessage={pageText("noMatchingSecrets_b4e12e")}
       triggerClassName={cn(
         "h-(--sz-34px) min-h-(--sz-34px) font-mono text-sm",
         boundMissing && "border-destructive text-destructive",
@@ -328,7 +328,7 @@ export function SecretPicker({
                   <span>{pageText("createSecret_f13847") + " "}<span className="font-mono">&ldquo;{query.trim()}&rdquo;</span>…
                   </span>
                 ) : (
-                  <span>Create new secret…</span>
+                  <span>{pageText("createNewSecret_3817a7")}</span>
                 )}
               </span>
             ),

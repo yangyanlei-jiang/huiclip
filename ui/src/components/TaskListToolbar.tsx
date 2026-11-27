@@ -1,3 +1,5 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { t as translateDynamic } from "../i18n";
 import { useTranslation } from "@/i18n";
 import type { ComponentProps, ReactNode, Ref } from "react";
 import { ChevronDown, CirclePlus, Columns3, List, ListTree } from "lucide-react";
@@ -25,13 +27,14 @@ export function TaskListToolbar({ view, onViewChange, viewOptions = views, viewC
   onNewTask: () => void;
   filters: ComponentProps<typeof IssueFiltersPopover>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t } = useTranslation();
   return (
     <div data-canonical-toolbar="tasks" className="design-page-toolbar" role="toolbar" aria-label={t("tasks.controls")}>
       {viewControl ?? <DropdownMenu>
-        <DropdownMenuTrigger asChild><Button variant="outline" className="design-toolbar-button design-view-trigger" aria-label={`Task view: ${viewOptions.find(option => option.value === view)!.label}`}>{viewOptions.find(option => option.value === view)!.label}<ChevronDown aria-hidden /></Button></DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="task-list-options" aria-label="Task views">
-          <DropdownMenuLabel asChild><FlyoutHeader className="task-list-options-heading">Views</FlyoutHeader></DropdownMenuLabel>
+        <DropdownMenuTrigger asChild><Button variant="outline" className="design-toolbar-button design-view-trigger" aria-label={translateDynamic("dynamic:taskView", { value1: viewOptions.find(option => option.value === view)!.label })}>{viewOptions.find(option => option.value === view)!.label}<ChevronDown aria-hidden /></Button></DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="task-list-options" aria-label={pageText("taskViews_cdbcbf")}>
+          <DropdownMenuLabel asChild><FlyoutHeader className="task-list-options-heading">{pageText("views_24be61")}</FlyoutHeader></DropdownMenuLabel>
           <DropdownMenuRadioGroup asChild value={view} onValueChange={value => onViewChange(value as TaskListView)}><FlyoutOptions className="task-list-options-items">
             {viewOptions.map(option => <DropdownMenuRadioItem className="task-list-options-item" key={option.value} value={option.value}>{option.label}</DropdownMenuRadioItem>)}
           </FlyoutOptions></DropdownMenuRadioGroup>

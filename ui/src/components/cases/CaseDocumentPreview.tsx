@@ -41,15 +41,15 @@ export function CaseDocumentPreview({ caseIdentifier, document: documentRef }: {
       <DialogHeader>
         <DialogTitle>{title}</DialogTitle>
         <DialogDescription>
-          {taskRef ? <Link to={`/issues/${taskRef.taskIdentifier ?? taskRef.taskId}#document-${encodeURIComponent(taskRef.key)}`} className="hover:underline">{taskRef.taskIdentifier ?? "Task document"}</Link> : `${caseIdentifier} · Saved on case`}
+          {taskRef ? <Link to={`/issues/${taskRef.taskIdentifier ?? taskRef.taskId}#document-${encodeURIComponent(taskRef.key)}`} className="hover:underline">{taskRef.taskIdentifier ?? pageText("taskDocument_505df7")}</Link> : `${caseIdentifier} · Saved on case`}
           {document?.latestRevisionNumber != null ? ` · Revision ${document.latestRevisionNumber}` : ""}
         </DialogDescription>
       </DialogHeader>
-      {current.isLoading ? <p className="text-sm text-muted-foreground">Loading document…</p> : (currentView.kind === "error") ? <p role="alert" className="text-sm text-destructive">This document couldn’t be loaded.</p> : document ? <div className="space-y-6">
+      {current.isLoading ? <p className="text-sm text-muted-foreground">{pageText("loadingDocument_622054")}</p> : (currentView.kind === "error") ? <p role="alert" className="text-sm text-destructive">{pageText("thisDocumentCouldnTBeLoaded_cfbe4a")}</p> : document ? <div className="space-y-6">
         <SourceTrustBadge sourceTrust={document.sourceTrust} artifactLabel="document" />
-        {document.body ? <MarkdownBody linkIssueReferences linkCaseReferences>{document.body}</MarkdownBody> : <p className="text-sm text-muted-foreground">This document is empty.</p>}
+        {document.body ? <MarkdownBody linkIssueReferences linkCaseReferences>{document.body}</MarkdownBody> : <p className="text-sm text-muted-foreground">{pageText("thisDocumentIsEmpty_04404e")}</p>}
         <details open={historyOpen} onToggle={event => setHistoryOpen(event.currentTarget.open)} className="space-y-3">
-          <summary className="w-fit cursor-pointer text-sm text-muted-foreground hover:text-foreground">Revision history</summary>
+          <summary className="w-fit cursor-pointer text-sm text-muted-foreground hover:text-foreground">{pageText("revisionHistory_b9d26d")}</summary>
           {historyOpen && <CaseRevisionRail caseIdentifier={caseIdentifier} documentKey={documentRef.key} taskId={taskRef?.taskId} />}
         </details>
       </div> : null}

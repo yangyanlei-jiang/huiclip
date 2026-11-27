@@ -92,12 +92,13 @@ export function OnboardingLoginCard({
   loading?: boolean;
   children: ReactNode;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (loading) {
     return (
       <div
         className="flex min-h-(--sz-108px) items-center justify-center rounded-xl bg-muted/40"
         role="status"
-        aria-label="Preparing the sign-in"
+        aria-label={pageText("preparingTheSignIn_00266a")}
       >
         <Loader2 className="size-4 animate-spin text-muted-foreground" />
       </div>
@@ -227,6 +228,7 @@ export function OnboardingLoginCodeRow({
   code: string;
   autoCopy?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [copied, setCopied] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -312,7 +314,7 @@ export function OnboardingLoginCodeRow({
       </AnimatePresence>
       <LoginCardCopyButton
         value={code}
-        label="Copy the code"
+        label={pageText("copyTheCode_4413d7")}
         onCopied={() => {
           // No wait here. A press is a direct action, and delaying its
           // acknowledgement would read as the button having missed.
@@ -451,19 +453,18 @@ export function ProviderSubscriptionCard({
             target="_blank"
             rel="noreferrer noopener"
             className="underline underline-offset-2 hover:text-foreground"
-          >
-            Sign in to {providerName}
+          >{pageText("signInTo_5d033b") + " "}{providerName}
           </a>
-          {mode === "browser_redirect" ? " then return here"
+          {mode === "browser_redirect" ? " " + pageText("thenReturnHere_c09578")
             : mode === "submitted_code"
-            ? " then come back and enter authorization code"
-            : " by providing the authorization code below"}
+            ? " " + pageText("thenComeBackAndEnterAuthorizationCode_42eff9")
+            : " " + pageText("byProvidingTheAuthorizationCodeBelow_51fdba")}
         </>
       )}
     >
       {failure && (
         <div className="flex flex-col items-start gap-3 px-2">
-          <p role="alert" className="text-sm text-muted-foreground">Retry sign-in to get a fresh code. Your setup is saved.</p>
+          <p role="alert" className="text-sm text-muted-foreground">{pageText("retrySignInToGetAFreshCode_fa9fef")}</p>
           {onRetry && <Button type="button" variant="outline" onClick={onRetry}>{pageText("retrySignIn_b5ab68")}</Button>}
         </div>
       )}
@@ -518,8 +519,8 @@ export function LocalProviderLoginInstructions({ adapterType, login }: {
   const ready = login?.status === "ready";
   return <div className="min-w-0 max-w-full space-y-3 text-sm text-muted-foreground">
     {ready ? <>
-      <p role="status" className="flex items-center gap-2 text-foreground"><Check className="size-4 shrink-0 text-(--status-task-icon-done)" />{login?.accountLabel ?? provider} is signed in. Click Connect to use this account.</p>
-      {!showCommand && <button type="button" className="underline underline-offset-4" onClick={() => browserLogin ? login?.retry() : setShowCommand(true)}>Use a different account</button>}
+      <p role="status" className="flex items-center gap-2 text-foreground"><Check className="size-4 shrink-0 text-(--status-task-icon-done)" />{login?.accountLabel ?? provider}{" " + pageText("isSignedInClickConnectToUseThis_870cab")}</p>
+      {!showCommand && <button type="button" className="underline underline-offset-4" onClick={() => browserLogin ? login?.retry() : setShowCommand(true)}>{pageText("useADifferentAccount_9bdf70")}</button>}
     </> : !browserLogin && <p>{isolated ? `Sign in to ${provider} for this connection on the machine running Paperclip. Your existing terminal login stays separate.` : `Connect uses your local ${provider} account on the machine running Paperclip.`}</p>}
     {browserLogin && !ready && !login?.authorizationUrl && !login?.error && <p role="status">{t("connectModel.preparing")}</p>}
     {browserLogin && !ready && !login?.error && login?.authorizationUrl && <ProviderSubscriptionCard
@@ -535,13 +536,13 @@ export function LocalProviderLoginInstructions({ adapterType, login }: {
           disabled={submitting}
         />
         <Button type="button" disabled={!browserCode.trim() || submitting} onClick={() => void submitBrowserCode()}>{pageText("submitCode_32aefb")}</Button>
-      </div> : adapterType === "antigravity_runtime" ? <p>Finish signing in in the Google browser window, then return here.</p> : <OnboardingLoginCodeRow code={login.code ?? ""} />}
+      </div> : adapterType === "antigravity_runtime" ? <p>{pageText("finishSigningInInTheGoogleBrowserWindow_9f6a08")}</p> : <OnboardingLoginCodeRow code={login.code ?? ""} />}
     </ProviderSubscriptionCard>}
     {!browserLogin && (!ready || showCommand) && !login?.error && <>
-      <p>Run this in a terminal on that machine and finish signing in in your browser. We’ll check automatically when you return.</p>
+      <p>{pageText("runThisInATerminalOnThatMachine_80a6bf")}</p>
       {command && <div className="flex min-w-0 max-w-full items-start gap-2 rounded-md border bg-muted p-3 text-foreground">
         <pre className="min-w-0 flex-1 whitespace-pre-wrap break-all font-mono text-xs"><code>{command}</code></pre>
-        <LoginCardCopyButton value={command} label="Copy sign-in command" />
+        <LoginCardCopyButton value={command} label={pageText("copySignInCommand_b017a9")} />
       </div>}
     </>}
     {login?.error && <p role="alert">{login.error}</p>}

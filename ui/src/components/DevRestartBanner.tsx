@@ -1,3 +1,4 @@
+import { t as timeText } from "@/i18n";
 import { t as interfaceMessage } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
@@ -13,13 +14,13 @@ function formatRelativeTimestamp(value: string | null): string | null {
   if (Number.isNaN(timestamp)) return null;
 
   const deltaMs = Date.now() - timestamp;
-  if (deltaMs < 60_000) return "just now";
+  if (deltaMs < 60_000) return timeText("interface:relativeNow");
   const deltaMinutes = Math.round(deltaMs / 60_000);
-  if (deltaMinutes < 60) return `${deltaMinutes}m ago`;
+  if (deltaMinutes < 60) return timeText("interface:relativeAgo_m", { value: deltaMinutes });
   const deltaHours = Math.round(deltaMinutes / 60);
-  if (deltaHours < 24) return `${deltaHours}h ago`;
+  if (deltaHours < 24) return timeText("interface:relativeAgo_h", { value: deltaHours });
   const deltaDays = Math.round(deltaHours / 24);
-  return `${deltaDays}d ago`;
+  return timeText("interface:relativeAgo_d", { value: deltaDays });
 }
 
 function describeReason(devServer: DevServerHealthStatus): string {
@@ -74,11 +75,9 @@ export function DevRestartBanner({ devServer }: { devServer?: DevServerHealthSta
         <div className="min-w-0">
           <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-(--tracking-caps)">
             <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-            <span>Restart Required</span>
+            <span>{pageText("restartRequired_f42e80")}</span>
             {devServer.autoRestartEnabled ? (
-              <Badge variant="ghost" className="bg-amber-900/10 text-(length:--text-nano) tracking-(--tracking-eyebrow) dark:bg-amber-100/10">
-                Auto-Restart On
-              </Badge>
+              <Badge variant="ghost" className="bg-amber-900/10 text-(length:--text-nano) tracking-(--tracking-eyebrow) dark:bg-amber-100/10">{pageText("autoRestartOn_63ac51")}</Badge>
             ) : null}
           </div>
           <p className="mt-1 text-sm">
@@ -87,14 +86,12 @@ export function DevRestartBanner({ devServer }: { devServer?: DevServerHealthSta
           </p>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-amber-900/80 dark:text-amber-100/75">
             {sample.length > 0 ? (
-              <span>
-                Changed: {sample.join(", ")}
+              <span>{pageText("changed_eda3bd") + " "}{sample.join(", ")}
                 {devServer.changedPathCount > sample.length ? ` +${devServer.changedPathCount - sample.length} more` : ""}
               </span>
             ) : null}
             {devServer.pendingMigrations.length > 0 ? (
-              <span>
-                Pending migrations: {devServer.pendingMigrations.slice(0, 2).join(", ")}
+              <span>{pageText("pendingMigrations_7d6ad2") + " "}{devServer.pendingMigrations.slice(0, 2).join(", ")}
                 {devServer.pendingMigrations.length > 2 ? ` +${devServer.pendingMigrations.length - 2} more` : ""}
               </span>
             ) : null}
@@ -105,17 +102,17 @@ export function DevRestartBanner({ devServer }: { devServer?: DevServerHealthSta
           {devServer.waitingForIdle ? (
             <div className="inline-flex items-center gap-2 rounded-full bg-amber-900/10 px-3 py-1.5 dark:bg-amber-100/10">
               <TimerReset className="h-3.5 w-3.5" />
-              <span>Waiting for {activeRunLabel} to finish</span>
+              <span>{pageText("waitingFor_20e0b1") + " "}{activeRunLabel}{" " + pageText("toFinish_5d236e")}</span>
             </div>
           ) : devServer.autoRestartEnabled ? (
             <div className="inline-flex items-center gap-2 rounded-full bg-amber-900/10 px-3 py-1.5 dark:bg-amber-100/10">
               <RotateCcw className="h-3.5 w-3.5" />
-              <span>Auto-restart will trigger when the instance is idle</span>
+              <span>{pageText("autoRestartWillTriggerWhenTheInstanceIs_8e4a94")}</span>
             </div>
           ) : (
             <div className="inline-flex items-center gap-2 rounded-full bg-amber-900/10 px-3 py-1.5 dark:bg-amber-100/10">
               <RotateCcw className="h-3.5 w-3.5" />
-              <span>{pageText("restart_b134bd") + " "}<code>pnpm dev:once</code> after the active work is safe to interrupt</span>
+              <span>{pageText("restart_b134bd") + " "}<code>pnpm dev:once</code>{" " + pageText("afterTheActiveWorkIsSafeToInterrupt_2a8f6b")}</span>
             </div>
           )}
           <button
@@ -127,7 +124,7 @@ export function DevRestartBanner({ devServer }: { devServer?: DevServerHealthSta
             disabled={restartPending}
           >
             <RotateCcw className="h-3.5 w-3.5" />
-            <span>{restartPending ? "Restart requested" : "Restart now"}</span>
+            <span>{restartPending ? pageText("restartRequested_7faf32") : pageText("restartNow_af2c3d")}</span>
           </button>
         </div>
       </div>

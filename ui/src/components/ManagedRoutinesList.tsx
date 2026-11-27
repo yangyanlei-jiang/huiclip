@@ -151,7 +151,7 @@ export function ManagedRoutinesList({
                 <span>
                   {missingRefs.length
                     ? `Missing ${missingRefs.map((ref) => `${ref.resourceKind}:${ref.resourceKey}`).join(", ")}`
-                    : "Routine defaults can be repaired."}
+                    : pageText("routineDefaultsCanBeRepaired_492b49")}
                 </span>
                 <span className="flex items-center gap-2">
                   {onReconcile ? (
@@ -161,7 +161,7 @@ export function ManagedRoutinesList({
                       disabled={reconcilingRoutineKey === routine.key}
                       onClick={() => onReconcile(routine)}
                     >
-                      {reconcilingRoutineKey === routine.key ? "Reconciling..." : "Reconcile"}
+                      {reconcilingRoutineKey === routine.key ? pageText("reconciling_27bd50") : pageText("reconcile_d36f29")}
                     </Button>
                   ) : null}
                   {onReset ? (
@@ -171,7 +171,7 @@ export function ManagedRoutinesList({
                       disabled={resettingRoutineKey === routine.key}
                       onClick={() => onReset(routine)}
                     >
-                      {resettingRoutineKey === routine.key ? "Resetting..." : pageText("reset_44c57a")}
+                      {resettingRoutineKey === routine.key ? pageText("resetting_ee41f7") : pageText("reset_44c57a")}
                     </Button>
                   ) : null}
                 </span>

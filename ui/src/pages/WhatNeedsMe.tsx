@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -147,7 +148,7 @@ function ClassicWhatNeedsMe() {
   );
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Decisions" }]);
+    setBreadcrumbs([{ label: interfaceNotice("interface:decisions_af2f32") }]);
   }, [setBreadcrumbs]);
 
   // Re-hydrate per-company preferences when the company changes.
@@ -442,11 +443,11 @@ function ClassicWhatNeedsMe() {
       pushToast({
         id: `attention-dismiss-${item.id}`,
         dedupeKey: `attention-dismiss-${item.dismissalKey}`,
-        title: "Dismissed",
+        title: interfaceNotice("interface:dismissed_e8db5f"),
         body: item.subject.title ?? undefined,
         tone: "info",
         ttlMs: 8000,
-        action: { label: "Undo", onClick: () => handleUndoDismiss(item) },
+        action: { label: interfaceNotice("interface:undo_39fc72"), onClick: () => handleUndoDismiss(item) },
       });
     },
     [dismiss, handleUndoDismiss, pushToast],
@@ -655,7 +656,7 @@ function ClassicWhatNeedsMe() {
 
           {snoozedItems.length > 0 && (
             <Curtain
-              label="Snoozed"
+              label={pageText("snoozed_9be70f")}
               count={snoozedItems.length}
               open={snoozedOpen}
               onToggle={() => setSnoozedOpen((prev) => !prev)}
@@ -679,7 +680,7 @@ function ClassicWhatNeedsMe() {
 
           {dismissedItems.length > 0 && (
             <Curtain
-              label="Dismissed"
+              label={pageText("dismissed_e8db5f")}
               count={dismissedItems.length}
               open={dismissedOpen}
               onToggle={() => setDismissedOpen((prev) => !prev)}
@@ -703,14 +704,12 @@ function ClassicWhatNeedsMe() {
 
           {agingItems.length > 0 && (
             <Curtain
-              label="Aging"
+              label={pageText("aging_6ea92a")}
               count={agingItems.length}
               open={agingOpen}
               onToggle={() => setAgingOpen((prev) => !prev)}
             >
-              <p className="text-xs text-muted-foreground">
-                Idle past {ATTENTION_AGING_DAYS} days — kept off the desk. Keep any you still want surfaced.
-              </p>
+              <p className="text-xs text-muted-foreground">{pageText("idlePast_cdfc77") + " "}{ATTENTION_AGING_DAYS}{" " + pageText("daysKeptOffTheDeskKeepAnyYou_5712a3")}</p>
               {agingItems.map((item) => (
                 <AgingItemRow
                   key={item.id}
@@ -734,13 +733,13 @@ function ClassicWhatNeedsMe() {
 
       <div className="space-y-4">
         <Curtain
-          label="Decided"
+          label={pageText("decided_55615a")}
           count={decisionHistoryCount(decidedDecisions?.length)}
           open={decidedOpen}
           onToggle={() => setDecidedOpen((prev) => !prev)}
         >
           {decidedDecisionsLoading ? (
-            <p className="text-xs text-muted-foreground">Loading decided decisions…</p>
+            <p className="text-xs text-muted-foreground">{pageText("loadingDecidedDecisions_24c998")}</p>
           ) : (decidedDecisions?.length ?? 0) > 0 ? (
             decidedDecisions!.slice(0, DECISION_HISTORY_VISIBLE_LIMIT).map((decision) => (
               <DecisionResolver
@@ -752,18 +751,18 @@ function ClassicWhatNeedsMe() {
               />
             ))
           ) : (
-            <p className="text-xs text-muted-foreground">No decided decisions.</p>
+            <p className="text-xs text-muted-foreground">{pageText("noDecidedDecisions_6a9a20")}</p>
           )}
         </Curtain>
 
         <Curtain
-          label="Expired"
+          label={pageText("expired_a689a9")}
           count={decisionHistoryCount(expiredDecisions?.length)}
           open={expiredOpen}
           onToggle={() => setExpiredOpen((prev) => !prev)}
         >
           {expiredDecisionsLoading ? (
-            <p className="text-xs text-muted-foreground">Loading expired decisions…</p>
+            <p className="text-xs text-muted-foreground">{pageText("loadingExpiredDecisions_6ee66e")}</p>
           ) : (expiredDecisions?.length ?? 0) > 0 ? (
             expiredDecisions!.slice(0, DECISION_HISTORY_VISIBLE_LIMIT).map((decision) => (
               <DecisionResolver
@@ -775,7 +774,7 @@ function ClassicWhatNeedsMe() {
               />
             ))
           ) : (
-            <p className="text-xs text-muted-foreground">No expired decisions.</p>
+            <p className="text-xs text-muted-foreground">{pageText("noExpiredDecisions_8d463d")}</p>
           )}
         </Curtain>
       </div>
@@ -804,11 +803,11 @@ export function DecisionBundleHeader({
   return (
     <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 rounded-sm border-l-2 border-violet-500/60 bg-violet-500/5 px-3 py-1.5 text-xs">
       <span className="font-semibold text-violet-800 dark:text-violet-200">
-        {agentName ?? "An agent"} proposed {count} {noun}
+        {agentName ?? pageText("anAgent_d95187")}{" " + pageText("proposed_022624") + " "}{count} {noun}
       </span>
       {originIssue && (originIssue.identifier || originIssue.title) && (
         <span className="text-muted-foreground">
-          {"· from "}
+          {pageText("from_0d1bb0") + " "}
           {originIssue.href ? (
             <a href={originIssue.href} className="hover:underline">
               {originIssue.identifier ?? originIssue.title}
@@ -825,29 +824,29 @@ export function DecisionBundleHeader({
 }
 
 function CaughtUpNote({ filtered }: { filtered: boolean }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="rounded-xl border border-dashed border-border py-10 text-center">
       <p className="text-sm font-medium text-foreground">
-        {filtered ? "No decisions match your search or filters." : "You're all caught up."}
+        {filtered ? pageText("noDecisionsMatchYourSearchOrFilters_68c41f") : pageText("youReAllCaughtUp_3d39c4")}
       </p>
       {filtered && (
-        <p className="mt-1 text-xs text-muted-foreground">Adjust or clear your search and filters to see the rest.</p>
+        <p className="mt-1 text-xs text-muted-foreground">{pageText("adjustOrClearYourSearchAndFiltersTo_18d322")}</p>
       )}
     </div>
   );
 }
 
 function ZeroState() {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-20 text-center">
       <div className="mb-4 rounded-full bg-green-500/10 p-4">
         <CheckCircle2 className="h-10 w-10 text-green-500" />
       </div>
-      <p className="text-lg font-semibold text-foreground">You're all caught up</p>
+      <p className="text-lg font-semibold text-foreground">{pageText("youReAllCaughtUp_65a724")}</p>
       <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
-        <Inbox className="h-4 w-4" />
-        Nothing needs a decision from you right now.
-      </p>
+        <Inbox className="h-4 w-4" />{pageText("nothingNeedsADecisionFromYouRightNow_2a68ff")}</p>
     </div>
   );
 }

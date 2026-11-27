@@ -1,3 +1,4 @@
+import { controlText } from "@/i18n/controls";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { ChevronLeft } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -63,7 +64,7 @@ export function AppDetailSidebar(props: AppDetailSidebarProps) {
     ? (connectionsQuery.data?.connections ?? []).filter((candidate) => candidate.applicationId === props.applicationId)
     : [];
   const previousConnection = latestArchivedConnection(appConnections);
-  const appName = connection ? humanizeConnectionDisplayName(connection) : application?.name ?? "App";
+  const appName = connection ? humanizeConnectionDisplayName(connection) : application?.name ?? controlText("App");
   const logoEntry = galleryEntryFor(
     (galleryQuery.data?.apps ?? []) as AppGalleryDisplayEntry[],
     connection,
@@ -94,7 +95,7 @@ export function AppDetailSidebar(props: AppDetailSidebarProps) {
           className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
         >
           <ChevronLeft className="h-3.5 w-3.5 shrink-0" />
-          <span className="truncate">All connectors</span>
+          <span className="truncate">{pageText("allConnectors_c2363e")}</span>
         </Link>
         <div className="flex min-w-0 items-center gap-2 px-2 py-1">
           <AppLogo
@@ -115,7 +116,7 @@ export function AppDetailSidebar(props: AppDetailSidebarProps) {
             <SidebarNavItem
               key={tab.key}
               to={tabHref(props, tab.key)}
-              label={poolPluginKey ? pageText("settings_c7f73b") : tab.label}
+              label={poolPluginKey ? pageText("settings_c7f73b") : controlText(tab.label)}
               icon={tab.icon}
               end
               badge={tab.key === "review" && reviewCount > 0 ? reviewCount : undefined}

@@ -1,3 +1,5 @@
+import { t as interfaceNotice } from "@/i18n";
+import { t as translateDynamic } from "../../../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { SpekoPhoneLine } from "@/components/voice/SpekoPhoneLine";
@@ -290,15 +292,15 @@ export function ChatEndpointDetail() {
   useEffect(() => {
     if (!endpoint || !activeTab) return;
     setBreadcrumbs([
-      { label: "Connectors", href: "/apps" },
+      { label: interfaceNotice("interface:connectors_4b1e95"), href: "/apps" },
       {
         label: `${endpoint.assignedAgentName} · ${providerNames[endpoint.provider]}`,
         href: `/apps/chat/${endpoint.id}/settings`,
       },
-      ...(reviewId ? [{ label: "Reviews", href: `/apps/chat/${endpoint.id}/reviews` }, { label: "Review" }] : [{
+      ...(reviewId ? [{ label: interfaceNotice("interface:reviews_b83c4c"), href: `/apps/chat/${endpoint.id}/reviews` }, { label: interfaceNotice("interface:review_e29a79") }] : [{
         label:
           tabItems.find((item) => item.value === activeTab)?.label ??
-          "Settings",
+          interfaceNotice("interface:settings_c7f73b"),
       }]),
     ]);
     return () => setBreadcrumbs([]);
@@ -340,10 +342,10 @@ export function ChatEndpointDetail() {
           <div className="min-w-0">
           <h1 ref={heading} tabIndex={-1} className={endpoint.provider === "speko" ? "flex items-center gap-3 text-xl font-bold" : "text-xl font-bold"}>
             {endpoint.provider === "speko" && <AppLogo name="Speko" brandKey="speko" size={36} />}
-            {endpoint.provider === "github" ? (endpoint.botLabel ?? endpoint.assignedAgentName) : endpoint.assignedAgentName}{endpoint.provider === "speko" ? " in Speko" : ""}
+            {endpoint.provider === "github" ? (endpoint.botLabel ?? endpoint.assignedAgentName) : endpoint.assignedAgentName}{endpoint.provider === "speko" ? " " + pageText("inSpeko_53f6b0") : ""}
           </h1>
           <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            {endpoint.provider === "github" ? <><AppLogo name="GitHub" brandKey="github" compact className="size-4! rounded-sm bg-transparent" /><Link to={`/agents/${endpoint.assignedAgentId}`} className="hover:underline">{endpoint.assignedAgentName}</Link>{endpoint.providerAccountLabel && <span>· {endpoint.providerAccountLabel}</span>}</> : endpoint.providerAccountLabel ?? (endpoint.provider === "agentmail" ? endpoint.botExternalId ?? "Email connection" : "Chat connection")}
+            {endpoint.provider === "github" ? <><AppLogo name="GitHub" brandKey="github" compact className="size-4! rounded-sm bg-transparent" /><Link to={`/agents/${endpoint.assignedAgentId}`} className="hover:underline">{endpoint.assignedAgentName}</Link>{endpoint.providerAccountLabel && <span>· {endpoint.providerAccountLabel}</span>}</> : endpoint.providerAccountLabel ?? (endpoint.provider === "agentmail" ? endpoint.botExternalId ?? pageText("emailConnection_c9a001") : pageText("chatConnection_da793d"))}
           </p>
           {endpoint.provider === "github" && <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
             <GitHubBotMention endpoint={endpoint} />
@@ -352,19 +354,19 @@ export function ChatEndpointDetail() {
           {endpoint.provider === "imessage-photon" && endpoint.botExternalId && endpoint.photonAllocation !== "shared" && (
             <div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
               <span>{endpoint.botExternalId}</span>
-              <Button variant="ghost" size="sm" aria-label="Copy dedicated number" onClick={async () => {
+              <Button variant="ghost" size="sm" aria-label={pageText("copyDedicatedNumber_52aa86")} onClick={async () => {
                 try { await copyTextToClipboard(endpoint.botExternalId!); setCopyStatus("Number copied"); }
                 catch { setCopyStatus("Could not copy the number. Select and copy it manually."); }
-              }}><Copy className="size-4" />Copy number</Button>
+              }}><Copy className="size-4" />{pageText("copyNumber_65c817")}</Button>
               <span role="status" className="text-muted-foreground">{copyStatus}</span>
             </div>
           )}
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {endpoint.provider === "speko" && <a href="https://platform.speko.ai/agents" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm text-primary underline">Open Speko<ExternalLink className="size-3.5" aria-hidden="true" /></a>}
+          {endpoint.provider === "speko" && <a href="https://platform.speko.ai/agents" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm text-primary underline">{pageText("openSpeko_49b1d8")}<ExternalLink className="size-3.5" aria-hidden="true" /></a>}
           {endpoint.provider === "slack" && !setupIncomplete && <Button asChild variant="outline"><a href={slackConversationUrl(endpoint, identitySettled ? userId : null)} target="_blank" rel="noopener noreferrer">{pageText("openSlack_eec851") + " "}<ExternalLink className="size-4" /></a></Button>}
-          {slackUrl && <Button asChild variant="outline"><a href={slackUrl} target="_blank" rel="noopener noreferrer">Open Slack configuration <ExternalLink className="size-4" /></a></Button>}
+          {slackUrl && <Button asChild variant="outline"><a href={slackUrl} target="_blank" rel="noopener noreferrer">{pageText("openSlackConfiguration_12f23d") + " "}<ExternalLink className="size-4" /></a></Button>}
           {setupIncomplete ? (
             <Button
               variant="outline"
@@ -373,9 +375,7 @@ export function ChatEndpointDetail() {
                   `/apps/chat/connect?provider=${endpoint.provider}&purpose=chat&resume=${endpoint.id}`,
                 )
               }
-            >
-              Continue setup
-            </Button>
+            >{pageText("continueSetup_7a4e54")}</Button>
           ) : null}
           {endpoint.status !== "active" && <StatusBadge status={endpoint.status} className={endpoint.provider === "speko" ? "text-foreground" : undefined} />}
         </div>
@@ -391,9 +391,9 @@ export function ChatEndpointDetail() {
       {activeTab === "reviews" && endpoint.provider === "github" && <GitHubReviews endpointId={endpoint.id} reviewId={reviewId} />}
       {activeTab === "access" && endpoint.provider === "speko" && (
         <section className="max-w-3xl space-y-3">
-          <h2 className="text-lg font-semibold">Private voice access</h2>
-          <p className="text-sm text-muted-foreground">Browser calls use the signed-in Paperclip user’s current company access. Each call stays bound to its selected agent and task.</p>
-          <p className="text-sm text-muted-foreground">Outgoing calls use your saved callback number and opt-in. For a private incoming call, enter the code spoken on the phone in signed-in Paperclip and select a task to approve that live call. Incoming calls can start a new conversation task without sign-in, under a task-scoped low-trust policy. Private mode is optional and requires approval before accessing existing tasks.</p>
+          <h2 className="text-lg font-semibold">{pageText("privateVoiceAccess_2578ee")}</h2>
+          <p className="text-sm text-muted-foreground">{pageText("browserCallsUseTheSignedInPaperclipUser_6c72d7")}</p>
+          <p className="text-sm text-muted-foreground">{pageText("outgoingCallsUseYourSavedCallbackNumberAnd_254351")}</p>
         </section>
       )}
 {activeTab === "access" && endpoint.provider === "agentmail" && <EmailAccess endpoint={endpoint} />}
@@ -453,7 +453,7 @@ function EmailAccess({ endpoint }: { endpoint: ChatEndpoint }) {
   });
   const agentsView = useQueryView(agents);
   const connectionView = useQueryView(connection);
-  if (!endpoint.connectionId) return <p role="alert" className="text-sm text-destructive">Connection access could not be loaded.</p>;
+  if (!endpoint.connectionId) return <p role="alert" className="text-sm text-destructive">{pageText("connectionAccessCouldNotBeLoaded_4ee1d8")}</p>;
   if (agentsView.kind === "error" || connectionView.kind === "error") return (
     <QueryErrorState
       error={agentsView.kind === "error" ? agents.error : connection.error}
@@ -469,7 +469,7 @@ function EmailAccess({ endpoint }: { endpoint: ChatEndpoint }) {
   const credentialId = typeof sourceId === "string" ? sourceId : endpoint.connectionId;
   return <section className="max-w-3xl space-y-4">
     <h2 className="text-lg font-semibold">{pageText("access_2f81a2")}</h2>
-    {credentialId !== endpoint.connectionId && <p className="text-sm text-muted-foreground">These settings apply to the saved AgentMail account and all inboxes using it.</p>}
+    {credentialId !== endpoint.connectionId && <p className="text-sm text-muted-foreground">{pageText("theseSettingsApplyToTheSavedAgentMailAccount_70e69f")}</p>}
     <EmailConnectionAccess key={credentialId} companyId={endpoint.companyId} connectionId={credentialId} agents={agents.data ?? []} />
   </section>;
 }
@@ -502,7 +502,7 @@ function Settings({
       ),
     onError: (error) =>
       pushToast({
-        title: "Couldn't update destination",
+        title: interfaceNotice("interface:couldnTUpdateDestination_ee50df"),
         body: describeError(error).body,
         tone: "error",
       }),
@@ -516,7 +516,7 @@ function Settings({
       ),
     onError: (error) =>
       pushToast({
-        title: "Couldn't update settings",
+        title: interfaceNotice("interface:couldnTUpdateSettings_927d06"),
         body: describeError(error).body,
         tone: "error",
       }),
@@ -531,32 +531,26 @@ function Settings({
     saveResources.mutate({ id: resource.id, enabled });
   return (
     <section className="max-w-3xl space-y-7">
-      {endpoint.provider === "imessage-photon" && <p className="text-sm text-muted-foreground">{endpoint.photonAllocation === "shared" ? "Shared Photon project · direct messages only. Enroll senders in Photon and link their Messages identities in Access. Groups cannot be enabled." : "Enable each group individually. Agent replies are visible to everyone in that group; only authorized senders can start work."}</p>}
+      {endpoint.provider === "imessage-photon" && <p className="text-sm text-muted-foreground">{endpoint.photonAllocation === "shared" ? pageText("sharedPhotonProjectDirectMessagesOnlyEnrollSenders_5384c9") : pageText("enableEachGroupIndividuallyAgentRepliesAreVisible_3348ca")}</p>}
       {endpoint.provider === "telegram" && (
         <div className="space-y-2">
-          <h2 className="text-lg font-semibold">Telegram group command</h2>
+          <h2 className="text-lg font-semibold">{pageText("telegramGroupCommand_a9b54c")}</h2>
           <div className="rounded-lg border border-border p-3 text-sm">
             <code>
               /task@
               {endpoint.botUsername?.replace(/^@/, "") ?? "bot_username"}{" "}
               &lt;request&gt;
             </code>
-            <p className="mt-2 text-muted-foreground">
-              Telegram&apos;s default privacy mode does not deliver ordinary
-              mentions to bots. Use this command to start or continue group
-              work, or reply directly to a message from the bot.
-            </p>
+            <p className="mt-2 text-muted-foreground">{pageText("telegramSDefaultPrivacyModeDoesNotDeliver_3f8d1d")}</p>
           </div>
         </div>
       )}
       <div className="space-y-2">
-        <h3 className="text-sm font-semibold">{endpoint.provider === "slack" ? "Allowed Channels" : "Destinations"}</h3>
+        <h3 className="text-sm font-semibold">{endpoint.provider === "slack" ? pageText("allowedChannels_7f2180") : pageText("destinations_0fc66b")}</h3>
         {resourcesView.kind === "error" ? <QueryErrorState size="inline" error={resourcesQuery.error} action={endpoint.provider === "slack" ? "load the channels" : "load the destinations"} onRetry={resourcesView.retry} retrying={resourcesView.isFetching} /> : resourcesQuery.isLoading || resourcesView.kind === "reconnecting" ? (
-          <p className="text-sm text-muted-foreground">Loading destinations…</p>
+          <p className="text-sm text-muted-foreground">{pageText("loadingDestinations_7bce18")}</p>
         ) : destinationResources.length === 0 && endpoint.provider !== "slack" ? (
-          <p className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
-            No destinations yet.
-          </p>
+          <p className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">{pageText("noDestinationsYet_69e686")}</p>
         ) : (
           <div className={endpoint.provider === "slack" ? "space-y-1" : "divide-y divide-border border-y border-border"}>
             {destinationResources.map((resource) => (
@@ -569,12 +563,12 @@ function Settings({
                   {(resource.availability !== "available" || resource.detail) && <p className="text-xs text-muted-foreground">
                     {resource.availability === "available"
                       ? resource.detail
-                      : "Unavailable at the provider"}
+                      : pageText("unavailableAtTheProvider_daab2c")}
                   </p>}
-                  {resource.participants?.length ? <p className="mt-1 break-words text-xs text-muted-foreground">Participants: {resource.participants.join(", ")}</p> : null}
+                  {resource.participants?.length ? <p className="mt-1 break-words text-xs text-muted-foreground">{pageText("participants_317d98") + " "}{resource.participants.join(", ")}</p> : null}
                 </div>
                 <ToggleSwitch
-                  aria-label={`Enable ${resource.label}`}
+                  aria-label={translateDynamic("dynamic:enable", { value1: resource.label })}
                   checked={resource.enabled}
                   disabled={
                     endpoint.photonAllocation === "shared" ||
@@ -601,8 +595,7 @@ function Settings({
               </div>
             ))}
             {endpoint.provider === "slack" && (
-              <p className="py-3 text-sm text-muted-foreground">{pageText("invite_b13660") + " "}{endpoint.assignedAgentName} to a channel to add it
-              </p>
+              <p className="py-3 text-sm text-muted-foreground">{pageText("invite_b13660") + " "}{endpoint.assignedAgentName}{" " + pageText("toAChannelToAddIt_41af96")}</p>
             )}
           </div>
         )}
@@ -610,7 +603,7 @@ function Settings({
       {endpoint.provider !== "github" && (
         <div className="space-y-3">
           <SettingToggle
-            label="Allow direct messages"
+            label={pageText("allowDirectMessages_1983c4")}
             detail={
               endpoint.provider === "discord"
                 ? "People must also enable Direct Messages in their shared Discord server’s Privacy Settings."
@@ -624,7 +617,7 @@ function Settings({
           />
           {endpoint.provider === "slack" && (
             <SettingToggle
-              label="Require at-mention"
+              label={pageText("requireAtMention_3dad70")}
               detail="In channels, only respond to messages that @mention this bot, including thread replies. Direct messages never require an @mention and must be allowed above."
               checked={endpoint.requireAtMention ?? false}
               pending={updateEndpoint.isPending}
@@ -635,7 +628,7 @@ function Settings({
           )}
           {endpoint.provider === "microsoft-teams" && (
             <SettingToggle
-              label="Allow group chats"
+              label={pageText("allowGroupChats_b69332")}
               detail="The bot may participate in group chats where it is installed."
               checked={endpoint.allowGroupChats ?? false}
               pending={updateEndpoint.isPending}
@@ -654,7 +647,7 @@ function Settings({
           queryClient.setQueryData(queryKeys.chatEndpoints.detail(endpointId), next);
         }}
       />}
-      {endpoint.provider === "slack" && <SlackSetupAdvanced label="Slack tools"><SlackToolsSettings companyId={endpoint.companyId} endpointId={endpointId} /></SlackSetupAdvanced>}
+      {endpoint.provider === "slack" && <SlackSetupAdvanced label={pageText("slackTools_967a34")}><SlackToolsSettings companyId={endpoint.companyId} endpointId={endpointId} /></SlackSetupAdvanced>}
     </section>
   );
 }
@@ -719,7 +712,7 @@ function Access({
         queryKeys.chatEndpoints.detail(endpointId),
         next,
       ),
-    onError: (error) => pushToast({ title: "Couldn’t update access", body: describeError(error).body, tone: "error" }),
+    onError: (error) => pushToast({ title: interfaceNotice("interface:couldnTUpdateAccess_954807"), body: describeError(error).body, tone: "error" }),
   });
   const createIntent = useMutation({
     mutationFn: (principalId: string) =>
@@ -732,7 +725,7 @@ function Access({
     },
     onError: (error) =>
       pushToast({
-        title: "Couldn't create identity link",
+        title: interfaceNotice("interface:couldnTCreateIdentityLink_b14ba5"),
         body: describeError(error).body,
         tone: "error",
       }),
@@ -741,45 +734,45 @@ function Access({
     mutationFn: (principalId: string) =>
       chatEndpointsApi.revokeLink(endpointId, principalId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.chatEndpoints.principals(endpointId) }),
-    onError: (error) => pushToast({ title: "Couldn't disconnect account", body: describeError(error).body, tone: "error" }),
+    onError: (error) => pushToast({ title: interfaceNotice("interface:couldnTDisconnectAccount_9408b0"), body: describeError(error).body, tone: "error" }),
   });
   const links = linksQuery.data ?? [];
   return (
     <section className="max-w-3xl space-y-7">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold">People</h2>
+        <h2 className="text-lg font-semibold">{pageText("people_b37554")}</h2>
         {endpoint.provider === "slack" && <Dialog>
           <DialogTrigger asChild><Button>{pageText("invitePeople_e1eb97")}</Button></DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Invite people to talk to {endpoint.assignedAgentName}</DialogTitle>
-              <DialogDescription>Share these instructions with someone in your Slack workspace.</DialogDescription>
+              <DialogTitle>{pageText("invitePeopleToTalkTo_08abb8") + " "}{endpoint.assignedAgentName}</DialogTitle>
+              <DialogDescription>{pageText("shareTheseInstructionsWithSomeoneInYourSlack_a86081")}</DialogDescription>
             </DialogHeader>
             <div className="space-y-4 text-sm">
               <ol className="list-decimal space-y-3 pl-5">
-                <li>Send <code className="font-mono">{joinCommand}</code> in Slack.</li>
-                <li>Open the bot’s private link and sign in to Paperclip to confirm your Slack account.</li>
-                <li>If you’re new to this organization, request access and wait for an admin to approve.</li>
+                <li>{pageText("send_9bc257") + " "}<code className="font-mono">{joinCommand}</code>{" " + pageText("inSlack_f172cc")}</li>
+                <li>{pageText("openTheBotSPrivateLinkAndSign_8338cb")}</li>
+                <li>{pageText("ifYouReNewToThisOrganizationRequest_3e1524")}</li>
               </ol>
-              <p className="text-muted-foreground">The confirmation link is personal and expires after 15 minutes.</p>
+              <p className="text-muted-foreground">{pageText("theConfirmationLinkIsPersonalAndExpiresAfter_cda98d")}</p>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <Button variant="ghost" onClick={() => {
-                  void copyTextToClipboard(joinCommand).then(() => setJoinCommandCopied(true), () => pushToast({ title: "Couldn't copy the command", tone: "error" }));
-                }}>{joinCommandCopied ? <Check className="size-4" /> : <Copy className="size-4" />}{joinCommandCopied ? pageText("copied_8e3df4") : "Copy command"}</Button>
+                  void copyTextToClipboard(joinCommand).then(() => setJoinCommandCopied(true), () => pushToast({ title: interfaceNotice("interface:couldnTCopyTheCommand_0b9cf3"), tone: "error" }));
+                }}>{joinCommandCopied ? <Check className="size-4" /> : <Copy className="size-4" />}{joinCommandCopied ? pageText("copied_8e3df4") : pageText("copyCommand_a8e104")}</Button>
                 <Button onClick={() => {
                   const workspace = endpoint.providerAccountId ? `https://app.slack.com/client/${encodeURIComponent(endpoint.providerAccountId)}` : "https://app.slack.com/";
-                  void copyTextToClipboard(`Talk to ${endpoint.assignedAgentName} in Slack: ${workspace}\nSend ${joinCommand}, then open the bot’s private link and sign in to Paperclip to confirm your account. If you’re new to the organization, request access for an admin to approve.`).then(() => setInviteCopied(true), () => pushToast({ title: "Couldn't copy invitation", tone: "error" }));
-                }}>{inviteCopied ? <Check className="size-4" /> : <Copy className="size-4" />}{inviteCopied ? "Invitation copied" : "Copy invitation"}</Button>
+                  void copyTextToClipboard(`Talk to ${endpoint.assignedAgentName} in Slack: ${workspace}\nSend ${joinCommand}, then open the bot’s private link and sign in to Paperclip to confirm your account. If you’re new to the organization, request access for an admin to approve.`).then(() => setInviteCopied(true), () => pushToast({ title: interfaceNotice("interface:couldnTCopyInvitation_181725"), tone: "error" }));
+                }}>{inviteCopied ? <Check className="size-4" /> : <Copy className="size-4" />}{inviteCopied ? pageText("invitationCopied_6c638e") : pageText("copyInvitation_18960e")}</Button>
               </div>
             </div>
           </DialogContent>
         </Dialog>}
       </div>
-      <p className="text-sm text-muted-foreground">People with linked accounts use their own Paperclip permissions. <Link className="underline underline-offset-4" to="/company/settings/members">{pageText("manageMembers_033125")}</Link></p>
+      <p className="text-sm text-muted-foreground">{pageText("peopleWithLinkedAccountsUseTheirOwnPaperclip_6d8bda") + " "}<Link className="underline underline-offset-4" to="/company/settings/members">{pageText("manageMembers_033125")}</Link></p>
       {confirmationUrl && (
         <div className="space-y-2 border-y border-border py-3">
-          <p className="text-sm font-medium">Confirm {confirmationFor ?? "this account"}</p>
-          <p className="text-xs text-muted-foreground">Share only with this person. They must sign in and confirm their own account.</p>
+          <p className="text-sm font-medium">{pageText("confirm_04a212") + " "}{confirmationFor ?? pageText("thisAccount_ac7603")}</p>
+          <p className="text-xs text-muted-foreground">{pageText("shareOnlyWithThisPersonTheyMustSign_8ac0af")}</p>
           <p className="break-all text-xs text-muted-foreground">
             {confirmationUrl}
           </p>
@@ -790,13 +783,13 @@ function Access({
               void copyTextToClipboard(confirmationUrl).then(
                 () =>
                   pushToast({
-                    title: "Confirmation link copied",
+                    title: interfaceNotice("interface:confirmationLinkCopied_d20cca"),
                     tone: "success",
                   }),
                 () =>
                   pushToast({
-                    title: "Couldn't copy the link",
-                    body: "Select and copy it manually.",
+                    title: interfaceNotice("interface:couldnTCopyTheLink_ff7a7c"),
+                    body: interfaceNotice("interface:selectAndCopyItManually_ce8356"),
                     tone: "error",
                   }),
               );
@@ -806,12 +799,10 @@ function Access({
         </div>
       )}
       <div className="space-y-2">
-        {linksQuery.isPending || linksView.kind === "reconnecting" ? <p role="status" className="text-sm text-muted-foreground">Loading people…</p> : linksView.kind === "error" ? <QueryErrorState size="inline" error={linksQuery.error} action="load people" onRetry={linksView.retry} retrying={linksView.isFetching} /> : links.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
-            No linked accounts yet. Invite someone to connect.
-          </p>
+        {linksQuery.isPending || linksView.kind === "reconnecting" ? <p role="status" className="text-sm text-muted-foreground">{pageText("loadingPeople_c32673")}</p> : linksView.kind === "error" ? <QueryErrorState size="inline" error={linksQuery.error} action="load people" onRetry={linksView.retry} retrying={linksView.isFetching} /> : links.length === 0 ? (
+          <p className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">{pageText("noLinkedAccountsYetInviteSomeoneToConnect_c1364f")}</p>
         ) : (
-          <div role="list" aria-label="People" className="divide-y divide-border border-y border-border">
+          <div role="list" aria-label={pageText("people_b37554")} className="divide-y divide-border border-y border-border">
             {links.map((link) => (
               <div
                 key={link.id}
@@ -826,9 +817,9 @@ function Access({
                   <div className="min-w-0">
                     <p className="truncate text-sm" title={link.paperclipUserLabel ?? link.externalLabel}>{link.paperclipUserLabel ?? link.externalLabel}</p>
                     {(link.status !== "linked" || link.externalLabel !== link.paperclipUserLabel) && <p className="text-xs text-muted-foreground">
-                      {link.status === "revoked" ? "Disconnected" : link.status === "linked"
+                      {link.status === "revoked" ? pageText("disconnected_771e05") : link.status === "linked"
                         ? link.externalLabel
-                        : "Waiting for account confirmation"}
+                        : pageText("waitingForAccountConfirmation_bcc755")}
                     </p>}
                   </div>
                 </div>
@@ -846,21 +837,19 @@ function Access({
                     variant="outline"
                     disabled={createIntent.isPending}
                     onClick={() => { setConfirmationUrl(null); setConfirmationFor(link.externalLabel); createIntent.mutate(link.principalId); }}
-                  >
-                    Create confirmation link
-                  </Button>
+                  >{pageText("createConfirmationLink_6ba696")}</Button>
                 )}
               </div>
             ))}
           </div>
         )}
       </div>
-      <SlackSetupAdvanced label="Guest access">
-        <SettingToggle label="Allow unlinked people"
+      <SlackSetupAdvanced label={pageText("guestAccess_233f29")}>
+        <SettingToggle label={pageText("allowUnlinkedPeople_8a1a07")}
           detail="People without linked accounts can start isolated tasks. They cannot approve actions, spend, or manage access. Requests are refused when isolation is unavailable."
           checked={allowUnlinked} pending={updatePolicy.isPending} onChange={value => updatePolicy.mutate(value)} />
       </SlackSetupAdvanced>
-      {endpoint.provider === "slack" && <SlackSetupAdvanced label="Personal Slack search"><SlackSearchAccess companyId={endpoint.companyId} endpointId={endpointId} /></SlackSetupAdvanced>}
+      {endpoint.provider === "slack" && <SlackSetupAdvanced label={pageText("personalSlackSearch_1f135a")}><SlackSearchAccess companyId={endpoint.companyId} endpointId={endpointId} /></SlackSetupAdvanced>}
     </section>
   );
 }
@@ -872,6 +861,7 @@ function Conversations({
   endpointId: string;
   provider: ChatProvider;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const query = useQuery({
     queryKey: queryKeys.chatEndpoints.conversations(endpointId),
     queryFn: () => chatEndpointsApi.listConversations(endpointId),
@@ -880,7 +870,7 @@ function Conversations({
   const view = useQueryView(query);
   return (
     <section className="space-y-4">
-      {query.isPending || view.kind === "reconnecting" ? <p role="status" className="text-sm text-muted-foreground">Loading conversations…</p> : view.kind === "error" ? (
+      {query.isPending || view.kind === "reconnecting" ? <p role="status" className="text-sm text-muted-foreground">{pageText("loadingConversations_8f66c8")}</p> : view.kind === "error" ? (
         <QueryErrorState error={query.error} action="load the conversations" onRetry={view.retry} retrying={view.isFetching} />
       ) : <ChatConversationList rows={query.data ?? []} provider={provider} />}
     </section>
@@ -931,7 +921,7 @@ function Activity({
     },
     onError: (error) =>
       pushToast({
-        title: "Couldn't replay activity",
+        title: interfaceNotice("interface:couldnTReplayActivity_9055fb"),
         body: describeError(error).body,
         tone: "error",
       }),
@@ -969,28 +959,28 @@ function Activity({
         title:
           input.item.actionType === "slash_task_start" &&
           input.action === "retry_anyway"
-            ? "Task start retried"
+            ? interfaceNotice("interface:taskStartRetried_325268")
             : input.item.actionType === "slash_task_start"
-              ? "Task start cancelled"
+              ? interfaceNotice("interface:taskStartCancelled_19e19a")
               : input.item.actionType === "provider_effect" &&
                   input.action === "mark_delivered"
-                ? "Provider reply marked delivered"
+                ? interfaceNotice("interface:providerReplyMarkedDelivered_7945bd")
                 : input.item.actionType === "provider_effect" &&
                     input.action === "retry_anyway"
-                  ? "Provider reply retried"
+                  ? interfaceNotice("interface:providerReplyRetried_3bb4b6")
                   : input.item.actionType === "provider_effect"
-                    ? "Provider reply cancelled"
+                    ? interfaceNotice("interface:providerReplyCancelled_0e7562")
                     : input.action === "mark_delivered"
-                      ? "Publication marked delivered"
+                      ? interfaceNotice("interface:publicationMarkedDelivered_bbe74f")
                       : input.action === "retry_anyway"
-                        ? "Publication queued for retry"
-                        : "Publication cancelled",
+                        ? interfaceNotice("interface:publicationQueuedForRetry_1e4a38")
+                        : interfaceNotice("interface:publicationCancelled_d22f19"),
         tone: "success",
       });
     },
     onError: (error) =>
       pushToast({
-        title: "Couldn't resolve activity",
+        title: interfaceNotice("interface:couldnTResolveActivity_3c5a0b"),
         body: describeError(error).body,
         tone: "error",
       }),
@@ -1016,13 +1006,13 @@ function Activity({
       }
       if (endpoint.provider !== "agentmail") queryClient.setQueryData(queryKeys.chatEndpoints.detail(endpointId), next);
       pushToast({
-        title: action === "pause" ? "Connection paused" : "Connection resumed",
+        title: action === "pause" ? interfaceNotice("interface:connectionPaused_298c65") : interfaceNotice("interface:connectionResumed_4ed4a6"),
         tone: "success",
       });
     },
     onError: (error) =>
       pushToast({
-        title: "Couldn't update connection",
+        title: interfaceNotice("interface:couldnTUpdateConnection_614509"),
         body: describeError(error).body,
         tone: "error",
       }),
@@ -1047,8 +1037,8 @@ function Activity({
       ] as const)
     : [];
   return (
-    <section className="space-y-5" aria-label="Connection activity">
-      <h2 className="text-lg font-semibold">Connection activity</h2>
+    <section className="space-y-5" aria-label={pageText("connectionActivity_c4ff9d")}>
+      <h2 className="text-lg font-semibold">{pageText("connectionActivity_c4ff9d")}</h2>
       {((status !== "active" && health.message) || health.error) && (
         <div
           className={`flex items-start gap-2 rounded-lg border p-3 text-sm ${status === "attention" || status === "revoked" ? "border-destructive/40 bg-destructive/5 text-destructive" : "border-border bg-muted/30 text-foreground"}`}
@@ -1060,7 +1050,7 @@ function Activity({
             {health.message && <p>{health.message}</p>}
             {health.previousHealth && (
               <p className="mt-1 text-xs opacity-80">
-                <span className="font-medium">Last reported health:</span>{" "}
+                <span className="font-medium">{pageText("lastReportedHealth_553495")}</span>{" "}
                 {health.previousHealth}
               </p>
             )}
@@ -1075,9 +1065,9 @@ function Activity({
       )}
       <details className="group rounded-lg border border-border">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 text-sm font-medium chat-connection-health-summary">
-          <span>Connection health and controls</span>
+          <span>{pageText("connectionHealthAndControls_58ec35")}</span>
           <span className="flex items-center gap-2">
-            {endpoint.setup?.callbacksNeedUpdate && <span className="text-xs text-(--status-task-blocked)">Callback URLs need attention</span>}
+            {endpoint.setup?.callbacksNeedUpdate && <span className="text-xs text-(--status-task-blocked)">{pageText("callbackURLsNeedAttention_2ba051")}</span>}
             <ChevronDown className="size-4 text-muted-foreground transition-transform group-open:rotate-180" />
           </span>
         </summary>
@@ -1086,11 +1076,11 @@ function Activity({
         <div
           className="space-y-3 text-sm"
         >
-          <p className="font-medium">Slack callback health</p>
+          <p className="font-medium">{pageText("slackCallbackHealth_708848")}</p>
           <p className="text-xs text-muted-foreground">
             {endpoint.setup?.callbacksNeedUpdate
-              ? "Slack callback URLs need an update. Save the current App Manifest, then exercise Events, Interactivity, and the registered command again."
-              : "Paperclip records each callback surface independently after Slack successfully calls it."}
+              ? pageText("slackCallbackURLsNeedAnUpdateSaveThe_e80367")
+              : pageText("paperclipRecordsEachCallbackSurfaceIndependentlyAfterSlack_f50e69")}
           </p>
           <div className="divide-y divide-border border-y border-border">
             {callbackSurfaceRows.map(([label, surface]) => (
@@ -1100,12 +1090,11 @@ function Activity({
                   {surface.status === "current"
                     ? pageText("current_4fc0e2")
                     : surface.status === "stale"
-                      ? "Stale URL"
-                      : "Not observed"}
+                      ? pageText("staleURL_0906b3")
+                      : pageText("notObserved_60ac63")}
                 </p>
                 {surface.observedAt && (
-                  <p className="text-xs text-muted-foreground">
-                    Last observed{" "}
+                  <p className="text-xs text-muted-foreground">{pageText("lastObserved_18daee")}{" "}
                     <time
                       dateTime={surface.observedAt}
                       title={surface.observedAt}
@@ -1197,17 +1186,14 @@ function Activity({
           {endpoint.provider === "speko" && !cursor && <Button size="sm" variant="ghost" onClick={() => { void query.refetch(); calls.onRetry(); }} disabled={query.isFetching || calls.loading}>{translateUi("interfaceCopy.refresh")}</Button>}
         </div>
         {endpoint.provider === "agentmail" && rows.some((item) => item.kind === "publication" && item.status === "delivery_unknown") && (
-          <p className="text-sm text-muted-foreground">
-            Review unconfirmed email delivery in the{" "}
-            <Link to={`/apps/chat/${endpointId}/conversations`} className="underline underline-offset-4">conversation’s task</Link>.
+          <p className="text-sm text-muted-foreground">{pageText("reviewUnconfirmedEmailDeliveryInThe_eb2566")}{" "}
+            <Link to={`/apps/chat/${endpointId}/conversations`} className="underline underline-offset-4">{pageText("conversationSTask_90b717")}</Link>.
           </p>
         )}
         <div className="divide-y divide-border border-y border-border">
           {(query.isLoading || view.kind === "reconnecting" || calls.loading) && (
             <div className="flex items-center gap-2 py-5 text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Loading activity…
-            </div>
+              <Loader2 className="h-4 w-4 animate-spin" />{pageText("loadingActivity_4c959a")}</div>
           )}
           {view.kind === "error" && (
             <div className="py-4">
@@ -1223,7 +1209,7 @@ function Activity({
             calls.error && `Call activity could not be loaded. ${calls.error}`,
             calls.incomingError && `Unapproved calls could not be loaded. ${calls.incomingError}`,
             calls.endError && `The call could not be ended. ${calls.endError}`,
-          ].filter(Boolean).map((message) => <div key={String(message)} className="flex flex-wrap items-center justify-between gap-3 py-4"><p role="alert" className="text-sm text-destructive">{message}</p><Button size="sm" variant="outline" onClick={calls.onRetry}>Retry calls</Button></div>)}
+          ].filter(Boolean).map((message) => <div key={String(message)} className="flex flex-wrap items-center justify-between gap-3 py-4"><p role="alert" className="text-sm text-destructive">{message}</p><Button size="sm" variant="outline" onClick={calls.onRetry}>{pageText("retryCalls_73e630")}</Button></div>)}
           {activityEntries.map(entry => {
             if (entry.kind === "call") return <SpekoCallActivityItem key={entry.id} entry={entry.entry} presentation="activity" onEnd={calls.onEnd} ending={calls.endingSessionId === entry.entry.session.id} />;
             if (entry.kind === "unapproved_call") return <SpekoUnapprovedCallActivityItem key={entry.id} call={entry.call} presentation="activity" />;
@@ -1265,7 +1251,7 @@ function Activity({
                   <Button
                     size="sm"
                     variant="outline"
-                    aria-label={`Replay failed ${item.kind}`}
+                    aria-label={translateDynamic("dynamic:replayFailed", { value1: item.kind })}
                     disabled={replay.isPending}
                     onClick={() => replay.mutate(item)}
                   >
@@ -1273,31 +1259,25 @@ function Activity({
                       <Loader2 className="animate-spin" />
                     ) : (
                       <RefreshCw />
-                    )}
-                    Replay
-                  </Button>
+                    )}{pageText("replay_c0f85d")}</Button>
                 )}
                 {endpoint.provider !== "agentmail" && isResolutionEligible(item) && (
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => setResolutionItem(item)}
-                  >
-                    Resolve
-                  </Button>
+                  >{pageText("resolve_ac7f95")}</Button>
                 )}
               </div>
             );
           })}
           {activityLoaded && !calls.loading && !calls.error && !calls.incomingError && activityEntries.length === 0 && (
-            <p className="py-5 text-sm text-muted-foreground">
-              No connection activity yet.
-            </p>
+            <p className="py-5 text-sm text-muted-foreground">{pageText("noConnectionActivityYet_6f92d5")}</p>
           )}
         </div>
       </div>
-      <nav aria-label="Activity pagination" className="flex items-center justify-between gap-3">
-        <span className="text-xs text-muted-foreground">Page {cursors.length}</span>
+      <nav aria-label={pageText("activityPagination_0a8fe5")} className="flex items-center justify-between gap-3">
+        <span className="text-xs text-muted-foreground">{pageText("page_fb0627") + " "}{cursors.length}</span>
         <div className="flex items-center gap-2">
           <Button size="sm" variant="outline" disabled={cursors.length === 1 || query.isFetching} onClick={() => setCursors((pages) => pages.slice(0, -1))}>{translateUi("interfaceCopy.previous")}</Button>
           <Button size="sm" variant="outline" disabled={!query.data?.nextCursor || query.isFetching || view.kind === "error"} onClick={() => { if (query.data?.nextCursor) setCursors((pages) => [...pages, query.data.nextCursor!]); }}>{translateUi("interfaceCopy.next")}</Button>
@@ -1311,25 +1291,23 @@ function Activity({
           <AlertDialogHeader>
             <AlertDialogTitle>
               {resolutionItem?.actionType === "slash_task_start"
-                ? "Resolve unconfirmed task start"
+                ? pageText("resolveUnconfirmedTaskStart_9fdd58")
                 : resolutionItem?.actionType === "provider_effect"
-                  ? "Resolve unconfirmed provider reply"
-                  : "Resolve unconfirmed delivery"}
+                  ? pageText("resolveUnconfirmedProviderReply_9dbf72")
+                  : pageText("resolveUnconfirmedDelivery_0bc051")}
             </AlertDialogTitle>
             <AlertDialogDescription>
               {resolutionItem?.actionType === "slash_task_start"
-                ? "Paperclip lost confirmation after asking Slack to start the task. Check Slack first. Retrying can create a duplicate starter message and task."
+                ? pageText("paperclipLostConfirmationAfterAskingSlackToStart_e01b82")
                 : resolutionItem?.actionType === "provider_effect"
-                  ? "Paperclip lost confirmation after sending this provider reply. Check the provider first. Marking it delivered applies any pending Paperclip state change; retrying can create a duplicate message."
+                  ? pageText("paperclipLostConfirmationAfterSendingThisProviderReply_a4c25c")
                   : resolutionItem
                     ? activityResolutionDescription(resolutionItem)
                     : ""}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="sm:flex-wrap">
-            <AlertDialogCancel disabled={resolveActivity.isPending}>
-              Keep unresolved
-            </AlertDialogCancel>
+            <AlertDialogCancel disabled={resolveActivity.isPending}>{pageText("keepUnresolved_0ff46f")}</AlertDialogCancel>
             {resolutionItem &&
               activityResolutionActions(resolutionItem).includes("cancel") && (
                 <Button
@@ -1344,12 +1322,12 @@ function Activity({
                   }
                 >
                   {resolutionItem.actionType === "slash_task_start"
-                    ? "Cancel task start"
+                    ? pageText("cancelTaskStart_35f3d4")
                     : resolutionItem.actionType === "provider_effect"
-                      ? "Cancel provider reply"
+                      ? pageText("cancelProviderReply_589bd0")
                       : resolutionItem.fileTransfer
-                        ? "Cancel file transfer"
-                        : "Cancel publication"}
+                        ? pageText("cancelFileTransfer_cd2e2c")
+                        : pageText("cancelPublication_b31c5e")}
                 </Button>
               )}
             {resolutionItem &&
@@ -1368,8 +1346,8 @@ function Activity({
                   }
                 >
                   {resolutionItem.fileTransfer
-                    ? "Retry file notification"
-                    : "Retry anyway"}
+                    ? pageText("retryFileNotification_c84cb3")
+                    : pageText("retryAnyway_e930d7")}
                 </Button>
               )}
             {resolutionItem &&
@@ -1387,9 +1365,7 @@ function Activity({
                       });
                     }
                   }}
-                >
-                  Mark delivered
-                </AlertDialogAction>
+                >{pageText("markDelivered_2a9078")}</AlertDialogAction>
               )}
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1397,11 +1373,9 @@ function Activity({
       <AlertDialog open={removeOpen} onOpenChange={setRemoveOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Remove this connection?</AlertDialogTitle>
+            <AlertDialogTitle>{pageText("removeThisConnection_21e7c5")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {endpoint.assignedAgentName} will stop receiving new work from
-              {` ${providerNames[endpoint.provider]}`}. Existing Paperclip tasks
-              remain available.{" "}
+              {endpoint.assignedAgentName}{" " + pageText("willStopReceivingNewWorkFrom_da26b1")}{` ${providerNames[endpoint.provider]}`}{pageText("existingPaperclipTasksRemainAvailable_cb6e70")}{" "}
               {providerLifecycleGuidance[endpoint.provider].remove}
               {endpoint.provider === "slack" && (
                 <> <a
@@ -1409,7 +1383,7 @@ function Activity({
                   target="_blank"
                   rel="noopener noreferrer"
                   className="underline underline-offset-4"
-                >Open Slack app settings</a> to manage or delete the Slack app.</>
+                >{pageText("openSlackAppSettings_1cc06a")}</a>{" " + pageText("toManageOrDeleteTheSlackApp_2d2ec1")}</>
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>

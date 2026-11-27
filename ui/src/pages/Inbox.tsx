@@ -1,3 +1,6 @@
+import { optionLabel } from "@/i18n/option-label";
+import { t as interfaceNotice } from "@/i18n";
+import { t as translateDynamic } from "../i18n";
 import { t as interfaceMessage } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
@@ -306,7 +309,7 @@ function runFailureMessage(run: HeartbeatRun): string {
 }
 
 function approvalStatusLabel(status: Approval["status"]): string {
-  return status.replaceAll("_", " ");
+  return interfaceNotice("interface:status_" + status, { defaultValue: status.replaceAll("_", " ") });
 }
 
 function readIssueIdFromRun(run: HeartbeatRun): string | null {
@@ -464,7 +467,7 @@ export function FailedRunInboxRow({
                   {issue.title}
                 </>
               ) : (
-                <>Failed run{linkedAgentName ? ` — ${linkedAgentName}` : ""}</>
+                <>{pageText("failedRun_22e8b7")}{linkedAgentName ? ` — ${linkedAgentName}` : ""}</>
               )}
             </span>
             <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
@@ -729,8 +732,8 @@ function JoinRequestInboxRow({
               {label}
             </span>
             <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-              <span>requested {timeAgo(joinRequest.createdAt)} from IP {joinRequest.requestIp}</span>
-              {joinRequest.adapterType && <span>adapter: {joinRequest.adapterType}</span>}
+              <span>{pageText("requested_fcb088") + " "}{timeAgo(joinRequest.createdAt)}{" " + pageText("fromIP_9c32a9") + " "}{joinRequest.requestIp}</span>
+              {joinRequest.adapterType && <span>{pageText("adapter_231df8") + " "}{joinRequest.adapterType}</span>}
             </span>
           </span>
         </div>
@@ -1967,7 +1970,7 @@ function StreamlinedInbox({
     },
     onError: (error) => {
       pushToast({
-        title: "Run retry failed",
+        title: interfaceNotice("interface:runRetryFailed_d86553"),
         body: error instanceof Error ? error.message : interfaceMessage("interface:errorUnableToRetryRun"),
         tone: "error",
       });
@@ -2592,7 +2595,7 @@ function StreamlinedInbox({
     <div className="space-y-6">
       <IssueRowDetailsNotice
         error={optionalSourceError ?? rowDetailsError}
-        message={optionalSourceError ? "Some inbox items couldn’t load. Showing available items." : undefined}
+        message={optionalSourceError ? pageText("someInboxItemsCouldnTLoadShowingAvailable_dcb275") : undefined}
         retryLabel={optionalSourceError ? "Retry missing items" : undefined}
         onRetry={optionalSourceError ? retryFailedSources : () => void retryRowDetails()}
       />
@@ -2603,11 +2606,11 @@ function StreamlinedInbox({
           <Tabs value={tab} onValueChange={(value) => navigate(`/inbox/${value}`)}>
             <PageTabBar
               items={[
-                { value: "mine", label: "Mine" },
-                { value: "recent", label: "Recent" },
-                { value: "unread", label: "Unread" },
-                { value: "blocked", label: "Blocked" },
-                { value: "all", label: "All" },
+                { value: "mine", label: optionLabel("Mine") },
+                { value: "recent", label: optionLabel("Recent") },
+                { value: "unread", label: optionLabel("Unread") },
+                { value: "blocked", label: optionLabel("Blocked") },
+                { value: "all", label: optionLabel("All") },
               ]}
             />
           </Tabs>
@@ -2617,7 +2620,7 @@ function StreamlinedInbox({
             <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="search"
-              placeholder={`Search ${surfaceLabel.toLowerCase()}…`}
+              placeholder={translateDynamic("dynamic:searchEllipsis", { value1: surfaceLabel.toLowerCase() })}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => {
@@ -2843,15 +2846,13 @@ function StreamlinedInbox({
                     onClick={() => setShowMarkAllReadConfirm(true)}
                     disabled={markAllReadMutation.isPending}
                   >
-                    {markAllReadMutation.isPending ? "Marking…" : pageText("markAllAsRead_1b8316")}
+                    {markAllReadMutation.isPending ? pageText("marking_cbf693") : pageText("markAllAsRead_1b8316")}
                   </Button>
                   <Dialog open={showMarkAllReadConfirm} onOpenChange={setShowMarkAllReadConfirm}>
                     <DialogContent className="sm:max-w-md">
                       <DialogHeader>
-                        <DialogTitle>Mark all as read?</DialogTitle>
-                        <DialogDescription>
-                          This will mark {unreadIssueIds.length}{" " + pageText("unread_1b9aeb") + " "}{unreadIssueIds.length === 1 ? pageText("item_3a7d97") : pageText("items_7316c8")} as read.
-                        </DialogDescription>
+                        <DialogTitle>{pageText("markAllAsRead_b69f52")}</DialogTitle>
+                        <DialogDescription>{pageText("thisWillMark_fd9527") + " "}{unreadIssueIds.length}{" " + pageText("unread_1b9aeb") + " "}{unreadIssueIds.length === 1 ? pageText("item_3a7d97") : pageText("items_7316c8")}{" " + pageText("asRead_6b2646")}</DialogDescription>
                       </DialogHeader>
                       <DialogFooter>
                         <Button variant="outline" onClick={() => setShowMarkAllReadConfirm(false)}>{translateUi("interfaceCopy.cancel")}</Button>
@@ -2879,7 +2880,7 @@ function StreamlinedInbox({
 
       {listError && (
         <div role="alert" className="flex items-center gap-2 text-sm text-destructive">
-          <p>Unable to load the inbox: {describeError(listError).body}</p>
+          <p>{pageText("unableToLoadTheInbox_561219") + " "}{describeError(listError).body}</p>
           <Button variant="outline" size="sm" onClick={() => { retryFailedSources(); if (externalObjectSummariesError) retryExternalObjectSummaries(); }}>{translateUi("interfaceCopy.retry")}</Button>
         </div>
       )}
@@ -2917,14 +2918,14 @@ function StreamlinedInbox({
           icon={searchQuery.trim() ? Search : InboxIcon}
           message={
             searchQuery.trim()
-              ? "No inbox items match your search."
+              ? pageText("noInboxItemsMatchYourSearch_6d41b2")
               : tab === "mine"
-              ? "Inbox zero."
+              ? pageText("inboxZero_f92ddc")
               : tab === "unread"
-              ? "No new inbox items."
+              ? pageText("noNewInboxItems_59119b")
               : tab === "recent"
-                ? "No recent inbox items."
-                : "No inbox items match these filters."
+                ? pageText("noRecentInboxItems_b0b30f")
+                : pageText("noInboxItemsMatchTheseFilters_082480")
           }
         />
       )}
@@ -3007,7 +3008,7 @@ function StreamlinedInbox({
                           type="button"
                           data-slot="icon-button"
                           className="inline-flex h-4 w-4 shrink-0 items-center justify-center"
-                          aria-label={isExpanded ? "Collapse sub-tasks" : "Expand sub-tasks"}
+                          aria-label={isExpanded ? pageText("collapseSubTasks_80ec30") : pageText("expandSubTasks_d028fc")}
                           onClick={(event) => {
                             event.preventDefault();
                             event.stopPropagation();
@@ -3066,7 +3067,7 @@ function StreamlinedInbox({
                       ) : undefined}
                       titleSuffix={hasChildren && !isExpanded ? (
                         <span className="ml-1.5 text-xs text-muted-foreground">
-                          ({childCount} sub-task{childCount !== 1 ? "s" : ""})
+                          ({childCount}{" " + pageText("subTask_6dc147")}{childCount !== 1 ? "s" : ""})
                         </span>
                       ) : undefined}
                       mobileTitleMeta={streamlinedUiEnabled ? issueActivityTimestamp(issue) : undefined}
@@ -3146,7 +3147,7 @@ function StreamlinedInbox({
                       >
                         <div className="h-px flex-1 bg-border/80" />
                         <span className="shrink-0 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-                          {group.searchSection === "archived" ? pageText("archived_eddc81") : "Other results"}
+                          {group.searchSection === "archived" ? pageText("archived_eddc81") : pageText("otherResults_27544c")}
                         </span>
                         <div className="h-px flex-1 bg-border/80" />
                       </div>,
@@ -3183,8 +3184,8 @@ function StreamlinedInbox({
                               variant="ghost"
                               size="icon-xs"
                               className="-mr-2 text-muted-foreground"
-                              title={`New task in ${group.label}`}
-                              aria-label={`New task in ${group.label}`}
+                              title={translateDynamic("dynamic:newTaskIn", { value1: group.label })}
+                              aria-label={translateDynamic("dynamic:newTaskIn", { value1: group.label })}
                               onClick={(event) => {
                                 event.stopPropagation();
                                 openCreateIssueForGroup(group);
@@ -3466,9 +3467,7 @@ function StreamlinedInbox({
         <>
           {showSeparatorBefore("alerts") && <Separator />}
           <div>
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              Alerts
-            </h3>
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">{pageText("alerts_d0efe0")}</h3>
             <div className="divide-y divide-border border border-border">
               {showAggregateAgentError && (
                 <div className="group/alert relative flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/50">
@@ -3479,8 +3478,7 @@ function StreamlinedInbox({
                     <AlertTriangle className="h-4 w-4 shrink-0 text-red-600 dark:text-red-400" />
                     <span className="text-sm">
                       <span className="font-medium">{dashboard!.agents.error}</span>{" "}
-                      {dashboard!.agents.error === 1 ? "agent has" : "agents have"} errors
-                    </span>
+                      {dashboard!.agents.error === 1 ? pageText("agentHas_24ad4f") : pageText("agentsHave_6dd0c2")}{" " + pageText("errors_570043")}</span>
                   </Link>
                   <button
                     type="button"
@@ -3499,11 +3497,8 @@ function StreamlinedInbox({
                     className="flex flex-1 cursor-pointer items-center gap-3 no-underline text-inherit"
                   >
                     <AlertTriangle className="h-4 w-4 shrink-0 text-yellow-400" />
-                    <span className="text-sm">
-                      Budget at{" "}
-                      <span className="font-medium">{dashboard!.costs.monthUtilizationPercent}%</span>{" "}
-                      utilization this month
-                    </span>
+                    <span className="text-sm">{pageText("budgetAt_c7b0c0")}{" "}
+                      <span className="font-medium">{dashboard!.costs.monthUtilizationPercent}%</span>{" "}{pageText("utilizationThisMonth_25e6a5")}</span>
                   </Link>
                   <button
                     type="button"

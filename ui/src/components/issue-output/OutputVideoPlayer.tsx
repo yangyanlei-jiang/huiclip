@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { cn } from "@/lib/utils";
 
 interface OutputVideoPlayerProps {
@@ -17,6 +18,7 @@ interface OutputVideoPlayerProps {
  * A fixed 16:9 box reserves height before metadata loads to avoid layout jump.
  */
 export function OutputVideoPlayer({ src, poster, className, title }: OutputVideoPlayerProps) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className={cn("relative w-full overflow-hidden rounded-md bg-black aspect-video", className)}>
       <video
@@ -25,7 +27,7 @@ export function OutputVideoPlayer({ src, poster, className, title }: OutputVideo
         controls
         preload="metadata"
         playsInline
-        aria-label={title ? `Video output: ${title}` : "Video output"}
+        aria-label={title ? `Video output: ${title}` : pageText("videoOutput_b6b165")}
         className="absolute inset-0 h-full w-full"
       />
     </div>

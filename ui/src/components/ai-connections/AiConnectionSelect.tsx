@@ -124,14 +124,14 @@ export function AiConnectionSelect({
         <SelectTrigger id={selectId} aria-label={translateUi("interfaceCopy.connection")} title={selected ? aiConnectionDisplayLabel(selected) : undefined} className="w-full">
           <SelectValue
             placeholder={
-              loading ? pageText("loadingConnections_e2e03e") : "Choose a connection"
+              loading ? pageText("loadingConnections_e2e03e") : pageText("chooseAConnection_428239")
             }
           >
             {selected
-              ? <ConnectionLabel connection={selected} label={value?.mode === "responsible_user" ? "Responsible user’s default" : undefined} />
+              ? <ConnectionLabel connection={selected} label={value?.mode === "responsible_user" ? pageText("responsibleUserSDefault_3d46de") : undefined} />
               : value?.mode === "responsible_user"
-                ? "Responsible user’s default"
-                : value ? "Unavailable connection" : undefined}
+                ? pageText("responsibleUserSDefault_3d46de")
+                : value ? pageText("unavailableConnection_dfd291") : undefined}
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
@@ -151,42 +151,29 @@ export function AiConnectionSelect({
           ))}
           {(canUseDefault || value?.mode === "responsible_user") && (
             <SelectItem value="responsible_user" disabled={!canUseDefault}>
-              <span className="flex size-5 shrink-0 items-center justify-center"><UserRound className="size-4" /></span>
-              Responsible user’s default
-            </SelectItem>
+              <span className="flex size-5 shrink-0 items-center justify-center"><UserRound className="size-4" /></span>{pageText("responsibleUserSDefault_3d46de")}</SelectItem>
           )}
           <SelectItem value="connect">
-            <span className="flex size-5 shrink-0 items-center justify-center"><Plus className="size-4" /></span>
-            Connect an account…
-          </SelectItem>
+            <span className="flex size-5 shrink-0 items-center justify-center"><Plus className="size-4" /></span>{pageText("connectAnAccount_9a8ab7")}</SelectItem>
         </SelectContent>
       </Select>
       {!readOnly && onReconnect && !loading && !error && (
-        <Button type="button" variant="outline" onClick={onReconnect}>Reconnect account</Button>
+        <Button type="button" variant="outline" onClick={onReconnect}>{pageText("reconnectAccount_75e1bf")}</Button>
       )}
       {error && (
         <div className="space-y-2">
           <p role="alert" className="text-sm text-destructive">
             {error}
           </p>
-          <Button type="button" variant="outline" onClick={onRetry}>
-            Retry connections
-          </Button>
+          <Button type="button" variant="outline" onClick={onRetry}>{pageText("retryConnections_02779b")}</Button>
         </div>
       )}
       {value?.mode === "responsible_user" && !personal && !loading && !error ? (
-        <p role="alert" className="text-sm text-destructive">
-          You have no default account for this provider. Connect an account or choose another connection.
-        </p>
+        <p role="alert" className="text-sm text-destructive">{pageText("youHaveNoDefaultAccountForThisProvider_43935d")}</p>
       ) : unavailable ? (
-        <p role="alert" className="text-sm text-destructive">
-          This connection is unavailable. Choose another connection.
-        </p>
+        <p role="alert" className="text-sm text-destructive">{pageText("thisConnectionIsUnavailableChooseAnotherConnection_038a13")}</p>
       ) : incompatible ? (
-        <p role="alert" className="text-sm text-destructive">
-          This connection does not support the selected harness. Choose a
-          compatible connection.
-        </p>
+        <p role="alert" className="text-sm text-destructive">{pageText("thisConnectionDoesNotSupportTheSelectedHarness_5e9f47")}</p>
       ) : selected && aiConnectionProblem(selected) ? (
         <p role="alert" className="text-sm text-destructive">
           {aiConnectionProblem(selected)}

@@ -21,22 +21,16 @@ export function AppsToolsPanel({
   const { t: translateUi } = useUiTranslation();
   return (
     <div className="space-y-4">
-      <p className="text-sm text-muted-foreground">
-        These apps go through this gateway. The bound profile
-        {profile ? ` (${profile.name})` : ""} decides which tools are allowed
-        {profile ? ` — ${allowedToolsLabel(profile)}.` : "."} Change the profile under Advanced.
-      </p>
+      <p className="text-sm text-muted-foreground">{pageText("theseAppsGoThroughThisGatewayTheBound_0ac970")}{profile ? ` (${profile.name})` : ""}{" " + pageText("decidesWhichToolsAreAllowed_233dbc")}{profile ? ` — ${allowedToolsLabel(profile)}.` : "."}{" " + pageText("changeTheProfileUnderAdvanced_b70ee6")}</p>
 
       {apps.length === 0 ? (
-        <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-          No apps are assigned to this gateway’s profile yet.
-        </div>
+        <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">{pageText("noAppsAreAssignedToThisGatewayS_a78379")}</div>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full min-w-(--sz-32rem) text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/40 text-left text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-                <th className="px-4 py-2.5">App</th>
+                <th className="px-4 py-2.5">{pageText("app_fc4a69")}</th>
                 <th className="px-4 py-2.5">{pageText("tools_4fa8cc")}</th>
                 <th className="px-4 py-2.5">{translateUi("interfaceCopy.status")}</th>
                 <th className="px-4 py-2.5 text-right" />
@@ -73,9 +67,7 @@ export function AppsToolsPanel({
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <Link to={href} className="text-xs font-medium text-primary hover:underline">
-                        Open →
-                      </Link>
+                      <Link to={href} className="text-xs font-medium text-primary hover:underline">{pageText("open_6f4789")}</Link>
                     </td>
                   </tr>
                 );

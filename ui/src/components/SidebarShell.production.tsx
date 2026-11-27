@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import {
   useCallback,
   useEffect,
@@ -101,6 +102,7 @@ export function SidebarShell({
   onPanelFocusCapture,
   onPanelBlurCapture,
 }: SidebarShellProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const [width, setWidth] = useState(() => readStoredSidebarWidth(storageKey));
   const [isResizing, setIsResizing] = useState(false);
   const widthRef = useRef(width);
@@ -218,7 +220,7 @@ export function SidebarShell({
         {canResize ? (
           <div
             role="separator"
-            aria-label="Resize sidebar"
+            aria-label={pageText("resizeSidebar_1b9624")}
             aria-orientation="vertical"
             aria-valuemin={MIN_SIDEBAR_WIDTH}
             aria-valuemax={MAX_SIDEBAR_WIDTH}

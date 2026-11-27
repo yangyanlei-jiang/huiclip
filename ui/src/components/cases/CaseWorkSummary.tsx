@@ -31,16 +31,16 @@ export function CaseWorkSummary({ caseData, pendingHandoff, agents }: {
     ?? (pending?.state === "awaiting_release" ? `Waiting for ${from} to finish.`
       : destination?.status === "paused" ? `${to} is paused.` : `Waiting for ${to} to start.`);
 
-  return <section className="space-y-3" aria-label="Case work">
+  return <section className="space-y-3" aria-label={pageText("caseWork_87750d")}>
     <h2 className="text-sm font-semibold">{pageText("work_00040b")}</h2>
     {caseData.workIssueId ? <div className="space-y-3">
       {task ? <div>
         <PropertyRow label={pageText("task_7bb0dd")}><IssueReferencePill issue={task} className="min-h-11 md:min-h-0" /></PropertyRow>
-        <PropertyRow label="Workflow"><span className="text-sm">{caseData.workflow?.name ?? pageText("caseInstructions_0df6da")}</span></PropertyRow>
-        {caseData.phase && <PropertyRow label="Phase"><span className="text-sm">{caseData.phase}</span></PropertyRow>}
+        <PropertyRow label={pageText("workflow_d7a484")}><span className="text-sm">{caseData.workflow?.name ?? pageText("caseInstructions_0df6da")}</span></PropertyRow>
+        {caseData.phase && <PropertyRow label={pageText("phase_f6371a")}><span className="text-sm">{caseData.phase}</span></PropertyRow>}
         <PropertyRow label={translateUi("interfaceCopy.agent")}>{assignee ? <AgentIdentity agent={assignee} size="xs" /> : <span className="text-sm text-muted-foreground">{translateUi("interfaceCopy.unassigned")}</span>}</PropertyRow>
         <PropertyRow label={pageText("taskStatus_7dbc57")}><IssueStatusBadge {...taskStatusIconProps(task)} /></PropertyRow>
-      </div> : <p className="text-sm text-muted-foreground">The primary task is unavailable.</p>}
+      </div> : <p className="text-sm text-muted-foreground">{pageText("thePrimaryTaskIsUnavailable_840321")}</p>}
       {pending && pending.state !== "delivered" && pending.state !== "completed" && pending.state !== "cancelled" && <div className="flex items-start gap-2 text-sm">
         <Clock3 aria-hidden className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
         <div className="min-w-0 space-y-1">
@@ -48,6 +48,6 @@ export function CaseWorkSummary({ caseData, pendingHandoff, agents }: {
           <p className="text-xs leading-relaxed text-muted-foreground">{waiting}</p>
         </div>
       </div>}
-    </div> : <p className="text-sm text-muted-foreground">No task linked</p>}
+    </div> : <p className="text-sm text-muted-foreground">{pageText("noTaskLinked_1feec7")}</p>}
   </section>;
 }

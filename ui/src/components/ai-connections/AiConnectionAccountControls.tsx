@@ -33,7 +33,7 @@ export function AiConnectionAccountControls({
   const activeDefault = account.isDefault && available;
   const providerName = AI_PROVIDERS[account.provider].name;
   return (
-    <section className="space-y-4" aria-label="AI account settings">
+    <section className="space-y-4" aria-label={pageText("aiAccountSettings_483f1c")}>
       {eligibleForDefault && (
         <div className={cn(
           "flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-3",
@@ -41,11 +41,11 @@ export function AiConnectionAccountControls({
         )}>
           <div className="flex items-center gap-3">
             {account.isDefault && <AiDefaultCrown account={account} />}
-            <h3 role={account.isDefault ? "status" : undefined} className={cn("text-sm font-semibold", account.isDefault && !available && "text-destructive")}>{account.isDefault ? available ? `Default for ${providerName}` : "Default unavailable" : `Your ${providerName} default`}</h3>
+            <h3 role={account.isDefault ? "status" : undefined} className={cn("text-sm font-semibold", account.isDefault && !available && "text-destructive")}>{account.isDefault ? available ? `Default for ${providerName}` : pageText("defaultUnavailable_fd8a93") : `Your ${providerName} default`}</h3>
           </div>
           {!account.isDefault && (!readOnly && account.canSetDefault ? (
-            <Button variant="outline" size="sm" disabled={!available || Boolean(account.unavailableReason) || defaultPending} onClick={onMakeDefault}>Set as default for {providerName}</Button>
-          ) : <span className="text-xs text-muted-foreground">Not default</span>)}
+            <Button variant="outline" size="sm" disabled={!available || Boolean(account.unavailableReason) || defaultPending} onClick={onMakeDefault}>{pageText("setAsDefaultFor_4ea143") + " "}{providerName}</Button>
+          ) : <span className="text-xs text-muted-foreground">{pageText("notDefault_683d5a")}</span>)}
         </div>
       )}
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -55,12 +55,12 @@ export function AiConnectionAccountControls({
         {!readOnly && grant.capabilities?.canRevoke && (
           <div className="flex flex-wrap items-center gap-2">
             {<Button variant="outline" size="sm" onClick={onReconnect}><RefreshCw className="size-4" aria-hidden />{pageText("reconnect_6988b1")}</Button>}
-            {account.status !== "revoked" && <Button variant="ghost" size="sm" className="text-destructive" onClick={() => setRevoking(true)}><Unplug className="size-4" aria-hidden />Revoke identity</Button>}
+            {account.status !== "revoked" && <Button variant="ghost" size="sm" className="text-destructive" onClick={() => setRevoking(true)}><Unplug className="size-4" aria-hidden />{pageText("revokeIdentity_38a6af")}</Button>}
           </div>
         )}
       </div>
       {revoking && <RevokeGrantDialog grant={grant} providerName={account.name} pending={revokePending} credentialPolicy={account.ownership === "shared" ? "shared" : "per_user"} isOwnIdentity={account.ownerUserId === currentUserId}
-        description="New runs using this account will be blocked. Existing runs may retain credentials already issued to them. No other account will be selected automatically."
+        description={pageText("newRunsUsingThisAccountWillBeBlocked_01677d")}
         onCancel={() => setRevoking(false)} onConfirm={async () => { setRevokePending(true); setRevokeError(undefined); try { await onRevoke(); setRevoking(false); } catch (error) { setRevokeError(describeError(error).body); } finally { setRevokePending(false); } }}>{revokeError && <p role="alert" className="text-sm text-destructive">{revokeError}</p>}{revocationDetails}</RevokeGrantDialog>}
     </section>
   );

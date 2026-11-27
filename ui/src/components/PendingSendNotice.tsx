@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ export function PendingSendNotice({
   onCancel: () => void;
   className?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const replayable = Boolean(onResendNow);
   const title = !replayable
@@ -56,9 +58,7 @@ export function PendingSendNotice({
       <p className="text-muted-foreground">{detail}</p>
       <div className="flex items-center gap-2">
         {onResendNow ? (
-          <Button type="button" size="sm" variant="outline" disabled={resending} onClick={onResendNow}>
-            Resend now
-          </Button>
+          <Button type="button" size="sm" variant="outline" disabled={resending} onClick={onResendNow}>{pageText("resendNow_e4b311")}</Button>
         ) : null}
         <Button type="button" size="sm" variant="ghost" disabled={resending} onClick={onCancel}>{translateUi("interfaceCopy.cancel")}</Button>
       </div>

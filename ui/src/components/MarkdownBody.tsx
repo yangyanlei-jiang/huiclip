@@ -1,3 +1,5 @@
+import { controlText } from "@/i18n/controls";
+import { t as translateDynamic } from "../i18n";
 import { t as interfaceMessage } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { PatchLines } from "./PatchLines";
@@ -252,7 +254,7 @@ function MarkdownCaseLink({
       to={caseHref(identifier)}
       data-mention-kind="case"
       className={cn("paperclip-markdown-case-ref", "font-normal underline")}
-      aria-label={`Case ${identifier}`}
+      aria-label={translateDynamic("dynamic:case", { value1: identifier })}
     >
       {children}
     </Link>
@@ -629,8 +631,8 @@ function CodeBlock({
     }, 1500);
   }, [children, patchText]);
 
-  const copyLabel = failed ? "Copy failed" : copied ? "Copied!" : "Copy";
-  const wrapLabel = wrapLines ? "Unwrap lines" : "Wrap lines";
+  const copyLabel = failed ? controlText("Copy failed") : copied ? controlText("Copied!") : controlText("Copy");
+  const wrapLabel = wrapLines ? controlText("Unwrap lines") : controlText("Wrap lines");
 
   return (
     <div className="paperclip-markdown-codeblock" data-wrap-lines={wrapLines || undefined}>
@@ -697,6 +699,7 @@ function CodeBlock({
 }
 
 function MermaidDiagramBlock({ source, darkMode }: { source: string; darkMode: boolean }) {
+  const { t: pageText } = usePageTranslation("interface");
   const renderId = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const [svg, setSvg] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -740,7 +743,7 @@ function MermaidDiagramBlock({ source, darkMode }: { source: string; darkMode: b
       ) : (
         <>
           <p className={cn("paperclip-mermaid-status", error && "paperclip-mermaid-status-error")}>
-            {error ? `Unable to render Mermaid diagram: ${error}` : "Rendering Mermaid diagram..."}
+            {error ? `Unable to render Mermaid diagram: ${error}` : pageText("renderingMermaidDiagram_777aee")}
           </p>
           <pre className="paperclip-mermaid-source">
             <code className="language-mermaid">{source}</code>
@@ -768,6 +771,7 @@ function MarkdownBodyImpl({
   mediaMode = "render",
   resolveWorkspaceFileRef,
 }: MarkdownBodyProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { theme } = useTheme();
   const coordinator = useCoordinatorPresentation();
   const streamWords = useContext(MarkdownWordStreaming);
@@ -834,7 +838,7 @@ function MarkdownBodyImpl({
       </blockquote>
     ),
     table: ({ node: _node, style: tableStyle, children: tableChildren, ...tableProps }) => (
-      <div className="paperclip-markdown-table-scroll" role="region" aria-label="Scrollable table" tabIndex={0}>
+      <div className="paperclip-markdown-table-scroll" role="region" aria-label={pageText("scrollableTable_909d8b")} tabIndex={0}>
         <table {...tableProps} style={tableStyle as React.CSSProperties | undefined}>
           {tableChildren}
         </table>
@@ -972,8 +976,7 @@ function MarkdownBodyImpl({
     };
     if (mediaMode === "reference") {
       map.img = ({ src, alt, title }) => (
-        <span data-markdown-image-reference title={title}>
-          Image: {alt || "Untitled image"}{src ? ` (${src})` : ""}
+        <span data-markdown-image-reference title={title}>{pageText("image_de5f1d") + " "}{alt || pageText("untitledImage_14c436")}{src ? ` (${src})` : ""}
         </span>
       );
     } else if (resolveImageSrc || onImageClick) {

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { cloneElement, isValidElement, type CSSProperties, type ReactNode } from "react";
 import { CircleDot, ExternalLink, GitPullRequest } from "lucide-react";
 import { GithubIcon } from "./icons/github-icon";
@@ -47,6 +48,7 @@ export function MarkdownUrlLink({ href, children, title, style }: {
   title?: string;
   style?: CSSProperties;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const github = parseGitHubLink(href);
   const external = isExternalHttpUrl(href);
   const Icon = github?.kind === "pull_request" ? GitPullRequest : github?.kind === "issue" ? CircleDot : GithubIcon;
@@ -60,7 +62,7 @@ export function MarkdownUrlLink({ href, children, title, style }: {
     title={title ?? (github ? `${github.description}\n${href}` : undefined)}
     style={style}
   >
-    {github ? <span className="sr-only">{github.kind === "pull_request" ? "GitHub pull request: " : github.kind === "issue" ? "GitHub issue: " : "GitHub: "}</span> : null}
+    {github ? <span className="sr-only">{github.kind === "pull_request" ? pageText("githubPullRequest_428e5c") + " " : github.kind === "issue" ? pageText("githubIssue_2d5156") + " " : pageText("github_872bf8") + " "}</span> : null}
     {renderLinkBody(label, leadingIcon, trailingIcon)}
   </a>;
 }

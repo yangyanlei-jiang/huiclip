@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
@@ -109,7 +110,7 @@ export function ImageGalleryModal({
             returnFocusRef.current?.focus({ preventScroll: true });
           } : undefined}
         >
-          <DialogPrimitive.Title className="sr-only">Image gallery</DialogPrimitive.Title>
+          <DialogPrimitive.Title className="sr-only">{pageText("imageGallery_b6081c")}</DialogPrimitive.Title>
           {/* Top bar */}
           <div className="flex items-center justify-between px-5 py-3 text-white/80 text-sm shrink-0">
             <span className="truncate max-w-(--pct-50) font-medium" title={filename}>
@@ -124,8 +125,8 @@ export function ImageGalleryModal({
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-white/50 hover:text-white transition-colors"
-                title="Open original"
-                aria-label={`Open original ${filename}`}
+                title={pageText("openOriginal_57a08f")}
+                aria-label={translateDynamic("dynamic:openOriginal", { value1: filename })}
                 onClick={(e) => e.stopPropagation()}
               >
                 <ExternalLink className="h-4.5 w-4.5" />
@@ -135,7 +136,7 @@ export function ImageGalleryModal({
                 download={filename}
                 className="text-white/50 hover:text-white transition-colors"
                 title={pageText("download_a479c9")}
-                aria-label={`Download ${filename}`}
+                aria-label={translateDynamic("dynamic:download", { value1: filename })}
                 onClick={(e) => e.stopPropagation()}
               >
                 <Download className="h-4.5 w-4.5" />

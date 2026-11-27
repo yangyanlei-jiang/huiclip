@@ -1,3 +1,5 @@
+import { t as interfaceNotice } from "@/i18n";
+import { t as translateDynamic } from "../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
@@ -33,14 +35,14 @@ export function AllowedProjectsEditor({ projects, projectIds, canManage, agentNa
     if (!canManage || saving || !pending.length) return;
     setSaving(true); setError(null); setSaved(false);
     try { await onSave(pending); setAdded([]); setSaved(true); }
-    catch (failure) { setError(failure instanceof Error ? failure.message : "Couldn’t save project access."); }
+    catch (failure) { setError(failure instanceof Error ? failure.message : interfaceNotice("interface:couldnTSaveProjectAccess_d12675")); }
     finally { setSaving(false); }
   }
 
   return <section aria-label={pageText("allowedProjects_7013c6")} className="space-y-4">
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div className="space-y-1"><h3 className="text-sm font-semibold">{pageText("allowedProjects_7013c6")}</h3>
-        <p className="text-sm text-muted-foreground">Projects whose tasks and repositories this agent may access.</p></div>
+        <p className="text-sm text-muted-foreground">{pageText("projectsWhoseTasksAndRepositoriesThisAgentMay_f12c24")}</p></div>
       {canManage && <Popover open={open} onOpenChange={setOpen}><PopoverTrigger asChild>
         <Button variant="outline" size="sm" disabled={saving}><Plus className="size-4" aria-hidden />{pageText("addProject_2470e8")}</Button>
       </PopoverTrigger><PopoverContent align="end" className="w-72 space-y-3">
@@ -48,7 +50,7 @@ export function AllowedProjectsEditor({ projects, projectIds, canManage, agentNa
         <div className="max-h-64 space-y-1 overflow-y-auto">{matches.map(project => <label key={project.id} className="flex cursor-pointer items-start gap-3 rounded-md px-2 py-2 hover:bg-accent">
           <Checkbox aria-label={project.name} checked={projectIds.includes(project.id) || pending.includes(project.id)} disabled={projectIds.includes(project.id)} className="mt-0.5"
             onCheckedChange={checked => { setAdded(current => checked ? [...new Set([...current, project.id])] : current.filter(id => id !== project.id)); setSaved(false); }} />
-          <span className="min-w-0 text-sm">{project.name}{projectIds.includes(project.id) && <span className="block text-xs text-muted-foreground">Already allowed</span>}</span>
+          <span className="min-w-0 text-sm">{project.name}{projectIds.includes(project.id) && <span className="block text-xs text-muted-foreground">{pageText("alreadyAllowed_c95df9")}</span>}</span>
         </label>)}</div>
         {!matches.length && <p className="text-sm text-muted-foreground">{pageText("noProjectsFound_ca7870")}</p>}
         <Button variant="secondary" size="sm" className="w-full" onClick={() => setOpen(false)}>{translateUi("interfaceCopy.done")}</Button>
@@ -58,19 +60,19 @@ export function AllowedProjectsEditor({ projects, projectIds, canManage, agentNa
       {visibleIds.map(id => <li key={id} className="flex items-center gap-3 p-4">
         <FolderOpen className="size-4 shrink-0 text-muted-foreground" aria-hidden /><span className="min-w-0 flex-1 break-words text-sm font-medium">{name(id)}</span>
         {projectIds.includes(id) ? <span className="inline-flex items-center gap-1 text-xs text-muted-foreground"><Check className="size-3.5" aria-hidden />{pageText("allowed_77c7b4")}</span>
-          : <><span className="text-xs text-muted-foreground">To add</span><Button variant="ghost" size="icon-sm" disabled={saving} aria-label={`Undo adding ${name(id)}`} onClick={() => setAdded(current => current.filter(value => value !== id))}><X className="size-4" aria-hidden /></Button></>}
+          : <><span className="text-xs text-muted-foreground">{pageText("toAdd_6df0d2")}</span><Button variant="ghost" size="icon-sm" disabled={saving} aria-label={translateDynamic("dynamic:undoAdding", { value1: name(id) })} onClick={() => setAdded(current => current.filter(value => value !== id))}><X className="size-4" aria-hidden /></Button></>}
       </li>)}
-    </ul> : <p className="text-sm text-muted-foreground">No projects allowed yet.</p>}
-    {!canManage && <p className="text-sm text-muted-foreground">A person with agent-management permission can add projects here.</p>}
+    </ul> : <p className="text-sm text-muted-foreground">{pageText("noProjectsAllowedYet_a1302d")}</p>}
+    {!canManage && <p className="text-sm text-muted-foreground">{pageText("aPersonWithAgentManagementPermissionCanAdd_c052f7")}</p>}
     {pending.length > 0 && <div className="space-y-2 rounded-md bg-muted p-4 text-sm">
-      <p className="font-medium">Add access to {pending.map(name).join(", ")}</p>
-      <p className="text-muted-foreground">{agentName} will be able to access work and repositories in {pending.length === 1 ? "this project" : "these projects"}. Existing project access and low-trust restrictions stay in place.</p>
+      <p className="font-medium">{pageText("addAccessTo_fa5249") + " "}{pending.map(name).join(", ")}</p>
+      <p className="text-muted-foreground">{agentName}{" " + pageText("willBeAbleToAccessWorkAndRepositories_384d04") + " "}{pending.length === 1 ? pageText("thisProject_bd0d43") : pageText("theseProjects_208f9f")}{pageText("existingProjectAccessAndLowTrustRestrictionsStay_fad3c9")}</p>
     </div>}
-    {error && <p role="alert" className="text-sm text-destructive">Couldn’t save project access. Your selection is kept. {error}</p>}
-    {saved && <p role="status" className="inline-flex items-center gap-2 text-sm"><Check className="size-4" aria-hidden />Project access saved. Return to your task to retry.</p>}
+    {error && <p role="alert" className="text-sm text-destructive">{pageText("couldnTSaveProjectAccessYourSelectionIs_cef704") + " "}{error}</p>}
+    {saved && <p role="status" className="inline-flex items-center gap-2 text-sm"><Check className="size-4" aria-hidden />{pageText("projectAccessSavedReturnToYourTaskTo_57a202")}</p>}
     {canManage && <div className="flex items-center justify-between gap-3 border-t pt-4">
       <Button variant="ghost" disabled={saving || !pending.length} onClick={() => { setAdded([]); setError(null); setSaved(false); }}>{translateUi("interfaceCopy.cancel")}</Button>
-      <Button disabled={saving || !pending.length} onClick={() => void save()}>{saving && <Loader2 className="size-4 animate-spin" aria-hidden />}{saving ? "Saving access…" : error ? "Try saving again" : "Save project access"}</Button>
+      <Button disabled={saving || !pending.length} onClick={() => void save()}>{saving && <Loader2 className="size-4 animate-spin" aria-hidden />}{saving ? pageText("savingAccess_ce4589") : error ? pageText("trySavingAgain_dd1d48") : pageText("saveProjectAccess_39d83f")}</Button>
     </div>}
   </section>;
 }

@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { AgentAvatar } from "./AgentAvatar";
@@ -76,8 +77,7 @@ export function DocumentAnnotationPanel(props: AnnotationPanelProps) {
           showCloseButton={false}
           className="paperclip-doc-annotation-sheet z-(--z-60) flex max-h-(--sz-88vh) flex-col rounded-none border-t border-border bg-popover p-0 text-popover-foreground shadow-2xl"
         >
-          <SheetTitle className="sr-only">
-            Comments on {props.documentKey}{" " + pageText("revision_eae79d") + " "}{props.documentRevisionNumber}
+          <SheetTitle className="sr-only">{pageText("commentsOn_b99c6f") + " "}{props.documentKey}{" " + pageText("revision_eae79d") + " "}{props.documentRevisionNumber}
           </SheetTitle>
           <div className="mx-auto mt-2 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/30" aria-hidden="true" />
           <AnnotationPanelBody {...props} />
@@ -91,7 +91,7 @@ export function DocumentAnnotationPanel(props: AnnotationPanelProps) {
   return (
     <aside
       role="complementary"
-      aria-label={`Annotations for ${props.documentKey.toUpperCase()}, revision ${props.documentRevisionNumber}`}
+      aria-label={translateDynamic("dynamic:annotationsForRevision", { value1: props.documentKey.toUpperCase(), value2: props.documentRevisionNumber })}
       data-testid="document-annotation-panel"
       className={cn(
         "isolate flex h-full max-h-(--sz-80vh) shrink-0 flex-col overflow-hidden rounded-none border border-border bg-popover text-popover-foreground shadow-xl",
@@ -180,8 +180,7 @@ export function AnnotationPanelBody(props: AnnotationPanelProps) {
         data-testid={bodyTestId}
         className="flex items-center justify-end gap-1 border-b border-border bg-popover px-2 py-1.5"
       >
-        <span className="text-(length:--text-micro) tabular-nums text-muted-foreground">
-          rev {props.documentRevisionNumber}
+        <span className="text-(length:--text-micro) tabular-nums text-muted-foreground">{pageText("rev_03e404") + " "}{props.documentRevisionNumber}
         </span>
         <Button
           type="button"
@@ -192,7 +191,7 @@ export function AnnotationPanelBody(props: AnnotationPanelProps) {
             props.onFocusThread(null);
             props.onOpenChange(false);
           }}
-          aria-label="Close annotation panel"
+          aria-label={pageText("closeAnnotationPanel_d3c9f1")}
         >
           <X className="h-4 w-4" />
         </Button>
@@ -282,7 +281,7 @@ export function AnnotationPanelBody(props: AnnotationPanelProps) {
                 }
               }
             }}
-            placeholder="Write a comment…"
+            placeholder={pageText("writeAComment_ee6540")}
             disabled={props.newCommentDisabled}
             className="resize-y rounded-none text-sm"
           />
@@ -385,7 +384,7 @@ export function ThreadCard(props: {
                   }
                 }
               }}
-              placeholder="Reply…"
+              placeholder={pageText("reply_defdba")}
               className="resize-y rounded-none text-sm"
               disabled={props.pendingReply}
             />
@@ -400,12 +399,10 @@ export function ThreadCard(props: {
               >
                 {thread.status === "resolved" ? (
                   <>
-                    <RotateCcw className="h-3 w-3" /> Reopen
-                  </>
+                    <RotateCcw className="h-3 w-3" />{" " + pageText("reopen_61e05d")}</>
                 ) : (
                   <>
-                    <Check className="h-3 w-3" /> Resolve
-                  </>
+                    <Check className="h-3 w-3" />{" " + pageText("resolve_ac7f95")}</>
                 )}
               </Button>
               <Button
@@ -414,7 +411,7 @@ export function ThreadCard(props: {
                 disabled={!props.replyDraft.trim() || props.pendingReply}
                 onClick={props.onSubmitReply}
               >
-                {props.pendingReply ? pageText("sending_cf7655") : "Reply"}
+                {props.pendingReply ? pageText("sending_cf7655") : pageText("reply_6c2bb7")}
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -424,7 +421,7 @@ export function ThreadCard(props: {
                     size="icon-xs"
                     className="text-muted-foreground"
                     title={pageText("moreActions_a1e34f")}
-                    aria-label="More thread actions"
+                    aria-label={pageText("moreThreadActions_1ddcf1")}
                   >
                     <MoreHorizontal className="h-3.5 w-3.5" />
                   </Button>
@@ -465,6 +462,7 @@ function CommentRow({
   agentMap?: ReadonlyMap<string, Pick<Agent, "id" | "name"> & Partial<Pick<Agent, "icon" | "appearance">>>;
   userProfileMap?: ReadonlyMap<string, CompanyUserProfile>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const author = resolveAuthor(comment, { agentMap, userProfileMap });
   return (
     <div
@@ -484,7 +482,7 @@ function CommentRow({
           </Avatar>)}
           <span className="truncate font-medium text-foreground">{author.name}</span>
           {author.role === "agent" ? (
-            <span className="text-muted-foreground">· agent</span>
+            <span className="text-muted-foreground">{pageText("agent_826238")}</span>
           ) : null}
         </span>
         <span className="shrink-0 text-muted-foreground">{relativeTime(comment.createdAt)}</span>

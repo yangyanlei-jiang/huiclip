@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from "react";
 import { Check, Copy } from "lucide-react";
@@ -28,7 +29,7 @@ export function CopyField({
         <Button
           variant="ghost"
           size="sm"
-          aria-label={`Copy ${label}`}
+          aria-label={translateDynamic("dynamic:copy", { value1: label })}
           onClick={async () => {
             try {
               await copyTextToClipboard(value);
@@ -50,9 +51,7 @@ export function CopyField({
       {help && <p className="text-xs text-muted-foreground">{help}</p>}
       {error && (
         <div className="space-y-2">
-          <p role="alert" className="text-xs text-destructive">
-            Copy failed. Select and copy the text below.
-          </p>
+          <p role="alert" className="text-xs text-destructive">{pageText("copyFailedSelectAndCopyTheTextBelow_02cd32")}</p>
           <textarea
             readOnly
             aria-label={`${label} text`}
@@ -75,16 +74,13 @@ export function AgentInstructions({ value }: { value: string }) {
     >
       <div className="space-y-1">
         <h2 className="text-sm font-medium">{pageText("agentInstructions_07101b")}</h2>
-        <p className="text-sm text-muted-foreground">
-          Give your agent everything it needs to connect this webhook: the URL,
-          authentication key, and step-by-step instructions.
-        </p>
+        <p className="text-sm text-muted-foreground">{pageText("giveYourAgentEverythingItNeedsToConnect_a389e3")}</p>
       </div>
       <AgentSetupPrompt
         prompt={value}
-        label="Copy for your agent"
-        title="Webhook setup"
-        description="Paste this into your agent to connect this webhook to your routine."
+        label={pageText("copyForYourAgent_1b4c95")}
+        title={pageText("webhookSetup_3d4ae6")}
+        description={pageText("pasteThisIntoYourAgentToConnectThis_d6d3a3")}
       />
     </section>
   );

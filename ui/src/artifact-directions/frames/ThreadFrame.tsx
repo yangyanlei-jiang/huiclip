@@ -72,6 +72,7 @@ function Row({ kit, artifact }: { kit: DirectionKit; artifact: LabArtifact }) {
 }
 
 export function ThreadFrame({ kit, panelOpen }: { kit: DirectionKit; panelOpen: boolean }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [critique, guide, pptx, pdf, image, source] = THREAD_WORK_PRODUCTS;
   const attachments = (
     <Slot kit={kit} className="flex w-full flex-col gap-1">
@@ -102,7 +103,7 @@ export function ThreadFrame({ kit, panelOpen }: { kit: DirectionKit; panelOpen: 
                     Uploaded and registered <ProseLink to="work-product-ic-pptx">editable PowerPoint</ProseLink>,{" "}
                     <ProseLink to="work-product-ic-pdf">matching PDF</ProseLink>,{" "}
                     <ProseLink to="work-product-ic-image">slide overview</ProseLink>,{" "}
-                    <ProseLink to="work-product-ic-guide">guide</ProseLink> and{" "}
+                    <ProseLink to="work-product-ic-guide">guide</ProseLink>{" " + pageText("and_cffa50")}{" "}
                     <ProseLink to="work-product-ic-zip">editing source</ProseLink>. Prior revisions preserved.
                   </li>
                   <li>

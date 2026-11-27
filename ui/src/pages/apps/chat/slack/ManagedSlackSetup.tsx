@@ -127,23 +127,23 @@ export function ManagedSlackSetup({ endpoint, disabled, saveDetails, onSaved, on
   return <div className="space-y-5">
     {authorizationWindow.fallback}
     {message && <p role="alert" className="text-sm text-destructive">{message}</p>}
-    {busy || choices.isPending || creating ? <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />{busy ? needsAuthorization ? "Opening Slack…" : "Connecting your agent…" : creating ? "Setting up your Slack app…" : "Loading Slack…"}</p>
-      : !choices.data?.managedAvailable ? <p className="text-sm">Managed Slack setup is unavailable. Try again later.</p>
+    {busy || choices.isPending || creating ? <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />{busy ? needsAuthorization ? pageText("openingSlack_08ac81") : pageText("connectingYourAgent_c50dde") : creating ? pageText("settingUpYourSlackApp_f3431c") : pageText("loadingSlack_d9c128")}</p>
+      : !choices.data?.managedAvailable ? <p className="text-sm">{pageText("managedSlackSetupIsUnavailableTryAgainLater_b0185f")}</p>
       : reconnectWorkspace ? null : <>
-        {workspaces.length === 1 && <p className="text-sm">{pageText("add_61cc55") + " "}<strong>{endpoint.assignedAgentName}</strong> to <strong>{workspaces[0]!.workspaceName}</strong>.</p>}
+        {workspaces.length === 1 && <p className="text-sm">{pageText("add_61cc55") + " "}<strong>{endpoint.assignedAgentName}</strong>{" " + pageText("to_4374aa") + " "}<strong>{workspaces[0]!.workspaceName}</strong>.</p>}
         {workspaces.length > 1 && <Select value={grantId ?? ""} onValueChange={setSelectedGrant} disabled={busy || started}>
-          <SelectTrigger aria-label="Slack workspace"><SelectValue placeholder="Choose a Slack workspace" /></SelectTrigger>
+          <SelectTrigger aria-label={pageText("slackWorkspace_102e42")}><SelectValue placeholder={pageText("chooseASlackWorkspace_5d3b52")} /></SelectTrigger>
           <SelectContent>{workspaces.map(workspace => <SelectItem key={workspace.grantId} value={workspace.grantId}>{workspace.workspaceName}</SelectItem>)}</SelectContent>
         </Select>}
-        {!started && workspaces.length > 0 && <div><Button variant="link" className="h-auto p-0" disabled={busy} onClick={() => void run(authorize)}>Connect another Slack workspace</Button></div>}
+        {!started && workspaces.length > 0 && <div><Button variant="link" className="h-auto p-0" disabled={busy} onClick={() => void run(authorize)}>{pageText("connectAnotherSlackWorkspace_9514fa")}</Button></div>}
       </>}
     {uncertain && <div className="space-y-3 text-sm">
-      <a className="underline underline-offset-4" href={registration?.managementUrl ?? "https://api.slack.com/apps"} target="_blank" rel="noopener noreferrer">Open Slack app settings</a>
-      <label className="flex items-center gap-2"><Checkbox checked={confirmed} onCheckedChange={value => setConfirmed(value === true)} disabled={busy} />I checked Slack and no app was created. Create a new app.</label>
+      <a className="underline underline-offset-4" href={registration?.managementUrl ?? "https://api.slack.com/apps"} target="_blank" rel="noopener noreferrer">{pageText("openSlackAppSettings_1cc06a")}</a>
+      <label className="flex items-center gap-2"><Checkbox checked={confirmed} onCheckedChange={value => setConfirmed(value === true)} disabled={busy} />{pageText("iCheckedSlackAndNoAppWasCreated_a699d3")}</label>
     </div>}
     <SetupWizardFooter onSaveExit={onSaveExit} disabled={busy}>
       {(choicesView.kind === "error") || !choices.isPending && !choices.data?.managedAvailable ? <Button disabled={busy || choices.isFetching} onClick={() => void choices.refetch()}>{translateUi("interfaceCopy.retry")}</Button> : <Button disabled={busy || disabled || creating || choices.isPending || !choices.data?.managedAvailable || (workspaces.length > 1 && !grantId && !reconnectWorkspace) || (uncertain && !confirmed)} onClick={() => void run(connect)}>
-        {busy && <Loader2 className="size-4 animate-spin" />}{reconnectWorkspace ? "Reconnect Slack workspace" : registration?.appId ? "Continue in Slack" : pageText("continue_2e0262")}
+        {busy && <Loader2 className="size-4 animate-spin" />}{reconnectWorkspace ? pageText("reconnectSlackWorkspace_6254bb") : registration?.appId ? pageText("continueInSlack_858c9f") : pageText("continue_2e0262")}
       </Button>}
     </SetupWizardFooter>
   </div>;

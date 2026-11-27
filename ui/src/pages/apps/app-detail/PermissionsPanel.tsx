@@ -1,3 +1,5 @@
+import { t as interfaceNotice } from "@/i18n";
+import { t as translateDynamic } from "../../../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -128,14 +130,14 @@ function AgentAccessSection({
   return (
     <section className="space-y-4 border-t border-border pt-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold text-foreground">Which agents can use this connection?</h2>
+        <h2 className="text-sm font-semibold text-foreground">{pageText("whichAgentsCanUseThisConnection_158d1a")}</h2>
         {disabled ? <span className="text-xs text-muted-foreground">{pageText("saving_56a228")}</span> : null}
       </div>
 
       {canManage ? (
         <div className="space-y-3">
           <RadioCardGroup
-            ariaLabel="Which agents can use this connection"
+            ariaLabel={interfaceNotice("interface:whichAgentsCanUseThisConnection_d56d22")}
             value={access.mode}
             disabled={disabled}
             className="sm:grid-cols-2"
@@ -171,7 +173,7 @@ function AgentAccessSection({
               triggerLabel={access.agentIds.size === 0
                 ? "Choose agents"
                 : `${access.agentIds.size} ${access.agentIds.size === 1 ? "agent" : "agents"} selected`}
-              emptyMessage="You cannot edit any agents yet."
+              emptyMessage={pageText("youCannotEditAnyAgentsYet_bdf6ad")}
               isAgentDisabled={(agent) => requiredAgentIds.has(agent.id)}
               getDescription={(agent) => requiredAgentIds.has(agent.id) ? "Required by this connection's install setting" : agent.title}
               onChange={(agentIds) => onSave({
@@ -182,9 +184,9 @@ function AgentAccessSection({
           ) : null}
         </div>
       ) : access.mode === "all" ? (
-        <p className="text-sm text-muted-foreground">Any agent can use this connection.</p>
+        <p className="text-sm text-muted-foreground">{pageText("anyAgentCanUseThisConnection_008159")}</p>
       ) : selectedAgents.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No agents can use this connection.</p>
+        <p className="text-sm text-muted-foreground">{pageText("noAgentsCanUseThisConnection_a33896")}</p>
       ) : (
         <div className="space-y-0.5">
           {selectedAgents.map((agent) => (
@@ -267,9 +269,7 @@ export function ActionsSection({
                 <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
               ) : (
                 <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
-              )}
-              Refresh actions
-            </Button>
+              )}{pageText("refreshActions_cd6518")}</Button>
           </div>
         ) : null}
       </div>
@@ -293,28 +293,26 @@ export function ActionsSection({
           <div className="relative min-w-(--sz-12rem) flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              aria-label="Find an action"
-              placeholder="Find an action…"
+              aria-label={pageText("findAnAction_7f56d2")}
+              placeholder={pageText("findAnAction_7c227d")}
               className="pl-9"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
           </div>
-          <FilterChip label={`All ${readOnly.length + canChange.length}`} active={kindFilter === "all"} onClick={() => setKindFilter("all")} />
-          <FilterChip label={`Read ${readOnly.length}`} active={kindFilter === "read"} onClick={() => setKindFilter("read")} />
-          <FilterChip label={`Write ${canChange.length}`} active={kindFilter === "write"} onClick={() => setKindFilter("write")} />
+          <FilterChip label={translateDynamic("dynamic:all", { value1: readOnly.length + canChange.length })} active={kindFilter === "all"} onClick={() => setKindFilter("all")} />
+          <FilterChip label={translateDynamic("dynamic:read", { value1: readOnly.length })} active={kindFilter === "read"} onClick={() => setKindFilter("read")} />
+          <FilterChip label={translateDynamic("dynamic:write", { value1: canChange.length })} active={kindFilter === "write"} onClick={() => setKindFilter("write")} />
         </div>
-        <p className="text-xs text-muted-foreground">{visibleCount} matches · sorted A–Z</p>
+        <p className="text-xs text-muted-foreground">{visibleCount}{" " + pageText("matchesSortedAZ_92814d")}</p>
       </div>
 
       {visibleCount === 0 ? (
-        <div className="py-6 text-center text-sm text-muted-foreground">
-          No actions match “{query}”. Clear the search to see them all.
-        </div>
+        <div className="py-6 text-center text-sm text-muted-foreground">{pageText("noActionsMatch_0b6026")}{query}{pageText("clearTheSearchToSeeThemAll_eac283")}</div>
       ) : (
         <div className="space-y-6">
           <ActionGroup
-            title={`Read (${visibleRead.length})`}
+            title={translateDynamic("dynamic:readCount", { value1: visibleRead.length })}
             actions={visibleRead}
             connectionId={connectionId}
             appName={appName}
@@ -329,7 +327,7 @@ export function ActionsSection({
             }}
           />
           <ActionGroup
-            title={`Write (${visibleWrite.length})`}
+            title={translateDynamic("dynamic:writeCount", { value1: visibleWrite.length })}
             actions={visibleWrite}
             connectionId={connectionId}
             appName={appName}
@@ -390,6 +388,7 @@ function ActionGroup({
   canConfigure: boolean;
   onSetPermission: (ids: string[], next: ActionPermission) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (actions.length === 0) return null;
   const groupValue = (() => {
     const first = actionPermission(actions[0]!.id, enabledIds, askFirstIds);
@@ -406,9 +405,9 @@ function ActionGroup({
           // connection's writes is one choice rather than one per action;
           // per-row overrides stay underneath.
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span className="sr-only">{`Set every action in ${title}`}</span>
+            <span className="sr-only">{translateDynamic("dynamic:setEveryActionIn", { value1: title })}</span>
             <select
-              aria-label={`Set every action in ${title}`}
+              aria-label={translateDynamic("dynamic:setEveryActionIn", { value1: title })}
               value={groupValue}
               disabled={disabled}
               onChange={(event) => {
@@ -419,7 +418,7 @@ function ActionGroup({
               }}
               className="h-7 rounded-md border border-input bg-background px-2 text-xs text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
             >
-              {groupValue === "" ? <option value="">Mixed</option> : null}
+              {groupValue === "" ? <option value="">{pageText("mixed_c0dcb8")}</option> : null}
               {PERMISSION_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>{`Set all: ${option.label}`}</option>
               ))}
@@ -476,6 +475,7 @@ function ActionRow({
   canConfigure: boolean;
   onSetPermission: (ids: string[], next: ActionPermission) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const rowRef = useRef<HTMLDivElement | null>(null);
   const [testOpen, setTestOpen] = useState(false);
   const title = action.title ?? action.toolName;
@@ -502,7 +502,7 @@ function ActionRow({
                 glance to spot and one click to move. */}
             <span
               className="rounded-full border border-border px-1.5 py-px text-xs font-medium uppercase tracking-wide text-muted-foreground"
-              title={`Paperclip classified this action as ${action.riskLevel}`}
+              title={translateDynamic("dynamic:paperclipClassifiedThisActionAs", { value1: action.riskLevel })}
             >
               {action.riskLevel}
             </span>
@@ -556,9 +556,7 @@ function ActionRow({
             </span>
           )}
           <Button type="button" size="sm" variant="outline" onClick={() => setTestOpen(true)}>
-            <FlaskConical className="mr-1.5 h-3.5 w-3.5" />
-            Test
-          </Button>
+            <FlaskConical className="mr-1.5 h-3.5 w-3.5" />{pageText("test_640ab2")}</Button>
         </div>
       </div>
       <ActionTestDialog

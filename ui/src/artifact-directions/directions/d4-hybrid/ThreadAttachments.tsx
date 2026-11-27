@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import type { LabArtifact } from "../../kit";
@@ -69,6 +70,7 @@ function Cell({ artifact }: { artifact: LabArtifact }) {
 const count = (n: number, noun: string) => `${n} ${noun}${n === 1 ? "" : "s"}`;
 
 export function ThreadAttachments({ artifacts }: { artifacts: LabArtifact[] }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [all, setAll] = useState(false);
   if (artifacts.length === 0) return null;
   // Pictures first, as the product's Images block leads its Files block.
@@ -79,8 +81,7 @@ export function ThreadAttachments({ artifacts }: { artifacts: LabArtifact[] }) {
   const shown = capped ? ordered.slice(0, CAP - 1) : ordered;
   return (
     <section aria-label={`Attachments, ${artifacts.length}`} className="@container flex w-full flex-col gap-2 pb-1 pt-0.5">
-      <p className="text-xs leading-4 text-(--hy-ink-2)">
-        Attachments · <span className="font-mono text-(length:--text-micro)">{artifacts.length}</span>
+      <p className="text-xs leading-4 text-(--hy-ink-2)">{pageText("attachments_277ab9") + " "}<span className="font-mono text-(length:--text-micro)">{artifacts.length}</span>
         {pictures.length > 0 && files.length > 0 ? (
           <span className="ml-2 font-mono text-(length:--text-micro)">
             {count(pictures.length, "image")}
@@ -101,8 +102,7 @@ export function ThreadAttachments({ artifacts }: { artifacts: LabArtifact[] }) {
               data-show-all
               onClick={() => setAll(true)}
               className={`flex min-w-0 flex-1 cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-(--hy-slab) px-3 text-xs font-medium text-foreground hover:bg-(--hy-slab-raised) active:bg-(--hy-button) ${MOTION} ${FOCUS_RING}`}
-            >
-              Show all <span className="font-mono text-(length:--text-micro)">{ordered.length}</span>
+            >{pageText("showAll_50a279") + " "}<span className="font-mono text-(length:--text-micro)">{ordered.length}</span>
             </button>
           </li>
         ) : null}

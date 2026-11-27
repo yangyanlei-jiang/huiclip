@@ -27,8 +27,7 @@ export function CostAmount({
       </div>
       <CostEstimateLabel eventCount={eventCount} estimatedEventCount={estimatedEventCount} />
       {showUnavailableCount && !!unpricedEventCount && <Badge variant="outline" className="font-normal text-muted-foreground">
-        {unpricedEventCount} {unpricedEventCount === 1 ? pageText("cost_885dc4") : pageText("costs_628bc3")} unavailable
-      </Badge>}
+        {unpricedEventCount} {unpricedEventCount === 1 ? pageText("cost_885dc4") : pageText("costs_628bc3")}{" " + pageText("unavailable_1d5ee3")}</Badge>}
     </div>
   );
 }

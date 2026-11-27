@@ -1,3 +1,4 @@
+import { adapterCopy } from "../i18n/adapter-copy";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { schemaFieldSection } from "./config-sections";
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -75,6 +76,7 @@ function ComboboxField({
   onChange: (val: string) => void;
   placeholder?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -141,7 +143,7 @@ function ComboboxField({
           type="text"
           className="flex-1 rounded-l-md border border-r-0 border-border px-2.5 py-1.5 bg-transparent outline-none text-sm font-mono placeholder:text-muted-foreground/40 focus:z-10"
           value={displayValue}
-          placeholder={placeholder ?? "Type or select..."}
+          placeholder={placeholder ?? pageText("typeOrSelect_4855f0")}
           onChange={(e) => {
             setFilter(e.target.value);
             if (!open) setOpen(true);
@@ -191,9 +193,7 @@ function ComboboxField({
               </div>
             ))}
             {filter && filtered.length === 0 && (
-              <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                Use &quot;{filter}&quot; as custom value (press Enter)
-              </div>
+              <div className="px-2 py-1.5 text-sm text-muted-foreground">{pageText("use_8106f4")}{filter}{pageText("asCustomValuePressEnter_438a7d")}</div>
             )}
           </PopoverContent>
         </Popover>
@@ -333,6 +333,7 @@ export function SchemaConfigFields({
   eff,
   mark,
 }: AdapterConfigFieldsProps) {
+  usePageTranslation("adapter");
   const schema = useConfigSchema(adapterType);
 
   const defaultsApplied = useRef({ adapterType, applied: false });
@@ -421,10 +422,12 @@ export function SchemaConfigFields({
             case "select": {
               const currentVal = String(readValue(field) ?? "");
               return (
-                <Field key={field.key} label={field.label} hint={field.hint}>
+                <Field key={field.key} label={adapterCopy(field.label)} hint={field.hint}>
                   <SelectField
                     value={currentVal}
-                    options={field.options ?? []}
+                    options={field.key === "model" ? field.options ?? [] : (field.options ?? []).map((option) => ({
+                      ...option, label: adapterCopy(option.label),
+                    }))}
                     onChange={(v) => writeValue(field, v)}
                   />
                 </Field>
@@ -435,7 +438,7 @@ export function SchemaConfigFields({
               return (
                 <ToggleField
                   key={field.key}
-                  label={field.label}
+                  label={adapterCopy(field.label)}
                   hint={field.hint}
                   checked={readValue(field) === true}
                   onChange={(v) => writeValue(field, v)}
@@ -444,7 +447,7 @@ export function SchemaConfigFields({
 
             case "number":
               return (
-                <Field key={field.key} label={field.label} hint={field.hint}>
+                <Field key={field.key} label={adapterCopy(field.label)} hint={field.hint}>
                   <DraftNumberInput
                     value={Number(readValue(field) ?? 0)}
                     onCommit={(v) => writeValue(field, v)}
@@ -456,7 +459,7 @@ export function SchemaConfigFields({
 
             case "textarea":
               return (
-                <Field key={field.key} label={field.label} hint={field.hint}>
+                <Field key={field.key} label={adapterCopy(field.label)} hint={field.hint}>
                   <DraftTextarea
                     value={String(readValue(field) ?? "")}
                     onCommit={(v) => writeValue(field, v || undefined)}
@@ -496,12 +499,12 @@ export function SchemaConfigFields({
                 }
               }
               return (
-                <Field key={field.key} label={field.label} hint={field.hint}>
+                <Field key={field.key} label={adapterCopy(field.label)} hint={field.hint}>
                   <ComboboxField
                     value={currentVal}
                     options={comboboxOptions}
                     onChange={(v) => writeValue(field, v || undefined)}
-                    placeholder={field.hint}
+                    placeholder={field.hint && adapterCopy(field.hint)}
                   />
                 </Field>
               );
@@ -510,7 +513,7 @@ export function SchemaConfigFields({
             case "text":
             default:
               return (
-                <Field key={field.key} label={field.label} hint={field.hint}>
+                <Field key={field.key} label={adapterCopy(field.label)} hint={field.hint}>
                   <DraftInput
                     value={String(readValue(field) ?? "")}
                     onCommit={(v) => writeValue(field, v || undefined)}

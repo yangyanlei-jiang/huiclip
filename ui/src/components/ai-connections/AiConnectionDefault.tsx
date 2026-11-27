@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { Crown, Loader2 } from "lucide-react";
@@ -38,9 +39,10 @@ export function AiDefaultMenuItem({ account, pending, onSelect }: {
 export function AiDefaultError({ provider, pending, onRetry }: {
   provider: string; pending: boolean; onRetry: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   return <div role="alert" className="flex flex-wrap items-center gap-2 text-sm text-destructive">
-    <p>Couldn’t change your {provider} default.</p>
+    <p>{pageText("couldnTChangeYour_b9246d") + " "}{provider}{" " + pageText("default_d92f27")}</p>
     <Button variant="outline" size="sm" disabled={pending} onClick={onRetry}>{translateUi("interfaceCopy.retry")}</Button>
   </div>;
 }

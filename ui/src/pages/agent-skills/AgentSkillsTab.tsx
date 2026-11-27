@@ -376,8 +376,7 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
         onCheckedChange={(next) => toggleSkill(row.key, next)}
         badge={
           showReleasePicker && pinnedRelease ? (
-            <Badge variant="secondary" className="text-(length:--text-nano)">
-              Beta · {releaseShortLabel(pinnedRelease)}
+            <Badge variant="secondary" className="text-(length:--text-nano)">{pageText("beta_e44836") + " "}{releaseShortLabel(pinnedRelease)}
             </Badge>
           ) : undefined
         }
@@ -403,8 +402,7 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm font-medium text-foreground">
-            {enabledRows.length} of {libraryRows.length} enabled
-          </span>
+            {enabledRows.length}{" " + pageText("of_de04fa") + " "}{libraryRows.length}{" " + pageText("enabled_3ea3f9")}</span>
           {applicationLabel ? (
             <Tooltip>
               <TooltipTrigger asChild>
@@ -422,7 +420,7 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
             unsaved={hasUnsavedChanges}
             error={syncSkills.isError && hasUnsavedChanges} // query-error-ok: syncSkills is a save mutation result, not a query read
           />
-          <div data-canonical-toolbar="agent-skills" role="toolbar" aria-label="Agent skills controls" className="ml-auto flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
+          <div data-canonical-toolbar="agent-skills" role="toolbar" aria-label={pageText("agentSkillsControls_c0a149")} className="ml-auto flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
             <div className="relative w-full sm:w-auto">
               <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -435,9 +433,7 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
             </div>
             <Button asChild variant="outline" size="sm" className="shrink-0">
               <Link to="/skills" className="no-underline">
-                <Store className="h-3.5 w-3.5" />
-                Browse skills store
-              </Link>
+                <Store className="h-3.5 w-3.5" />{pageText("browseSkillsStore_d672b6")}</Link>
             </Button>
           </div>
         </div>
@@ -465,8 +461,7 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
               className="flex items-center justify-between gap-3 border-b border-amber-300/40 bg-amber-50/60 px-3 py-2 text-xs text-amber-800 last:border-b-0 dark:border-amber-500/20 dark:bg-amber-950/20 dark:text-amber-200"
             >
               <span className="min-w-0 truncate">
-                <span className="font-medium">{key}</span> is enabled but missing from the organization library.
-              </span>
+                <span className="font-medium">{key}</span>{" " + pageText("isEnabledButMissingFromTheOrganizationLibrary_5337a4")}</span>
               <button
                 type="button"
                 onClick={() => toggleSkill(key, false)}
@@ -484,26 +479,26 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
         <EmptyLibraryCard />
       ) : (
         <div className="space-y-4">
-          <SkillSection title="Enabled on this agent" count={filteredEnabled.length}>
+          <SkillSection title={pageText("enabledOnThisAgent_5cd5d6")} count={filteredEnabled.length}>
             {filteredEnabled.length > 0 ? (
               filteredEnabled.map((row) => renderRow(row, "enabled"))
             ) : (
               <SectionEmpty>
-                {search ? "No enabled skills match your search." : "No skills enabled on this agent yet."}
+                {search ? pageText("noEnabledSkillsMatchYourSearch_8ef185") : pageText("noSkillsEnabledOnThisAgentYet_b8eace")}
               </SectionEmpty>
             )}
           </SkillSection>
 
-          <SkillSection title="Available from the library" count={filteredAvailable.length}>
+          <SkillSection title={pageText("availableFromTheLibrary_765cd1")} count={filteredAvailable.length}>
             {filteredAvailable.length > 0 ? (
               filteredAvailable.map((row) => renderRow(row, "available"))
             ) : (
               <SectionEmpty>
                 {search
-                  ? "No available skills match your search."
+                  ? pageText("noAvailableSkillsMatchYourSearch_7686d9")
                   : libraryEmpty
-                    ? "Import skills into the organization library to enable them here."
-                    : "Every library skill is enabled on this agent."}
+                    ? pageText("importSkillsIntoTheOrganizationLibraryToEnable_00ebd8")
+                    : pageText("everyLibrarySkillIsEnabledOnThisAgent_25bcb6")}
               </SectionEmpty>
             )}
           </SkillSection>
@@ -518,9 +513,7 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
                       detectedOpen ? "" : "-rotate-90",
                     )}
                   />
-                  <span className="text-xs font-medium text-muted-foreground">
-                    Automatic and detected skills (read-only)
-                  </span>
+                  <span className="text-xs font-medium text-muted-foreground">{pageText("automaticAndDetectedSkillsReadOnly_bd3cf0")}</span>
                   <span className="text-xs text-muted-foreground/70">{filteredDetected.length}</span>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
@@ -529,15 +522,14 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
                       <AgentSkillRow key={row.key} variant="readonly" data={row} />
                     ))
                   ) : (
-                    <SectionEmpty>No detected skills match your search.</SectionEmpty>
+                    <SectionEmpty>{pageText("noDetectedSkillsMatchYourSearch_61df40")}</SectionEmpty>
                   )}
                 </CollapsibleContent>
               </div>
             </Collapsible>
           ) : null}
 
-          <div className="text-xs text-muted-foreground">
-            Adapter: {adapterLabels[agent.adapterType] ?? agent.adapterType}
+          <div className="text-xs text-muted-foreground">{pageText("adapter_338d65") + " "}{adapterLabels[agent.adapterType] ?? agent.adapterType}
           </div>
         </div>
       )}
@@ -564,17 +556,13 @@ function SaveStatusChip({
   if (error) {
     return (
       <span className="inline-flex items-center gap-1.5 text-xs text-destructive">
-        <AlertCircle className="h-3.5 w-3.5" />
-        Couldn’t save
-      </span>
+        <AlertCircle className="h-3.5 w-3.5" />{pageText("couldnTSave_1f3c44")}</span>
     );
   }
   if (unsaved) {
     return (
       <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-        Saving soon…
-      </span>
+        <Loader2 className="h-3.5 w-3.5 animate-spin" />{pageText("savingSoon_b98922")}</span>
     );
   }
   return (
@@ -608,20 +596,17 @@ function SectionEmpty({ children }: { children: React.ReactNode }) {
 }
 
 function EmptyLibraryCard() {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border px-6 py-10 text-center">
       <Store className="h-8 w-8 text-muted-foreground/60" />
       <div className="space-y-1">
-        <p className="text-sm font-medium text-foreground">No skills in the organization library</p>
-        <p className="text-xs text-muted-foreground">
-          Install skills to the organization, then enable them on this agent.
-        </p>
+        <p className="text-sm font-medium text-foreground">{pageText("noSkillsInTheOrganizationLibrary_9940fb")}</p>
+        <p className="text-xs text-muted-foreground">{pageText("installSkillsToTheOrganizationThenEnableThem_5721be")}</p>
       </div>
       <Button asChild variant="outline" size="sm">
         <Link to="/skills" className="no-underline">
-          <Store className="h-3.5 w-3.5" />
-          Browse skills store
-        </Link>
+          <Store className="h-3.5 w-3.5" />{pageText("browseSkillsStore_d672b6")}</Link>
       </Button>
     </div>
   );

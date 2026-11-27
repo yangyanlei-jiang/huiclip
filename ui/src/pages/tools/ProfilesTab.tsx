@@ -1,3 +1,5 @@
+import { t as interfaceNotice } from "@/i18n";
+import { t as translateDynamic } from "../../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo, useState } from "react";
@@ -377,11 +379,12 @@ function EntryFields({
   applications: Array<{ id: string; name: string }>;
   connections: Array<{ id: string; name: string }>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   return (
     <div className="grid gap-3 sm:grid-cols-(--gtc-60)">
       <div className="space-y-1.5">
-        <Label>Selector</Label>
+        <Label>{pageText("selector_b240d0")}</Label>
         <Select value={selectorType} onValueChange={(value) => setSelectorType(value as ToolProfileEntrySelectorType)}>
           <SelectTrigger>
             <SelectValue />
@@ -396,14 +399,14 @@ function EntryFields({
         </Select>
       </div>
       <div className="space-y-1.5">
-        <Label>Effect</Label>
+        <Label>{pageText("effect_720b5d")}</Label>
         <Select value={effect} onValueChange={(value) => setEffect(value as ToolProfileEntryEffect)}>
           <SelectTrigger>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="include">Include</SelectItem>
-            <SelectItem value="exclude">Exclude</SelectItem>
+            <SelectItem value="include">{pageText("include_11c54a")}</SelectItem>
+            <SelectItem value="exclude">{pageText("exclude_f4c16b")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -412,7 +415,7 @@ function EntryFields({
           <Label>{translateUi("interfaceCopy.application")}</Label>
           <Select value={applicationId} onValueChange={setApplicationId}>
             <SelectTrigger>
-              <SelectValue placeholder="Select an application" />
+              <SelectValue placeholder={pageText("selectAnApplication_b12c65")} />
             </SelectTrigger>
             <SelectContent>
               {applications.map((app) => (
@@ -429,7 +432,7 @@ function EntryFields({
           <Label>{translateUi("interfaceCopy.connection")}</Label>
           <Select value={connectionId} onValueChange={setConnectionId}>
             <SelectTrigger>
-              <SelectValue placeholder="Select a connection" />
+              <SelectValue placeholder={pageText("selectAConnection_29e8cc")} />
             </SelectTrigger>
             <SelectContent>
               {connections.map((conn) => (
@@ -443,19 +446,19 @@ function EntryFields({
       ) : null}
       {selectorType === "catalog_entry" ? (
         <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor="catalog-entry-id">Catalog entry ID</Label>
+          <Label htmlFor="catalog-entry-id">{pageText("catalogEntryID_a490e8")}</Label>
           <Input id="catalog-entry-id" value={catalogEntryId} onChange={(event) => setCatalogEntryId(event.target.value)} />
         </div>
       ) : null}
       {selectorType === "tool_name" ? (
         <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor="tool-name">Tool name</Label>
-          <Input id="tool-name" value={toolName} onChange={(event) => setToolName(event.target.value)} placeholder="e.g. send_email or slack.list_*" />
+          <Label htmlFor="tool-name">{pageText("toolName_76237a")}</Label>
+          <Input id="tool-name" value={toolName} onChange={(event) => setToolName(event.target.value)} placeholder={pageText("eGSendEmailOrSlackList_55ca61")} />
         </div>
       ) : null}
       {selectorType === "risk_level" ? (
         <div className="space-y-1.5 sm:col-span-2">
-          <Label>Risk level</Label>
+          <Label>{pageText("riskLevel_97fe3c")}</Label>
           <Select value={riskLevel} onValueChange={(value) => setRiskLevel(value as ToolRiskLevel)}>
             <SelectTrigger>
               <SelectValue />
@@ -494,11 +497,9 @@ export function EffectiveAgentPanel({ companyId, agentOptions }: { companyId: st
         <AgentSelect agents={agentOptions} value={agentId} onChange={setAgentId} />
       </div>
       {!agentId ? (
-        <div className="rounded-lg border border-dashed border-border px-4 py-8 text-sm text-muted-foreground">
-          Pick an agent to see what it can use right now.
-        </div>
+        <div className="rounded-lg border border-dashed border-border px-4 py-8 text-sm text-muted-foreground">{pageText("pickAnAgentToSeeWhatItCan_5ee5c2")}</div>
       ) : effective.isLoading || effectiveView.kind === "reconnecting" ? (
-        <LoadingState label="Checking access..." />
+        <LoadingState label={pageText("checkingAccess_b7a36d")} />
       ) : effectiveView.kind === "error" ? (
         <QueryErrorState
           error={effective.error}
@@ -510,14 +511,12 @@ export function EffectiveAgentPanel({ companyId, agentOptions }: { companyId: st
         <div className="min-h-0 space-y-5 overflow-y-auto pr-1">
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
-              <h3 className="text-sm font-semibold text-foreground">Can use</h3>
+              <h3 className="text-sm font-semibold text-foreground">{pageText("canUse_8928d8")}</h3>
               <span className="text-xs text-muted-foreground tabular-nums">
                 {(effective.data?.allowedToolNames ?? []).length}{" " + pageText("tools_0284c6")}</span>
             </div>
             {(effective.data?.allowedToolNames ?? []).length === 0 ? (
-              <div className="rounded-lg border border-dashed border-border px-4 py-5 text-sm text-muted-foreground">
-                This agent cannot use any app tools right now.
-              </div>
+              <div className="rounded-lg border border-dashed border-border px-4 py-5 text-sm text-muted-foreground">{pageText("thisAgentCannotUseAnyAppToolsRight_bb4139")}</div>
             ) : (
               <div className="flex flex-wrap gap-2">
                 {(effective.data?.allowedToolNames ?? []).slice(0, 80).map((tool) => (
@@ -529,16 +528,14 @@ export function EffectiveAgentPanel({ companyId, agentOptions }: { companyId: st
           <div className="space-y-2">
             <h3 className="text-sm font-semibold text-foreground">{pageText("accessProfiles_e271a6")}</h3>
             {(effective.data?.profiles ?? []).length === 0 ? (
-              <div className="rounded-lg border border-dashed border-border px-4 py-5 text-sm text-muted-foreground">
-                No active profile applies to this agent.
-              </div>
+              <div className="rounded-lg border border-dashed border-border px-4 py-5 text-sm text-muted-foreground">{pageText("noActiveProfileAppliesToThisAgent_37b8f3")}</div>
             ) : (
               <div className="divide-y divide-border rounded-lg border border-border">
                 {(effective.data?.profiles ?? []).map((profile) => (
                   <div key={profile.id} className="flex items-center justify-between gap-3 px-3 py-2.5">
                     <span className="min-w-0 truncate text-sm font-medium text-foreground">{profile.name}</span>
                     {profile.summary.isCompanyDefault ? (
-                      <Badge variant="secondary">Organization default</Badge>
+                      <Badge variant="secondary">{pageText("organizationDefault_8271e2")}</Badge>
                     ) : null}
                   </div>
                 ))}
@@ -553,16 +550,17 @@ export function EffectiveAgentPanel({ companyId, agentOptions }: { companyId: st
 
 /** The Source column — the key v2 addition. Patterns are flagged as a foot-gun. */
 function SourceBadge({ source }: { source: AllowSource }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (source.kind === "explicit") {
-    return <Badge variant="secondary">explicit</Badge>;
+    return <Badge variant="secondary">{pageText("explicit_a45c22")}</Badge>;
   }
   if (source.kind === "default") {
-    return <Badge variant="outline">default allow</Badge>;
+    return <Badge variant="outline">{pageText("defaultAllow_2545e2")}</Badge>;
   }
   return (
     <Badge variant="outline" className="gap-1 border-amber-500/50 text-amber-700 dark:text-amber-400">
       <AlertTriangle className="h-3 w-3" />
-      <span className="font-mono text-(length:--text-micro)">pattern {source.label}</span>
+      <span className="font-mono text-(length:--text-micro)">{pageText("pattern_91cc2e") + " "}{source.label}</span>
     </Badge>
   );
 }
@@ -577,7 +575,7 @@ function AllowList({ rows, catalogLoading }: { rows: AllowListRow[]; catalogLoad
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h4 className="text-sm font-semibold text-foreground">Allow list</h4>
+        <h4 className="text-sm font-semibold text-foreground">{pageText("allowList_82cd7a")}</h4>
         <p className="text-xs text-muted-foreground">
           {rows.length}{" " + pageText("tool_1937c4")}{rows.length === 1 ? "" : "s"}
           {explicitCount > 0 ? ` · ${explicitCount} explicit` : ""}
@@ -588,8 +586,8 @@ function AllowList({ rows, catalogLoading }: { rows: AllowListRow[]; catalogLoad
       {rows.length === 0 ? (
         <div className="rounded-md border border-dashed border-border px-3 py-6 text-center text-sm text-muted-foreground">
           {catalogLoading
-            ? "Resolving allowed tools…"
-            : "No tools resolved for this profile. Add an include selector or refresh the tool catalog."}
+            ? pageText("resolvingAllowedTools_310458")
+            : pageText("noToolsResolvedForThisProfileAddAn_24508c")}
         </div>
       ) : (
         <Card>
@@ -639,10 +637,7 @@ function AllowList({ rows, catalogLoading }: { rows: AllowListRow[]; catalogLoad
       )}
       {patternCount > 0 ? (
         <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
-          <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0 text-amber-500" />
-          Tools marked <span className="font-medium">pattern</span> were pulled in by a wildcard, application,
-          connection, or risk selector rather than named explicitly — review them when the catalog changes.
-        </p>
+          <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0 text-amber-500" />{pageText("toolsMarked_12f1db") + " "}<span className="font-medium">{pageText("pattern_91cc2e")}</span>{" " + pageText("werePulledInByAWildcardApplicationConnection_8cf3fb")}</p>
       ) : null}
     </div>
   );
@@ -742,10 +737,10 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
       setSelectedId(created.id);
       resetProfileForm();
       resetEntryForm();
-      pushToast({ title: "Profile created", tone: "success" });
+      pushToast({ title: interfaceNotice("interface:profileCreated_96c2ad"), tone: "success" });
     },
     onError: (error) => pushToast({
-      title: "Could not create profile",
+      title: interfaceNotice("interface:couldNotCreateProfile_349906"),
       body: describeError(error).body,
       tone: "error",
     }),
@@ -758,10 +753,10 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
       invalidateProfiles();
       setEditProfile(null);
       resetProfileForm();
-      pushToast({ title: "Profile updated", tone: "success" });
+      pushToast({ title: interfaceNotice("interface:profileUpdated_971353"), tone: "success" });
     },
     onError: (error) => pushToast({
-      title: "Could not update profile",
+      title: interfaceNotice("interface:couldNotUpdateProfile_fe81b2"),
       body: describeError(error).body,
       tone: "error",
     }),
@@ -774,10 +769,10 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
       invalidateProfiles();
       setEntryProfile(null);
       resetEntryForm();
-      pushToast({ title: "Entry added", tone: "success" });
+      pushToast({ title: interfaceNotice("interface:entryAdded_8c322d"), tone: "success" });
     },
     onError: (error) => pushToast({
-      title: "Could not add entry",
+      title: interfaceNotice("interface:couldNotAddEntry_480e58"),
       body: describeError(error).body,
       tone: "error",
     }),
@@ -787,10 +782,10 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
     mutationFn: (entryId: string) => toolsApi.deleteProfileEntry(entryId),
     onSuccess: () => {
       invalidateProfiles();
-      pushToast({ title: "Entry removed", tone: "success" });
+      pushToast({ title: interfaceNotice("interface:entryRemoved_2079fb"), tone: "success" });
     },
     onError: (error) => pushToast({
-      title: "Could not remove entry",
+      title: interfaceNotice("interface:couldNotRemoveEntry_520208"),
       body: describeError(error).body,
       tone: "error",
     }),
@@ -804,10 +799,10 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
       setBindProfileFor(null);
       setTargetType("agent");
       setPriority("100");
-      pushToast({ title: "Profile bound", tone: "success" });
+      pushToast({ title: interfaceNotice("interface:profileBound_dafe73"), tone: "success" });
     },
     onError: (error) => pushToast({
-      title: "Could not bind profile",
+      title: interfaceNotice("interface:couldNotBindProfile_259897"),
       body: describeError(error).body,
       tone: "error",
     }),
@@ -821,10 +816,10 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
     }) => toolsApi.unbindProfile(companyId, profileId, { targetType, targetId }),
     onSuccess: () => {
       invalidateProfiles();
-      pushToast({ title: "Binding removed", tone: "success" });
+      pushToast({ title: interfaceNotice("interface:bindingRemoved_e94715"), tone: "success" });
     },
     onError: (error) => pushToast({
-      title: "Could not remove binding",
+      title: interfaceNotice("interface:couldNotRemoveBinding_8dfe18"),
       body: describeError(error).body,
       tone: "error",
     }),
@@ -901,7 +896,7 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
       riskLevel,
     });
     if (!entry) {
-      pushToast({ title: "Entry target required", tone: "error" });
+      pushToast({ title: interfaceNotice("interface:entryTargetRequired_9f6f8a"), tone: "error" });
       return;
     }
     addEntry.mutate({ profileId: entryProfile.id, input: entry });
@@ -918,7 +913,7 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
       issueId: targetIssueId,
     });
     if (!targetId) {
-      pushToast({ title: "Binding target required", tone: "error" });
+      pushToast({ title: interfaceNotice("interface:bindingTargetRequired_dc1097"), tone: "error" });
       return;
     }
     bind.mutate({
@@ -935,12 +930,10 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
     <div className="space-y-4">
       <ToolsPageHeader
         title={pageText("accessProfiles_e271a6")}
-        description="Reusable bundles of allowed applications, connections, and tools, assignable to agents, projects, routines, or issues."
+        description={pageText("reusableBundlesOfAllowedApplicationsConnectionsAndTools_e14328")}
         actions={
           <Button size="sm" onClick={() => setCreateOpen(true)}>
-            <Plus className="mr-1 h-4 w-4" />
-            New profile
-          </Button>
+            <Plus className="mr-1 h-4 w-4" />{pageText("newProfile_ca36da")}</Button>
         }
       />
 
@@ -949,8 +942,8 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
       {list.length === 0 ? (
         <EmptyState
           icon={Layers}
-          message="No access profiles yet"
-          description="Create a profile to group tool selectors, then bind it to the organization or a specific agent."
+          message={pageText("noAccessProfilesYet_5ce637")}
+          description={pageText("createAProfileToGroupToolSelectorsThen_cb8b03")}
           action="New profile"
           onAction={() => setCreateOpen(true)}
         />
@@ -1034,10 +1027,8 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
       }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{editProfile ? "Edit profile" : "New profile"}</DialogTitle>
-            <DialogDescription>
-              Profile rules are enforced by the tool gateway policy service.
-            </DialogDescription>
+            <DialogTitle>{editProfile ? pageText("editProfile_15141e") : pageText("newProfile_ca36da")}</DialogTitle>
+            <DialogDescription>{pageText("profileRulesAreEnforcedByTheToolGateway_a0c76c")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div className="grid gap-3 sm:grid-cols-2">
@@ -1050,7 +1041,7 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
                     setName(event.target.value);
                     if (!editProfile && !profileKey.trim()) setProfileKey(slugifyProfileKey(event.target.value));
                   }}
-                  placeholder="Engineering write tools"
+                  placeholder={pageText("engineeringWriteTools_4e2831")}
                 />
               </div>
               <div className="space-y-1.5">
@@ -1064,19 +1055,19 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
                 id="profile-description"
                 value={description}
                 onChange={(event) => setDescription(event.target.value)}
-                placeholder="Optional context for reviewers."
+                placeholder={pageText("optionalContextForReviewers_d337dc")}
               />
             </div>
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <Label>Default action</Label>
+                <Label>{pageText("defaultAction_82cf88")}</Label>
                 <Select value={defaultAction} onValueChange={(value) => setDefaultAction(value as ToolProfileDefaultAction)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="deny">Deny unless included</SelectItem>
-                    <SelectItem value="allow">Allow unless excluded</SelectItem>
+                    <SelectItem value="deny">{pageText("denyUnlessIncluded_776f01")}</SelectItem>
+                    <SelectItem value="allow">{pageText("allowUnlessExcluded_909473")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1137,7 +1128,7 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
       }}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Add entry</DialogTitle>
+            <DialogTitle>{pageText("addEntry_8c6a8e")}</DialogTitle>
             <DialogDescription>{entryProfile?.name}</DialogDescription>
           </DialogHeader>
           <EntryFields
@@ -1160,9 +1151,7 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
           />
           <DialogFooter>
             <Button variant="outline" onClick={() => setEntryProfile(null)}>{translateUi("interfaceCopy.cancel")}</Button>
-            <Button disabled={addEntry.isPending} onClick={saveEntry}>
-              Add entry
-            </Button>
+            <Button disabled={addEntry.isPending} onClick={saveEntry}>{pageText("addEntry_8c6a8e")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1172,12 +1161,12 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
       }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Bind profile</DialogTitle>
+            <DialogTitle>{pageText("bindProfile_67b81a")}</DialogTitle>
             <DialogDescription>{bindProfileFor?.name}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div className="space-y-1.5">
-              <Label>Target type</Label>
+              <Label>{pageText("targetType_a45f80")}</Label>
               <Select value={targetType} onValueChange={(value) => setTargetType(value as ToolProfileBindingTargetType)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -1201,7 +1190,7 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
               <div className="space-y-1.5">
                 <Label>{translateUi("interfaceCopy.project")}</Label>
                 <Select value={targetProjectId} onValueChange={setTargetProjectId}>
-                  <SelectTrigger><SelectValue placeholder="Select a project" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={pageText("selectAProject_ef5ee1")} /></SelectTrigger>
                   <SelectContent>
                     {projectOptions.map((project) => <SelectItem key={project.id} value={project.id}>{project.name}</SelectItem>)}
                   </SelectContent>
@@ -1212,7 +1201,7 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
               <div className="space-y-1.5">
                 <Label>{pageText("routine_482273")}</Label>
                 <Select value={targetRoutineId} onValueChange={setTargetRoutineId}>
-                  <SelectTrigger><SelectValue placeholder="Select a routine" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={pageText("selectARoutine_4c7d42")} /></SelectTrigger>
                   <SelectContent>
                     {routineOptions.map((routine) => <SelectItem key={routine.id} value={routine.id}>{routine.title}</SelectItem>)}
                   </SelectContent>
@@ -1221,7 +1210,7 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
             ) : null}
             {targetType === "issue" ? (
               <div className="space-y-1.5">
-                <Label htmlFor="target-issue-id">Issue ID</Label>
+                <Label htmlFor="target-issue-id">{pageText("issueID_10ca88")}</Label>
                 <Input id="target-issue-id" value={targetIssueId} onChange={(event) => setTargetIssueId(event.target.value)} />
               </div>
             ) : null}
@@ -1232,9 +1221,7 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setBindProfileFor(null)}>{translateUi("interfaceCopy.cancel")}</Button>
-            <Button disabled={bind.isPending} onClick={saveBinding}>
-              Bind
-            </Button>
+            <Button disabled={bind.isPending} onClick={saveBinding}>{pageText("bind_83a9e4")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1304,22 +1291,18 @@ function ProfileDetail({
             <Button size="sm" variant="outline" onClick={onEdit}>
               <Pencil className="mr-1 h-3.5 w-3.5" />{pageText("edit_530164")}</Button>
             <Button size="sm" variant="outline" onClick={onAddEntry}>
-              <Plus className="mr-1 h-3.5 w-3.5" />
-              Entry
-            </Button>
+              <Plus className="mr-1 h-3.5 w-3.5" />{pageText("entry_19172e")}</Button>
             <Button size="sm" variant="outline" onClick={onBind}>
-              <Link2 className="mr-1 h-3.5 w-3.5" />
-              Bind
-            </Button>
+              <Link2 className="mr-1 h-3.5 w-3.5" />{pageText("bind_83a9e4")}</Button>
           </div>
         </div>
 
         {/* Targets */}
         <div className="space-y-2">
-          <h4 className="text-sm font-semibold text-foreground">Targets</h4>
+          <h4 className="text-sm font-semibold text-foreground">{pageText("targets_d35260")}</h4>
           <div className="flex flex-wrap gap-2">
             {profile.bindings.length === 0 ? (
-              <span className="text-sm text-muted-foreground">No targets bound.</span>
+              <span className="text-sm text-muted-foreground">{pageText("noTargetsBound_8dd8bf")}</span>
             ) : profile.bindings.map((binding) => (
               <span key={binding.id} className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs">
                 <Badge variant="outline">{binding.targetType}</Badge>
@@ -1329,7 +1312,7 @@ function ProfileDetail({
                   type="button"
                   className="rounded p-0.5 text-muted-foreground hover:text-destructive"
                   onClick={() => onUnbind(binding)}
-                  aria-label={`Remove ${binding.targetType} binding`}
+                  aria-label={translateDynamic("dynamic:removeBinding", { value1: binding.targetType })}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>
@@ -1340,26 +1323,24 @@ function ProfileDetail({
 
         {/* Effective scope summary */}
         <div className="space-y-2">
-          <h4 className="text-sm font-semibold text-foreground">Effective scope</h4>
+          <h4 className="text-sm font-semibold text-foreground">{pageText("effectiveScope_6691aa")}</h4>
           <div className="flex flex-wrap gap-2 text-xs">
             <span className="rounded-md border border-border px-2 py-1 text-muted-foreground">{pageText("default_808d7d") + " "}<span className="font-medium text-foreground">{profile.defaultAction}</span>
             </span>
             <span className="rounded-md border border-border px-2 py-1 text-muted-foreground">
-              <span className="font-medium text-foreground">{rows.length}</span> tools allowed
-            </span>
+              <span className="font-medium text-foreground">{rows.length}</span>{" " + pageText("toolsAllowed_92b6a0")}</span>
             <span className="rounded-md border border-border px-2 py-1 text-muted-foreground">
-              <span className="font-medium text-foreground">{includeCount}</span> include /{" "}
-              <span className="font-medium text-foreground">{excludeCount}</span> exclude
-            </span>
+              <span className="font-medium text-foreground">{includeCount}</span>{" " + pageText("include_3782ee")}{" "}
+              <span className="font-medium text-foreground">{excludeCount}</span>{" " + pageText("exclude_f3acce")}</span>
           </div>
         </div>
 
         {/* Selectors (entry management) */}
         <div className="space-y-2">
-          <h4 className="text-sm font-semibold text-foreground">Selectors</h4>
+          <h4 className="text-sm font-semibold text-foreground">{pageText("selectors_4df28d")}</h4>
           <div className="flex flex-wrap gap-2">
             {profile.entries.length === 0 ? (
-              <span className="text-sm text-muted-foreground">No selectors.</span>
+              <span className="text-sm text-muted-foreground">{pageText("noSelectors_5e4d05")}</span>
             ) : profile.entries.map((entry) => (
               <span key={entry.id} className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs">
                 <Badge variant={entry.effect === "include" ? "secondary" : "destructive"}>{entry.effect}</Badge>
@@ -1371,7 +1352,7 @@ function ProfileDetail({
                   type="button"
                   className="rounded p-0.5 text-muted-foreground hover:text-destructive"
                   onClick={() => onDeleteEntry(entry.id)}
-                  aria-label={`Delete ${entry.selectorType} entry`}
+                  aria-label={translateDynamic("dynamic:deleteEntry", { value1: entry.selectorType })}
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                 </button>

@@ -249,8 +249,8 @@ export function ScheduleEditor({
   return (
     <div className="space-y-3">
       <Select value={preset} onValueChange={(v) => handlePresetChange(v as SchedulePreset)}>
-        <SelectTrigger className="w-full" aria-label="Schedule frequency">
-          <SelectValue placeholder="Choose frequency..." />
+        <SelectTrigger className="w-full" aria-label={pageText("scheduleFrequency_5dd6bd")}>
+          <SelectValue placeholder={pageText("chooseFrequency_e38071")} />
         </SelectTrigger>
         <SelectContent>
           {PRESETS.map((p) => (
@@ -279,13 +279,11 @@ export function ScheduleEditor({
               }
             }}
             placeholder="0 10 * * *"
-            aria-label="Cron expression"
+            aria-label={pageText("cronExpression_0a2e94")}
             aria-invalid={!customValidation.valid}
             className="font-mono text-sm"
           />
-          <p className="text-xs text-muted-foreground">
-            Five fields: minute hour day-of-month month day-of-week
-          </p>
+          <p className="text-xs text-muted-foreground">{pageText("fiveFieldsMinuteHourDayOfMonthMonth_4bd2a0")}</p>
           <p
             className={customValidation.valid ? "text-xs text-muted-foreground" : "text-xs text-destructive"}
             aria-live="polite"
@@ -300,7 +298,7 @@ export function ScheduleEditor({
         <div className="flex flex-wrap items-center gap-2">
           {preset !== "every_minute" && preset !== "every_hour" && (
             <>
-              <span className="text-sm text-muted-foreground">at</span>
+              <span className="text-sm text-muted-foreground">{pageText("at_27e90d")}</span>
               <Select
                 value={hour}
                 onValueChange={(h) => {
@@ -343,7 +341,7 @@ export function ScheduleEditor({
 
           {preset === "every_hour" && (
             <>
-              <span className="text-sm text-muted-foreground">at minute</span>
+              <span className="text-sm text-muted-foreground">{pageText("atMinute_3411f5")}</span>
               <Select
                 value={minute}
                 onValueChange={(m) => {
@@ -391,7 +389,7 @@ export function ScheduleEditor({
 
           {preset === "monthly" && (
             <>
-              <span className="text-sm text-muted-foreground">on day</span>
+              <span className="text-sm text-muted-foreground">{pageText("onDay_330355")}</span>
               <Select
                 value={dayOfMonth}
                 onValueChange={(dom) => {

@@ -232,7 +232,7 @@ export function AgentSetupPrompt({
               <h2 id={`${id}-title`} className="text-sm font-semibold">{title}</h2>
               <p id={`${id}-description`} className="text-sm leading-relaxed text-muted-foreground">{description}</p>
             </div>
-            <Button type="button" variant="ghost" size="icon-xs" aria-label="Close agent setup" onClick={() => changeOpen(false)}>
+            <Button type="button" variant="ghost" size="icon-xs" aria-label={pageText("closeAgentSetup_41ec60")} onClick={() => changeOpen(false)}>
               <X className="size-3.5" />
             </Button>
           </div>
@@ -241,7 +241,7 @@ export function AgentSetupPrompt({
             <div className="agent-setup-preview-logos absolute right-3 top-0 z-10"><AgentLogos agents={agents} ref={previewLogos} hidden={Boolean(flight)} /></div>
             {status === "failed" ? (
               <Textarea
-                aria-label="Setup prompt"
+                aria-label={pageText("setupPrompt_98c8b0")}
                 readOnly
                 value={prompt}
                 onFocus={(event) => event.currentTarget.select()}
@@ -254,7 +254,7 @@ export function AgentSetupPrompt({
 
           <div className="flex flex-col gap-2">
             {status === "failed" && (
-              <p role="alert" className="text-xs text-destructive">Could not copy automatically. Select and copy the prompt above, or try again.</p>
+              <p role="alert" className="text-xs text-destructive">{pageText("couldNotCopyAutomaticallySelectAndCopyThe_cf7f34")}</p>
             )}
             <Button
               ref={copyButton}
@@ -266,10 +266,10 @@ export function AgentSetupPrompt({
               onClick={() => { if (prompt.trim()) void copyPrompt(); }}
             >
               {status === "copied" ? <Check className="agent-setup-check size-4" /> : <Copy className="size-4" />}
-              {status === "copied" ? pageText("copiedToClipboard_0e7383") : status === "copying" ? "Copying…" : status === "failed" ? "Try copying again" : "Copy prompt"}
+              {status === "copied" ? pageText("copiedToClipboard_0e7383") : status === "copying" ? pageText("copying_d00448") : status === "failed" ? pageText("tryCopyingAgain_dabf41") : pageText("copyPrompt_dcf5b4")}
             </Button>
             <p className="text-center text-xs text-muted-foreground">
-              {status === "copied" ? `Ready to paste into ${recipient}.` : agent ? `Give this prompt to ${recipient}.` : "Works with Codex, ChatGPT, Claude, and more."}
+              {status === "copied" ? `Ready to paste into ${recipient}.` : agent ? `Give this prompt to ${recipient}.` : pageText("worksWithCodexChatGPTClaudeAndMore_5def79")}
             </p>
           </div>
         </PopoverContent>

@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useQueryView } from "@/components/QueryView";
@@ -18,7 +19,7 @@ import { useCoordinatorWorkspaceEnabled } from "@/hooks/useCoordinatorWorkspaceE
 import { useNavigate, useSearchParams } from "@/lib/router";
 import { queryKeys } from "@/lib/queryKeys";
 import { coordinatorAttentionQueryKey, COORDINATOR_RECENT_DECISION_MS, recentDecisionReceipts } from "@/lib/coordinator-attention";
-import { attentionDetailLine, isInlineResolvable } from "@/lib/attention";
+import { attentionDetailLine, attentionReason, isInlineResolvable } from "@/lib/attention";
 import { AttentionInteractionResolver } from "@/components/AttentionInteractionResolver";
 import { StalledReviewActions } from "@/components/StalledReviewActions";
 import { DecisionResolver } from "@/components/DecisionResolver";
@@ -64,21 +65,21 @@ function HistoryPanel({ companyId, agents, onClose, mobile = false }: { companyI
   const tab = <SidePanelTab id="decision-history" label={translateUi("interfaceCopy.decisionHistory")} active onSelect={() => {}} onClose={onClose} />;
   return <div className="space-y-5" data-coordinator-decision-history>
     {!mobile ? <>{slot ? createPortal(tab, slot) : tab}<h2 className="text-lg font-medium">{translateUi("interfaceCopy.decisionHistory")}</h2></> : null}
-    <ToolbarSearch query={search} onQueryChange={setSearch} label="Search decision history" placeholder="Search decisions or task IDs…" />
+    <ToolbarSearch query={search} onQueryChange={setSearch} label={pageText("searchDecisionHistory_77f314")} placeholder={pageText("searchDecisionsOrTaskIDs_9f168b")} />
     <div className="grid grid-cols-2 gap-2">
-      <NativeSelect aria-label="Filter decision outcomes" value={outcome} onChange={(event) => setOutcome(event.target.value)}>
-        <option value="">All outcomes</option><option value="accepted">Approved</option><option value="answered">Answered</option><option value="rejected">Changes requested</option><option value="decided">Decided</option><option value="cancelled">Cancelled</option><option value="expired">Expired</option>
+      <NativeSelect aria-label={pageText("filterDecisionOutcomes_19340d")} value={outcome} onChange={(event) => setOutcome(event.target.value)}>
+        <option value="">{pageText("allOutcomes_8769f8")}</option><option value="accepted">{pageText("approved_41b81e")}</option><option value="answered">{pageText("answered_e0aaff")}</option><option value="rejected">{pageText("changesRequested_9be166")}</option><option value="decided">{pageText("decided_55615a")}</option><option value="cancelled">{pageText("cancelled_a1bf92")}</option><option value="expired">{pageText("expired_a689a9")}</option>
       </NativeSelect>
-      <NativeSelect aria-label="Sort decision history" value={sort} onChange={(event) => setSort(event.target.value as typeof sort)}><option value="newest">Newest first</option><option value="oldest">Oldest first</option></NativeSelect>
-      <NativeSelect aria-label="Filter decision history by agent" value={agentId} onChange={(event) => setAgentId(event.target.value)} className="col-span-2"><option value="">All agents</option>{agents.map((agent) => <option key={agent.id} value={agent.id}>{agent.name}</option>)}</NativeSelect>
-      <NativeSelect aria-label="Filter decision history by project" value={projectId} onChange={(event) => setProjectId(event.target.value)} className="col-span-2"><option value="">All projects</option>{(projects.data ?? []).map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}</NativeSelect>
-      <NativeSelect aria-label="Group decision history" value={groupBy} onChange={(event) => setGroupBy(event.target.value as Group)} className="col-span-2"><option value="none">No grouping</option><option value="task">By task</option><option value="agent">By agent</option><option value="project">By project</option></NativeSelect>
+      <NativeSelect aria-label={pageText("sortDecisionHistory_3c55f7")} value={sort} onChange={(event) => setSort(event.target.value as typeof sort)}><option value="newest">{pageText("newestFirst_f5ec77")}</option><option value="oldest">{pageText("oldestFirst_6a99c6")}</option></NativeSelect>
+      <NativeSelect aria-label={pageText("filterDecisionHistoryByAgent_7acd52")} value={agentId} onChange={(event) => setAgentId(event.target.value)} className="col-span-2"><option value="">{pageText("allAgents_b94d6c")}</option>{agents.map((agent) => <option key={agent.id} value={agent.id}>{agent.name}</option>)}</NativeSelect>
+      <NativeSelect aria-label={pageText("filterDecisionHistoryByProject_d3366b")} value={projectId} onChange={(event) => setProjectId(event.target.value)} className="col-span-2"><option value="">{pageText("allProjects_403b21")}</option>{(projects.data ?? []).map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}</NativeSelect>
+      <NativeSelect aria-label={pageText("groupDecisionHistory_280e89")} value={groupBy} onChange={(event) => setGroupBy(event.target.value as Group)} className="col-span-2"><option value="none">{pageText("noGrouping_a0d021")}</option><option value="task">{pageText("byTask_f00aec")}</option><option value="agent">{pageText("byAgent_465814")}</option><option value="project">{pageText("byProject_41c423")}</option></NativeSelect>
     </div>
     {historyWaiting ? <p role="status" className="text-sm text-muted-foreground">{pageText("loadingDecisions_2eb515")}</p> : null}
-    {(historyView.kind === "error") ? <div role="alert" className="space-y-2 text-sm"><p>Decision history could not be loaded.</p><Button variant="outline" onClick={() => void history.refetch()}>{translateUi("interfaceCopy.retry")}</Button></div> : null}
-    {!historyWaiting && !(historyView.kind === "error") && !items.length ? <p className="text-sm text-muted-foreground">No decisions match these filters.</p> : null}
+    {(historyView.kind === "error") ? <div role="alert" className="space-y-2 text-sm"><p>{pageText("decisionHistoryCouldNotBeLoaded_9d407d")}</p><Button variant="outline" onClick={() => void history.refetch()}>{translateUi("interfaceCopy.retry")}</Button></div> : null}
+    {!historyWaiting && !(historyView.kind === "error") && !items.length ? <p className="text-sm text-muted-foreground">{pageText("noDecisionsMatchTheseFilters_9f9bb2")}</p> : null}
     <div className="space-y-4">{[...groups].map(([label, entries]) => <section key={label} className="space-y-3">{label ? <h3 className="text-sm font-medium text-muted-foreground">{label}</h3> : null}{entries.map((item) => <div key={item.id} className="space-y-1"><Receipt item={item} onOpen={navigate} /><p className="px-1 text-xs text-muted-foreground"><time dateTime={item.resolvedAt}>{new Date(item.resolvedAt).toLocaleString()}</time></p></div>)}</section>)}</div>
-    {history.hasNextPage ? <Button variant="outline" disabled={history.isFetchingNextPage} onClick={() => void history.fetchNextPage()}>{history.isFetchingNextPage ? pageText("loading_33ce41") : "Load more decisions"}</Button> : null}
+    {history.hasNextPage ? <Button variant="outline" disabled={history.isFetchingNextPage} onClick={() => void history.fetchNextPage()}>{history.isFetchingNextPage ? pageText("loading_33ce41") : pageText("loadMoreDecisions_795fe8")}</Button> : null}
   </div>;
 }
 
@@ -177,7 +178,7 @@ export function CoordinatorNeedsYou() {
   const filtersActive = Boolean(query.trim() || agentFilter || projectFilter);
   const closeHistory = useCallback(() => { setHistoryOpen(false); closePanel(); }, [closePanel]);
   const showHistory = () => { setHistoryOpen(true); if (!isMobile) setPanelVisible(true); };
-  useEffect(() => { setBreadcrumbs([{ label: "Inbox" }]); }, [setBreadcrumbs]);
+  useEffect(() => { setBreadcrumbs([{ label: interfaceNotice("interface:inbox_44caf7") }]); }, [setBreadcrumbs]);
   useEffect(() => {
     setSettling([]); setHistoryOpen(false); setNow(Date.now()); closePanel();
     return closePanel;
@@ -203,7 +204,7 @@ export function CoordinatorNeedsYou() {
     void feed.refetch();
   };
   const duration = typeof document === "undefined" ? 0 : parseCssTimeMs(getComputedStyle(document.documentElement).getPropertyValue("--motion-duration-base")) / 1_000;
-  if (!selectedCompanyId) return <p className="text-sm text-muted-foreground">Choose a company to see its decisions.</p>;
+  if (!selectedCompanyId) return <p className="text-sm text-muted-foreground">{pageText("chooseACompanyToSeeItsDecisions_3e9590")}</p>;
   return <LayoutGroup id="coordinator-decisions"><section className="coordinator-needs-you mx-auto w-full max-w-4xl space-y-6" aria-label={pageText("inbox_44caf7")}>
     {isMobile ? <Sheet open={historyOpen} onOpenChange={open => { if (!open) closeHistory(); }}>
       <SheetContent side="bottom" aria-describedby={undefined} className="mobile-task-side-panel inset-0 h-dvh max-h-dvh w-full max-w-none gap-0 border-0 p-0 pt-(--sz-safe-top) pb-(--sz-safe-bottom)">
@@ -212,16 +213,16 @@ export function CoordinatorNeedsYou() {
       </SheetContent>
     </Sheet> : null}
     <header className="flex items-center justify-between gap-3"><h1 className="text-2xl font-medium">{pageText("inbox_44caf7")}</h1><Button variant="ghost" onClick={showHistory}><History className="size-4" />{pageText("decisionHistory_628652")}</Button></header>
-    <div data-canonical-toolbar="coordinator-decisions" role="toolbar" aria-label="Decisions controls" className="flex flex-wrap items-center gap-2">
-      <ToolbarSearch query={query} onQueryChange={setQuery} label={pageText("searchDecisions_b5f1fd")} placeholder="Search decisions or task IDs…" />
-      <NativeSelect aria-label="Filter decisions by agent" value={agentFilter} onChange={(event) => setAgentFilter(event.target.value)} className="w-auto"><option value="">All agents</option>{(agentQuery.data ?? []).map((agent) => <option key={agent.id} value={agent.id}>{agent.name}</option>)}</NativeSelect>
-      <NativeSelect aria-label="Filter decisions by project" value={projectFilter} onChange={(event) => setProjectFilter(event.target.value)} className="w-auto"><option value="">All projects</option>{projects.map(([id, name]) => <option key={id} value={id}>{name}</option>)}</NativeSelect>
-      <NativeSelect aria-label="Group decisions" value={groupBy} onChange={(event) => setGroupBy(event.target.value as Group)} className="w-auto"><option value="none">No grouping</option><option value="task">By task</option><option value="agent">By agent</option><option value="project">By project</option></NativeSelect>
-      <NativeSelect aria-label="Sort decisions" value={sort} onChange={(event) => setSort(event.target.value as typeof sort)} className="w-auto"><option value="newest">Newest first</option><option value="oldest">Oldest first</option></NativeSelect>
+    <div data-canonical-toolbar="coordinator-decisions" role="toolbar" aria-label={pageText("decisionsControls_250096")} className="flex flex-wrap items-center gap-2">
+      <ToolbarSearch query={query} onQueryChange={setQuery} label={pageText("searchDecisions_b5f1fd")} placeholder={pageText("searchDecisionsOrTaskIDs_9f168b")} />
+      <NativeSelect aria-label={pageText("filterDecisionsByAgent_92f85f")} value={agentFilter} onChange={(event) => setAgentFilter(event.target.value)} className="w-auto"><option value="">{pageText("allAgents_b94d6c")}</option>{(agentQuery.data ?? []).map((agent) => <option key={agent.id} value={agent.id}>{agent.name}</option>)}</NativeSelect>
+      <NativeSelect aria-label={pageText("filterDecisionsByProject_692c7f")} value={projectFilter} onChange={(event) => setProjectFilter(event.target.value)} className="w-auto"><option value="">{pageText("allProjects_403b21")}</option>{projects.map(([id, name]) => <option key={id} value={id}>{name}</option>)}</NativeSelect>
+      <NativeSelect aria-label={pageText("groupDecisions_78d3f6")} value={groupBy} onChange={(event) => setGroupBy(event.target.value as Group)} className="w-auto"><option value="none">{pageText("noGrouping_a0d021")}</option><option value="task">{pageText("byTask_f00aec")}</option><option value="agent">{pageText("byAgent_465814")}</option><option value="project">{pageText("byProject_41c423")}</option></NativeSelect>
+      <NativeSelect aria-label={pageText("sortDecisions_67cee6")} value={sort} onChange={(event) => setSort(event.target.value as typeof sort)} className="w-auto"><option value="newest">{pageText("newestFirst_f5ec77")}</option><option value="oldest">{pageText("oldestFirst_6a99c6")}</option></NativeSelect>
     </div>
     {feedWaiting ? <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />{pageText("loadingDecisions_2eb515")}</p> : null}
-    {(feedView.kind === "error") ? <div role="alert" className="space-y-2"><p className="text-sm">Decisions could not be loaded.</p><Button variant="outline" onClick={() => void feed.refetch()}>{translateUi("interfaceCopy.retry")}</Button></div> : null}
-    {!feedWaiting && !(feedView.kind === "error") && filtered.length === 0 ? <div className="space-y-3 py-8 text-center"><p className="text-sm text-muted-foreground">{filtersActive && !visibleRecentItems.length ? "No decisions match these filters." : pendingItems.length ? "No open decisions match these filters." : "You're caught up."}</p><Button variant="ghost" onClick={showHistory}>Open decision history<ArrowUpRight className="size-4" /></Button></div> : null}
+    {(feedView.kind === "error") ? <div role="alert" className="space-y-2"><p className="text-sm">{pageText("decisionsCouldNotBeLoaded_179038")}</p><Button variant="outline" onClick={() => void feed.refetch()}>{translateUi("interfaceCopy.retry")}</Button></div> : null}
+    {!feedWaiting && !(feedView.kind === "error") && filtered.length === 0 ? <div className="space-y-3 py-8 text-center"><p className="text-sm text-muted-foreground">{filtersActive && !visibleRecentItems.length ? pageText("noDecisionsMatchTheseFilters_9f9bb2") : pendingItems.length ? pageText("noOpenDecisionsMatchTheseFilters_ef2383") : pageText("youReCaughtUp_708e8b")}</p><Button variant="ghost" onClick={showHistory}>{pageText("openDecisionHistory_af605a")}<ArrowUpRight className="size-4" /></Button></div> : null}
     {groups.map(([label, items]) => <div key={label} className="space-y-4">{label ? <h2 className="text-sm font-medium text-muted-foreground">{label}</h2> : null}{items.map((item) => {
       const issueId = item.relatedIssue?.id ?? String(item.subject.metadata?.issueId ?? "");
       const interaction = item.sourceKind === "issue_thread_interaction" && isInlineResolvable(item) && issueId;
@@ -241,15 +242,15 @@ export function CoordinatorNeedsYou() {
           onResolved(item);
         }} />
           : decision ? <DecisionResolver companyId={selectedCompanyId} decisionId={item.subject.id} originIssue={item.relatedIssue} agentMap={agentMap} onResolved={() => onResolved(item)} />
-          : stalledReview ? <><h2 className="text-lg font-medium">Choose how this task continues</h2><p className="text-sm">This task is still in review with no active reviewer or continuation. Return it to work, request changes, or mark the task done.</p><StalledReviewActions footerSlot={taskLink} issueId={item.subject.id} companyId={selectedCompanyId} reviewPolicy={readIssueReviewPolicyMetadata(item.subject.metadata)} approveLabel="Mark task done" onResolved={() => { void feed.refetch(); void recent.refetch(); }} /></>
-          : <><h2 className="text-lg font-medium">{item.subject.title ?? item.whyNow}</h2><p className="text-sm">{attentionDetailLine(item) ?? item.whyNow}</p><Button disabled={!item.subject.href} onClick={() => { if (item.subject.href) navigate(item.subject.href); }}>Open to review<ArrowUpRight className="size-4" /></Button></>}
+          : stalledReview ? <><h2 className="text-lg font-medium">{pageText("chooseHowThisTaskContinues_6ca863")}</h2><p className="text-sm">{pageText("thisTaskIsStillInReviewWithNo_2002b2")}</p><StalledReviewActions footerSlot={taskLink} issueId={item.subject.id} companyId={selectedCompanyId} reviewPolicy={readIssueReviewPolicyMetadata(item.subject.metadata)} approveLabel="Mark task done" onResolved={() => { void feed.refetch(); void recent.refetch(); }} /></>
+          : <><h2 className="text-lg font-medium">{item.subject.title ?? item.whyNow}</h2><p className="text-sm">{attentionDetailLine(item) ?? attentionReason(item)}</p><Button disabled={!item.subject.href} onClick={() => { if (item.subject.href) navigate(item.subject.href); }}>{pageText("openToReview_7a6098")}<ArrowUpRight className="size-4" /></Button></>}
         {!interaction && !stalledReview ? taskLink : null}
       </article>}
       </CoordinatorTaskMotion>
       </motion.div>;
     })}</div>)}
-    {filtered.length > renderLimit ? <Button variant="outline" onClick={() => setRenderLimit((value) => value + 40)}>Show more decisions</Button> : null}
-    {visibleRecentItems.length ? <section className="space-y-3" aria-label="Recent Decisions"><h2 className="text-sm font-medium text-muted-foreground">Recent Decisions</h2>{recentGroups.map(([label, items]) => <div key={label} className="space-y-3">{label ? <h3 className="text-sm font-medium text-muted-foreground">{label}</h3> : null}{items.map((item) => <motion.div layout={!reducedMotion} layoutId={reducedMotion ? undefined : item.id} transition={{ duration }} key={item.id}><Receipt item={item} onOpen={navigate} /></motion.div>)}</div>)}</section> : null}
-    {(recentView.kind === "error") ? <p role="alert" className="text-sm text-muted-foreground">Recent decisions could not be loaded. <button className="underline" onClick={() => void recent.refetch()}>{translateUi("interfaceCopy.retry")}</button></p> : null}
+    {filtered.length > renderLimit ? <Button variant="outline" onClick={() => setRenderLimit((value) => value + 40)}>{pageText("showMoreDecisions_cfc300")}</Button> : null}
+    {visibleRecentItems.length ? <section className="space-y-3" aria-label={pageText("recentDecisions_5a236b")}><h2 className="text-sm font-medium text-muted-foreground">{pageText("recentDecisions_5a236b")}</h2>{recentGroups.map(([label, items]) => <div key={label} className="space-y-3">{label ? <h3 className="text-sm font-medium text-muted-foreground">{label}</h3> : null}{items.map((item) => <motion.div layout={!reducedMotion} layoutId={reducedMotion ? undefined : item.id} transition={{ duration }} key={item.id}><Receipt item={item} onOpen={navigate} /></motion.div>)}</div>)}</section> : null}
+    {(recentView.kind === "error") ? <p role="alert" className="text-sm text-muted-foreground">{pageText("recentDecisionsCouldNotBeLoaded_0b1a61") + " "}<button className="underline" onClick={() => void recent.refetch()}>{translateUi("interfaceCopy.retry")}</button></p> : null}
   </section></LayoutGroup>;
 }

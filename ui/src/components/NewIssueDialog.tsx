@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useTranslation } from "@/i18n";
@@ -1539,14 +1540,14 @@ function AccountNewIssueDialog({ ignoreDefaults }: { ignoreDefaults: boolean }) 
                   <>
                     {parentPrivacyUnresolved ? (
                       <div role={parentPrivacyError ? "alert" : "status"} className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
-                        <span>{parentPrivacyError ? "Couldn't check parent access." : "Checking parent access…"}</span>
+                        <span>{parentPrivacyError ? pageText("couldnTCheckParentAccess_7bbc6e") : pageText("checkingParentAccess_c8c5da")}</span>
                         {parentPrivacyError ? <Button variant="ghost" size="sm" onClick={() => void refetchParentPrivacy()}>{t("common.retry")}</Button> : null}
                       </div>
                     ) : null}
                     {worktreeSelectionIncomplete && !worktreesLoading ? (
                       <p role="alert" className="mb-2 text-xs text-destructive">
-                        {worktreesError ? "Couldn't check the selected worktree. Retry in Worktrees or choose New worktree."
-                          : "The selected worktree is no longer available. Choose another worktree or start a new one."}
+                        {worktreesError ? pageText("couldnTCheckTheSelectedWorktreeRetryIn_1dab21")
+                          : pageText("theSelectedWorktreeIsNoLongerAvailableChoose_097859")}
                       </p>
                     ) : null}
                     {stagedDocuments.length > 0 || stagedAttachments.length > 0 ? (
@@ -1634,10 +1635,8 @@ function AccountNewIssueDialog({ ignoreDefaults }: { ignoreDefaults: boolean }) 
                         className="mx-4 mb-2 flex items-start gap-2 rounded-md border border-amber-300/70 bg-amber-50/90 px-3 py-2 text-xs text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-100"
                       >
                         <Flag className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-300" />
-                        <span className="leading-snug">
-                          Assigning implies executable intent - leave status as{" "}
-                          <span className="font-medium">{pageText("backlog_1fe3af")}</span> only to deliberately park this. The assignee will
-                          not be woken until status moves to <span className="font-medium">Todo</span> or{" "}
+                        <span className="leading-snug">{pageText("assigningImpliesExecutableIntentLeaveStatusAs_d93386")}{" "}
+                          <span className="font-medium">{pageText("backlog_1fe3af")}</span>{" " + pageText("onlyToDeliberatelyParkThisTheAssigneeWill_d5ad47") + " "}<span className="font-medium">{pageText("todo_fdebf6")}</span>{" " + pageText("or_175835")}{" "}
                           <span className="font-medium">{translateUi("interfaceCopy.inProgress")}</span>.
                         </span>
                       </div>
@@ -1646,13 +1645,9 @@ function AccountNewIssueDialog({ ignoreDefaults }: { ignoreDefaults: boolean }) 
                     {selectedAssigneeAgent?.status === "paused" ? (
                       <div data-testid="new-issue-paused-assignee-note" className="mx-4 mb-2">
                         <InlineBanner tone="warning" icon={PauseCircle} compact>
-                          <span className="font-medium">{selectedAssigneeAgent.name}</span> is paused and will not start
-                          work on this task until it is resumed
-                          {selectedAssigneeAgent.pauseReason === "import"
-                            ? " — it arrived paused from an organization import"
-                            : ""}
-                          . You can resume it from the task page after creating the task.
-                        </InlineBanner>
+                          <span className="font-medium">{selectedAssigneeAgent.name}</span>{" " + pageText("isPausedAndWillNotStartWorkOn_76bb56")}{selectedAssigneeAgent.pauseReason === "import"
+                            ? " " + pageText("itArrivedPausedFromAnOrganizationImport_296f59")
+                            : ""}{pageText("youCanResumeItFromTheTaskPage_6f3678")}</InlineBanner>
                       </div>
                     ) : null}
 
@@ -1662,10 +1657,7 @@ function AccountNewIssueDialog({ ignoreDefaults }: { ignoreDefaults: boolean }) 
                         className="mx-4 mb-2 flex items-start gap-2 rounded-md border border-amber-300/70 bg-amber-50/90 px-3 py-2 text-xs text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-100"
                       >
                         <ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-300" />
-                        <span className="leading-snug">
-                          Low-trust review agent. It can only act inside its assigned review boundary; task, project, or
-                          run policy defines the concrete scope.
-                        </span>
+                        <span className="leading-snug">{pageText("lowTrustReviewAgentItCanOnlyAct_5e219d")}</span>
                       </div>
                     ) : null}
 
@@ -1689,7 +1681,7 @@ function AccountNewIssueDialog({ ignoreDefaults }: { ignoreDefaults: boolean }) 
                       disabled={createIssue.isPending}
                       triggerDataSlot="new-issue-compact-control"
                       contentStyle={entityPickerViewportStyle}
-                      noneLabel="No project"
+                      noneLabel={interfaceNotice("interface:noProject_c326b7")}
                       noneAtTop
                       searchPlaceholder={pageText("searchProjects_469d78")}
                       emptyMessage={t("tasks.noProjects")}

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type { ProviderTraceMetadata } from "@paperclipai/shared";
 import { Bug, CircleOff } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,7 @@ export function ProviderTraceStatusBadge({
   showOff?: boolean;
   className?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const status = trace?.status;
   const expired = trace
     ? new Date(trace.expiresAt).getTime() <= Date.now()
@@ -72,8 +74,8 @@ export function ProviderTraceStatusBadge({
         trace
           ? `${trace.frameCount} frames · ${trace.byteCount} bytes · expires ${new Date(trace.expiresAt).toLocaleString()}`
           : requested
-            ? "This run requested sensitive provider-frame capture."
-            : "Raw provider-frame capture was disabled for this run."
+            ? pageText("thisRunRequestedSensitiveProviderFrameCapture_c3fa0d")
+            : pageText("rawProviderFrameCaptureWasDisabledForThis_158df7")
       }
     >
       <Icon className="h-3 w-3" />

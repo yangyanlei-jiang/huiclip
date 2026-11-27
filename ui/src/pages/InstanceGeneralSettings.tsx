@@ -1,3 +1,5 @@
+import { controlText } from "@/i18n/controls";
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
@@ -36,8 +38,8 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
   useEffect(() => {
     if (embedded) return;
     setBreadcrumbs([
-      { label: "Settings", href: "/company/settings" },
-      { label: "General" },
+      { label: interfaceNotice("interface:settings_c7f73b"), href: "/company/settings" },
+      { label: interfaceNotice("interface:general_9239ee") },
     ]);
   }, [embedded, setBreadcrumbs]);
 
@@ -68,7 +70,7 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
   });
 
   if (generalQuery.isLoading || generalView.kind === "reconnecting" || healthQuery.isLoading) {
-    return <div className="text-sm text-muted-foreground">Loading general settings...</div>;
+    return <div className="text-sm text-muted-foreground">{pageText("loadingGeneralSettings_4e77cd")}</div>;
   }
 
   if (generalView.kind === "error") {
@@ -112,9 +114,7 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
             <SlidersHorizontal className="h-5 w-5 text-muted-foreground" />
             <h1 className="text-lg font-semibold">{translateUi("interfaceCopy.general")}</h1>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Configure instance-wide preferences
-            {visibleTopics.length > 0 ? <> including {topicSummary}</> : null}.
+          <p className="text-sm text-muted-foreground">{pageText("configureInstanceWidePreferences_12fb89")}{visibleTopics.length > 0 ? <>{" " + pageText("including_d358da") + " "}{topicSummary}</> : null}.
           </p>
         </div>
       ) : null}
@@ -129,7 +129,7 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
       <section>
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-semibold">Deployment and auth</h2>
+            <h2 className="text-sm font-semibold">{pageText("deploymentAndAuth_ff2496")}</h2>
             <ModeBadge
               deploymentMode={healthQuery.data?.deploymentMode}
               deploymentExposure={healthQuery.data?.deploymentExposure}
@@ -137,23 +137,23 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
           </div>
           <div className="text-sm text-muted-foreground">
             {healthQuery.data?.deploymentMode === "local_trusted"
-              ? "Local trusted mode is optimized for a local operator. Browser requests run as local board context and no sign-in is required."
+              ? pageText("localTrustedModeIsOptimizedForALocal_dce059")
               : healthQuery.data?.deploymentExposure === "public"
-                ? "Authenticated public mode requires sign-in for board access and is intended for public URLs."
-                : "Authenticated private mode requires sign-in and is intended for LAN, VPN, or other private-network deployments."}
+                ? pageText("authenticatedPublicModeRequiresSignInForBoard_1e095c")
+                : pageText("authenticatedPrivateModeRequiresSignInAndIs_e932bd")}
           </div>
           <div className="grid gap-3 md:grid-cols-3">
             <StatusBox
-              label="Auth readiness"
-              value={healthQuery.data?.authReady ? "Ready" : "Not ready"}
+              label={pageText("authReadiness_460133")}
+              value={controlText(healthQuery.data?.authReady ? "Ready" : "Not ready")}
             />
             <StatusBox
-              label="Bootstrap status"
-              value={healthQuery.data?.bootstrapStatus === "bootstrap_pending" ? "Setup required" : "Ready"}
+              label={pageText("bootstrapStatus_4a8a22")}
+              value={controlText(healthQuery.data?.bootstrapStatus === "bootstrap_pending" ? "Setup required" : "Ready")}
             />
             <StatusBox
-              label="Bootstrap invite"
-              value={healthQuery.data?.bootstrapInviteActive ? "Active" : "None"}
+              label={pageText("bootstrapInvite_6411c5")}
+              value={controlText(healthQuery.data?.bootstrapInviteActive ? "Active" : "None")}
             />
           </div>
         </div>
@@ -164,18 +164,14 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
       <section>
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1.5">
-            <h2 className="text-sm font-semibold">Censor username in logs</h2>
-            <p className="max-w-2xl text-sm text-muted-foreground">
-              Hide the username segment in home-directory paths and similar operator-visible log output. Standalone
-              username mentions outside of paths are not yet masked in the live transcript view. This is off by
-              default.
-            </p>
+            <h2 className="text-sm font-semibold">{pageText("censorUsernameInLogs_7478bd")}</h2>
+            <p className="max-w-2xl text-sm text-muted-foreground">{pageText("hideTheUsernameSegmentInHomeDirectoryPaths_ae0428")}</p>
           </div>
           <ToggleSwitch
             checked={censorUsernameInLogs}
             onCheckedChange={() => updateGeneralMutation.mutate({ censorUsernameInLogs: !censorUsernameInLogs })}
             disabled={updateGeneralMutation.isPending || signOutMutation.isPending}
-            aria-label="Toggle username log censoring"
+            aria-label={pageText("toggleUsernameLogCensoring_fd1c77")}
           />
         </div>
       </section>
@@ -185,16 +181,12 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
       <section>
         <div className="space-y-5">
           <div className="space-y-1.5">
-            <h2 className="text-sm font-semibold">Backup retention</h2>
-            <p className="max-w-2xl text-sm text-muted-foreground">
-              Configure how long automatic database backups are retained. Backups run roughly
-              every hour and are compressed with gzip. Within the daily window all backups are
-              kept; beyond that, one backup per week and one per month are preserved.
-            </p>
+            <h2 className="text-sm font-semibold">{pageText("backupRetention_893a97")}</h2>
+            <p className="max-w-2xl text-sm text-muted-foreground">{pageText("configureHowLongAutomaticDatabaseBackupsAreRetained_9f12fa")}</p>
           </div>
 
           <div className="space-y-1.5">
-            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Daily</h3>
+            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{pageText("daily_728298")}</h3>
             <div className="flex flex-wrap gap-2">
               {DAILY_RETENTION_PRESETS.map((days) => {
                 const active = backupRetention.dailyDays === days;
@@ -215,7 +207,7 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
                       })
                     }
                   >
-                    <div className="text-sm font-medium">{days} days</div>
+                    <div className="text-sm font-medium">{days}{" " + pageText("days_5548ae")}</div>
                   </button>
                 );
               })}
@@ -223,7 +215,7 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
           </div>
 
           <div className="space-y-1.5">
-            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Weekly</h3>
+            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{pageText("weekly_158f3d")}</h3>
             <div className="flex flex-wrap gap-2">
               {WEEKLY_RETENTION_PRESETS.map((weeks) => {
                 const active = backupRetention.weeklyWeeks === weeks;
@@ -253,7 +245,7 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
           </div>
 
           <div className="space-y-1.5">
-            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Monthly</h3>
+            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{pageText("monthly_d31edb")}</h3>
             <div className="flex flex-wrap gap-2">
               {MONTHLY_RETENTION_PRESETS.map((months) => {
                 const active = backupRetention.monthlyMonths === months;
@@ -289,11 +281,8 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
       <section>
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <h2 className="text-sm font-semibold">AI feedback sharing</h2>
-            <p className="max-w-2xl text-sm text-muted-foreground">
-              Control whether thumbs up and thumbs down votes can send the voted AI output to
-              Paperclip Labs. Votes are always saved locally.
-            </p>
+            <h2 className="text-sm font-semibold">{pageText("aiFeedbackSharing_556540")}</h2>
+            <p className="max-w-2xl text-sm text-muted-foreground">{pageText("controlWhetherThumbsUpAndThumbsDownVotes_fd9fa8")}</p>
             {FEEDBACK_TERMS_URL ? (
               <a
                 href={FEEDBACK_TERMS_URL}
@@ -304,10 +293,7 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
             ) : null}
           </div>
           {feedbackDataSharingPreference === "prompt" ? (
-            <div className="rounded-lg bg-accent/20 px-3 py-2 text-sm text-muted-foreground">
-              No default is saved yet. The next thumbs up or thumbs down choice will ask once and
-              then save the answer here.
-            </div>
+            <div className="rounded-lg bg-accent/20 px-3 py-2 text-sm text-muted-foreground">{pageText("noDefaultIsSavedYetTheNextThumbs_abb5e4")}</div>
           ) : null}
           <div className="flex flex-wrap gap-2">
             {[
@@ -342,21 +328,18 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
                     })
                   }
                 >
-                  <div className="text-sm font-medium">{option.label}</div>
+                  <div className="text-sm font-medium">{controlText(option.label)}</div>
                   <div className="text-xs text-muted-foreground">
-                    {option.description}
+                    {controlText(option.description)}
                   </div>
                 </button>
               );
             })}
           </div>
-          <p className="text-xs text-muted-foreground">
-            To retest the first-use prompt in local dev, remove the{" "}
-            <code>feedbackDataSharingPreference</code> key from the{" "}
-            <code>instance_settings.general</code> JSON row for this instance, or set it back to{" "}
-            <code>"prompt"</code>. Unset and <code>"prompt"</code> both mean no default has been
-            chosen yet.
-          </p>
+          <p className="text-xs text-muted-foreground">{pageText("toRetestTheFirstUsePromptInLocal_01c749")}{" "}
+            <code>feedbackDataSharingPreference</code>{" " + pageText("keyFromThe_792173")}{" "}
+            <code>instance_settings.general</code>{" " + pageText("jsonRowForThisInstanceOrSetIt_2cfcf5")}{" "}
+            <code>"prompt"</code>{pageText("unsetAnd_d7e779") + " "}<code>"prompt"</code>{" " + pageText("bothMeanNoDefaultHasBeenChosenYet_68ec32")}</p>
         </div>
       </section>
 
@@ -367,9 +350,7 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1.5">
             <h2 className="text-sm font-semibold">{pageText("signOut_dc1649")}</h2>
-            <p className="max-w-2xl text-sm text-muted-foreground">
-              Sign out of this Paperclip instance. You will be redirected to the login page.
-            </p>
+            <p className="max-w-2xl text-sm text-muted-foreground">{pageText("signOutOfThisPaperclipInstanceYouWill_9d9eea")}</p>
           </div>
           <Button
             variant="outline"

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
 import { ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ export function HoneycombRunLink({
   runId: string;
   enabled: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [href, setHref] = useState<string | null>(null);
 
   useEffect(() => {
@@ -42,11 +44,9 @@ export function HoneycombRunLink({
         href={href}
         target="_blank"
         rel="noreferrer"
-        title="Open this run's task.run trace query in Honeycomb"
+        title={pageText("openThisRunSTaskRunTraceQuery_d0e4f6")}
       >
-        <ExternalLink />
-        View in Honeycomb
-      </a>
+        <ExternalLink />{pageText("viewInHoneycomb_5c4572")}</a>
     </Button>
   );
 }

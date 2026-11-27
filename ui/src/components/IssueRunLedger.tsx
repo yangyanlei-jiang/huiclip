@@ -1,3 +1,5 @@
+import { t as interfaceNotice } from "@/i18n";
+import { t as translateDynamic } from "../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
@@ -511,7 +513,7 @@ export function IssueRunLedger({
         error instanceof ApiError ? String(error.status) : "error";
       setWatchdogDecisionError(message);
       pushToast({
-        title: "Watchdog decision not recorded",
+        title: interfaceNotice("interface:watchdogDecisionNotRecorded_b00127"),
         body: message,
         tone: "error",
         dedupeKey: `watchdog-decision:${issueId}:${dedupeSuffix}`,
@@ -551,11 +553,11 @@ export function IssueRunLedger({
     },
     onError: (error) =>
       pushToast({
-        title: "Trace re-run not started",
+        title: interfaceNotice("interface:traceReRunNotStarted_eb2560"),
         body:
           error instanceof Error
             ? error.message
-            : "Paperclip could not start the trace re-run.",
+            : interfaceNotice("interface:paperclipCouldNotStartTheTraceReRun_5fe618"),
         tone: "error",
         dedupeKey: `provider-trace-rerun:${issueId}`,
       }),
@@ -666,34 +668,30 @@ export function IssueRunLedgerContent({
   }, [activityEvents, canRenderActivityEvents, ledgerRuns]);
 
   return (
-    <section className="space-y-3" aria-label="Task run ledger">
+    <section className="space-y-3" aria-label={pageText("taskRunLedger_77a2e8")}>
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0">
-          <h3 className="text-sm font-medium text-muted-foreground">
-            Run ledger
-          </h3>
+          <h3 className="text-sm font-medium text-muted-foreground">{pageText("runLedger_f5a1cb")}</h3>
           <p className="text-xs text-muted-foreground">
             {latestRun
               ? runSummary(latestRun, agentMap)
               : issueStatus === "in_progress"
-                ? "Waiting for the first run record."
-                : "No runs linked yet."}
+                ? pageText("waitingForTheFirstRunRecord_6d31aa")
+                : pageText("noRunsLinkedYet_4d7f01")}
           </p>
         </div>
         {latestRun ? (
           <Link
             to={`/agents/${latestRun.agentId}/runs/${latestRun.runId}`}
             className="shrink-0 rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:text-foreground"
-          >
-            Latest run
-          </Link>
+          >{pageText("latestRun_885944")}</Link>
         ) : null}
       </div>
 
       {children.total > 0 ? (
         <div className="rounded-md border border-border/70 px-3 py-2">
           <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span className="font-medium text-foreground">Child work</span>
+            <span className="font-medium text-foreground">{pageText("childWork_b50bb7")}</span>
             <span className="text-muted-foreground">
               {children.active.length > 0
                 ? `${children.active.length} active, ${children.done} done, ${children.cancelled} cancelled`
@@ -737,13 +735,12 @@ export function IssueRunLedgerContent({
         >
           <p className="font-medium">
             {latestSilentRun.outputSilence.level === "critical"
-              ? "Critical output silence"
-              : "Output silence watchdog warning"}
+              ? pageText("criticalOutputSilence_f6d1e0")
+              : pageText("outputSilenceWatchdogWarning_5f2bed")}
           </p>
-          <p className="mt-1">
-            Latest active run has been silent for{" "}
+          <p className="mt-1">{pageText("latestActiveRunHasBeenSilentFor_53a195")}{" "}
             {formatSilenceAge(latestSilentRun.outputSilence.silenceAgeMs) ??
-              "an extended period"}
+              pageText("anExtendedPeriod_26ab47")}
             .
             {latestSilentRun.outputSilence.evaluationIssueIdentifier ? (
               <>
@@ -753,15 +750,13 @@ export function IssueRunLedgerContent({
                   className="font-medium underline underline-offset-2"
                 >
                   {latestSilentRun.outputSilence.evaluationIssueIdentifier}
-                </Link>{" "}
-                for recovery context.
-              </>
+                </Link>{" "}{pageText("forRecoveryContext_6c5fd0")}</>
             ) : null}
           </p>
           <p className="mt-1">
             {latestSilentRun.outputSilence.evaluationIssueIdentifier
-              ? "This signal is informational. Paperclip did not create new delegated recovery work."
-              : "This signal is informational. Paperclip did not create or assign a recovery task."}
+              ? pageText("thisSignalIsInformationalPaperclipDidNotCreate_446e5b")
+              : pageText("thisSignalIsInformationalPaperclipDidNotCreate_442499")}
           </p>
           {onWatchdogDecision && canRecordWatchdogDecisions ? (
             <div className="mt-2 flex flex-wrap gap-1.5">
@@ -777,9 +772,7 @@ export function IssueRunLedgerContent({
                   })
                 }
                 disabled={pendingWatchdogDecision != null}
-              >
-                Continue monitoring
-              </button>
+              >{pageText("continueMonitoring_a217d1")}</button>
               <button
                 type="button"
                 className="rounded-md border border-border bg-background/80 px-2 py-1 text-(length:--text-micro) text-foreground hover:bg-background"
@@ -796,9 +789,7 @@ export function IssueRunLedgerContent({
                   })
                 }
                 disabled={pendingWatchdogDecision != null}
-              >
-                Snooze 1h
-              </button>
+              >{pageText("snooze1h_6fd6cd")}</button>
               <button
                 type="button"
                 className="rounded-md border border-border bg-background/80 px-2 py-1 text-(length:--text-micro) text-foreground hover:bg-background"
@@ -812,9 +803,7 @@ export function IssueRunLedgerContent({
                   })
                 }
                 disabled={pendingWatchdogDecision != null}
-              >
-                Mark false positive
-              </button>
+              >{pageText("markFalsePositive_be1889")}</button>
             </div>
           ) : null}
           {watchdogDecisionError ? (
@@ -828,8 +817,8 @@ export function IssueRunLedgerContent({
       {feedItems.length === 0 ? (
         <div className="rounded-md border border-dashed border-border px-3 py-3 text-sm text-muted-foreground">
           {renderActivityEvent
-            ? "Runs and activity will appear here once this task has history."
-            : "Historical runs without liveness metadata will appear here once linked to this task."}
+            ? pageText("runsAndActivityWillAppearHereOnceThis_d2c509")
+            : pageText("historicalRunsWithoutLivenessMetadataWillAppearHere_b5d61f")}
         </div>
       ) : (
         <div className="space-y-1.5">
@@ -872,14 +861,13 @@ export function IssueRunLedgerContent({
                   >
                     {run.runId.slice(0, 8)}
                   </Link>
-                  <span>by {agentName}</span>
+                  <span>{pageText("by_408158") + " "}{agentName}</span>
                   {onBehalfOfLabel ? (
                     <span
                       data-testid="run-on-behalf-of"
                       className="min-w-0 max-w-full truncate text-muted-foreground"
-                      title={`Acting on behalf of ${onBehalfOfLabel}`}
-                    >
-                      on behalf of{" "}
+                      title={translateDynamic("dynamic:actingOnBehalfOf", { value1: onBehalfOfLabel })}
+                    >{pageText("onBehalfOf_308287")}{" "}
                       <span className="text-foreground">{onBehalfOfLabel}</span>
                     </span>
                   ) : null}
@@ -905,9 +893,7 @@ export function IssueRunLedgerContent({
                     {liveness.label}
                   </span>
                   {exhausted ? (
-                    <span className="rounded-md border border-red-500/30 bg-red-500/10 px-1.5 py-0.5 text-(length:--text-micro) font-medium text-red-700 dark:text-red-300">
-                      Exhausted
-                    </span>
+                    <span className="rounded-md border border-red-500/30 bg-red-500/10 px-1.5 py-0.5 text-(length:--text-micro) font-medium text-red-700 dark:text-red-300">{pageText("exhausted_64566a")}</span>
                   ) : null}
                   {continuation ? (
                     <span className="text-(length:--text-micro) text-muted-foreground">
@@ -943,18 +929,16 @@ export function IssueRunLedgerContent({
                     type="button"
                     className="rounded-md border border-border px-1.5 py-0.5 text-(length:--text-micro) text-foreground hover:bg-accent/40"
                     onClick={() => setInspectedRun(run)}
-                  >
-                    Inspect run
-                  </button>
+                  >{pageText("inspectRun_24265c")}</button>
                 </div>
 
                 <div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-3">
                   <div className="min-w-0">
-                    <span className="text-foreground">Elapsed</span>{" "}
+                    <span className="text-foreground">{pageText("elapsed_5fc977")}</span>{" "}
                     {duration ?? pageText("unknown_50d8b4")}
                   </div>
                   <div className="min-w-0">
-                    <span className="text-foreground">Last useful action</span>{" "}
+                    <span className="text-foreground">{pageText("lastUsefulAction_39e32a")}</span>{" "}
                     {lastUsefulActionLabel(run)}
                   </div>
                   <div className="min-w-0">
@@ -970,8 +954,7 @@ export function IssueRunLedgerContent({
                       <p>{retryState.secondary}</p>
                     ) : null}
                     {retryState.retryOfRunId ? (
-                      <p>
-                        Retry of{" "}
+                      <p>{pageText("retryOf_dda584")}{" "}
                         <Link
                           to={`/agents/${run.agentId}/runs/${retryState.retryOfRunId}`}
                           className="font-mono text-foreground hover:underline"
@@ -1002,8 +985,7 @@ export function IssueRunLedgerContent({
 
                 {nextAction ? (
                   <div className="min-w-0 rounded-md bg-accent/40 px-2 py-1.5 text-xs leading-5">
-                    <span className="font-medium text-foreground">
-                      Next action:{" "}
+                    <span className="font-medium text-foreground">{pageText("nextAction_537761")}{" "}
                     </span>
                     <span className="break-words text-muted-foreground">
                       {nextAction}
@@ -1015,8 +997,7 @@ export function IssueRunLedgerContent({
           })}
           {feedItems.length > 20 ? (
             <div className="px-3 py-2 text-xs text-muted-foreground">
-              {feedItems.length - 20} older items not shown
-            </div>
+              {feedItems.length - 20}{" " + pageText("olderItemsNotShown_eed271")}</div>
           ) : null}
         </div>
       )}

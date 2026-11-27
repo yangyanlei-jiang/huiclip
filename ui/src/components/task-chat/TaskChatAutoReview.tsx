@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { ShieldCheck } from "lucide-react";
 import type { TaskChatAutoReview } from "./task-chat-model";
 
@@ -7,6 +8,7 @@ function riskText(review: TaskChatAutoReview): string | undefined {
 
 /** Small trailing mark on a tool row that ran after an automatic approval review. */
 export function AutoApprovedBadge({ review }: { review: TaskChatAutoReview }) {
+  const { t: pageText } = usePageTranslation("interface");
   const risk = riskText(review);
   return (
     <span
@@ -15,21 +17,21 @@ export function AutoApprovedBadge({ review }: { review: TaskChatAutoReview }) {
       data-testid="task-chat-auto-approved-badge"
     >
       <ShieldCheck className="size-3" aria-hidden="true" />
-      <span>auto-approved</span>
+      <span>{pageText("autoApproved_3af6a1")}</span>
     </span>
   );
 }
 
 /** The review record shown when the approved tool row is expanded. */
 export function AutoReviewDetail({ review }: { review: TaskChatAutoReview }) {
+  const { t: pageText } = usePageTranslation("interface");
   const facts = [riskText(review), review.userConsent ? `${review.userConsent} user authorization` : undefined]
     .filter(Boolean)
     .join(" · ");
   return (
     <div className="flex min-w-0 flex-col gap-0.5" data-testid="task-chat-auto-review-detail">
       <p className="flex items-center gap-1.5 font-medium text-foreground">
-        <ShieldCheck className="size-3.5" aria-hidden="true" />
-        Auto-review approved{facts ? <span className="font-normal text-muted-foreground">· {facts}</span> : null}
+        <ShieldCheck className="size-3.5" aria-hidden="true" />{pageText("autoReviewApproved_57b0d4")}{facts ? <span className="font-normal text-muted-foreground">· {facts}</span> : null}
       </p>
       {review.rationale ? <p className="whitespace-pre-wrap break-words">{review.rationale}</p> : null}
     </div>

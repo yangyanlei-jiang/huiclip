@@ -300,9 +300,7 @@ export function OnboardingChat({
                 </span>
                 {isPlan && (
                   <span className="inline-flex items-center gap-0.5 text-(length:--text-nano) text-green-600 dark:text-green-400 font-medium">
-                    <CheckCircle2 className="h-3 w-3" />
-                    Hiring plan detected
-                  </span>
+                    <CheckCircle2 className="h-3 w-3" />{pageText("hiringPlanDetected_3eb4ed")}</span>
                 )}
               </div>
               <div className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
@@ -350,16 +348,11 @@ export function OnboardingChat({
               <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
               <div>
                 <p className="text-sm font-medium">
-                  {agentName} has prepared a hiring plan
-                </p>
-                <p className="text-(length:--text-micro) text-muted-foreground">
-                  Review it, make edits, then approve.
-                </p>
+                  {agentName}{" " + pageText("hasPreparedAHiringPlan_2f6224")}</p>
+                <p className="text-(length:--text-micro) text-muted-foreground">{pageText("reviewItMakeEditsThenApprove_1c6443")}</p>
               </div>
             </div>
-            <Button size="sm" onClick={onReviewPlan}>
-              Review plan
-              <ArrowRight className="h-3.5 w-3.5 ml-1" />
+            <Button size="sm" onClick={onReviewPlan}>{pageText("reviewPlan_c6cfc0")}<ArrowRight className="h-3.5 w-3.5 ml-1" />
             </Button>
           </div>
         </div>
@@ -409,6 +402,7 @@ function WelcomeMessage({
   onDiscuss: () => void;
   onStart: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [phase, setPhase] = useState<"waking" | "composing" | "message" | "chips">("waking");
 
   useEffect(() => {
@@ -431,15 +425,11 @@ function WelcomeMessage({
               {agentName}
             </span>
           </div>
-          <p>
-            Hi! Thanks for bringing me on to lead <strong>{companyName}</strong>.
+          <p>{pageText("hiThanksForBringingMeOnToLead_4bf3a6") + " "}<strong>{companyName}</strong>.
           </p>
-          <p className="mt-1">
-            Our mission is: <em>{companyGoal}</em>
+          <p className="mt-1">{pageText("ourMissionIs_cac225") + " "}<em>{companyGoal}</em>
           </p>
-          <p className="mt-1">
-            I'm ready to put together a plan for who we should bring on. Want me to get started?
-          </p>
+          <p className="mt-1">{pageText("iMReadyToPutTogetherAPlan_48f37f")}</p>
         </div>
       )}
 
@@ -449,15 +439,11 @@ function WelcomeMessage({
           <button
             className="rounded-full border border-border px-3 py-1 text-xs hover:bg-accent/50 transition-colors text-muted-foreground hover:text-foreground"
             onClick={onDiscuss}
-          >
-            Let's discuss first
-          </button>
+          >{pageText("letSDiscussFirst_36bdfd")}</button>
           <button
             className="rounded-full border border-foreground bg-foreground text-background px-3 py-1 text-xs hover:opacity-90 transition-opacity"
             onClick={onStart}
-          >
-            Yes, get started!
-          </button>
+          >{pageText("yesGetStarted_4f5049")}</button>
         </div>
       )}
 

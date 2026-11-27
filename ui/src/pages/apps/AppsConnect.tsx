@@ -59,7 +59,7 @@ export function AppsConnect({ byoOnly = false, credentialSource = "paperclip_vau
   useEffect(() => {
     if (hasSavedComposio) navigate(`/apps?source=composio&targetToolkit=${encodeURIComponent(toolkit!)}`, { replace: true });
   }, [hasSavedComposio, toolkit, navigate]);
-  if (reuseComposio && selectedCompanyId && (saved.isPending || savedView.kind === "reconnecting" || hasSavedComposio)) return <p role="status" className="text-sm text-muted-foreground">Checking saved Composio accounts…</p>;
+  if (reuseComposio && selectedCompanyId && (saved.isPending || savedView.kind === "reconnecting" || hasSavedComposio)) return <p role="status" className="text-sm text-muted-foreground">{pageText("checkingSavedComposioAccounts_3db940")}</p>;
   if (reuseComposio && savedView.kind === "error") return <div className="space-y-3">
     <QueryErrorState error={saved.error} action="load your Composio accounts" onRetry={savedView.retry} retrying={savedView.isFetching} />
     <Button variant="ghost" onClick={() => navigate("/apps")}>{translateUi("interfaceCopy.cancel")}</Button>
@@ -70,18 +70,18 @@ export function AppsConnect({ byoOnly = false, credentialSource = "paperclip_vau
     if (path) navigate(path);
   }
   if (aiLoginId && selectedCompanyId) {
-    if (loginView.kind === "loading" || loginView.kind === "reconnecting") return <p role="status">Loading saved sign-in…</p>;
-    if (!login.data) return <p role="alert">{login.error ? describeError(login.error).body : "This sign-in is unavailable."}</p>;
+    if (loginView.kind === "loading" || loginView.kind === "reconnecting") return <p role="status">{pageText("loadingSavedSignIn_d19479")}</p>;
+    if (!login.data) return <p role="alert">{login.error ? describeError(login.error).body : pageText("thisSignInIsUnavailable_851637")}</p>;
     const { intent, environmentId, connectionId, grantId } = login.data;
-    if (connectionId && grantId) return <div className="space-y-4"><p role="status">This account is connected.</p><Button onClick={() => navigate(`/apps/${connectionId}/permissions`)}>{pageText("viewConnection_8ef81c")}</Button></div>;
+    if (connectionId && grantId) return <div className="space-y-4"><p role="status">{pageText("thisAccountIsConnected_271f11")}</p><Button onClick={() => navigate(`/apps/${connectionId}/permissions`)}>{pageText("viewConnection_8ef81c")}</Button></div>;
     return <AiConnectionCredentialStep key={aiLoginId} companyId={selectedCompanyId} {...intent}
       agentIds={intent.agentIds ?? []} allAgents={intent.allAgents ?? false} initialMethod={intent.method} fixedMethod
       environmentId={environmentId} hideName onCancel={() => navigate("/apps")}
       onComplete={binding => navigate(`/apps/${binding.connectionId}/permissions`)} />;
   }
   if (aiReconnectRequested && (aiAccountsView.kind === "loading" || aiAccountsView.kind === "reconnecting")) return <p role="status">{pageText("loadingConnection_f1e853")}</p>;
-  if (aiReconnectRequested && aiAccountsView.kind === "error") return <p role="alert">Could not load this connection. Refresh to try again.</p>;
-  if (aiReconnectRequested && !aiReconnect) return <p role="alert">This connection is unavailable. Return to Connectors to choose an account.</p>;
+  if (aiReconnectRequested && aiAccountsView.kind === "error") return <p role="alert">{pageText("couldNotLoadThisConnectionRefreshToTry_019f5d")}</p>;
+  if (aiReconnectRequested && !aiReconnect) return <p role="alert">{pageText("thisConnectionIsUnavailableReturnToConnectorsTo_7ec694")}</p>;
   if (selectedCompanyId && (preset || aiReconnect?.routing)) return (
     <AiProviderSetup
       key={reconnectId ?? source}
@@ -95,9 +95,9 @@ export function AppsConnect({ byoOnly = false, credentialSource = "paperclip_vau
     />
   );
   if (source?.startsWith("ai-router-")) {
-    if (gallery.isPending || galleryView.kind === "reconnecting") return <p role="status">Loading connector…</p>;
+    if (gallery.isPending || galleryView.kind === "reconnecting") return <p role="status">{pageText("loadingConnector_717d31")}</p>;
     if (galleryView.kind === "error") return <QueryErrorState error={gallery.error} action="load the connector" onRetry={galleryView.retry} retrying={galleryView.isFetching} />;
-    if (!router) return <p role="alert">This connection pool plugin is unavailable. Enable it in Plugins.</p>;
+    if (!router) return <p role="alert">{pageText("thisConnectionPoolPluginIsUnavailableEnableIt_305262")}</p>;
     return <AiConnectionPoolConnector pluginKey={router.pluginKey} />;
   }
   return <ConnectionSetupFlow byoOnly={byoOnly} credentialSource={credentialSource} host="page"

@@ -1,3 +1,4 @@
+import { controlText } from "@/i18n/controls";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useId, useState, type ReactNode } from "react";
 import { completedActivitySummary } from "./completed-activity-summary";
@@ -147,7 +148,7 @@ function presentation(item: Activity, active: boolean, taskLabel?: string): Acti
     }
     return {
       icon: tool.icon,
-      label: verb,
+      label: controlText(verb),
       target: subject ? (terminal ? `$ ${subject}` : subject) : undefined,
       mono: true,
       running,
@@ -160,7 +161,7 @@ function presentation(item: Activity, active: boolean, taskLabel?: string): Acti
     const running = active && Boolean(item.streaming);
     return {
       icon: Brain,
-      label: running ? "Thinking" : "Thought",
+      label: controlText(running ? "Thinking" : "Thought"),
       target:
         latestReasoningHeadline(item.lines.join("\n")) ??
         item.lines
@@ -250,6 +251,7 @@ function ActivityRowContent({
   active: boolean;
   taskLabel?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const row = presentation(item, active, taskLabel);
   const shimmer = useTaskChatShimmer(item.id);
   if (!row) return null;
@@ -317,8 +319,7 @@ function ActivityRowContent({
                 exitCode === 0 ? "bg-muted text-muted-foreground" : "bg-destructive/10 text-destructive",
               )}
               data-tool-exit-code={exitCode}
-            >
-              exit {exitCode}
+            >{pageText("exit_de3ac2") + " "}{exitCode}
             </span>
           ) : null}
           {durationMs != null ? (
@@ -430,7 +431,7 @@ function ActivityDetailsBody({ item }: { item: Activity }) {
       {item.target ? (
         <p className="break-all font-mono">{item.target}</p>
       ) : null}
-      {item.blockedReason ? <p className="text-destructive">Blocked: {item.blockedReason}</p> : null}
+      {item.blockedReason ? <p className="text-destructive">{pageText("blocked_3111b3") + " "}{item.blockedReason}</p> : null}
       {item.detail ? (
         <pre className="whitespace-pre-wrap break-words font-mono">
           {item.detail}
@@ -568,14 +569,14 @@ function ReadRunActivity({ items }: { items: ToolActivity[] }) {
             <BookOpen className="size-3.5" aria-hidden="true" />
           </span>
           <span className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden whitespace-nowrap">
-            <span className="shrink-0 text-xs">Read {items.length}{" " + pageText("files_a1f13b")}</span>
+            <span className="shrink-0 text-xs">{pageText("read_852b43") + " "}{items.length}{" " + pageText("files_a1f13b")}</span>
             <span className="truncate font-mono text-xs text-muted-foreground">{readRunPreview(items)}</span>
           </span>
         </span>
         <ChevronRight className={cn("size-3.5 shrink-0", open && "rotate-90")} aria-hidden="true" />
       </button>
       {open ? (
-        <ol id={listId} className="ml-2.5 flex min-w-0 flex-col border-l border-border pl-2" aria-label="Files read">
+        <ol id={listId} className="ml-2.5 flex min-w-0 flex-col border-l border-border pl-2" aria-label={pageText("filesRead_1da178")}>
           {items.map((item) => (
             <ExpandedActivity key={item.id} item={item} active={false} />
           ))}
@@ -593,6 +594,7 @@ export function TaskChatRunnerActivityGroup({
   item: TaskChatActivityPhaseItem;
   defaultExpanded?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [expanded, setExpanded] = useTaskChatExpansion(
     item.id,
     defaultExpanded,
@@ -682,7 +684,7 @@ export function TaskChatRunnerActivityGroup({
             <ol
               id={historyId}
               className="flex min-w-0 flex-col gap-1"
-              aria-label="Activity history"
+              aria-label={pageText("activityHistory_bc3552")}
               data-testid="task-chat-runner-activity-list"
             >
               {foldReadRuns(activities).map((row) =>

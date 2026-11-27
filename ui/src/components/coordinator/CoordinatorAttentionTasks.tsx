@@ -31,10 +31,10 @@ export function CoordinatorAttentionTasks({ toolbar }: { toolbar: ReactNode }) {
   })).values()].filter((task) => `${task.identifier ?? ""} ${task.title ?? ""}`.toLocaleLowerCase().includes(search.toLocaleLowerCase()));
   return <section className="space-y-5">
     <h1 className="text-2xl font-medium">{translateUi("interfaceCopy.tasks")}</h1>
-    <div className="flex flex-wrap items-center gap-3">{toolbar}<ToolbarSearch query={search} onQueryChange={setSearch} label="Search tasks needing attention" placeholder={pageText("searchTasks_073c23")} /></div>
+    <div className="flex flex-wrap items-center gap-3">{toolbar}<ToolbarSearch query={search} onQueryChange={setSearch} label={pageText("searchTasksNeedingAttention_01473a")} placeholder={pageText("searchTasks_073c23")} /></div>
     {waiting ? <p role="status" className="text-sm text-muted-foreground">{pageText("loadingTasks_a3495d")}</p> : null}
-    {(feedView.kind === "error") ? <div role="alert" className="space-y-2"><p>Tasks needing attention could not be loaded.</p><Button variant="outline" onClick={() => void feed.refetch()}>{translateUi("interfaceCopy.retry")}</Button></div> : null}
-    {!waiting && !(feedView.kind === "error") && !tasks.length ? <p className="py-8 text-sm text-muted-foreground">{search ? "No tasks match this search." : pageText("noTasksNeedADecision_7c923c")}</p> : null}
+    {(feedView.kind === "error") ? <div role="alert" className="space-y-2"><p>{pageText("tasksNeedingAttentionCouldNotBeLoaded_b7353e")}</p><Button variant="outline" onClick={() => void feed.refetch()}>{translateUi("interfaceCopy.retry")}</Button></div> : null}
+    {!waiting && !(feedView.kind === "error") && !tasks.length ? <p className="py-8 text-sm text-muted-foreground">{search ? pageText("noTasksMatchThisSearch_4b8dc4") : pageText("noTasksNeedADecision_7c923c")}</p> : null}
     <div className="divide-y divide-border">{tasks.map((task) => <button key={task.id} type="button" disabled={!task.href} onClick={() => { if (task.href) navigate(task.href); }} className="flex w-full items-center gap-3 py-4 text-left hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
       <StatusIcon status={task.status ?? "todo"} /><span className="text-sm text-muted-foreground">{task.identifier}</span><span className="flex-1 text-sm">{task.title}</span><span className="text-sm text-muted-foreground">{items.filter((item) => item.relatedIssue?.id === task.id || item.subject.id === task.id).length}{" " + pageText("pending_e22586")}</span><ArrowUpRight className="size-4 text-muted-foreground" />
     </button>)}</div>

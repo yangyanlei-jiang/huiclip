@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type { ProviderQuotaResult } from "@paperclipai/shared";
 import { formatDateTime } from "../lib/utils";
 import { QuotaBar } from "./QuotaBar";
@@ -10,6 +11,7 @@ export function AccountQuotaPanels({
   accounts: ProviderQuotaResult[];
   failed?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="space-y-4">
       {accounts.map((account) => (
@@ -18,12 +20,12 @@ export function AccountQuotaPanels({
           key={account.accountKey ?? account.provider}
         >
           <p className="text-sm font-medium">
-            {account.accountLabel ?? "Subscription account"}
+            {account.accountLabel ?? pageText("subscriptionAccount_d44365")}
           </p>
           {(failed || !account.ok) && (
             <p className="text-sm text-muted-foreground">
               {account.errorFamily === "credentials_unavailable"
-                ? "Connect or reconnect a subscription in AI connections to view its quota."
+                ? pageText("connectOrReconnectASubscriptionInAIConnections_159b02")
                 : quotaUnavailableMessage(account.windows.length > 0)}
             </p>
           )}
@@ -31,9 +33,9 @@ export function AccountQuotaPanels({
             <div key={`${window.label}:${index}`} className="space-y-1 text-sm">
               <div className="flex justify-between gap-3">
                 <span>{window.label}</span>
-                <span className="font-mono text-muted-foreground">{window.valueLabel ?? "Usage not reported"}</span>
+                <span className="font-mono text-muted-foreground">{window.valueLabel ?? pageText("usageNotReported_3c9efc")}</span>
               </div>
-              {window.resetsAt && <p className="text-xs font-mono text-muted-foreground">Resets {formatDateTime(window.resetsAt)}</p>}
+              {window.resetsAt && <p className="text-xs font-mono text-muted-foreground">{pageText("resets_da1a3c") + " "}{formatDateTime(window.resetsAt)}</p>}
             </div>
           ) : (
             <QuotaBar
@@ -55,8 +57,7 @@ export function AccountQuotaPanels({
             />
           ))}
           {account.capturedAt && (
-            <p className="text-xs font-mono text-muted-foreground">
-              Last checked {formatDateTime(account.capturedAt)}
+            <p className="text-xs font-mono text-muted-foreground">{pageText("lastChecked_ada1b7") + " "}{formatDateTime(account.capturedAt)}
             </p>
           )}
         </section>

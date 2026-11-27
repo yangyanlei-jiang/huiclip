@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation } from "@/i18n";
 import { AgentIdentity } from "../components/AgentIdentity";
@@ -166,7 +167,7 @@ export function Dashboard() {
   }, [shouldOpenOnboarding, selectedCompanyId, onboardingInitialStep, openOnboarding]);
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Dashboard" }]);
+    setBreadcrumbs([{ label: interfaceNotice("interface:dashboard_d87f47") }]);
   }, [setBreadcrumbs]);
 
   const dashboardQueryKey = queryKeys.dashboard(selectedCompanyId!);
@@ -310,14 +311,14 @@ export function Dashboard() {
       return (
         <EmptyState
           icon={LayoutDashboard}
-          message="Welcome to Paperclip. Set up your first organization and agent to get started."
+          message={pageText("welcomeToPaperclipSetUpYourFirstOrganization_cd17f8")}
           action="Get Started"
           onAction={openOnboarding}
         />
       );
     }
     return (
-      <EmptyState icon={LayoutDashboard} message="Create or select an organization to view the dashboard." />
+      <EmptyState icon={LayoutDashboard} message={pageText("createOrSelectAnOrganizationToViewThe_717d09")} />
     );
   }
 
@@ -360,41 +361,33 @@ export function Dashboard() {
               disabled={resumeImportedAgents.isPending}
               data-testid="dashboard-resume-imported-agents"
             >
-              {resumeImportedAgents.isPending ? pageText("resuming_ab0bec") : "Resume all"}
+              {resumeImportedAgents.isPending ? pageText("resuming_ab0bec") : pageText("resumeAll_039916")}
             </Button>
           }
-        >
-          Agents from an organization import arrive paused as a safety default. Resume them so assigned tasks can start.
-        </InlineBanner>
+        >{pageText("agentsFromAnOrganizationImportArrivePausedAs_e53a61")}</InlineBanner>
       ) : pausedBanner?.kind === "all-paused" ? (
         <InlineBanner
           tone="warning"
           icon={PauseCircle}
-          title="All agents in this organization are paused — nothing will run."
+          title={pageText("allAgentsInThisOrganizationArePausedNothing_041fe4")}
           actions={
             <Button variant="ghost" size="sm" asChild>
               <Link to="/agents">{t("dashboard.reviewAgents")}</Link>
             </Button>
           }
-        >
-          Resume at least one agent to let assigned tasks start.
-        </InlineBanner>
+        >{pageText("resumeAtLeastOneAgentToLetAssigned_acf4d2")}</InlineBanner>
       ) : null}
 
       {hasNoAgents && (
         <div className="flex items-center justify-between gap-3 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 dark:border-amber-500/25 dark:bg-amber-950/60">
           <div className="flex items-center gap-2.5">
             <Bot className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
-            <p className="text-sm text-amber-900 dark:text-amber-100">
-              You have no agents.
-            </p>
+            <p className="text-sm text-amber-900 dark:text-amber-100">{pageText("youHaveNoAgents_acff0a")}</p>
           </div>
           <button
             onClick={() => openOnboarding({ initialStep: 3, companyId: selectedCompanyId! })}
             className="text-sm font-medium text-amber-700 hover:text-amber-900 dark:text-amber-300 dark:hover:text-amber-100 underline underline-offset-2 shrink-0"
-          >
-            Create one here
-          </button>
+          >{pageText("createOneHere_2165dd")}</button>
         </div>
       )}
 
@@ -408,11 +401,10 @@ export function Dashboard() {
                 <PauseCircle className="mt-0.5 h-4 w-4 shrink-0 text-red-700 dark:text-red-300" />
                 <div>
                   <p className="text-sm font-medium text-red-950 dark:text-red-50">
-                    {data.budgets.activeIncidents} active budget incident{data.budgets.activeIncidents === 1 ? "" : "s"}
+                    {data.budgets.activeIncidents}{" " + pageText("activeBudgetIncident_4d8dcc")}{data.budgets.activeIncidents === 1 ? "" : "s"}
                   </p>
                   <p className="text-xs text-red-900/70 dark:text-red-100/70">
-                    {data.budgets.pausedAgents} agents paused · {data.budgets.pausedProjects} projects paused · {data.budgets.pendingApprovals} pending budget approvals
-                  </p>
+                    {data.budgets.pausedAgents}{" " + pageText("agentsPaused_13116e") + " "}{data.budgets.pausedProjects}{" " + pageText("projectsPaused_580a29") + " "}{data.budgets.pendingApprovals}{" " + pageText("pendingBudgetApprovals_5c822c")}</p>
                 </div>
               </div>
               <Link to="/costs" className="text-sm underline underline-offset-2 text-red-900 dark:text-red-100">{pageText("openBudgets_d6995f")}</Link>
@@ -430,8 +422,7 @@ export function Dashboard() {
                 <span>
                   {data.agents.running}{" " + pageText("running_3c49d9")}{", "}
                   {data.agents.paused}{" " + pageText("paused_11b1b5")}{", "}
-                  {data.agents.error} errors
-                </span>
+                  {data.agents.error}{" " + pageText("errors_570043")}</span>
               }
             />
             <MetricCard
@@ -456,7 +447,7 @@ export function Dashboard() {
                 <span>
                   {data.costs.monthBudgetCents > 0
                     ? `${data.costs.monthUtilizationPercent}% of ${formatCents(data.costs.monthBudgetCents)} budget`
-                    : "Unlimited budget"}
+                    : pageText("unlimitedBudget_84c2a3")}
                 </span>
               }
             />
@@ -470,7 +461,7 @@ export function Dashboard() {
                 <span>
                   {data.budgets.pendingApprovals > 0
                     ? `${data.budgets.pendingApprovals} budget overrides awaiting board review`
-                    : "Awaiting board review"}
+                    : pageText("awaitingBoardReview_f67679")}
                 </span>
               }
             />

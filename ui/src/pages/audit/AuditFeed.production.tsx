@@ -1,3 +1,5 @@
+import { controlText } from "@/i18n/controls";
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { AgentAvatar } from "@/components/AgentAvatar";
@@ -18,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Identity } from "@/components/Identity";
-import { cn, relativeTime } from "@/lib/utils";
+import { cn, formatDateTime, relativeTime } from "@/lib/utils";
 import { queryKeys } from "@/lib/queryKeys";
 import { formatActivityVerb } from "@/lib/activity-format";
 import { buildCompanyUserProfileMap, type CompanyUserProfile } from "@/lib/company-members";
@@ -154,13 +156,14 @@ function AuditActor({
  * that would duplicate the verb.
  */
 function AuditEntityNode({ record }: { record: AuditActionRecord }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { issue, document } = record.entity;
   const issueRef = issue?.identifier ?? issue?.id ?? null;
 
   if (issueRef) {
     return (
       <Link to={`/issues/${issueRef}`} className="font-medium text-primary hover:underline">
-        {issue?.identifier ? `${issue.identifier}${issue.title ? ` · ${issue.title}` : ""}` : "the task"}
+        {issue?.identifier ? `${issue.identifier}${issue.title ? ` · ${issue.title}` : ""}` : pageText("theTask_e872c7")}
       </Link>
     );
   }
@@ -180,6 +183,7 @@ function AuditRow({
   agentMap: Map<string, Agent>;
   userProfileMap: Map<string, CompanyUserProfile>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const verb = formatActivityVerb(record.action, record.details, { agentMap, userProfileMap });
   const responsible = record.responsibleUserId ? userProfileMap.get(record.responsibleUserId) : null;
@@ -208,14 +212,12 @@ function AuditRow({
             </p>
           ) : null}
           {documentKey ? (
-            <p className="text-xs text-muted-foreground">
-              Document <span className="font-mono text-(length:--text-micro)">{documentKey}</span>
+            <p className="text-xs text-muted-foreground">{pageText("document_e214b8") + " "}<span className="font-mono text-(length:--text-micro)">{documentKey}</span>
             </p>
           ) : null}
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             {showOnBehalf && responsibleLabel ? (
-              <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5">
-                on behalf of {responsibleLabel}
+              <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5">{pageText("onBehalfOf_308287") + " "}{responsibleLabel}
               </span>
             ) : null}
             {record.runId && record.agentId ? (
@@ -230,7 +232,7 @@ function AuditRow({
         <time
           className="shrink-0 whitespace-nowrap text-xs text-muted-foreground"
           dateTime={record.createdAt}
-          title={new Date(record.createdAt).toLocaleString()}
+          title={formatDateTime(record.createdAt, { includeSeconds: true })}
         >
           {relativeTime(record.createdAt)}
         </time>
@@ -241,19 +243,15 @@ function AuditRow({
 
 /** The permission-denied / upsell state shown when the caller lacks the grant. */
 function AuditUpsell() {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <Card>
       <CardContent className="flex flex-col items-center gap-3 py-14 text-center">
         <ShieldAlert className="h-10 w-10 text-muted-foreground/50" />
         <div>
-          <p className="text-sm font-medium text-foreground">Agent audit is a Paperclip Enterprise view</p>
-          <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
-            The agent audit log gives you a searchable, exportable record of everything your agents
-            did — every comment, task change, approval, and run — with the responsible person for
-            each action. Ask an administrator to grant you the{" "}
-            <span className="font-mono text-(length:--text-micro)">audit:view_agent_actions</span>{" "}
-            permission to view it.
-          </p>
+          <p className="text-sm font-medium text-foreground">{pageText("agentAuditIsAPaperclipEnterpriseView_0edf8e")}</p>
+          <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">{pageText("theAgentAuditLogGivesYouASearchable_029e9b")}{" "}
+            <span className="font-mono text-(length:--text-micro)">audit:view_agent_actions</span>{" "}{pageText("permissionToViewIt_b1aec3")}</p>
         </div>
       </CardContent>
     </Card>
@@ -450,10 +448,10 @@ export function AuditFeed({
       // Browsers may read blob URLs lazily after click(), so keep the URL alive
       // long enough for the download to start.
       window.setTimeout(() => URL.revokeObjectURL(url), 5_000);
-      pushToast({ title: "Audit exported", body: "Your CSV download has started.", tone: "success" });
+      pushToast({ title: interfaceNotice("interface:auditExported_14004e"), body: interfaceNotice("interface:yourCSVDownloadHasStarted_a4c8c8"), tone: "success" });
     } catch (error) {
       pushToast({
-        title: "Export failed",
+        title: interfaceNotice("interface:exportFailed_d6c17e"),
         body: describeError(error, { action: "export the audit log" }).body,
         tone: "error",
       });
@@ -474,8 +472,8 @@ export function AuditFeed({
             <h1 className="text-lg font-semibold text-foreground">{translateUi("interfaceCopy.activity")}</h1>
             <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
               {resolvedMode === "agents"
-                ? "Every recorded agent action, newest first — with the responsible person and run behind each one."
-                : "Everything happening in your company, newest first — people, agents, and the system. Each line is one recorded action."}
+                ? pageText("everyRecordedAgentActionNewestFirstWithThe_aa49a8")
+                : pageText("everythingHappeningInYourCompanyNewestFirstPeople_39e795")}
             </p>
           </div>
         </div>
@@ -484,8 +482,8 @@ export function AuditFeed({
       {showModeToggle ? (
         <Tabs value={resolvedMode} onValueChange={(value) => onModeChange?.(value as AuditFeedMode)}>
           <TabsList aria-label={pageText("activityScope_c06a04")}>
-            <TabsTrigger value="all">All activity</TabsTrigger>
-            <TabsTrigger value="agents">Agent actions</TabsTrigger>
+            <TabsTrigger value="all">{pageText("allActivity_18524b")}</TabsTrigger>
+            <TabsTrigger value="agents">{pageText("agentActions_8076a6")}</TabsTrigger>
           </TabsList>
         </Tabs>
       ) : null}
@@ -513,7 +511,7 @@ export function AuditFeed({
               <SelectValue placeholder={pageText("responsibleUser_59fcd1")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={ALL}>All responsible users</SelectItem>
+              <SelectItem value={ALL}>{pageText("allResponsibleUsers_40e9bb")}</SelectItem>
               {(userDirectory.data?.users ?? []).map((u) => (
                 <SelectItem key={u.principalId} value={u.principalId}>
                   {u.user?.name ?? u.user?.email ?? u.principalId.slice(0, 8)}
@@ -528,26 +526,26 @@ export function AuditFeed({
             <SelectContent>
               {ACTION_DOMAINS.map((d) => (
                 <SelectItem key={d.value} value={d.value}>
-                  {d.label}
+                  {controlText(d.label)}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
           <Select value={entityType} onValueChange={setEntityType}>
             <SelectTrigger className="w-36">
-              <SelectValue placeholder="Entity" />
+              <SelectValue placeholder={pageText("entity_c7fb31")} />
             </SelectTrigger>
             <SelectContent>
               {ENTITY_TYPES.map((e) => (
                 <SelectItem key={e.value} value={e.value}>
-                  {e.label}
+                  {controlText(e.label)}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
           <Input
             type="date"
-            aria-label="From date"
+            aria-label={pageText("fromDate_3b5d11")}
             value={dateFrom}
             max={dateTo || undefined}
             onChange={(e) => setDateFrom(e.target.value)}
@@ -555,7 +553,7 @@ export function AuditFeed({
           />
           <Input
             type="date"
-            aria-label="To date"
+            aria-label={pageText("toDate_af244d")}
             value={dateTo}
             min={dateFrom || undefined}
             onChange={(e) => setDateTo(e.target.value)}
@@ -572,16 +570,14 @@ export function AuditFeed({
             disabled={exporting || feed.isLoading || items.length === 0}
           >
             <Download className="mr-1.5 h-4 w-4" />
-            {exporting ? "Exporting…" : "Export CSV"}
+            {exporting ? pageText("exporting_583ccc") : pageText("exportCSV_5755f9")}
           </Button>
         </div>
       ) : null}
 
       {recoveringFromAccessDowngrade || fallingBackToAllActivity ? (
         <Card>
-          <CardContent className="py-14 text-center text-sm text-muted-foreground">
-            Refreshing audit access…
-          </CardContent>
+          <CardContent className="py-14 text-center text-sm text-muted-foreground">{pageText("refreshingAuditAccess_8a8f91")}</CardContent>
         </Card>
       ) : feedView.kind === "loading" || feedView.kind === "reconnecting" ? (
         <Card>
@@ -600,14 +596,14 @@ export function AuditFeed({
             <ScrollText className="h-10 w-10 text-muted-foreground/40" />
             <div>
               <p className="text-sm font-medium text-foreground">
-                {hasActiveFilters ? "No actions match these filters" : "Nothing here yet"}
+                {hasActiveFilters ? pageText("noActionsMatchTheseFilters_d93143") : pageText("nothingHereYet_e89225")}
               </p>
               <p className="mt-1 max-w-md text-sm text-muted-foreground">
                 {hasActiveFilters
-                  ? "Try a wider date range or different filters."
+                  ? pageText("tryAWiderDateRangeOrDifferentFilters_5af673")
                   : resolvedMode === "agents"
-                    ? "As soon as your agents start doing things, their actions show up here."
-                    : "As soon as anyone in your company does something, it shows up here."}
+                    ? pageText("asSoonAsYourAgentsStartDoingThings_ecd112")
+                    : pageText("asSoonAsAnyoneInYourCompanyDoes_6af347")}
               </p>
             </div>
             {hasActiveFilters ? (
@@ -645,9 +641,7 @@ export function AuditFeed({
         </div>
       ) : null}
 
-      <p className="text-xs text-muted-foreground">
-        Recorded by Paperclip — entries can't be edited. Sensitive values are never stored.
-      </p>
+      <p className="text-xs text-muted-foreground">{pageText("recordedByPaperclipEntriesCanTBeEdited_032d0d")}</p>
     </div>
   );
 }

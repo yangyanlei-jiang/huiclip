@@ -23,6 +23,7 @@ function HandoffActor({ id, name, fallback, agents }: {
 }
 
 export function CaseHandoffHistory({ caseId, task, agents }: { caseId: string; task?: CaseWorkIssue | null; agents?: CaseAgentMap }) {
+  const { t: pageText } = usePageTranslation("interface");
   const history = useInfiniteQuery({
     queryKey: queryKeys.cases.handoffs(caseId),
     initialPageParam: null as string | null,
@@ -32,13 +33,13 @@ export function CaseHandoffHistory({ caseId, task, agents }: { caseId: string; t
   const historyView = useQueryView(history);
   const waiting = ["loading", "reconnecting"].includes(historyView.kind);
   const handoffs = history.data?.pages.flatMap(page => page.items) ?? [];
-  return <section className="space-y-3" aria-label="Case handoffs">
-    <h2 className="text-sm font-semibold">Handoffs</h2>
-    {waiting ? <p className="text-sm text-muted-foreground">Loading handoffs…</p> : null}
-    {(historyView.kind === "error") ? <p role="alert" className="text-sm text-destructive">Handoffs couldn’t be loaded.</p> : null}
-    {!waiting && !(historyView.kind === "error") && handoffs.length === 0 ? <p className="text-sm text-muted-foreground">No handoffs yet.</p> : null}
+  return <section className="space-y-3" aria-label={pageText("caseHandoffs_cb7258")}>
+    <h2 className="text-sm font-semibold">{pageText("handoffs_158bea")}</h2>
+    {waiting ? <p className="text-sm text-muted-foreground">{pageText("loadingHandoffs_a20387")}</p> : null}
+    {(historyView.kind === "error") ? <p role="alert" className="text-sm text-destructive">{pageText("handoffsCouldnTBeLoaded_4d3809")}</p> : null}
+    {!waiting && !(historyView.kind === "error") && handoffs.length === 0 ? <p className="text-sm text-muted-foreground">{pageText("noHandoffsYet_88b80f")}</p> : null}
     <ol className="divide-y divide-border">{handoffs.map(handoff => <HandoffRow key={handoff.id} handoff={handoff} task={task} agents={agents} />)}</ol>
-    {history.hasNextPage ? <Button variant="ghost" size="sm" disabled={history.isFetchingNextPage} onClick={() => void history.fetchNextPage()}>Load older handoffs</Button> : null}
+    {history.hasNextPage ? <Button variant="ghost" size="sm" disabled={history.isFetchingNextPage} onClick={() => void history.fetchNextPage()}>{pageText("loadOlderHandoffs_5afa4d")}</Button> : null}
   </section>;
 }
 

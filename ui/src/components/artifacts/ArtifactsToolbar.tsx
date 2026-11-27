@@ -1,3 +1,5 @@
+import { controlText } from "@/i18n/controls";
+import { t as translateDynamic } from "../../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import type { ReactNode } from "react";
 import { Check, Layers } from "lucide-react";
@@ -29,7 +31,8 @@ export function artifactGroupByLabel(value: ArtifactGroupBy): string {
 
 /** Canonical collection filters; compact standalone, standard in the toolbar. */
 export function ArtifactKindFilters({ kind, onKindChange, size = "compact" }: { kind: ArtifactKindFilter; onKindChange: (value: ArtifactKindFilter) => void; size?: TabSize }) {
-  return <TabFilters items={ARTIFACT_KIND_FILTERS} value={kind} onValueChange={onKindChange} size={size} label="Filter artifacts by type" />;
+  const { t: pageText } = usePageTranslation("interface");
+  return <TabFilters items={ARTIFACT_KIND_FILTERS.map(item => ({ ...item, label: controlText(item.label) }))} value={kind} onValueChange={onKindChange} size={size} label={pageText("filterArtifactsByType_785257")} />;
 }
 
 export interface ArtifactsToolbarProps {
@@ -48,9 +51,9 @@ export function ArtifactsToolbar({ query: draftQuery, onQueryChange: setDraftQue
   const { t: pageText } = usePageTranslation("interface");
   const grouping = groupBy !== "none";
   return (
-    <div data-canonical-toolbar="artifacts" role="toolbar" aria-label="Artifacts controls" className="flex flex-col items-start gap-4">
+    <div data-canonical-toolbar="artifacts" role="toolbar" aria-label={pageText("artifactsControls_48efe8")} className="flex flex-col items-start gap-4">
       <div className="design-toolbar-controls flex w-full flex-wrap items-center gap-4">
-        <ToolbarSearch query={draftQuery} onQueryChange={setDraftQuery} label={pageText("searchArtifacts_200f88")} placeholder={pageText("searchArtifacts_de789d")} clearLabel="Clear artifact search" />
+        <ToolbarSearch query={draftQuery} onQueryChange={setDraftQuery} label={pageText("searchArtifacts_200f88")} placeholder={pageText("searchArtifacts_de789d")} clearLabel={controlText("Clear artifact search")} />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -58,8 +61,8 @@ export function ArtifactsToolbar({ query: draftQuery, onQueryChange: setDraftQue
               type="button"
               variant="outline"
               size="icon"
-              aria-label={`Group artifacts (currently ${artifactGroupByLabel(groupBy)})`}
-              title="Group artifacts"
+              aria-label={translateDynamic("dynamic:groupArtifactsCurrently", { value1: controlText(artifactGroupByLabel(groupBy)) })}
+              title={pageText("groupArtifacts_32de41")}
               data-testid="artifact-group-control"
               data-group-by={groupBy}
               data-active={grouping}
@@ -69,7 +72,7 @@ export function ArtifactsToolbar({ query: draftQuery, onQueryChange: setDraftQue
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-44">
-            <DropdownMenuLabel>Group by</DropdownMenuLabel>
+            <DropdownMenuLabel>{pageText("groupBy_8f0d8d")}</DropdownMenuLabel>
             {ARTIFACT_GROUP_OPTIONS.map((option) => (
               <DropdownMenuItem
                 key={option.value}
@@ -78,7 +81,7 @@ export function ArtifactsToolbar({ query: draftQuery, onQueryChange: setDraftQue
                 onSelect={() => selectGroupBy(option.value)}
                 className="justify-between"
               >
-                {option.label}
+                {controlText(option.label)}
                 {groupBy === option.value ? <Check className="h-3.5 w-3.5" /> : null}
               </DropdownMenuItem>
             ))}

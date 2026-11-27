@@ -6,7 +6,7 @@ git('merge-base', '--is-ancestor', baseline, 'HEAD');
 
 const changed = git('diff', '--name-only', '-z', baseline, 'HEAD').split('\0').filter(Boolean);
 const outsideScope = changed.filter((path) =>
-  !/^(README(?:\.zh-CN)?\.md$|\.github\/ISSUE_TEMPLATE\/huiclip-feedback\.yml$|ui\/|community\/)/.test(path) ||
+  !/^(README(?:\.zh-CN)?\.md$|\.github\/ISSUE_TEMPLATE\/huiclip-feedback\.yml$|\.github\/workflows\/huiclip-upstream\.yml$|ui\/|community\/)/.test(path) ||
   /(^|\/)(\.env[^/]*|node_modules|\.docusaurus|\.waline-data|build|dist|\.huiclip-home|auth\.json|context\.json)(\/|$)|\.(sqlite(?:-wal|-shm)?|tgz|tar\.gz|log)$/.test(path),
 );
 if (outsideScope.length) throw new Error(`超出首版发布范围：\n${outsideScope.join('\n')}`);

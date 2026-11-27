@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { useMemo } from "react";
@@ -46,7 +47,7 @@ export function SummarizerAgentSelect({
   );
 
   const renderAgent = (option: InlineEntityOption | null) => {
-    if (!option || !option.id) return <span>Summarizer (default)</span>;
+    if (!option || !option.id) return <span>{pageText("summarizerDefault_1ea64e")}</span>;
     const agent = option.id.startsWith("agent:") ? agentById.get(option.id.slice("agent:".length)) : null;
     return (
       <>
@@ -60,8 +61,8 @@ export function SummarizerAgentSelect({
     <InlineEntitySelector
       value={value ? `agent:${value}` : ""}
       options={agentOptions}
-      placeholder="Summarizer (default)"
-      noneLabel="Summarizer (default)"
+      placeholder={pageText("summarizerDefault_1ea64e")}
+      noneLabel={interfaceNotice("interface:summarizerDefault_1ea64e")}
       searchPlaceholder={pageText("searchAgents_52c3f9")}
       emptyMessage={pageText("noAgentsFound_6893bf")}
       onChange={(next) => onChange(next.startsWith("agent:") ? next.slice("agent:".length) : "")}

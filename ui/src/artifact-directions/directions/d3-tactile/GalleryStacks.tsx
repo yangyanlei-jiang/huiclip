@@ -163,7 +163,8 @@ function StackLone({ group }: { group: LabGroup }) {
 }
 
 export function GalleryStacks({ groups }: { groups: LabGroup[] }) {
-  if (groups.length === 0) return <p className="py-16 text-center text-sm font-medium text-foreground">No artifact stacks yet.</p>;
+  const { t: pageText } = usePageTranslation("interface");
+  if (groups.length === 0) return <p className="py-16 text-center text-sm font-medium text-foreground">{pageText("noArtifactStacksYet_6af74f")}</p>;
   return (
     // The shelf, measured: under 40rem it keeps two columns of compact folders (tokens-gallery.css).
     <div className="@container/shelf">

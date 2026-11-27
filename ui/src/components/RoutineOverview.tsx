@@ -1,3 +1,4 @@
+import { controlText } from "@/i18n/controls";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import type {
@@ -45,20 +46,20 @@ export function summarizeRoutineSchedule(triggers: RoutineTrigger[]): RoutineSch
     const webhooks = triggers.filter((trigger) => trigger.kind === "webhook" && trigger.enabled);
     if (webhooks.length > 0) {
       return {
-        label: `${webhooks.length} active webhook${webhooks.length === 1 ? "" : "s"}`,
-        detail: "Runs on incoming requests",
+        label: controlText("activeWebhooks", { count: webhooks.length }),
+        detail: controlText("incoming"),
         nextRunAt: null,
       };
     }
-    return { label: "No active schedule", detail: "Manual runs only", nextRunAt: null };
+    return { label: controlText("noSchedule"), detail: controlText("manualOnly"), nextRunAt: null };
   }
 
   const first = schedules[0]!;
   return {
-    label: schedules.length === 1 ? "1 active schedule" : `${schedules.length} active schedules`,
+    label: schedules.length === 1 ? controlText("oneSchedule") : controlText("activeSchedules", { count: schedules.length }),
     detail: first.cronExpression
       ? `${first.cronExpression}${first.timezone ? ` · ${first.timezone}` : ""}`
-      : first.label ?? "Scheduled trigger",
+      : first.label ?? controlText("scheduledTrigger"),
     nextRunAt,
   };
 }
@@ -169,31 +170,31 @@ export function RoutineOverview() {
           icon={Repeat}
           label={translateUi("interfaceCopy.state")}
           value={<StatusBadge status={automationState} />}
-          detail={hasLiveRun ? "A run is active now" : "No active run"}
+          detail={hasLiveRun ? controlText("activeRun") : controlText("noActiveRun")}
         />
         <OverviewFact
           icon={CalendarClock}
-          label="Triggers"
+          label={pageText("triggers_047708")}
           value={schedule.label}
           detail={<span className="font-mono">{schedule.detail}</span>}
         />
         <OverviewFact
           icon={Clock3}
-          label="Next run"
-          value={schedule.nextRunAt ? formatRoutineTimestamp(schedule.nextRunAt) : hasWebhook ? "On webhook delivery" : "Not scheduled"}
-          detail={schedule.nextRunAt ? "Scheduled" : hasWebhook ? "Waiting for an incoming request" : "Add or enable a schedule"}
+          label={pageText("nextRun_6c03cb")}
+          value={schedule.nextRunAt ? formatRoutineTimestamp(schedule.nextRunAt) : hasWebhook ? controlText("onWebhook") : controlText("notScheduled")}
+          detail={schedule.nextRunAt ? controlText("scheduled") : hasWebhook ? controlText("waitingRequest") : controlText("addSchedule")}
         />
         <OverviewFact
           icon={Play}
           label={pageText("lastRun_333c63")}
-          value={lastRun ? <StatusBadge status={lastRun.status} /> : "No runs yet"}
-          detail={lastRun ? formatRoutineTimestamp(lastRun.triggeredAt) : "Run manually or wait for a trigger"}
+          value={lastRun ? <StatusBadge status={lastRun.status} /> : controlText("noRuns")}
+          detail={lastRun ? formatRoutineTimestamp(lastRun.triggeredAt) : controlText("runManually")}
         />
       </div>
 
       <div className="grid gap-6 sm:grid-cols-2">
         <section className="flex flex-col gap-2" aria-labelledby="routine-agent-heading">
-          <h2 id="routine-agent-heading" className="text-sm font-semibold">Default agent</h2>
+          <h2 id="routine-agent-heading" className="text-sm font-semibold">{pageText("defaultAgent_2fbfec")}</h2>
           {currentAssignee ? (
             <Link
               to={`/agents/${currentAssignee.urlKey ?? currentAssignee.id}`}
@@ -203,7 +204,7 @@ export function RoutineOverview() {
               {currentAssignee.name}
             </Link>
           ) : (
-            <p className="text-sm text-muted-foreground">No default agent. Automatic triggers remain paused.</p>
+            <p className="text-sm text-muted-foreground">{pageText("noDefaultAgentAutomaticTriggersRemainPaused_c4085c")}</p>
           )}
         </section>
         <RoutineResponsibleUser key={routine.id} routine={routine} />
@@ -216,21 +217,19 @@ export function RoutineOverview() {
             {routine.description}
           </MarkdownBody>
         ) : (
-          <p className="text-sm text-muted-foreground">No description yet.</p>
+          <p className="text-sm text-muted-foreground">{pageText("noDescriptionYet_37e7a4")}</p>
         )}
       </section>
 
       <section className="flex flex-col gap-2" aria-labelledby="routine-recent-runs-heading">
         <div className="flex items-center justify-between gap-3">
-          <h2 id="routine-recent-runs-heading" className="text-sm font-semibold">Recent runs</h2>
+          <h2 id="routine-recent-runs-heading" className="text-sm font-semibold">{pageText("recentRuns_af7051")}</h2>
           <Button variant="ghost" size="sm" asChild>
-            <Link to={routineDetailHref(routine.id, "runs")}>View all runs</Link>
+            <Link to={routineDetailHref(routine.id, "runs")}>{pageText("viewAllRuns_a64a81")}</Link>
           </Button>
         </div>
         {recentRuns.length === 0 ? (
-          <p className="py-6 text-center text-sm text-muted-foreground">
-            No runs yet. Run the routine now or wait for its schedule.
-          </p>
+          <p className="py-6 text-center text-sm text-muted-foreground">{pageText("noRunsYetRunTheRoutineNowOr_9c1cda")}</p>
         ) : (
           <div className="flex flex-col gap-0.5">
             {recentRuns.map((run) => run.linkedIssue ? (
@@ -249,14 +248,14 @@ export function RoutineOverview() {
             ) : (
               <div key={run.id} className="flex min-w-0 items-center gap-2 rounded-lg px-2 py-2 text-sm">
                 <StatusBadge status={run.status} />
-                <span className="min-w-0 flex-1 truncate">{run.trigger?.label ?? "Routine run"}</span>
+                <span className="min-w-0 flex-1 truncate">{run.trigger?.label ?? pageText("routineRun_0a7aae")}</span>
                 <span className="shrink-0 font-mono text-xs text-muted-foreground">{formatRoutineTimestamp(run.triggeredAt)}</span>
               </div>
             ))}
           </div>
         )}
         <Button variant="link" size="sm" className="w-fit px-0" asChild>
-          <Link to={routineDetailHref(routine.id, "activity")}>View routine activity</Link>
+          <Link to={routineDetailHref(routine.id, "activity")}>{pageText("viewRoutineActivity_33892b")}</Link>
         </Button>
       </section>
     </div>

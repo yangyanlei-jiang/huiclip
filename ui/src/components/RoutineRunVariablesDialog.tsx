@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useWorkspaceIsolationControls } from "@/hooks/useWorkspaceIsolationControls";
@@ -353,22 +354,20 @@ export function RoutineRunVariablesDialog({
           {routineName && (
             <p className="text-muted-foreground text-sm">{routineName}</p>
           )}
-          <DialogTitle>Run routine</DialogTitle>
-          <DialogDescription>
-            Choose the agent and optional project for this one run. Routine defaults are prefilled and won&apos;t be changed.
-          </DialogDescription>
+          <DialogTitle>{pageText("runRoutine_3454a3")}</DialogTitle>
+          <DialogDescription>{pageText("chooseTheAgentAndOptionalProjectForThis_502d0d")}</DialogDescription>
         </DialogHeader>
 
         <div className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-6 py-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-1.5">
-              <Label className="text-xs">Agent *</Label>
+              <Label className="text-xs">{pageText("agent_9a36d7")}</Label>
               <InlineEntitySelector
                 value={selection.assigneeAgentId}
                 options={assigneeOptions}
                 recentOptionIds={recentAssigneeIds}
                 placeholder={translateUi("interfaceCopy.agent")}
-                noneLabel="Select an agent"
+                noneLabel={interfaceNotice("interface:selectAnAgent_1173f5")}
                 searchPlaceholder={pageText("searchAgents_52c3f9")}
                 emptyMessage={pageText("noAgentsFound_6893bf")}
                 disablePortal
@@ -388,7 +387,7 @@ export function RoutineRunVariablesDialog({
                       <span className="truncate">{option.label}</span>
                     )
                   ) : (
-                    <span className="text-muted-foreground">Select an agent</span>
+                    <span className="text-muted-foreground">{pageText("selectAnAgent_1173f5")}</span>
                   )
                 }
                 renderOption={(option) => {
@@ -410,7 +409,7 @@ export function RoutineRunVariablesDialog({
                 options={projectOptions}
                 recentOptionIds={recentProjectIds}
                 placeholder={translateUi("interfaceCopy.project")}
-                noneLabel="No project"
+                noneLabel={interfaceNotice("interface:noProject_c326b7")}
                 searchPlaceholder={pageText("searchProjects_469d78")}
                 emptyMessage={pageText("noProjectsFound_ca7870")}
                 disablePortal
@@ -487,9 +486,9 @@ export function RoutineRunVariablesDialog({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__unset__">No value</SelectItem>
-                    <SelectItem value="true">True</SelectItem>
-                    <SelectItem value="false">False</SelectItem>
+                    <SelectItem value="__unset__">{pageText("noValue_1d4024")}</SelectItem>
+                    <SelectItem value="true">{pageText("true_88b33e")}</SelectItem>
+                    <SelectItem value="false">{pageText("false_97cdbd")}</SelectItem>
                   </SelectContent>
                 </Select>
               ) : variable.type === "select" ? (
@@ -501,10 +500,10 @@ export function RoutineRunVariablesDialog({
                   }))}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Choose a value" />
+                    <SelectValue placeholder={pageText("chooseAValue_e0b399")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__unset__">No value</SelectItem>
+                    <SelectItem value="__unset__">{pageText("noValue_1d4024")}</SelectItem>
                     {variable.options.map((option) => (
                       <SelectItem key={option} value={option}>{option}</SelectItem>
                     ))}
@@ -544,15 +543,12 @@ export function RoutineRunVariablesDialog({
           className="shrink-0 border-t border-border/60 bg-background px-6 pb-(--sz-calc-19) pt-4"
         >
           {!selection.assigneeAgentId ? (
-            <p className="mr-auto text-xs text-amber-600">Default agent required for this run.</p>
+            <p className="mr-auto text-xs text-amber-600">{pageText("defaultAgentRequiredForThisRun_9385a8")}</p>
           ) : missingRequired.length > 0 ? (
-            <p className="mr-auto text-xs text-amber-600">
-              Missing: {missingRequired.join(", ")}
+            <p className="mr-auto text-xs text-amber-600">{pageText("missing_feb2bb") + " "}{missingRequired.join(", ")}
             </p>
           ) : workspaceSelectionEnabled && !workspaceConfigValid ? (
-            <p className="mr-auto text-xs text-amber-600">
-              Choose an existing workspace before running.
-            </p>
+            <p className="mr-auto text-xs text-amber-600">{pageText("chooseAnExistingWorkspaceBeforeRunning_dbae98")}</p>
           ) : (
             <span className="mr-auto" />
           )}
@@ -590,7 +586,7 @@ export function RoutineRunVariablesDialog({
             }}
             disabled={isPending || !canSubmit}
           >
-            {isPending ? pageText("running_126eda") : "Run routine"}
+            {isPending ? pageText("running_126eda") : pageText("runRoutine_3454a3")}
           </Button>
         </DialogFooter>
       </DialogContent>

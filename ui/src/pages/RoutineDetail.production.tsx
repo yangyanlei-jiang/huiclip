@@ -1,3 +1,5 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { t as interfaceNotice } from "@/i18n";
 import { t as interfaceMessage } from "@/i18n";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Navigate, useNavigate, useParams } from "@/lib/router";
@@ -159,6 +161,7 @@ function buildRoutineMutationPayload(input: RoutineEditDraft) {
 }
 
 export function RoutineDetail() {
+  const { t: pageText } = usePageTranslation("interface");
   const { routineId, section: sectionParam } = useParams<{ routineId: string; section?: string }>();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -354,7 +357,7 @@ export function RoutineDetail() {
 
   useEffect(() => {
     if (!routine) return;
-    setBreadcrumbs([{ label: "Routines", href: "/routines" }, { label: routine.title }]);
+    setBreadcrumbs([{ label: interfaceNotice("interface:routines_a445e5"), href: "/routines" }, { label: routine.title }]);
     if (!routineDefaults) return;
     const changedRoutine = hydratedRoutineIdRef.current !== routine.id;
     if (changedRoutine || !isEditDirty) {
@@ -412,8 +415,8 @@ export function RoutineDetail() {
       if (mutationError instanceof ApiError && mutationError.status === 409) {
         setSaveConflict(true);
         pushToast({
-          title: "Routine changed",
-          body: "Someone else updated this routine. Reload to see the latest revision.",
+          title: interfaceNotice("interface:routineChanged_411fc2"),
+          body: interfaceNotice("interface:someoneElseUpdatedThisRoutineReloadToSee_9eb74e"),
           tone: "warn",
         });
         return;
@@ -441,7 +444,7 @@ export function RoutineDetail() {
           : {}),
       }),
     onSuccess: async () => {
-      pushToast({ title: "Routine run started", tone: "success" });
+      pushToast({ title: interfaceNotice("interface:routineRunStarted_ddb07d"), tone: "success" });
       setRunVariablesOpen(false);
       navigateToSection("runs");
       await Promise.all([
@@ -453,7 +456,7 @@ export function RoutineDetail() {
     },
     onError: (runError) => {
       pushToast({
-        title: "Routine run failed",
+        title: interfaceNotice("interface:routineRunFailed_9221cb"),
         body: describeError(runError, { action: "start the routine run" }).body,
         tone: "error",
       });
@@ -464,8 +467,8 @@ export function RoutineDetail() {
     mutationFn: (status: string) => routinesApi.update(routineId!, { status }),
     onSuccess: async (_data, status) => {
       pushToast({
-        title: "Routine saved",
-        body: status === "paused" ? "Automation paused." : "Automation enabled.",
+        title: interfaceNotice("interface:routineSaved_e7e368"),
+        body: status === "paused" ? interfaceNotice("interface:automationPaused_8f65af") : interfaceNotice("interface:automationEnabled_bb3ece"),
         tone: "success",
       });
       await Promise.all([
@@ -504,7 +507,7 @@ export function RoutineDetail() {
           entries: [{ webhookUrl: result.secretMaterial.webhookUrl, webhookSecret: result.secretMaterial.webhookSecret }],
         });
       } else {
-        pushToast({ title: "Trigger added", body: "The routine schedule was saved.", tone: "success" });
+        pushToast({ title: interfaceNotice("interface:triggerAdded_197951"), body: interfaceNotice("interface:theRoutineScheduleWasSaved_0a5e5d"), tone: "success" });
       }
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.routines.detail(routineId!) }),
@@ -524,7 +527,7 @@ export function RoutineDetail() {
   const updateTrigger = useMutation({
     mutationFn: ({ id, patch }: { id: string; patch: Record<string, unknown> }) => routinesApi.updateTrigger(id, patch),
     onSuccess: async () => {
-      pushToast({ title: "Trigger saved", body: "The routine cadence update was saved.", tone: "success" });
+      pushToast({ title: interfaceNotice("interface:triggerSaved_c3ba9b"), body: interfaceNotice("interface:theRoutineCadenceUpdateWasSaved_66d8f6"), tone: "success" });
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.routines.detail(routineId!) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedCompanyId!) }),
@@ -543,7 +546,7 @@ export function RoutineDetail() {
   const deleteTrigger = useMutation({
     mutationFn: (id: string) => routinesApi.deleteTrigger(id),
     onSuccess: async () => {
-      pushToast({ title: "Trigger deleted", tone: "success" });
+      pushToast({ title: interfaceNotice("interface:triggerDeleted_b4c027"), tone: "success" });
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.routines.detail(routineId!) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedCompanyId!) }),
@@ -682,7 +685,7 @@ export function RoutineDetail() {
   );
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Repeat} message="Select a company to view routines." />;
+    return <EmptyState icon={Repeat} message={pageText("selectACompanyToViewRoutines_b126f4")} />;
   }
 
   // Back-compat redirect: `?tab=x` → `/routines/:id/x`.
@@ -723,7 +726,7 @@ export function RoutineDetail() {
     return (
       <EmptyState
         icon={AlertCircle}
-        message="We couldn't load this routine."
+        message={pageText("weCouldnTLoadThisRoutine_0160ef")}
       />
     );
   }
@@ -767,8 +770,8 @@ export function RoutineDetail() {
     onToggleAutomation: () => {
       if (!automationEnabled && !routine.assigneeAgentId) {
         pushToast({
-          title: "Default agent required",
-          body: "Set a default agent before enabling routine automation.",
+          title: interfaceNotice("interface:defaultAgentRequired_982397"),
+          body: interfaceNotice("interface:setADefaultAgentBeforeEnablingRoutineAutomation_27f60c"),
           tone: "warn",
         });
         return;
@@ -819,9 +822,7 @@ export function RoutineDetail() {
       <a
         href="#routine-section"
         className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-20 focus:rounded focus:bg-background focus:px-3 focus:py-1.5 focus:text-sm"
-      >
-        Skip to section
-      </a>
+      >{pageText("skipToSection_573880")}</a>
 
       {/* Bounded to the main scroll area's height so the header + sub-nav stay
           fixed and only the section content below scrolls (no page-level
@@ -834,7 +835,7 @@ export function RoutineDetail() {
               ref={titleInputRef}
               data-autosize-title
               className="min-w-0 flex-1 resize-none overflow-hidden bg-transparent text-base font-semibold leading-7 outline-none placeholder:text-muted-foreground/50"
-              placeholder="Routine title"
+              placeholder={pageText("routineTitle_6ed0d9")}
               rows={1}
               value={editDraft.title}
               onChange={(event) => {
@@ -868,7 +869,7 @@ export function RoutineDetail() {
                 checked={automationEnabled}
                 onCheckedChange={contextValue.onToggleAutomation}
                 disabled={automationToggleDisabled}
-                aria-label={automationEnabled ? "Pause automatic triggers" : "Enable automatic triggers"}
+                aria-label={automationEnabled ? pageText("pauseAutomaticTriggers_f8d1d6") : pageText("enableAutomaticTriggers_6664ae")}
               />
               <span className={`text-sm font-medium ${automationLabelClassName}`}>{automationLabel}</span>
             </div>

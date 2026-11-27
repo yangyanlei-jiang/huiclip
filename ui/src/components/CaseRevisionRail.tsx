@@ -19,6 +19,7 @@ import { Diff } from "lucide-react";
 
 /** Author + via-issue attribution line for a revision. */
 function RevisionByline({ revision }: { revision: CaseDocumentRevision }) {
+  const { t: pageText } = usePageTranslation("interface");
   const author = revision.actorAgentName ?? (revision.createdByAgentId ? "Agent" : revision.createdByUserId ? "User" : "System");
   return (
     <span className="flex flex-wrap items-center gap-x-1 text-(length:--text-micro) text-muted-foreground">
@@ -26,7 +27,7 @@ function RevisionByline({ revision }: { revision: CaseDocumentRevision }) {
       {revision.issue && (
         <>
           <span aria-hidden>·</span>
-          <span>via</span>
+          <span>{pageText("via_a19e07")}</span>
           <Link
             to={`/issues/${revision.issue.identifier}`}
             className="font-mono text-foreground/80 hover:underline"
@@ -89,15 +90,14 @@ function CaseDocumentDiffModal({
       <DialogContent className="!max-w-(--pct-90) flex max-h-(--sz-85vh) w-full flex-col overflow-hidden">
         <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <DialogHeader className="min-w-0">
-            <DialogTitle className="break-words pr-6">
-              Diff - <span className="font-mono text-sm">{documentKey}</span>
+            <DialogTitle className="break-words pr-6">{pageText("diff_07eb99") + " "}<span className="font-mono text-sm">{documentKey}</span>
             </DialogTitle>
           </DialogHeader>
           <div className="grid min-w-0 gap-3 sm:grid-cols-2 lg:gap-4">
             <div className="flex min-w-0 items-center gap-2">
               <span className="shrink-0 rounded-full border border-red-500/30 bg-red-500/10 px-2 py-0.5 text-(length:--text-nano) font-medium uppercase tracking-(--tracking-caps) text-red-400">{translateUi("interfaceCopy.old")}</span>
               <Select value={effectiveLeftId ?? ""} onValueChange={setLeftRevisionId}>
-                <SelectTrigger aria-label="Old revision" className="min-w-0 w-full border-border/60 data-[size=default]:h-11 md:w-60 md:text-xs md:data-[size=default]:h-9">
+                <SelectTrigger aria-label={pageText("oldRevision_c451cf")} className="min-w-0 w-full border-border/60 data-[size=default]:h-11 md:w-60 md:text-xs md:data-[size=default]:h-9">
                   <SelectValue className="min-w-0 truncate" placeholder={pageText("selectRevision_0a6ee4")} />
                 </SelectTrigger>
                 <SelectContent>
@@ -129,9 +129,9 @@ function CaseDocumentDiffModal({
 
         <div className="min-h-0 flex-1 overflow-auto rounded-md border border-border text-xs">
           {!leftRevision || !rightRevision ? (
-            <div className="p-6 text-center text-sm text-muted-foreground">Select two revisions to compare.</div>
+            <div className="p-6 text-center text-sm text-muted-foreground">{pageText("selectTwoRevisionsToCompare_a6b919")}</div>
           ) : leftRevision.id === rightRevision.id ? (
-            <div className="p-6 text-center text-sm text-muted-foreground">Both sides are the same revision.</div>
+            <div className="p-6 text-center text-sm text-muted-foreground">{pageText("bothSidesAreTheSameRevision_c6a358")}</div>
           ) : (
             <div className="font-mono text-xs leading-6">
               <div className="grid grid-cols-(--gtc-1) border-b border-border/60 bg-muted/30 px-3 py-2 text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">
@@ -240,9 +240,7 @@ export function CaseRevisionRail({
               className="h-7 gap-1 px-2 text-xs"
               onClick={() => setDiffOpen(true)}
             >
-              <Diff className="h-3.5 w-3.5" />
-              Diff
-            </Button>
+              <Diff className="h-3.5 w-3.5" />{pageText("diff_d23a1c")}</Button>
           ) : null}
         </div>
         <ol className="space-y-1">
@@ -260,12 +258,9 @@ export function CaseRevisionRail({
                 )}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-medium">
-                    rev {rev.revisionNumber}
+                  <span className="text-xs font-medium">{pageText("rev_03e404") + " "}{rev.revisionNumber}
                     {index === 0 && (
-                      <span className="ml-1.5 rounded bg-muted px-1 py-0.5 text-(length:--text-nano) text-muted-foreground">
-                        latest
-                      </span>
+                      <span className="ml-1.5 rounded bg-muted px-1 py-0.5 text-(length:--text-nano) text-muted-foreground">{pageText("latest_1481d0")}</span>
                     )}
                   </span>
                   <span className="text-(length:--text-micro) text-muted-foreground">{relativeTime(rev.createdAt)}</span>
@@ -284,7 +279,7 @@ export function CaseRevisionRail({
 
       <Card className="min-w-0 px-4 py-3">
         <div className="mb-2 flex items-baseline justify-between border-b border-border pb-2">
-          <span className="text-sm font-medium">rev {selected.revisionNumber}</span>
+          <span className="text-sm font-medium">{pageText("rev_03e404") + " "}{selected.revisionNumber}</span>
           <RevisionByline revision={selected} />
         </div>
         {selected.body ? (
@@ -292,7 +287,7 @@ export function CaseRevisionRail({
             {selected.body}
           </MarkdownBody>
         ) : (
-          <p className="text-sm text-muted-foreground">This revision has no body.</p>
+          <p className="text-sm text-muted-foreground">{pageText("thisRevisionHasNoBody_e4d410")}</p>
         )}
       </Card>
       {revisions.length > 1 ? (

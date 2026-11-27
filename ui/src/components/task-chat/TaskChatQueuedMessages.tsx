@@ -1,3 +1,5 @@
+import { t as interfaceNotice } from "@/i18n";
+import { t as translateDynamic } from "../../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -160,7 +162,7 @@ function SortableQueuedMessage({
         {...sortable.attributes}
         {...sortable.listeners}
         disabled={queueMutationDisabled || immutableResponse}
-        aria-label={`Reorder queued message: ${label}`}
+        aria-label={translateDynamic("dynamic:reorderQueuedMessage", { value1: label })}
         className="flex h-7 w-7 shrink-0 cursor-grab items-center justify-center rounded-md text-muted-foreground/70 transition-colors hover:bg-accent hover:text-foreground active:cursor-grabbing disabled:cursor-default disabled:opacity-40"
       >
         <GripVertical className="h-3.5 w-3.5" aria-hidden />
@@ -176,21 +178,20 @@ function SortableQueuedMessage({
 
       {autoSteerSecondsLeft !== null ? (
         <span className="flex shrink-0 items-center gap-1" data-testid={`task-chat-queued-auto-steer-${entry.comment.id}`}>
-          <span className="px-1 text-xs text-muted-foreground tabular-nums">
-            Sending in {autoSteerSecondsLeft}s
+          <span className="px-1 text-xs text-muted-foreground tabular-nums">{pageText("sendingIn_193e86") + " "}{autoSteerSecondsLeft}s
           </span>
           <button
             type="button"
             onClick={onEdit}
             disabled={!entry.canEdit}
-            title="Edit before it is sent"
+            title={pageText("editBeforeItIsSent_5aa84d")}
             className="flex h-7 shrink-0 items-center rounded-md px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
             data-testid={`task-chat-queued-auto-steer-edit-${entry.comment.id}`}
           >{translateUi("interfaceCopy.edit")}</button>
           <button
             type="button"
             onClick={onCancelAutoSteer}
-            title="Keep this message in the queue"
+            title={pageText("keepThisMessageInTheQueue_05d90a")}
             className="flex h-7 shrink-0 items-center rounded-md px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             data-testid={`task-chat-queued-auto-steer-cancel-${entry.comment.id}`}
           >{translateUi("interfaceCopy.cancel")}</button>
@@ -200,9 +201,9 @@ function SortableQueuedMessage({
         <button
           type="button"
           onClick={onInterrupt}
-          aria-label={!queue.targetRunId ? "Send queued messages" : undefined}
+          aria-label={!queue.targetRunId ? pageText("sendQueuedMessages_c2fec6") : undefined}
           disabled={busy || !queue.queueId || !onInterrupt}
-          title={queue.targetRunId ? "Interrupt the active turn and send queued messages" : "Send queued messages now"}
+          title={queue.targetRunId ? pageText("interruptTheActiveTurnAndSendQueuedMessages_e28cfd") : pageText("sendQueuedMessagesNow_6314ce")}
           className="flex h-7 shrink-0 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
           data-testid={`task-chat-queued-interrupt-${entry.comment.id}`}
         >
@@ -211,7 +212,7 @@ function SortableQueuedMessage({
           ) : (
             <CornerDownRight className="h-3.5 w-3.5" aria-hidden />
           )}
-          {queue.targetRunId ? pageText("interrupt_d5db45") : "Send"}
+          {queue.targetRunId ? pageText("interrupt_d5db45") : pageText("send_9bc257")}
         </button>
       ) : (
         <button
@@ -226,9 +227,7 @@ function SortableQueuedMessage({
             <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
           ) : (
             <CornerDownRight className="h-3.5 w-3.5" aria-hidden />
-          )}
-          Steer
-        </button>
+          )}{pageText("steer_02f4a3")}</button>
       ))}
 
       <button
@@ -239,8 +238,8 @@ function SortableQueuedMessage({
           (!queue.queueId && !entry.comment.id.startsWith("optimistic-")) ||
           !entry.canDiscard
         }
-        title="Discard queued message"
-        aria-label={`Discard queued message: ${label}`}
+        title={pageText("discardQueuedMessage_bf718a")}
+        aria-label={translateDynamic("dynamic:discardQueuedMessage", { value1: label })}
         className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-40"
         data-testid={`task-chat-queued-discard-${entry.comment.id}`}
       >
@@ -256,8 +255,8 @@ function SortableQueuedMessage({
           <button
             type="button"
             disabled={queueMutationDisabled || immutableResponse}
-            title="Queued message actions"
-            aria-label={`Queued message actions: ${label}`}
+            title={pageText("queuedMessageActions_de1df3")}
+            aria-label={translateDynamic("dynamic:queuedMessageActions", { value1: label })}
             className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
           >
             <MoreHorizontal className="h-4 w-4" aria-hidden />
@@ -283,6 +282,7 @@ export function TaskChatQueuedMessages({
   editingCommentId = null,
   autoSteerDelayMs = null,
 }: TaskChatQueuedMessagesProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const [entries, setEntries] = useState(queue.entries);
   // Automatic steering: Cancel keeps a message queued for this view; each
   // message revision gets at most one automatic attempt, so a failure falls
@@ -419,8 +419,8 @@ export function TaskChatQueuedMessages({
       setAnnouncement("");
       setVisibleError(
         queueActionErrorCode(error) === "queued_comment_revision_conflict"
-          ? "The queue changed in another session. Its latest order has been restored."
-          : "Couldn’t reorder. Previous order restored.",
+          ? interfaceNotice("interface:theQueueChangedInAnotherSessionItsLatest_9d7ec5")
+          : interfaceNotice("interface:couldnTReorderPreviousOrderRestored_184ac6"),
       );
     } finally {
       setReordering(false);
@@ -496,14 +496,14 @@ export function TaskChatQueuedMessages({
       const code = queueActionErrorCode(error);
       setVisibleError(
         code === "queued_comment_already_dispatching"
-          ? "Too late to discard: this message is already being sent."
+          ? interfaceNotice("interface:tooLateToDiscardThisMessageIsAlready_e35e2f")
           : action === "steer"
-            ? "Couldn’t steer. Message is still queued."
+            ? interfaceNotice("interface:couldnTSteerMessageIsStillQueued_80ffd7")
             : action === "interrupt"
-              ? queue.targetRunId ? "Couldn’t interrupt. Message is still queued." : "Couldn’t send. Message is still queued."
+              ? queue.targetRunId ? interfaceNotice("interface:couldnTInterruptMessageIsStillQueued_a4485e") : interfaceNotice("interface:couldnTSendMessageIsStillQueued_ce4845")
               : code === "queued_comment_revision_conflict"
-                ? "The queue changed in another session. Review it and try again."
-                : "Couldn’t discard. Message is still queued.",
+                ? interfaceNotice("interface:theQueueChangedInAnotherSessionReviewIt_e42c52")
+                : interfaceNotice("interface:couldnTDiscardMessageIsStillQueued_30690f"),
       );
     } finally {
       setPending(null);
@@ -515,7 +515,7 @@ export function TaskChatQueuedMessages({
   return (
     <TaskChatComposerBar
       data-testid="task-chat-queued-messages"
-      aria-label="Queued messages"
+      aria-label={pageText("queuedMessages_32af21")}
     >
       <DndContext
         sensors={sensors}

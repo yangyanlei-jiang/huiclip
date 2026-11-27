@@ -77,7 +77,7 @@ export function CompanySwitcher({ open: controlledOpen, onOpenChange }: CompanyS
           // give the customer the way out, since nothing else in the app does.
           companyListUnavailable ? (
             <>
-              <DropdownMenuItem disabled>Couldn't load organizations</DropdownMenuItem>
+              <DropdownMenuItem disabled>{pageText("couldnTLoadOrganizations_411064")}</DropdownMenuItem>
               <DropdownMenuItem
                 onSelect={(event) => {
                   // Keep the menu open so the result of the retry is visible.
@@ -88,7 +88,7 @@ export function CompanySwitcher({ open: controlledOpen, onOpenChange }: CompanyS
                 <RefreshCw className="h-4 w-4 mr-2" />{pageText("tryAgain_042c86")}</DropdownMenuItem>
             </>
           ) : (
-            <DropdownMenuItem disabled>No organizations</DropdownMenuItem>
+            <DropdownMenuItem disabled>{pageText("noOrganizations_9468e6")}</DropdownMenuItem>
           )
         )}
         <DropdownMenuSeparator />

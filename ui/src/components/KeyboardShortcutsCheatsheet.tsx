@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface ShortcutEntry {
@@ -70,6 +71,7 @@ function KeyCap({ children }: { children: string }) {
 }
 
 export function KeyboardShortcutsCheatsheetContent() {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <>
       <div className="divide-y divide-border border-t border-border">
@@ -90,7 +92,7 @@ export function KeyboardShortcutsCheatsheetContent() {
                       <span key={key} className="flex items-center gap-1">
                         {i > 0 && (
                           <span className="text-xs text-muted-foreground">
-                            {shortcut.combo ? "+" : "then"}
+                            {shortcut.combo ? "+" : pageText("then_6f8f8e")}
                           </span>
                         )}
                         <KeyCap>{key}</KeyCap>
@@ -104,9 +106,7 @@ export function KeyboardShortcutsCheatsheetContent() {
         ))}
       </div>
       <div className="border-t border-border px-5 py-3">
-        <p className="text-xs text-muted-foreground">
-          Press <KeyCap>Esc</KeyCap> to close &middot; Shortcuts are disabled in text fields
-        </p>
+        <p className="text-xs text-muted-foreground">{pageText("press_ea683a") + " "}<KeyCap>Esc</KeyCap>{" " + pageText("toCloseShortcutsAreDisabledInTextFields_c98d9e")}</p>
       </div>
     </>
   );
@@ -119,11 +119,12 @@ export function KeyboardShortcutsCheatsheet({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md gap-0 p-0 overflow-hidden" showCloseButton={false}>
         <DialogHeader className="px-5 pt-5 pb-3">
-          <DialogTitle className="text-base">Keyboard shortcuts</DialogTitle>
+          <DialogTitle className="text-base">{pageText("keyboardShortcuts_266695")}</DialogTitle>
         </DialogHeader>
         <KeyboardShortcutsCheatsheetContent />
       </DialogContent>

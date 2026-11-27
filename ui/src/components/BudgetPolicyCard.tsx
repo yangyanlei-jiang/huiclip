@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation } from "@/i18n";
 import { centsToUsd, usdToCents } from "@paperclipai/shared";
@@ -100,7 +101,7 @@ export function BudgetPolicyCard({
         <div className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">{t("budgetPolicy.observed")}</div>
         <div className="mt-2 text-xl font-semibold tabular-nums">{formatCents(summary.observedAmount)}</div>
         <div className="mt-1 text-xs text-muted-foreground">
-          {summary.amount > 0 ? `${summary.utilizationPercent}% of limit` : "No cap configured"}
+          {summary.amount > 0 ? `${summary.utilizationPercent}% of limit` : pageText("noCapConfigured_793558")}
         </div>
       </div>
       <div>
@@ -108,8 +109,7 @@ export function BudgetPolicyCard({
         <div className="mt-2 text-xl font-semibold tabular-nums">
           {summary.amount > 0 ? formatCents(summary.amount) : pageText("disabled_f4f447")}
         </div>
-        <div className="mt-1 text-xs text-muted-foreground">
-          Soft alert at {summary.warnPercent}%{summary.paused && summary.pauseReason ? ` · ${summary.pauseReason} pause` : ""}
+        <div className="mt-1 text-xs text-muted-foreground">{pageText("softAlertAt_bcbdfd") + " "}{summary.warnPercent}%{summary.paused && summary.pauseReason ? ` · ${summary.pauseReason} pause` : ""}
         </div>
       </div>
     </div>
@@ -119,7 +119,7 @@ export function BudgetPolicyCard({
         <div className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">{t("budgetPolicy.observed")}</div>
         <div className="mt-2 text-xl font-semibold tabular-nums">{formatCents(summary.observedAmount)}</div>
         <div className="mt-1 text-xs text-muted-foreground">
-          {summary.amount > 0 ? `${summary.utilizationPercent}% of limit` : "No cap configured"}
+          {summary.amount > 0 ? `${summary.utilizationPercent}% of limit` : pageText("noCapConfigured_793558")}
         </div>
       </div>
       <div className="rounded-xl border border-border/70 bg-black/[0.18] px-4 py-3">
@@ -127,8 +127,7 @@ export function BudgetPolicyCard({
         <div className="mt-2 text-xl font-semibold tabular-nums">
           {summary.amount > 0 ? formatCents(summary.amount) : pageText("disabled_f4f447")}
         </div>
-        <div className="mt-1 text-xs text-muted-foreground">
-          Soft alert at {summary.warnPercent}%{summary.paused && summary.pauseReason ? ` · ${summary.pauseReason} pause` : ""}
+        <div className="mt-1 text-xs text-muted-foreground">{pageText("softAlertAt_bcbdfd") + " "}{summary.warnPercent}%{summary.paused && summary.pauseReason ? ` · ${summary.pauseReason} pause` : ""}
         </div>
       </div>
     </div>
@@ -136,13 +135,13 @@ export function BudgetPolicyCard({
 
   const progressSection = (
     <div className="space-y-2">
-      {summary.pendingRunCount > 0 && <p className="text-sm text-destructive">{summary.pendingRunCount} completed runs await accounting.</p>}
+      {summary.pendingRunCount > 0 && <p className="text-sm text-destructive">{summary.pendingRunCount}{" " + pageText("completedRunsAwaitAccounting_c2079f")}</p>}
       {summary.unpricedEventCount > 0 && (
-        <p className="text-sm text-destructive">{summary.unpricedEventCount} usage events are unpriced. Known spend excludes their unknown cost.</p>
+        <p className="text-sm text-destructive">{summary.unpricedEventCount}{" " + pageText("usageEventsAreUnpricedKnownSpendExcludesTheir_9bef52")}</p>
       )}
       <div className="flex items-center justify-between text-xs text-muted-foreground">
         <span>{t("budgetPolicy.remaining")}</span>
-        <span>{summary.amount > 0 ? formatCents(summary.remainingAmount) : "Unlimited"}</span>
+        <span>{summary.amount > 0 ? formatCents(summary.remainingAmount) : pageText("unlimited_b8bef3")}</span>
       </div>
       <div className={cn("h-2 overflow-hidden rounded-full", isPlain ? "bg-border/70" : "bg-muted/70")}>
         <div
@@ -150,7 +149,7 @@ export function BudgetPolicyCard({
           aria-valuenow={Math.round(progress)}
           aria-valuemin={0}
           aria-valuemax={100}
-          aria-label={`Budget utilization: ${Math.round(progress)}% used`}
+          aria-label={translateDynamic("dynamic:budgetUtilizationUsed", { value1: Math.round(progress) })}
           className={cn(
             "h-full rounded-full transition-(--tp-width-background-color) duration-200",
             summary.status === "hard_stop"
@@ -170,8 +169,8 @@ export function BudgetPolicyCard({
       <PauseCircle className="mt-0.5 h-4 w-4 shrink-0" />
       <div>
         {summary.scopeType === "project"
-          ? "Execution is paused for this project until the budget block is resolved."
-          : "Heartbeats are paused for this scope until the budget block is resolved."}
+          ? pageText("executionIsPausedForThisProjectUntilThe_ac6155")
+          : pageText("heartbeatsArePausedForThisScopeUntilThe_c8fe90")}
       </div>
     </div>
   ) : null;
@@ -179,9 +178,7 @@ export function BudgetPolicyCard({
   const saveSection = onSave ? (
     <div className={cn("flex flex-col gap-3 sm:flex-row sm:items-end", isPlain ? "" : "rounded-xl border border-border/70 bg-background/50 p-3")}>
       <div className="min-w-0 flex-1">
-        <label className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">
-          Budget (USD)
-        </label>
+        <label className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">{pageText("budgetUSD_d12983")}</label>
         <Input
           value={draftBudget}
           onChange={(event) => setDraftBudget(event.target.value)}
@@ -196,7 +193,7 @@ export function BudgetPolicyCard({
         }}
         disabled={!canSave || isSaving || parsedDraft === null}
       >
-        {isSaving ? pageText("saving_ae7e88") : summary.amount > 0 ? pageText("updateBudget_5132a7") : "Set budget"}
+        {isSaving ? pageText("saving_ae7e88") : summary.amount > 0 ? pageText("updateBudget_5132a7") : pageText("setBudget_14ef6c")}
       </Button>
     </div>
   ) : null;
@@ -223,7 +220,7 @@ export function BudgetPolicyCard({
             )}
           >
             <StatusIcon className="h-3.5 w-3.5" />
-            {summary.paused ? pageText("paused_c7dfb6") : summary.status === "warning" ? pageText("warning_e9c455") : summary.status === "hard_stop" ? "Hard stop" : pageText("healthy_80ea15")}
+            {summary.paused ? pageText("paused_c7dfb6") : summary.status === "warning" ? pageText("warning_e9c455") : summary.status === "hard_stop" ? pageText("hardStop_354250") : pageText("healthy_80ea15")}
           </div>
         </div>
 
@@ -252,7 +249,7 @@ export function BudgetPolicyCard({
           </div>
           <div className={cn("inline-flex items-center gap-2 rounded-full border px-3 py-1 text-(length:--text-micro) uppercase tracking-(--tracking-caps)", statusTone(summary.status))}>
             <StatusIcon className="h-3.5 w-3.5" />
-            {summary.paused ? pageText("paused_c7dfb6") : summary.status === "warning" ? pageText("warning_e9c455") : summary.status === "hard_stop" ? "Hard stop" : pageText("healthy_80ea15")}
+            {summary.paused ? pageText("paused_c7dfb6") : summary.status === "warning" ? pageText("warning_e9c455") : summary.status === "hard_stop" ? pageText("hardStop_354250") : pageText("healthy_80ea15")}
           </div>
         </div>
       </CardHeader>

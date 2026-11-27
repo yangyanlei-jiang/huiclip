@@ -69,10 +69,10 @@ export function MessageFooter({ timestamp }: { timestamp: string }) {
         <button type="button" className={ACTION} aria-label={pageText("copyMessage_26902e")}>
           <Copy className="h-3.5 w-3.5" />
         </button>
-        <button type="button" className={ACTION} aria-label="Good response">
+        <button type="button" className={ACTION} aria-label={pageText("goodResponse_b2feb2")}>
           <ThumbsUp className="h-3.5 w-3.5" />
         </button>
-        <button type="button" className={ACTION} aria-label="Bad response">
+        <button type="button" className={ACTION} aria-label={pageText("badResponse_00544f")}>
           <ThumbsDown className="h-3.5 w-3.5" />
         </button>
       </div>
@@ -82,10 +82,11 @@ export function MessageFooter({ timestamp }: { timestamp: string }) {
 
 /** TaskChatTurn.tsx:184-237, settled standalone turn: "✓ Worked ›". */
 export function WorkedRow() {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <button type="button" aria-expanded={false} className="group flex w-full items-center gap-2 px-1 text-muted-foreground transition-colors hover:text-foreground py-0.5 text-xs min-w-0">
       <Check className="h-3.5 w-3.5 shrink-0" />
-      <span>Worked</span>
+      <span>{pageText("worked_55bd39")}</span>
       <ChevronRight className="h-3 w-3 shrink-0 transition-transform" aria-hidden />
     </button>
   );
@@ -97,16 +98,13 @@ export function ComposerShell() {
   return (
     <div className="mx-auto mt-6 flex w-full max-w-(--tc-shell-max-w) flex-col gap-2 px-1 pb-1 md:px-0 md:pb-0">
       <div className="paperclip-task-chat-composer rounded-(--radius-task-composer) border border-border bg-card p-(--sz-18px) shadow-(--shadow-task-composer) dark:border-0 dark:bg-muted dark:shadow-none">
-        <div className="min-h-(--sz-48px) px-1 py-1 text-sm text-muted-foreground">{pageText("message_68f414") + " "}{DESIGNER} — describe what you want done…
-        </div>
+        <div className="min-h-(--sz-48px) px-1 py-1 text-sm text-muted-foreground">{pageText("message_68f414") + " "}{DESIGNER}{" " + pageText("describeWhatYouWantDone_41142a")}</div>
         <div className="mt-2 flex items-center gap-x-2 gap-y-3 flex-wrap">
           <span className="flex size-8 items-center justify-center rounded-md text-muted-foreground">
             <Plus className="size-4" />
           </span>
           <div className="ml-auto flex items-center gap-2">
-            <span className="inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-xs text-muted-foreground">
-              Uses defaults
-              <ChevronDown className="h-3 w-3" />
+            <span className="inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-xs text-muted-foreground">{pageText("usesDefaults_72aef5")}<ChevronDown className="h-3 w-3" />
             </span>
             <span className="flex size-8 items-center justify-center rounded-full bg-foreground text-background">
               <ArrowUp className="h-4 w-4" />

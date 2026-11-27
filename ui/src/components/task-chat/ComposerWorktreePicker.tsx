@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo, type CSSProperties } from "react";
 import { Folder, GitBranch, GitBranchPlus, Monitor } from "lucide-react";
@@ -38,6 +39,7 @@ export function ComposerWorktreePicker({
   mode, workspaceId, workspaces, onChange, loading, error, onRetry,
   disabled, mobile, contentStyle, selectedWorkspaceLabel,
 }: ComposerWorktreePickerProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const groups = useMemo(() => [
     { id: "new", options: [MODE_OPTIONS[0]!] },
@@ -63,11 +65,11 @@ export function ComposerWorktreePicker({
       value={value}
       groups={groups}
       onValueChange={(_, option) => onChange(option.mode, option.workspaceId ?? "")}
-      placeholder="Worktrees"
+      placeholder={pageText("worktrees_70a2c1")}
       triggerAriaLabel="Worktrees"
       mobileTitle="Worktrees"
-      searchPlaceholder="Search worktrees..."
-      emptyMessage="No matching worktrees."
+      searchPlaceholder={pageText("searchWorktrees_7ed97a")}
+      emptyMessage={pageText("noMatchingWorktrees_e59a09")}
       disabled={disabled}
       modal={mobile}
       contentStyle={contentStyle}
@@ -78,8 +80,8 @@ export function ComposerWorktreePicker({
         <span className="flex min-w-0 items-center gap-1.5">
           <GitBranch className="size-3.5 shrink-0" aria-hidden />
           <span className="truncate">
-            <span className="hidden text-muted-foreground sm:inline">Worktrees · </span>
-            {option?.label ?? selectedWorkspaceLabel ?? "Select worktree"}
+            <span className="hidden text-muted-foreground sm:inline">{pageText("worktrees_b4daff") + " "}</span>
+            {option?.label ?? selectedWorkspaceLabel ?? pageText("selectWorktree_eb130a")}
           </span>
         </span>
       )}
@@ -98,12 +100,10 @@ export function ComposerWorktreePicker({
       }}
       listFooter={loading || error || workspaces.length === 0 ? (
         <div className="border-t border-border px-3 py-2 text-xs text-muted-foreground" role="status">
-          {loading ? "Loading existing worktrees…" : error ? (
-            <span className="flex items-center justify-between gap-2">
-              Couldn't load worktrees.
-              <button type="button" className="rounded px-2 py-1 text-foreground hover:bg-accent" onClick={onRetry}>{translateUi("interfaceCopy.retry")}</button>
+          {loading ? pageText("loadingExistingWorktrees_79f122") : error ? (
+            <span className="flex items-center justify-between gap-2">{pageText("couldnTLoadWorktrees_0c3db8")}<button type="button" className="rounded px-2 py-1 text-foreground hover:bg-accent" onClick={onRetry}>{translateUi("interfaceCopy.retry")}</button>
             </span>
-          ) : "No existing worktrees yet. Choose New worktree to start one."}
+          ) : pageText("noExistingWorktreesYetChooseNewWorktreeTo_54cceb")}
         </div>
       ) : undefined}
     />

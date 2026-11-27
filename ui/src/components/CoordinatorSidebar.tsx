@@ -74,7 +74,7 @@ function ProjectRecent({ project }: { project: Project }) {
       </button>
     </div>
     {expanded && <div className="ml-5 border-l border-border pl-1">
-      {isPending ? <p className="px-3 py-2 text-xs text-muted-foreground" role="status">{pageText("loadingTasks_a3495d")}</p> : error ? <p className="px-3 py-2 text-xs text-muted-foreground">Couldn’t load tasks.</p> : tasks?.length ? tasks.map(task =>
+      {isPending ? <p className="px-3 py-2 text-xs text-muted-foreground" role="status">{pageText("loadingTasks_a3495d")}</p> : error ? <p className="px-3 py-2 text-xs text-muted-foreground">{pageText("couldnTLoadTasks_77a193")}</p> : tasks?.length ? tasks.map(task =>
         <SidebarNavItem className="design-sidebar-item" key={task.id} to={`/issues/${task.identifier ?? task.id}`} label={task.title} iconNode={<StatusIcon {...taskStatusIconProps(task)} />} />)
         : <p className="px-3 py-2 text-xs text-muted-foreground">{t("nav.noTasks")}</p>}
     </div>}

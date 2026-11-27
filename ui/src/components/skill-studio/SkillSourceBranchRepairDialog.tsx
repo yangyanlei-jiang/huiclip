@@ -1,3 +1,5 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useRef, useState } from 'react';
 import { LoaderCircle } from 'lucide-react';
@@ -17,6 +19,7 @@ export function SkillSourceBranchRepairDialog({ repository, currentBranch, branc
   onClose: () => void;
   onReturnFocus?: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [branch, setBranch] = useState('');
   const [pending, setPending] = useState(false);
@@ -25,7 +28,7 @@ export function SkillSourceBranchRepairDialog({ repository, currentBranch, branc
   async function save() {
     setPending(true); setError(null);
     try { await onSave(branch); onClose(); }
-    catch (problem) { setError(problem instanceof Error ? problem.message : 'Could not change the branch. Try again.'); }
+    catch (problem) { setError(problem instanceof Error ? problem.message : interfaceNotice("interface:couldNotChangeTheBranchTryAgain_b8704a")); }
     finally { setPending(false); }
   }
   return <Dialog open onOpenChange={open => { if (!open && !pending) onClose(); }}>
@@ -33,7 +36,7 @@ export function SkillSourceBranchRepairDialog({ repository, currentBranch, branc
       onCloseAutoFocus={event => { if (onReturnFocus) { event.preventDefault(); onReturnFocus(); } }}>
       <DialogHeader>
         <DialogTitle ref={title} tabIndex={-1} className="outline-none">{translateUi("interfaceCopy.chooseANewBranch")}</DialogTitle>
-        <DialogDescription className="break-words">{repository} · Currently tracking {currentBranch === 'HEAD' ? 'the default branch' : currentBranch}</DialogDescription>
+        <DialogDescription className="break-words">{repository}{" " + pageText("currentlyTracking_b99492") + " "}{currentBranch === 'HEAD' ? pageText("theDefaultBranch_b7a8ef") : currentBranch}</DialogDescription>
       </DialogHeader>
       <form className="flex min-w-0 flex-col gap-4" onSubmit={event => { event.preventDefault(); if (branch && !pending) void save(); }}>
         <RepositoryBranchSelect value={branch} branches={branches} loading={loading} error={loadError} disabled={pending}
@@ -41,7 +44,7 @@ export function SkillSourceBranchRepairDialog({ repository, currentBranch, branc
         {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
         <div className="flex items-center justify-between gap-3">
           <Button type="button" variant="ghost" disabled={pending} onClick={onClose}>{translateUi("interfaceCopy.cancel")}</Button>
-          <Button type="submit" disabled={!branch || pending}>{pending && <LoaderCircle className="size-4 animate-spin motion-reduce:animate-none" />}{pending ? 'Changing branch…' : 'Change branch'}</Button>
+          <Button type="submit" disabled={!branch || pending}>{pending && <LoaderCircle className="size-4 animate-spin motion-reduce:animate-none" />}{pending ? pageText("changingBranch_99b1dd") : pageText("changeBranch_e2afb1")}</Button>
         </div>
       </form>
     </DialogContent>

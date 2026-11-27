@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { CoordinatorConversationTasksPanel } from "@/components/coordinator/CoordinatorConversationTasksPanel";
 import { useCoordinatorWorkspaceEnabled } from "@/hooks/useCoordinatorWorkspaceEnabled";
 import { TextAttachmentContext } from "@/context/TextAttachmentContext";
@@ -296,6 +297,7 @@ function TaskSidePanelForScope({
   openSkillName,
   onSkillOpened,
 }: TaskSidePanelProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const location = useLocation();
   const handleScroll = useScrollbarWhileScrolling();
   // Agent Chat: agent chats swap the conversation issue's own panels for
@@ -646,26 +648,26 @@ function TaskSidePanelForScope({
 
   const launcherSections = useMemo<SidePanelLauncherSection[]>(() => {
     const primary: SidePanelLauncherItem[] = conversationAgentId ? [
-      { id: "agent-tasks", label: "Tasks", description: "Tasks this agent worked on", icon: <ListChecks />, alreadyOpen: controller.tabs.some((tab) => tab.id === "agent-tasks") },
-      { id: "artifacts", label: "Artifacts", description: "Files this agent produced", icon: <Box />, alreadyOpen: controller.tabs.some((tab) => tab.id === "artifacts") },
-      { id: "properties", label: "Properties", icon: <SlidersHorizontal />, alreadyOpen: controller.tabs.some((tab) => tab.id === "properties") },
+      { id: "agent-tasks", label: pageText("taskLauncher_tasks"), description: pageText("taskLauncher_agentTasks"), icon: <ListChecks />, alreadyOpen: controller.tabs.some((tab) => tab.id === "agent-tasks") },
+      { id: "artifacts", label: pageText("taskLauncher_artifacts"), description: pageText("taskLauncher_agentArtifacts"), icon: <Box />, alreadyOpen: controller.tabs.some((tab) => tab.id === "artifacts") },
+      { id: "properties", label: pageText("taskLauncher_properties"), icon: <SlidersHorizontal />, alreadyOpen: controller.tabs.some((tab) => tab.id === "properties") },
     ] : [
-      { id: "properties", label: "Properties", icon: <SlidersHorizontal />, alreadyOpen: controller.tabs.some((tab) => tab.id === "properties") },
-      ...(subtasksAvailable ? [{ id: "subtasks", label: taskLabel, description: tasksTab?.hasError ? "Could not load all tasks" : `${taskCount} total`, icon: <ListTree />, alreadyOpen: controller.tabs.some((tab) => tab.id === "subtasks") }] : []),
-      { id: "artifacts", label: "Artifacts", icon: <Box />, alreadyOpen: controller.tabs.some((tab) => tab.id === "artifacts") },
+      { id: "properties", label: pageText("taskLauncher_properties"), icon: <SlidersHorizontal />, alreadyOpen: controller.tabs.some((tab) => tab.id === "properties") },
+      ...(subtasksAvailable ? [{ id: "subtasks", label: taskLabel, description: tasksTab?.hasError ? pageText("taskLauncher_tasksError") : pageText("taskLauncher_count", { count: taskCount }), icon: <ListTree />, alreadyOpen: controller.tabs.some((tab) => tab.id === "subtasks") }] : []),
+      { id: "artifacts", label: pageText("taskLauncher_artifacts"), icon: <Box />, alreadyOpen: controller.tabs.some((tab) => tab.id === "artifacts") },
     ];
     for (const [index, browser] of (browsersQuery.data ?? []).entries()) {
-      primary.push({ id: `browser:${browser.id}`, label: (browsersQuery.data?.length ?? 0) > 1 ? `Browser ${index + 1}` : "Browser", description: browser.status, icon: <Globe />, alreadyOpen: controller.tabs.some(tab => tab.id === `browser:${browser.id}`) });
+      primary.push({ id: `browser:${browser.id}`, label: (browsersQuery.data?.length ?? 0) > 1 ? pageText("taskLauncher_browserIndex", { index: index + 1 }) : pageText("taskLauncher_browser"), description: browser.status, icon: <Globe />, alreadyOpen: controller.tabs.some(tab => tab.id === `browser:${browser.id}`) });
     }
     for (const panel of pluginPanels) primary.push({ id: taskPluginPanelId(panel), label: panel.slot.displayName, icon: <AppWindow />, alreadyOpen: controller.tabs.some(tab => tab.id === taskPluginPanelId(panel)) });
     if (fileTabsEnabled) {
-      primary.push({ id: "files", label: "Files", icon: <FolderOpen />, shortcut: "G F", alreadyOpen: controller.tabs.some((tab) => tab.id === "files") });
+      primary.push({ id: "files", label: pageText("taskLauncher_files"), icon: <FolderOpen />, shortcut: "G F", alreadyOpen: controller.tabs.some((tab) => tab.id === "files") });
     }
     const documentItems: SidePanelLauncherItem[] = [
       ...(planDocument ? [{
         id: "document:plan",
         label: documentDisplayTitle(planDocument),
-        description: `Revision ${planDocument.latestRevisionNumber ?? 1}`,
+        description: pageText("taskLauncher_revision", { number: planDocument.latestRevisionNumber ?? 1 }),
         icon: <Lightbulb />,
         alreadyOpen: controller.tabs.some((tab) => tab.id === "document:plan"),
       }] : []),
@@ -675,16 +677,16 @@ function TaskSidePanelForScope({
         .map((document) => ({
           id: `document:${document.key}`,
           label: documentDisplayTitle(document),
-          description: `Revision ${document.latestRevisionNumber ?? 1}`,
+          description: pageText("taskLauncher_revision", { number: document.latestRevisionNumber ?? 1 }),
           icon: <FileText />,
           alreadyOpen: controller.tabs.some((tab) => tab.id === `document:${document.key}`),
         })),
     ];
     const sections: SidePanelLauncherSection[] = [
-      { id: "open", label: "Open", items: primary },
+      { id: "open", label: pageText("taskLauncher_open"), items: primary },
     ];
     if (documentItems.length > 0) {
-      sections.push({ id: "documents", label: "Task documents", items: documentItems });
+      sections.push({ id: "documents", label: pageText("taskLauncher_documents"), items: documentItems });
     }
     if (fileTabsEnabled) {
       const recentItems = recentFilesQuery.data?.state === "available"
@@ -698,14 +700,14 @@ function TaskSidePanelForScope({
         : [];
       sections.push({
         id: "recent-files",
-        label: "Recent workspace files",
+        label: pageText("taskLauncher_recentFiles"),
         items: recentItems,
         loading: recentFilesQuery.isLoading,
-        error: recentFilesView.kind === "error" ? "Recent files are temporarily unavailable." : null,
+        error: recentFilesView.kind === "error" ? pageText("taskLauncher_recentError") : null,
       });
     }
     return sections;
-  }, [pluginPanels, browsersQuery.data, conversationAgentId, taskCount, taskLabel, tasksTab?.hasError, controller.tabs, documents, fileTabsEnabled, planDocument, recentFilesQuery.data, recentFilesView.kind, recentFilesQuery.isLoading, subtasksAvailable]);
+  }, [pageText, pluginPanels, browsersQuery.data, conversationAgentId, taskCount, taskLabel, tasksTab?.hasError, controller.tabs, documents, fileTabsEnabled, planDocument, recentFilesQuery.data, recentFilesView.kind, recentFilesQuery.isLoading, subtasksAvailable]);
 
   function selectLauncherItem(item: SidePanelLauncherItem) {
     markInteracted();
@@ -768,7 +770,7 @@ function TaskSidePanelForScope({
               ? "h-(--side-panel-tab-height) w-(--side-panel-tab-height) rounded-md"
               : "h-(--side-panel-tab-height) w-(--side-panel-tab-height) rounded-(--side-panel-control-radius)",
           )}
-          aria-label="Open a new tab"
+          aria-label={pageText("openANewTab_bc7e24")}
         >
           <Plus aria-hidden />
         </Button>
@@ -844,7 +846,7 @@ function TaskSidePanelForScope({
   } else if (activeTab.payload.kind === "artifacts" && conversationAgentId) {
     content = (
       <div className="space-y-4">
-        <section aria-label="Conversation documents">
+        <section aria-label={pageText("conversationDocuments_72039d")}>
           <TaskGeneralDocuments issue={issue} documentEditor={documentEditor ?? {}} />
         </section>
         <AgentArtifactsPanel companyId={issue.companyId} agentId={conversationAgentId} />
@@ -934,7 +936,7 @@ function TaskSidePanelForScope({
           {header}
           {onRequestClose ? (
             mobile ? (
-              <Button variant="ghost" size="icon" className="size-(--sz-44px) shrink-0" aria-label="Close side panel" onClick={onRequestClose}>
+              <Button variant="ghost" size="icon" className="size-(--sz-44px) shrink-0" aria-label={pageText("closeSidePanel_60a3a7")} onClick={onRequestClose}>
                 <X aria-hidden />
               </Button>
             ) : <SidePanelToggleButton open onToggle={onRequestClose} />

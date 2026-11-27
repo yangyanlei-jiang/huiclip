@@ -92,8 +92,7 @@ function ProposalRow({
 
         {/* Provenance meta */}
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-          <span className="inline-flex items-center gap-1">
-            by <AgentRefChip agent={proposal.proposedBy} className="font-medium text-foreground" />
+          <span className="inline-flex items-center gap-1">{pageText("by_408158") + " "}<AgentRefChip agent={proposal.proposedBy} className="font-medium text-foreground" />
           </span>
           {proposal.originIssue ? (
             <>
@@ -146,6 +145,7 @@ export function ProposalsTab({
   companyId: string;
   providerConfigs: CompanySecretProviderConfig[];
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const proposalsQuery = useQuery({
     queryKey: queryKeys.secrets.proposals(companyId, "pending"),
     queryFn: () => secretsApi.listProposals(companyId, "pending"),
@@ -183,8 +183,7 @@ export function ProposalsTab({
   if (proposalsQuery.isPending || proposalsView.kind === "reconnecting") {
     return (
       <div className="flex items-center gap-2 py-8 text-sm text-muted-foreground">
-        <Loader2 className="size-4 animate-spin" /> Loading proposals…
-      </div>
+        <Loader2 className="size-4 animate-spin" />{" " + pageText("loadingProposals_e1f104")}</div>
     );
   }
 
@@ -192,18 +191,15 @@ export function ProposalsTab({
     return (
       <EmptyState
         icon={Inbox}
-        title="No pending proposals"
-        message="When an agent proposes a secret or an access binding, it shows up here for review."
+        title={pageText("noPendingProposals_36dd28")}
+        message={pageText("whenAnAgentProposesASecretOrAn_14a772")}
       />
     );
   }
 
   return (
     <div className="space-y-2">
-      <p className="text-xs text-muted-foreground">
-        Agents propose credentials and access bindings; you approve or reject them here. Proposed
-        values are never shown — only a fingerprint and length.
-      </p>
+      <p className="text-xs text-muted-foreground">{pageText("agentsProposeCredentialsAndAccessBindingsYouApprove_5a452b")}</p>
       {sorted.map((proposal) => (
         <ProposalRow
           key={proposal.id}

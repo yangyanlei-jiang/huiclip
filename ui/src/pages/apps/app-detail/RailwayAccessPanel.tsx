@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useId, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ConfigureRailwaySsh, ConnectionGrantsResponse, RailwaySshSetup, ToolConnection } from "@paperclipai/shared";
@@ -9,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 export function RailwayAccessPanel({ connection, grants }: { connection: ToolConnection; grants?: ConnectionGrantsResponse }) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const id = useId();
   const setup = connection.config?.railwaySsh as RailwaySshSetup | null | undefined;
@@ -29,40 +31,40 @@ export function RailwayAccessPanel({ connection, grants }: { connection: ToolCon
   });
   return <section className="space-y-4" aria-labelledby={`${id}-title`}>
     <div className="space-y-2">
-      <h2 id={`${id}-title`} className="text-lg font-semibold">Railway operations</h2>
+      <h2 id={`${id}-title`} className="text-lg font-semibold">{pageText("railwayOperations_c65834")}</h2>
       <p className="text-sm text-muted-foreground">
-        {typeof connection.config?.railwayApiMessage === "string" ? connection.config?.railwayApiMessage : "Refresh actions after connecting to check service, log, and deployment access."}
+        {typeof connection.config?.railwayApiMessage === "string" ? connection.config?.railwayApiMessage : pageText("refreshActionsAfterConnectingToCheckServiceLog_1af280")}
       </p>
     </div>
     <div className="space-y-2">
-      <h3 className="font-medium">Container access</h3>
-      <p className="text-sm text-muted-foreground">To allow Paperclip direct SSH access to Railway containers, you can optionally generate an SSH key pair. <a className="underline" href="https://docs.railway.com/cli/ssh" target="_blank" rel="noreferrer">Railway SSH documentation</a></p>
+      <h3 className="font-medium">{pageText("containerAccess_9d17b7")}</h3>
+      <p className="text-sm text-muted-foreground">{pageText("toAllowPaperclipDirectSSHAccessToRailway_f4be2a") + " "}<a className="underline" href="https://docs.railway.com/cli/ssh" target="_blank" rel="noreferrer">{pageText("railwaySSHDocumentation_dce0ff")}</a></p>
     </div>
-    {!canConfigure && <p className="text-sm text-muted-foreground">The connection manager and authorization owner can configure container access.</p>}
+    {!canConfigure && <p className="text-sm text-muted-foreground">{pageText("theConnectionManagerAndAuthorizationOwnerCanConfigure_c8478e")}</p>}
     {(canConfigure || canRemove) && grantId && <>
       {!setup && eligible.length > 1 && <div className="space-y-2">
-        <Label htmlFor={`${id}-grant`}>Authorization</Label>
+        <Label htmlFor={`${id}-grant`}>{pageText("authorization_5e25ce")}</Label>
         <select id={`${id}-grant`} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" value={grantId} onChange={(event) => setSelectedGrant(event.target.value)}>
-          {eligible.map((grant) => <option key={grant.id} value={grant.id}>{grant.kind === "organization" ? "Shared account" : grant.kind === "user" ? "My account" : "Agent account"}</option>)}
+          {eligible.map((grant) => <option key={grant.id} value={grant.id}>{grant.kind === "organization" ? pageText("sharedAccount_4658bd") : grant.kind === "user" ? pageText("myAccount_619098") : pageText("agentAccount_16cff5")}</option>)}
         </select>
       </div>}
-      {!setup && <Button variant="outline" disabled={mutation.isPending} onClick={() => mutation.mutate({ action: "prepare", grantId })}>Generate SSH key pair</Button>}
+      {!setup && <Button variant="outline" disabled={mutation.isPending} onClick={() => mutation.mutate({ action: "prepare", grantId })}>{pageText("generateSSHKeyPair_044811")}</Button>}
       {setup && <>
         <div className="space-y-2">
-          <Label htmlFor={`${id}-public`}>Public key</Label>
+          <Label htmlFor={`${id}-public`}>{pageText("publicKey_affb45")}</Label>
           <Textarea id={`${id}-public`} readOnly value={setup.publicKey} className="font-mono text-xs" />
-          <p className="text-sm text-muted-foreground">Register this public key in the Railway account used by this authorization. The private key stays in Paperclip’s vault. <a className="underline" href="https://docs.railway.com/cli/ssh#manage-ssh-keys" target="_blank" rel="noreferrer">Railway key setup</a></p>
+          <p className="text-sm text-muted-foreground">{pageText("registerThisPublicKeyInTheRailwayAccount_6bf0f1") + " "}<a className="underline" href="https://docs.railway.com/cli/ssh#manage-ssh-keys" target="_blank" rel="noreferrer">{pageText("railwayKeySetup_b6cbc4")}</a></p>
         </div>
         <div className="space-y-2">
-          <Label htmlFor={`${id}-host`}>Verified Railway host key</Label>
+          <Label htmlFor={`${id}-host`}>{pageText("verifiedRailwayHostKey_7cfedc")}</Label>
           <Textarea id={`${id}-host`} value={knownHosts} onChange={(event) => setKnownHosts(event.target.value)} placeholder="ssh.railway.com ssh-ed25519 …" className="font-mono text-xs" />
-          <p className="text-sm text-muted-foreground">Paste the ssh.railway.com line from a known_hosts entry you have independently verified. Paperclip refuses untrusted or changed host keys.</p>
+          <p className="text-sm text-muted-foreground">{pageText("pasteTheSshRailwayComLineFromA_027826")}</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button disabled={!canConfigure || mutation.isPending || !knownHosts.trim()} onClick={() => mutation.mutate({ action: "enable", grantId, knownHosts })}>{setup.enabled ? "Update trusted host key" : "Enable container access"}</Button>
-          <Button variant="outline" disabled={mutation.isPending} onClick={() => mutation.mutate({ action: "remove", grantId })}>Remove container key</Button>
+          <Button disabled={!canConfigure || mutation.isPending || !knownHosts.trim()} onClick={() => mutation.mutate({ action: "enable", grantId, knownHosts })}>{setup.enabled ? pageText("updateTrustedHostKey_9961b2") : pageText("enableContainerAccess_e84b6f")}</Button>
+          <Button variant="outline" disabled={mutation.isPending} onClick={() => mutation.mutate({ action: "remove", grantId })}>{pageText("removeContainerKey_59a337")}</Button>
         </div>
-        <p className="text-sm text-muted-foreground">{setup.enabled ? "Container access is enabled for this authorization." : "Register the public key and verify the host key before enabling access."} Removing the key stops new Paperclip connections. Also remove its public key from Railway.</p>
+        <p className="text-sm text-muted-foreground">{setup.enabled ? pageText("containerAccessIsEnabledForThisAuthorization_06e63d") : pageText("registerThePublicKeyAndVerifyTheHost_d42232")}{" " + pageText("removingTheKeyStopsNewPaperclipConnectionsAlso_70e044")}</p>
       </>}
     </>}
     {mutation.error ? <p role="alert" className="text-sm text-destructive">{describeError(mutation.error).body}</p> : null}

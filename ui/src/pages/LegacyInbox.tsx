@@ -1,3 +1,5 @@
+import { t as interfaceNotice } from "@/i18n";
+import { t as translateDynamic } from "../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { describeError } from "../api/errors";
@@ -374,7 +376,7 @@ export function FailedRunInboxRow({
                   {issue.title}
                 </>
               ) : (
-                <>Failed run{linkedAgentName ? ` — ${linkedAgentName}` : ""}</>
+                <>{pageText("failedRun_22e8b7")}{linkedAgentName ? ` — ${linkedAgentName}` : ""}</>
               )}
             </span>
             <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
@@ -639,8 +641,8 @@ function JoinRequestInboxRow({
               {label}
             </span>
             <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-              <span>requested {timeAgo(joinRequest.createdAt)} from IP {joinRequest.requestIp}</span>
-              {joinRequest.adapterType && <span>adapter: {joinRequest.adapterType}</span>}
+              <span>{pageText("requested_fcb088") + " "}{timeAgo(joinRequest.createdAt)}{" " + pageText("fromIP_9c32a9") + " "}{joinRequest.requestIp}</span>
+              {joinRequest.adapterType && <span>{pageText("adapter_231df8") + " "}{joinRequest.adapterType}</span>}
             </span>
           </span>
         </div>
@@ -765,7 +767,7 @@ export function Inbox() {
   });
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Inbox" }]);
+    setBreadcrumbs([{ label: interfaceNotice("interface:inbox_44caf7") }]);
   }, [setBreadcrumbs]);
 
   useEffect(() => {
@@ -1696,7 +1698,7 @@ export function Inbox() {
     },
     onError: (error) => {
       pushToast({
-        title: "Run retry failed",
+        title: interfaceNotice("interface:runRetryFailed_d86553"),
         body: describeError(error, { action: "retry the run" }).body,
         tone: "error",
       });
@@ -2227,7 +2229,7 @@ export function Inbox() {
   useWarmTaskDetailCode(Boolean(selectedCompanyId) && allLoaded && tab !== "blocked" && totalVisibleWorkItems > 0);
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={InboxIcon} message="Select a company to view inbox." />;
+    return <EmptyState icon={InboxIcon} message={pageText("selectACompanyToViewInbox_effa2f")} />;
   }
 
   const hasRunFailures = failedRuns.length > 0;
@@ -2276,7 +2278,7 @@ export function Inbox() {
           <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Search inbox…"
+            placeholder={pageText("searchInbox_f5ff0e")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => {
@@ -2324,7 +2326,7 @@ export function Inbox() {
             <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search inbox…"
+              placeholder={pageText("searchInbox_f5ff0e")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => {
@@ -2401,7 +2403,7 @@ export function Inbox() {
                 visibleColumnSet={visibleIssueColumnSet}
                 onToggleColumn={toggleIssueColumn}
                 onResetColumns={() => setIssueColumns(DEFAULT_INBOX_ISSUE_COLUMNS)}
-                title="Choose which inbox columns stay visible"
+                title={pageText("chooseWhichInboxColumnsStayVisible_c6e3eb")}
                 iconOnly
               />
               <Popover>
@@ -2505,7 +2507,7 @@ export function Inbox() {
                 visibleColumnSet={visibleIssueColumnSet}
                 onToggleColumn={toggleIssueColumn}
                 onResetColumns={() => setIssueColumns(DEFAULT_INBOX_ISSUE_COLUMNS)}
-                title="Choose which inbox columns stay visible"
+                title={pageText("chooseWhichInboxColumnsStayVisible_c6e3eb")}
                 iconOnly
               />
               {canMarkAllRead && (
@@ -2518,15 +2520,13 @@ export function Inbox() {
                     onClick={() => setShowMarkAllReadConfirm(true)}
                     disabled={markAllReadMutation.isPending}
                   >
-                    {markAllReadMutation.isPending ? "Marking…" : pageText("markAllAsRead_1b8316")}
+                    {markAllReadMutation.isPending ? pageText("marking_cbf693") : pageText("markAllAsRead_1b8316")}
                   </Button>
                   <Dialog open={showMarkAllReadConfirm} onOpenChange={setShowMarkAllReadConfirm}>
                     <DialogContent className="sm:max-w-md">
                       <DialogHeader>
-                        <DialogTitle>Mark all as read?</DialogTitle>
-                        <DialogDescription>
-                          This will mark {unreadIssueIds.length}{" " + pageText("unread_1b9aeb") + " "}{unreadIssueIds.length === 1 ? pageText("item_3a7d97") : pageText("items_7316c8")} as read.
-                        </DialogDescription>
+                        <DialogTitle>{pageText("markAllAsRead_b69f52")}</DialogTitle>
+                        <DialogDescription>{pageText("thisWillMark_fd9527") + " "}{unreadIssueIds.length}{" " + pageText("unread_1b9aeb") + " "}{unreadIssueIds.length === 1 ? pageText("item_3a7d97") : pageText("items_7316c8")}{" " + pageText("asRead_6b2646")}</DialogDescription>
                       </DialogHeader>
                       <DialogFooter>
                         <Button variant="outline" onClick={() => setShowMarkAllReadConfirm(false)}>{translateUi("interfaceCopy.cancel")}</Button>
@@ -2558,11 +2558,11 @@ export function Inbox() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="everything">{translateUi("interfaceCopy.allCategories")}</SelectItem>
-              <SelectItem value="issues_i_touched">My recent tasks</SelectItem>
-              <SelectItem value="join_requests">Join requests</SelectItem>
+              <SelectItem value="issues_i_touched">{pageText("myRecentTasks_dba60e")}</SelectItem>
+              <SelectItem value="join_requests">{pageText("joinRequests_ed8709")}</SelectItem>
               <SelectItem value="approvals">{translateUi("interfaceCopy.approvals")}</SelectItem>
-              <SelectItem value="failed_runs">Failed runs</SelectItem>
-              <SelectItem value="alerts">Alerts</SelectItem>
+              <SelectItem value="failed_runs">{pageText("failedRuns_c9e12f")}</SelectItem>
+              <SelectItem value="alerts">{pageText("alerts_d0efe0")}</SelectItem>
             </SelectContent>
           </Select>
 
@@ -2572,12 +2572,12 @@ export function Inbox() {
               onValueChange={(value) => updateAllApprovalFilter(value as InboxApprovalFilter)}
             >
               <SelectTrigger className="h-8 w-(--sz-170px) text-xs">
-                <SelectValue placeholder="Approval status" />
+                <SelectValue placeholder={pageText("approvalStatus_a369b4")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All approval statuses</SelectItem>
-                <SelectItem value="actionable">Needs action</SelectItem>
-                <SelectItem value="resolved">Resolved</SelectItem>
+                <SelectItem value="all">{pageText("allApprovalStatuses_96b859")}</SelectItem>
+                <SelectItem value="actionable">{pageText("needsAction_c633b6")}</SelectItem>
+                <SelectItem value="resolved">{pageText("resolved_d999ae")}</SelectItem>
               </SelectContent>
             </Select>
           )}
@@ -2619,14 +2619,14 @@ export function Inbox() {
           icon={searchQuery.trim() ? Search : InboxIcon}
           message={
             searchQuery.trim()
-              ? "No inbox items match your search."
+              ? pageText("noInboxItemsMatchYourSearch_6d41b2")
               : tab === "mine"
-              ? "Inbox zero."
+              ? pageText("inboxZero_f92ddc")
               : tab === "unread"
-              ? "No new inbox items."
+              ? pageText("noNewInboxItems_59119b")
               : tab === "recent"
-                ? "No recent inbox items."
-                : "No inbox items match these filters."
+                ? pageText("noRecentInboxItems_b0b30f")
+                : pageText("noInboxItemsMatchTheseFilters_082480")
           }
         />
       )}
@@ -2738,7 +2738,7 @@ export function Inbox() {
                       }
                       titleSuffix={hasChildren && !isExpanded && depth === 0 ? (
                         <span className="ml-1.5 text-xs text-muted-foreground">
-                          ({childCount} sub-task{childCount !== 1 ? "s" : ""})
+                          ({childCount}{" " + pageText("subTask_6dc147")}{childCount !== 1 ? "s" : ""})
                         </span>
                       ) : undefined}
                       mobileMeta={issueActivityText(issue).toLowerCase()}
@@ -2814,7 +2814,7 @@ export function Inbox() {
                       >
                         <div className="h-px flex-1 bg-border/80" />
                         <span className="shrink-0 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-                          {group.searchSection === "archived" ? pageText("archived_eddc81") : "Other results"}
+                          {group.searchSection === "archived" ? pageText("archived_eddc81") : pageText("otherResults_27544c")}
                         </span>
                         <div className="h-px flex-1 bg-border/80" />
                       </div>,
@@ -2851,8 +2851,8 @@ export function Inbox() {
                               variant="ghost"
                               size="icon-xs"
                               className="-mr-2 text-muted-foreground"
-                              title={`New task in ${group.label}`}
-                              aria-label={`New task in ${group.label}`}
+                              title={translateDynamic("dynamic:newTaskIn", { value1: group.label })}
+                              aria-label={translateDynamic("dynamic:newTaskIn", { value1: group.label })}
                               onClick={(event) => {
                                 event.stopPropagation();
                                 openCreateIssueForGroup(group);
@@ -3106,9 +3106,7 @@ export function Inbox() {
         <>
           {showSeparatorBefore("alerts") && <Separator />}
           <div>
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-              Alerts
-            </h3>
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">{pageText("alerts_d0efe0")}</h3>
             <div className="divide-y divide-border border border-border">
               {showAggregateAgentError && (
                 <div className="group/alert relative flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/50">
@@ -3119,8 +3117,7 @@ export function Inbox() {
                     <AlertTriangle className="h-4 w-4 shrink-0 text-red-600 dark:text-red-400" />
                     <span className="text-sm">
                       <span className="font-medium">{dashboard!.agents.error}</span>{" "}
-                      {dashboard!.agents.error === 1 ? "agent has" : "agents have"} errors
-                    </span>
+                      {dashboard!.agents.error === 1 ? pageText("agentHas_24ad4f") : pageText("agentsHave_6dd0c2")}{" " + pageText("errors_570043")}</span>
                   </Link>
                   <button
                     type="button"
@@ -3139,11 +3136,8 @@ export function Inbox() {
                     className="flex flex-1 cursor-pointer items-center gap-3 no-underline text-inherit"
                   >
                     <AlertTriangle className="h-4 w-4 shrink-0 text-yellow-400" />
-                    <span className="text-sm">
-                      Budget at{" "}
-                      <span className="font-medium">{dashboard!.costs.monthUtilizationPercent}%</span>{" "}
-                      utilization this month
-                    </span>
+                    <span className="text-sm">{pageText("budgetAt_c7b0c0")}{" "}
+                      <span className="font-medium">{dashboard!.costs.monthUtilizationPercent}%</span>{" "}{pageText("utilizationThisMonth_25e6a5")}</span>
                   </Link>
                   <button
                     type="button"

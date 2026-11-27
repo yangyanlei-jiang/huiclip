@@ -80,6 +80,7 @@ function RunnerTurnStatus({
   continuedAfterSteering?: boolean;
   waitingLabel?: string | null;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const terminal = isTerminalRunStatus(status);
   useSecondTick(!terminal && startedAtMs != null);
   const elapsedMs =
@@ -105,7 +106,7 @@ function RunnerTurnStatus({
       aria-live="polite"
       aria-atomic="true"
     >
-      {continuedAfterSteering ? <span data-conversation-meta="">Continued after steering · </span> : null}
+      {continuedAfterSteering ? <span data-conversation-meta="">{pageText("continuedAfterSteering_75d270") + " "}</span> : null}
       {label}<span data-conversation-meta="">{suffix}</span>
     </span>
   );
@@ -199,6 +200,7 @@ export function TaskChatRunnerTurn({
     decision: TaskChatRuntimeRequestDecision,
   ) => void | Promise<void>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { failures: mcpStartupFailures, rest: turnItems } = partitionRunHealthItems(items);
   const terminal = isTerminalRunStatus(status);
   const waitingLabel = runnerWaitingLabel({ runId, status, execution, preparationLabel, startedAtMs });
@@ -267,9 +269,7 @@ export function TaskChatRunnerTurn({
           className="px-1 py-1 text-xs text-muted-foreground"
           role="status"
           data-testid="task-chat-activity-unavailable"
-        >
-          Live runner activity is temporarily unavailable. Retrying…
-        </div>
+        >{pageText("liveRunnerActivityIsTemporarilyUnavailableRetrying_b3d871")}</div>
       ) : null}
       {timelineRows.length > 0 ? (
         <div

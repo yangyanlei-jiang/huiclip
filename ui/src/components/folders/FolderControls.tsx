@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
@@ -122,7 +123,7 @@ function selectionLabel({
   allLabel: string;
 }) {
   if (selection === "all") return allLabel;
-  if (selection === "unfiled") return "Unfiled";
+  if (selection === "unfiled") return translateDynamic("interface:unfiled_c1aca7");
   return folders.find((folder) => folder.id === selection)?.name ?? allLabel;
 }
 
@@ -225,7 +226,7 @@ export function FolderRail({
   }
 
   return (
-    <nav aria-label={`${itemLabelPlural} folders`} className="hidden w-(--sz-folder-rail) shrink-0 border-r border-border pr-3 md:block">
+    <nav aria-label={translateDynamic("dynamic:folders", { value1: itemLabelPlural })} className="hidden w-(--sz-folder-rail) shrink-0 border-r border-border pr-3 md:block">
       <div className="mb-2 flex items-center justify-between gap-2">
         <div className="text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">{pageText("folders_19adc4")}</div>
         <Button variant="ghost" size="icon-sm" title={pageText("newFolder_a71199")} onClick={onCreate}>
@@ -257,10 +258,8 @@ export function FolderRail({
               onDelete={() => onDelete(folder)}
             />
           ))}
-          <div className="px-2 pb-1 pt-3 text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
-            System
-          </div>
-          {renderVirtualRow("unfiled", "Unfiled", result?.unfiledCount ?? 0, <FolderSwatch color={null} className="mt-0.5" />)}
+          <div className="px-2 pb-1 pt-3 text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">{pageText("system_bc0792")}</div>
+          {renderVirtualRow("unfiled", translateDynamic("interface:unfiled_c1aca7"), result?.unfiledCount ?? 0, <FolderSwatch color={null} className="mt-0.5" />)}
         </div>
       )}
     </nav>
@@ -338,14 +337,14 @@ export function FolderRailItem({
             variant="ghost"
             size="icon-sm"
             className="h-6 w-6 opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100"
-            aria-label={`Folder actions for ${folder.name}`}
+            aria-label={translateDynamic("dynamic:folderActionsFor", { value1: folder.name })}
           >
             <MoreHorizontal className="h-3.5 w-3.5" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onSelect={onStartRename}>{pageText("rename_d3f4cb")}</DropdownMenuItem>
-          <DropdownMenuItem onSelect={onEdit}>Edit color</DropdownMenuItem>
+          <DropdownMenuItem onSelect={onEdit}>{pageText("editColor_ea33c5")}</DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive" onSelect={onDelete}>
             <Trash2 className="h-3.5 w-3.5" />{pageText("delete_f6fdbe")}</DropdownMenuItem>
@@ -368,6 +367,7 @@ export function AllUnfiledBanner({
   itemLabelPlural: string;
   onCreateFolder: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [dismissed, setDismissed] = useState(() => {
     try {
       return window.localStorage.getItem(storageKey) === "1";
@@ -390,13 +390,9 @@ export function AllUnfiledBanner({
   return (
     <div className="mb-3 flex flex-wrap items-center gap-2 rounded-md border border-border bg-muted/40 px-3 py-2 text-sm">
       <FolderIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-      <span className="min-w-0 flex-1 text-muted-foreground">
-        Group these {itemLabelPlural} into folders to keep things tidy.
-      </span>
-      <Button size="sm" variant="outline" onClick={onCreateFolder}>
-        Create your first folder
-      </Button>
-      <Button size="icon-sm" variant="ghost" aria-label="Dismiss folder suggestion" onClick={dismiss}>
+      <span className="min-w-0 flex-1 text-muted-foreground">{pageText("groupThese_0779a5") + " "}{itemLabelPlural}{" " + pageText("intoFoldersToKeepThingsTidy_8860b0")}</span>
+      <Button size="sm" variant="outline" onClick={onCreateFolder}>{pageText("createYourFirstFolder_898108")}</Button>
+      <Button size="icon-sm" variant="ghost" aria-label={pageText("dismissFolderSuggestion_d655b5")} onClick={dismiss}>
         <X className="h-3.5 w-3.5" />
       </Button>
     </div>
@@ -536,9 +532,10 @@ export function MoveToMenu({
   onMove: (folderId: string | null) => void;
   onCreateAndMove: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <DropdownMenuSub>
-      <DropdownMenuSubTrigger>Move to...</DropdownMenuSubTrigger>
+      <DropdownMenuSubTrigger>{pageText("moveTo_d19987")}</DropdownMenuSubTrigger>
       <DropdownMenuSubContent className="w-56">
         <MoveToMenuItems
           folders={folders}
@@ -594,7 +591,7 @@ function MoveToMenuItems({
           </DropdownMenuItem>
         ))}
         {visibleFolders.length === 0 ? (
-          <div className="px-2 py-2 text-xs text-muted-foreground">No folders match.</div>
+          <div className="px-2 py-2 text-xs text-muted-foreground">{pageText("noFoldersMatch_03509e")}</div>
         ) : null}
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={onCreateAndMove}>
@@ -636,7 +633,7 @@ export function FolderFormDialog({
         <DialogHeader>
           <DialogTitle>{isEdit ? pageText("editFolder_ac0ef1") : pageText("createFolder_e59f63")}</DialogTitle>
           <DialogDescription>
-            {kind === "routine" ? "Organize routines in this organization." : "Organize installed organization skills."}
+            {kind === "routine" ? pageText("organizeRoutinesInThisOrganization_ce24c6") : pageText("organizeInstalledOrganizationSkills_477a3c")}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
@@ -659,7 +656,7 @@ export function FolderFormDialog({
                 <button
                   key={swatch}
                   type="button"
-                  aria-label={`Use folder color ${swatch}`}
+                  aria-label={translateDynamic("dynamic:useFolderColor", { value1: swatch })}
                   className={cn(
                     "h-7 w-7 rounded-md border border-border",
                     color === swatch && "ring-2 ring-ring ring-offset-2 ring-offset-background",
@@ -712,9 +709,7 @@ export function DeleteFolderDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{translateUi("interfaceCopy.deleteFolder")}</AlertDialogTitle>
-          <AlertDialogDescription>
-            The {folder?.itemCount ?? 0} {itemLabelPlural} in this folder won't be deleted. They'll move to Unfiled.
-          </AlertDialogDescription>
+          <AlertDialogDescription>{pageText("the_93ef0d") + " "}{folder?.itemCount ?? 0} {itemLabelPlural}{" " + pageText("inThisFolderWonTBeDeletedThey_e814c3")}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel disabled={pending}>{translateUi("interfaceCopy.cancel")}</AlertDialogCancel>
@@ -757,7 +752,7 @@ export function BulkBar({
       <span className="mr-auto text-sm text-muted-foreground">{selectedCount}{" " + pageText("selected_835f3b")}</span>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button size="sm" variant="outline">Move to...</Button>
+          <Button size="sm" variant="outline">{pageText("moveTo_d19987")}</Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
           <MoveToMenuItems
@@ -768,7 +763,7 @@ export function BulkBar({
           />
         </DropdownMenuContent>
       </DropdownMenu>
-      <Button size="sm" variant="ghost" onClick={onClear}>Deselect all</Button>
+      <Button size="sm" variant="ghost" onClick={onClear}>{pageText("deselectAll_85cce1")}</Button>
       <Button size="sm" onClick={onDone}>{translateUi("interfaceCopy.done")}</Button>
     </div>
   );

@@ -325,8 +325,8 @@ export function BuiltInBundlePanel({
   };
 
   return (
-    <section className={cn("space-y-2", className)} aria-label="Bundle status">
-      <h3 className="text-sm font-medium">Bundle status</h3>
+    <section className={cn("space-y-2", className)} aria-label={pageText("bundleStatus_4e4cdc")}>
+      <h3 className="text-sm font-medium">{pageText("bundleStatus_4e4cdc")}</h3>
 
       <div className="divide-y rounded-lg border px-4">
         {/* Adapter — no resource entry; readiness is the agent lifecycle. */}
@@ -335,9 +335,7 @@ export function BuiltInBundlePanel({
           chips={<ResourceStatusChip variant={adapterChip} />}
           detail={adapterDetail}
           actions={
-            <Button variant="outline" size="sm" onClick={onConfigure}>
-              Configure
-            </Button>
+            <Button variant="outline" size="sm" onClick={onConfigure}>{pageText("configure_792c81")}</Button>
           }
         />
 
@@ -384,10 +382,10 @@ export function BuiltInBundlePanel({
               <>
                 {onRunRoutine && (
                   <ConfirmActionButton
-                    title="Run Reflection Coach once?"
+                    title={pageText("runReflectionCoachOnce_6883cb")}
                     body="Paperclip will create one routine task now. This does not enable the weekly schedule or turn on background work."
                     triggerLabel="Run once"
-                    confirmLabel="Run once"
+                    confirmLabel={pageText("runOnce_802aef")}
                     pending={routineActionPending === "run"}
                     onConfirm={() => onRunRoutine(routineKey)}
                   />
@@ -395,7 +393,7 @@ export function BuiltInBundlePanel({
                 {scheduleEnabled
                   ? onDisableSchedule && (
                     <ConfirmActionButton
-                      title="Disable the weekly schedule?"
+                      title={pageText("disableTheWeeklySchedule_015c9b")}
                       body="Paperclip will stop future scheduled Reflection Coach runs. Manual Run once remains available."
                       triggerLabel="Disable schedule"
                       confirmLabel={pageText("disableSchedule_40899d")}
@@ -405,10 +403,10 @@ export function BuiltInBundlePanel({
                   )
                   : onEnableSchedule && (
                     <ConfirmActionButton
-                      title="Enable the weekly schedule?"
+                      title={pageText("enableTheWeeklySchedule_e4dffe")}
                       body="Paperclip will allow Reflection Coach to create routine tasks on the weekly schedule. It can spend tokens when those tasks run."
                       triggerLabel="Enable weekly"
-                      confirmLabel="Enable weekly"
+                      confirmLabel={pageText("enableWeekly_86568a")}
                       pending={routineActionPending === "enable"}
                       onConfirm={() => onEnableSchedule(routineKey)}
                     />
@@ -427,12 +425,12 @@ export function BuiltInBundlePanel({
         />
         {proposalHref && (
           <BundleRow
-            label="Proposal"
+            label={pageText("proposal_929017")}
             chips={<ResourceStatusChip variant="proposal_pending" />}
             detail="A proposed Reflection Coach update is waiting for review."
             actions={
               <Button asChild variant="link" size="sm">
-                <Link to={proposalHref}>Review proposal</Link>
+                <Link to={proposalHref}>{pageText("reviewProposal_8339f0")}</Link>
               </Button>
             }
           />

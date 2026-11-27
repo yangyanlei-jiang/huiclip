@@ -1,3 +1,5 @@
+import { controlText } from "@/i18n/controls";
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -130,33 +132,30 @@ export function InboxAgentPolicyControl({ companyId }: { companyId: string | nul
   }
 
   if (policyQuery.isLoading || policyView.kind === "reconnecting" || !draft) {
-    return <div className="text-sm text-muted-foreground">Loading inbox agent policy…</div>;
+    return <div className="text-sm text-muted-foreground">{pageText("loadingInboxAgentPolicy_5c1414")}</div>;
   }
 
   return (
-    <section className="space-y-4" aria-label="Let agents tidy my inbox">
+    <section className="space-y-4" aria-label={pageText("letAgentsTidyMyInbox_96a491")}>
       <div className="space-y-1">
         <div className="flex items-center gap-2">
           <Inbox className="h-5 w-5 text-muted-foreground" />
-          <h2 className="text-base font-semibold">Let agents tidy my inbox</h2>
+          <h2 className="text-base font-semibold">{pageText("letAgentsTidyMyInbox_96a491")}</h2>
         </div>
-        <p className="max-w-2xl text-sm text-muted-foreground">
-          Choose whether the agents you manage may archive tasks out of your inbox on your behalf. You can
-          undo any archive, and every agent archive is attributed in the task&apos;s properties.
-        </p>
+        <p className="max-w-2xl text-sm text-muted-foreground">{pageText("chooseWhetherTheAgentsYouManageMayArchive_5460f3")}</p>
       </div>
 
       <RadioCardGroup
-        ariaLabel="Inbox agent archiving policy"
+        ariaLabel={interfaceNotice("interface:inboxAgentArchivingPolicy_46607e")}
         value={draft.mode}
         onValueChange={(value) => setDraft((current) => (current ? { ...current, mode: value as InboxAgentPolicyMode } : current))}
-        options={MODE_OPTIONS}
+        options={MODE_OPTIONS.map(option => ({ ...option, title: controlText(option.title), description: option.description && controlText(option.description) }))}
         className="max-w-2xl"
       />
 
       {draft.mode === "allowlist" ? (
         <div className="max-w-2xl space-y-2">
-          <div className="text-sm font-medium">Agents allowed to tidy my inbox</div>
+          <div className="text-sm font-medium">{pageText("agentsAllowedToTidyMyInbox_bf2a5d")}</div>
           <AgentMultiSelect
             agents={agentOptions}
             selectedAgentIds={selectedAgentIds}
@@ -172,7 +171,7 @@ export function InboxAgentPolicyControl({ companyId }: { companyId: string | nul
             }
             triggerFullWidth={false}
             showSelectionPreview={false}
-            emptyMessage="You don’t manage any agents yet."
+            emptyMessage={pageText("youDonTManageAnyAgentsYet_6cd2e8")}
           />
         </div>
       ) : null}

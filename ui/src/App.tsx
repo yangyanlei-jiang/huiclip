@@ -590,15 +590,15 @@ export function OnboardingRoutePage() {
   }
 
   const title = matchedCompany
-    ? `Add another agent to ${matchedCompany.name}`
+    ? t("dynamic:onboardAdd", { name: matchedCompany.name })
     : companies.length > 0
-      ? "Create another organization"
-      : "Create your first organization";
+      ? t("dynamic:onboardAnother")
+      : t("dynamic:onboardFirst");
   const description = matchedCompany
-    ? "Run onboarding again to add an agent and a starter task for this organization."
+    ? t("dynamic:onboardAddDetails")
     : companies.length > 0
-      ? "Run onboarding again to create another organization and seed its first agent."
-      : "Get started by creating an organization and your first agent.";
+      ? t("dynamic:onboardAnotherDetails")
+      : t("dynamic:onboardFirstDetails");
 
   return (
     <div className="mx-auto max-w-xl py-10">

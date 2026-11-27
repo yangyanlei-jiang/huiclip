@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { t as interfaceMessage } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
@@ -71,7 +72,7 @@ export function ExecutionWorkspaceCloseDialog({
       queryClient.invalidateQueries({ queryKey: queryKeys.executionWorkspaces.overview(workspace.companyId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.executionWorkspaces.closeReadiness(workspace.id) });
       pushToast({
-        title: currentStatus === "cleanup_failed" ? "Workspace close retried" : "Workspace closed",
+        title: currentStatus === "cleanup_failed" ? interfaceNotice("interface:workspaceCloseRetried_b57a45") : interfaceNotice("interface:workspaceClosed_00a6d7"),
         tone: "success",
       });
       onOpenChange(false);
@@ -103,16 +104,12 @@ export function ExecutionWorkspaceCloseDialog({
       <DialogContent className="max-h-(--sz-85vh) overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{actionLabel}</DialogTitle>
-          <DialogDescription className="break-words">{pageText("archive_2621c6") + " "}<span className="font-medium text-foreground">{workspaceName}</span> and clean up any owned workspace
-            artifacts. Paperclip keeps the workspace record and task history, but removes it from active workspace views.
-          </DialogDescription>
+          <DialogDescription className="break-words">{pageText("archive_2621c6") + " "}<span className="font-medium text-foreground">{workspaceName}</span>{" " + pageText("andCleanUpAnyOwnedWorkspaceArtifactsPaperclip_65696b")}</DialogDescription>
         </DialogHeader>
 
         {(readinessView.kind === "loading" || readinessView.kind === "reconnecting") ? (
           <div className="flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-3 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Checking whether this workspace is safe to close...
-          </div>
+            <Loader2 className="h-4 w-4 animate-spin" />{pageText("checkingWhetherThisWorkspaceIsSafeToClose_ce46de")}</div>
         ) : readinessView.kind === "error" ? (
           <QueryErrorState
             error={readinessView.error}
@@ -125,25 +122,25 @@ export function ExecutionWorkspaceCloseDialog({
             <div className={`rounded-xl border px-4 py-3 text-sm ${readinessTone(readiness.state)}`}>
               <div className="font-medium">
                 {readiness.state === "blocked"
-                  ? "Close is blocked"
+                  ? pageText("closeIsBlocked_8796ab")
                   : readiness.state === "ready_with_warnings"
-                    ? "Close is allowed with warnings"
-                    : "Close is ready"}
+                    ? pageText("closeIsAllowedWithWarnings_12a1f6")
+                    : pageText("closeIsReady_434ac9")}
               </div>
               <div className="mt-1 text-xs opacity-80">
                 {readiness.isSharedWorkspace
-                  ? "This is a shared workspace session. Archiving it removes this session record but keeps the underlying project workspace."
+                  ? pageText("thisIsASharedWorkspaceSessionArchivingIt_ca851f")
                   : readiness.git?.workspacePath && readiness.git.repoRoot && readiness.git.workspacePath !== readiness.git.repoRoot
-                    ? "This execution workspace has its own checkout path and can be archived independently."
+                    ? pageText("thisExecutionWorkspaceHasItsOwnCheckoutPath_d5fdfc")
                     : readiness.isProjectPrimaryWorkspace
-                      ? "This execution workspace currently points at the project's primary workspace path."
-                      : "This workspace is disposable and can be archived."}
+                      ? pageText("thisExecutionWorkspaceCurrentlyPointsAtTheProject_62dbe0")
+                      : pageText("thisWorkspaceIsDisposableAndCanBeArchived_b06743")}
               </div>
             </div>
 
             {blockingIssues.length > 0 ? (
               <section className="space-y-2">
-                <h3 className="text-sm font-medium">Blocking tasks</h3>
+                <h3 className="text-sm font-medium">{pageText("blockingTasks_96134d")}</h3>
                 <div className="space-y-2">
                   {blockingIssues.map((issue) => (
                     <div key={issue.id} className="rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm">
@@ -161,7 +158,7 @@ export function ExecutionWorkspaceCloseDialog({
 
             {readiness.blockingReasons.length > 0 ? (
               <section className="space-y-2">
-                <h3 className="text-sm font-medium">Blocking reasons</h3>
+                <h3 className="text-sm font-medium">{pageText("blockingReasons_dc3417")}</h3>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   {readiness.blockingReasons.map((reason) => (
                     <li key={reason} className="break-words rounded-lg border border-destructive/20 bg-destructive/5 px-3 py-2 text-destructive">
@@ -187,7 +184,7 @@ export function ExecutionWorkspaceCloseDialog({
 
             {readiness.git ? (
               <section className="space-y-2">
-                <h3 className="text-sm font-medium">Git status</h3>
+                <h3 className="text-sm font-medium">{pageText("gitStatus_420cbc")}</h3>
                 <div className="rounded-xl border border-border bg-background px-4 py-3 text-sm">
                   <div className="grid gap-2 sm:grid-cols-2">
                     <div>
@@ -196,24 +193,24 @@ export function ExecutionWorkspaceCloseDialog({
                     </div>
                     <div>
                       <div className="text-xs uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{pageText("baseRef_16e96d")}</div>
-                      <div className="font-mono text-xs">{readiness.git.baseRef ?? "Not set"}</div>
+                      <div className="font-mono text-xs">{readiness.git.baseRef ?? pageText("notSet_93039e")}</div>
                     </div>
                     <div>
-                      <div className="text-xs uppercase tracking-(--tracking-eyebrow) text-muted-foreground">Merged into base</div>
+                      <div className="text-xs uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{pageText("mergedIntoBase_a690e8")}</div>
                       <div>{readiness.git.isMergedIntoBase == null ? pageText("unknown_bc7819") : readiness.git.isMergedIntoBase ? pageText("yes_5397e0") : pageText("no_816c52")}</div>
                     </div>
                     <div>
-                      <div className="text-xs uppercase tracking-(--tracking-eyebrow) text-muted-foreground">Ahead / behind</div>
+                      <div className="text-xs uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{pageText("aheadBehind_73272d")}</div>
                       <div>
                         {(readiness.git.aheadCount ?? 0).toString()} / {(readiness.git.behindCount ?? 0).toString()}
                       </div>
                     </div>
                     <div>
-                      <div className="text-xs uppercase tracking-(--tracking-eyebrow) text-muted-foreground">Dirty tracked files</div>
+                      <div className="text-xs uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{pageText("dirtyTrackedFiles_f526ee")}</div>
                       <div>{readiness.git.dirtyEntryCount}</div>
                     </div>
                     <div>
-                      <div className="text-xs uppercase tracking-(--tracking-eyebrow) text-muted-foreground">Untracked files</div>
+                      <div className="text-xs uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{pageText("untrackedFiles_e6813c")}</div>
                       <div>{readiness.git.untrackedEntryCount}</div>
                     </div>
                   </div>
@@ -223,7 +220,7 @@ export function ExecutionWorkspaceCloseDialog({
 
             {otherLinkedIssues.length > 0 ? (
               <section className="space-y-2">
-                <h3 className="text-sm font-medium">Other linked tasks</h3>
+                <h3 className="text-sm font-medium">{pageText("otherLinkedTasks_cf7bf3")}</h3>
                 <div className="space-y-2">
                   {otherLinkedIssues.map((issue) => (
                     <div key={issue.id} className="rounded-xl border border-border bg-background px-4 py-3 text-sm">
@@ -241,7 +238,7 @@ export function ExecutionWorkspaceCloseDialog({
 
             {readiness.runtimeServices.length > 0 ? (
               <section className="space-y-2">
-                <h3 className="text-sm font-medium">Attached runtime services</h3>
+                <h3 className="text-sm font-medium">{pageText("attachedRuntimeServices_9a3321")}</h3>
                 <div className="space-y-2">
                   {readiness.runtimeServices.map((service) => (
                     <div key={service.id} className="rounded-xl border border-border bg-background px-4 py-3 text-sm">
@@ -256,7 +253,7 @@ export function ExecutionWorkspaceCloseDialog({
                         path outright and falls back to a neutral line.
                       */}
                       <div className="mt-1 break-words text-xs text-muted-foreground">
-                        {service.url ?? service.command ?? "No additional details"}
+                        {service.url ?? service.command ?? pageText("noAdditionalDetails_72c3cf")}
                       </div>
                     </div>
                   ))}
@@ -265,7 +262,7 @@ export function ExecutionWorkspaceCloseDialog({
             ) : null}
 
             <section className="space-y-2">
-              <h3 className="text-sm font-medium">Cleanup actions</h3>
+              <h3 className="text-sm font-medium">{pageText("cleanupActions_385759")}</h3>
               <div className="space-y-2">
                 {readiness.plannedActions.map((action, index) => (
                   <div key={`${action.kind}-${index}`} className="rounded-xl border border-border bg-background px-4 py-3 text-sm">
@@ -282,31 +279,24 @@ export function ExecutionWorkspaceCloseDialog({
             </section>
 
             {currentStatus === "cleanup_failed" ? (
-              <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-sm text-muted-foreground">
-                Cleanup previously failed on this workspace. Retrying close will rerun the cleanup flow and update the
-                workspace status if it succeeds.
-              </div>
+              <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 px-4 py-3 text-sm text-muted-foreground">{pageText("cleanupPreviouslyFailedOnThisWorkspaceRetryingClose_372775")}</div>
             ) : null}
 
             {currentStatus === "archived" ? (
-              <div className="rounded-xl border border-border bg-background px-4 py-3 text-sm text-muted-foreground">
-                This workspace is already archived.
-              </div>
+              <div className="rounded-xl border border-border bg-background px-4 py-3 text-sm text-muted-foreground">{pageText("thisWorkspaceIsAlreadyArchived_590b7e")}</div>
             ) : null}
 
             {readiness.git?.repoRoot ? (
-              <div className="break-words text-xs text-muted-foreground">
-                Repo root: <span className="font-mono break-all">{readiness.git.repoRoot}</span>
+              <div className="break-words text-xs text-muted-foreground">{pageText("repoRoot_9de0ad") + " "}<span className="font-mono break-all">{readiness.git.repoRoot}</span>
                 {readiness.git.workspacePath ? (
                   <>
-                    {" · "}Workspace path: <span className="font-mono break-all">{readiness.git.workspacePath}</span>
+                    {" · "}{pageText("workspacePath_3dbdbc") + " "}<span className="font-mono break-all">{readiness.git.workspacePath}</span>
                   </>
                 ) : null}
               </div>
             ) : null}
 
-            <div className="text-xs text-muted-foreground">
-              Last checked {formatDateTime(new Date(readinessQuery.dataUpdatedAt))}
+            <div className="text-xs text-muted-foreground">{pageText("lastChecked_ada1b7") + " "}{formatDateTime(new Date(readinessQuery.dataUpdatedAt))}
             </div>
           </div>
         ) : null}

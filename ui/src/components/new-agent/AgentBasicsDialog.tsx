@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCompany } from "@/context/CompanyContext";
@@ -179,7 +180,7 @@ export function AgentBasicsDialog({
       else onContinue({ name: agent.name, adapterType: nextAdapter, runnerProvider: nextProvider,
         runner: nextRunner, setupAgentId: agent.id });
     } catch (cause) {
-      if (active.current) setSaveError(cause instanceof Error ? cause.message : "Could not save agent setup.");
+      if (active.current) setSaveError(cause instanceof Error ? cause.message : interfaceNotice("interface:couldNotSaveAgentSetup_dc2893"));
     } finally {
       busy.current = false;
       if (active.current) setSaving(false);
@@ -200,19 +201,15 @@ export function AgentBasicsDialog({
       >
         <div
           className="flex items-center gap-2 px-6 py-5 text-xs text-muted-foreground"
-          aria-label="New agent progress"
+          aria-label={pageText("newAgentProgress_f86b33")}
         >
           <span
             className={cn(step === "name" && "font-medium text-foreground")}
-          >
-            1. Name
-          </span>
+          >{pageText("1Name_ae760c")}</span>
           <ChevronRight className="size-3" />
           <span
             className={cn(step === "adapter" && "font-medium text-foreground")}
-          >
-            2. Adapter
-          </span>
+          >{pageText("2Adapter_aaae30")}</span>
         </div>
         <form
           className="flex min-h-0 flex-col"
@@ -227,12 +224,12 @@ export function AgentBasicsDialog({
               <div className="space-y-2">
                 <DialogTitle className="text-3xl font-semibold tracking-tight">
                   {step === "name"
-                    ? "Meet your next agent"
-                    : "Choose an adapter"}
+                    ? pageText("meetYourNextAgent_8cdce8")
+                    : pageText("chooseAnAdapter_a728dd")}
                 </DialogTitle>
                 <DialogDescription className="text-base">
                   {step === "name"
-                    ? "Start with a name. Make them your own."
+                    ? pageText("startWithANameMakeThemYourOwn_b63278")
                     : `How should ${name.trim()} work?`}
                 </DialogDescription>
               </div>
@@ -245,7 +242,7 @@ export function AgentBasicsDialog({
                   autoFocus
                   disabled={saving}
                   maxLength={100}
-                  placeholder="e.g. Darnold"
+                  placeholder={pageText("eGDarnold_d5ff41")}
                   value={name}
                   onChange={(event) => setName(event.target.value)}
                   className="h-12 text-base"
@@ -256,9 +253,7 @@ export function AgentBasicsDialog({
                     variant="link"
                     className="px-0 text-muted-foreground"
                     onClick={onInvite}
-                  >
-                    Invite an external agent
-                  </Button>
+                  >{pageText("inviteAnExternalAgent_a382ae")}</Button>
                 )}
               </div>
             ) : (
@@ -306,7 +301,7 @@ export function AgentBasicsDialog({
                             {display.label}
                           </span>
                           {adapter.type === "antigravity_runtime" && !antigravityQualified && (
-                            <span className="text-xs text-muted-foreground">{antigravityCandidate ? "Candidate" : "Not available yet"}</span>
+                            <span className="text-xs text-muted-foreground">{antigravityCandidate ? pageText("candidate_d769de") : pageText("notAvailableYet_a1db9d")}</span>
                           )}
                           {adapterType === adapter.type && (
                             <Check className="absolute right-2 top-2 size-3.5" />
@@ -319,10 +314,10 @@ export function AgentBasicsDialog({
                 {experimentalRunnerAvailable && <details className="space-y-3">
                   <summary className="cursor-pointer text-sm text-muted-foreground">{translateUi("interfaceCopy.advanced")}</summary>
                   <div className="space-y-2">
-                    <label className="text-sm text-muted-foreground">Experimental harness</label>
-                    <SelectPopover aria-label="Experimental harness"
+                    <label className="text-sm text-muted-foreground">{pageText("experimentalHarness_ad251d")}</label>
+                    <SelectPopover aria-label={pageText("experimentalHarness_ad251d")}
                       value={adapterType === "paperclip_runner" ? runnerProvider : ""}
-                      placeholder="Choose a native harness…"
+                      placeholder={pageText("chooseANativeHarness_80b61f")}
                       onValueChange={provider => { setRunnerProvider(provider); setAdapterType("paperclip_runner"); }}
                       options={[
                         { value: "grok", label: "Grok Build (Paperclip Runner)" },
@@ -352,7 +347,7 @@ export function AgentBasicsDialog({
               type="submit"
               disabled={saving || !name.trim() || (step === "adapter" && !validAdapter)}
             >
-              {saving ? pageText("saving_56a228") : step === "name" ? pageText("chooseAdapter_f322ba") : "Configure agent"}
+              {saving ? pageText("saving_56a228") : step === "name" ? pageText("chooseAdapter_f322ba") : pageText("configureAgent_3daf48")}
               <ArrowRight className="size-4" />
             </Button>
           </div>

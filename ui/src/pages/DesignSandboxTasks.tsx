@@ -1,3 +1,5 @@
+import { controlText } from "@/i18n/controls";
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect } from "react";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -34,7 +36,7 @@ export function DesignSandboxTasks() {
   const { openNewIssue } = useDialogActions();
   const { setBreadcrumbs } = useBreadcrumbs();
   const client = useQueryClient();
-  useEffect(() => { setBreadcrumbs([{ label: "Tasks" }]); }, [setBreadcrumbs]);
+  useEffect(() => { setBreadcrumbs([{ label: interfaceNotice("interface:tasks_090ec5") }]); }, [setBreadcrumbs]);
 
   const tasks = useInfiniteQuery({
     queryKey: [...queryKeys.issues.list(companyId!), "design-sandbox", userId],
@@ -89,22 +91,22 @@ export function DesignSandboxTasks() {
   });
   const error = tasks.error ?? agents.error ?? projects.error ?? directory.error ?? labels.error ?? unread.error ?? update.error;
   const empty = collection.companyItems.length === 0
-    ? <EmptyState icon={ListChecks} message={pageText("noTasksInThisOrganization_68f0f9")} action="New Task" onAction={() => openNewIssue()} />
+    ? <EmptyState icon={ListChecks} message={pageText("noTasksInThisOrganization_68f0f9")} action={controlText("New Task")} onAction={() => openNewIssue()} />
     : <EmptyState icon={SearchX} message={pageText("noTasksMatchThisView_1ce404")} action="Clear filters" hideActionIcon onAction={collection.clear} />;
 
-  if (!companyId) return <EmptyState icon={ListChecks} message="Select an organization to view tasks." />;
+  if (!companyId) return <EmptyState icon={ListChecks} message={pageText("selectAnOrganizationToViewTasks_773c1b")} />;
   return <TruncatedTextMarqueeProvider><div className="task-row-design-preview flex flex-col gap-8" data-testid="design-sandbox-tasks">
     <TaskListToolbar view={collection.view} onViewChange={collection.setView} query={collection.query} onQueryChange={collection.setQuery}
       layout={collection.layout} onLayoutChange={collection.setLayout} allExpanded={collection.allExpanded} onToggleExpanded={collection.toggleExpanded}
       onNewTask={() => openNewIssue()} filters={{ state: collection.filters, onChange: collection.updateFilters, activeFilterCount: collection.activeFilterCount,
         enableLiveRunsFilter: false,
         agents: agents.data ?? [], projects: projects.data ?? [], labels: labels.data ?? [], currentUserId: userId, creators: collection.creators }} />
-    {error ? <div role="alert" className="flex items-center gap-2 text-sm text-destructive"><span>{error instanceof Error ? error.message : "Could not load tasks"}</span><Button variant="outline" size="sm" onClick={() => { update.reset(); void client.invalidateQueries({ queryKey: queryKeys.issues.list(companyId) }); void agents.refetch(); void projects.refetch(); void directory.refetch(); void labels.refetch(); }}>{pageText("retry_9f5cd8")}</Button></div> : null}
+    {error ? <div role="alert" className="flex items-center gap-2 text-sm text-destructive"><span>{error instanceof Error ? error.message : pageText("couldNotLoadTasks_8f30d4")}</span><Button variant="outline" size="sm" onClick={() => { update.reset(); void client.invalidateQueries({ queryKey: queryKeys.issues.list(companyId) }); void agents.refetch(); void projects.refetch(); void directory.refetch(); void labels.refetch(); }}>{pageText("retry_9f5cd8")}</Button></div> : null}
     {tasks.isPending ? <p role="status" className="text-sm text-muted-foreground">{pageText("loadingTasks_a3495d")}</p> : <>
-      {collection.narrowed ? <p role="status" className="design-task-results">{collection.matchingItems.length} matching tasks{collection.layout === "list" && collection.visibleItems.length > collection.matchingItems.length ? " · Parent tasks included for context" : ""}</p> : null}
+      {collection.narrowed ? <p role="status" className="design-task-results">{collection.matchingItems.length}{" " + pageText("matchingTasks_ad9f9a")}{collection.layout === "list" && collection.visibleItems.length > collection.matchingItems.length ? " " + pageText("parentTasksIncludedForContext_e03df0") : ""}</p> : null}
       <div hidden={collection.layout !== "list"} className="design-task-list-panel"><TaskList key={companyId} items={collection.visibleItems} allItems={collection.companyItems} collapsedIds={collection.collapsedIds} onCollapsedIdsChange={collection.setCollapsedIds} emptyState={empty} /></div>
       {collection.layout === "board" ? collection.matchingItems.length ? <KanbanBoard showOverflowFades issues={collection.matchingItems.map(item => item.issue)} agents={agents.data} onUpdateIssue={(id, data) => update.mutate({ id, data })} /> : empty : null}
-      {tasks.hasNextPage ? <div className="flex items-center gap-3 text-sm text-muted-foreground"><span>Search, views and filters cover the {items.length} loaded tasks.</span><Button variant="outline" size="sm" disabled={tasks.isFetchingNextPage} onClick={() => void tasks.fetchNextPage()}>{tasks.isFetchingNextPage ? pageText("loading_33ce41") : "Load more tasks"}</Button></div> : null}
+      {tasks.hasNextPage ? <div className="flex items-center gap-3 text-sm text-muted-foreground"><span>{pageText("searchViewsAndFiltersCoverThe_76b92f") + " "}{items.length}{" " + pageText("loadedTasks_a7a3c5")}</span><Button variant="outline" size="sm" disabled={tasks.isFetchingNextPage} onClick={() => void tasks.fetchNextPage()}>{tasks.isFetchingNextPage ? pageText("loading_33ce41") : pageText("loadMoreTasks_219af2")}</Button></div> : null}
     </>}
   </div></TruncatedTextMarqueeProvider>;
 }

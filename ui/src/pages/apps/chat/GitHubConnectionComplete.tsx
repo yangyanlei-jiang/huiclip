@@ -1,3 +1,5 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { CheckCircle2, Copy } from "lucide-react";
@@ -34,6 +36,7 @@ export function GitHubConnectionComplete({
   onClose: () => void;
   onCloseAutoFocus?: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const repositories = useQuery({
     queryKey: ["github-connected-repositories", endpoint.id],
@@ -58,7 +61,7 @@ export function GitHubConnectionComplete({
           <header className="space-y-5">
             <div className="flex items-center gap-3">
               <CheckCircle2 className="size-6 shrink-0 text-(--status-task-done)" />
-              <DialogTitle className="text-xl leading-normal">GitHub connected</DialogTitle>
+              <DialogTitle className="text-xl leading-normal">{pageText("githubConnected_ba4f96")}</DialogTitle>
             </div>
             <div className="flex items-center gap-3">
               <AgentAvatar agent={avatar} size={48} />
@@ -79,14 +82,14 @@ export function GitHubConnectionComplete({
                   </>}
                 </p>
                 <Link to={`/apps/chat/${endpoint.id}/access`} className="inline-block text-xs text-muted-foreground underline underline-offset-4">
-                  {repositoriesView.kind === "error" ? "Repository access unavailable" : count === undefined ? "Repository access" : count === 0 ? "No repositories enabled" : `${count} ${count === 1 ? "repository" : "repositories"} enabled`}
+                  {repositoriesView.kind === "error" ? pageText("repositoryAccessUnavailable_ceb3a8") : count === undefined ? pageText("repositoryAccess_707c5b") : count === 0 ? pageText("noRepositoriesEnabled_714242") : `${count} ${count === 1 ? "repository" : "repositories"} enabled`}
                 </Link>
               </div>
             </div>
           </header>
           {incomplete.length > 0 && (
             <section className="space-y-2">
-              <h2 className="text-sm font-medium">Before your first review</h2>
+              <h2 className="text-sm font-medium">{pageText("beforeYourFirstReview_da4b28")}</h2>
               {incomplete.map((check) => (
                 <p key={check.key} className="text-sm text-muted-foreground">{check.detail}</p>
               ))}
@@ -94,17 +97,17 @@ export function GitHubConnectionComplete({
           )}
           <section className="space-y-3">
             <div className="space-y-1">
-              <h2 className="text-base font-semibold">Try your bot</h2>
+              <h2 className="text-base font-semibold">{pageText("tryYourBot_e59e67")}</h2>
               <p className="text-sm text-muted-foreground">
                 {count === 0
-                  ? "Enable a repository in Access to try your bot."
-                  : "Post this on a pull request in an enabled repository."}
+                  ? pageText("enableARepositoryInAccessToTryYour_1aff63")
+                  : pageText("postThisOnAPullRequestInAn_c76a27")}
               </p>
             </div>
             <CopyText
               text={mention}
-              ariaLabel="Copy mention"
-              title="Copy mention"
+              ariaLabel={interfaceNotice("interface:copyMention_789c5e")}
+              title={pageText("copyMention_789c5e")}
               containerClassName="w-full"
               className="flex w-full items-center gap-3 rounded-md border border-border bg-muted/30 p-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >

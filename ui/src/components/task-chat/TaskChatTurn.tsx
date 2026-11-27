@@ -104,12 +104,12 @@ export function TaskChatTurn({
             />
           ) : null}
           {!item.historical ? <span className="min-w-0 truncate">
-            {item.continuedAfterSteering ? "Continued after steering · " : ""}
+            {item.continuedAfterSteering ? pageText("continuedAfterSteering_75d270") + " " : ""}
             {item.summary.durationLabel
               ? `${item.summary.failed ? "Stopped" : "Worked"} for ${item.summary.durationLabel}`
               : item.summary.failed
                 ? pageText("stopped_51e911")
-                : "Worked"}
+                : pageText("worked_55bd39")}
           </span> : null}
         </div> : null}
         <TaskChatRunHealthBanner failures={item.mcpStartupFailures ?? []} />
@@ -215,7 +215,7 @@ export function TaskChatTurn({
           ? `${item.summary.failed ? "Stopped" : "Worked"} for ${item.summary.durationLabel}`
           : item.summary.failed
             ? pageText("stopped_51e911")
-            : "Worked"}
+            : pageText("worked_55bd39")}
       </span>
       {!item.standaloneHeader && turnSummaryMetrics(item.summary) ? (
         // Time/tools/tokens is demoted, not deleted (PAP-502): it stays in the

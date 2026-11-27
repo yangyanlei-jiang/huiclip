@@ -98,7 +98,7 @@ function ActivityRow({ event }: { event: ToolGatewayActivityEvent }) {
         )}
         <span className="min-w-0 flex-1">
           <span className="block text-foreground">
-            <span className="font-medium">{actor}</span> used <span className="font-medium">{tool}</span> in {app}
+            <span className="font-medium">{actor}</span>{" " + pageText("used_192a56") + " "}<span className="font-medium">{tool}</span>{" " + pageText("in_af10ef") + " "}{app}
           </span>
         </span>
         <span className="flex shrink-0 items-center gap-2 whitespace-nowrap">
@@ -113,17 +113,17 @@ function ActivityRow({ event }: { event: ToolGatewayActivityEvent }) {
         <div className="border-t border-border bg-muted/30 px-4 py-3 pl-10 text-xs">
           <dl>
             {rawTool ? <Fact label={translateUi("interfaceCopy.tool")} value={rawTool} mono /> : null}
-            {event.invocation?.status ? <Fact label="Call status" value={event.invocation.status} /> : null}
+            {event.invocation?.status ? <Fact label={pageText("callStatus_7f3641")} value={event.invocation.status} /> : null}
             {event.invocation?.policyDecision ? <Fact label={pageText("decision_7f59a1")} value={event.invocation.policyDecision} /> : null}
             {reason ? <Fact label={translateUi("interfaceCopy.reason")} value={reason} mono /> : null}
-            {duration ? <Fact label="Duration" value={duration} /> : null}
-            {event.invocation?.id ? <Fact label="Invocation ID" value={event.invocation.id} mono /> : null}
-            {event.invocation?.errorCode ? <Fact label="Error code" value={event.invocation.errorCode} mono /> : null}
+            {duration ? <Fact label={pageText("duration_137000")} value={duration} /> : null}
+            {event.invocation?.id ? <Fact label={pageText("invocationID_4be944")} value={event.invocation.id} mono /> : null}
+            {event.invocation?.errorCode ? <Fact label={pageText("errorCode_03f5ce")} value={event.invocation.errorCode} mono /> : null}
             {event.invocation?.errorMessage ? <Fact label={pageText("error_7f2f6a")} value={event.invocation.errorMessage} /> : null}
           </dl>
           {argumentsText ? (
             <div className="mt-2 space-y-1">
-              <div className="text-muted-foreground">Arguments (redacted)</div>
+              <div className="text-muted-foreground">{pageText("argumentsRedacted_e94482")}</div>
               <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-md border border-border bg-background p-3 font-mono text-xs text-foreground">
                 {argumentsText}
               </pre>
@@ -131,7 +131,7 @@ function ActivityRow({ event }: { event: ToolGatewayActivityEvent }) {
           ) : null}
           {resultText ? (
             <div className="mt-3 space-y-1">
-              <div className="text-muted-foreground">Result (redacted)</div>
+              <div className="text-muted-foreground">{pageText("resultRedacted_6b5eb3")}</div>
               <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-md border border-border bg-background p-3 font-mono text-xs text-foreground">
                 {resultText}
               </pre>
@@ -193,13 +193,9 @@ export function GatewayActivityPanel({
 
   return (
     <div className="space-y-3">
-      <p className="text-sm text-muted-foreground">
-        Calls through this gateway from the last 30 days. Open a row to inspect its tool, redacted arguments, result, and decision.
-      </p>
+      <p className="text-sm text-muted-foreground">{pageText("callsThroughThisGatewayFromTheLast30_e50a3c")}</p>
       {events.length === 0 ? (
-        <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-          No calls have gone through this gateway yet.
-        </div>
+        <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">{pageText("noCallsHaveGoneThroughThisGatewayYet_5d39a9")}</div>
       ) : (
         <ul className="divide-y divide-border rounded-lg border border-border">
           {events.map((event) => <ActivityRow key={event.id} event={event} />)}

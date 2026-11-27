@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { CoordinatorRelativeTime } from "@/components/coordinator/CoordinatorRelativeTime";
 import { useAgentChatRead } from "@/hooks/useAgentChatRead";
@@ -255,8 +256,7 @@ function TaskChatBubbleContent({
       )}
     >
       {beforeTurn ? <div className="w-full pb-1">{beforeTurn}</div> : null}
-      {item.chatMessage && <Link to={`/issues/${item.chatMessage.sourceTaskIdentifier}`} className="px-1 text-xs text-muted-foreground underline underline-offset-4">
-        From {item.chatMessage.sourceTaskIdentifier}
+      {item.chatMessage && <Link to={`/issues/${item.chatMessage.sourceTaskIdentifier}`} className="px-1 text-xs text-muted-foreground underline underline-offset-4">{pageText("from_3f6605") + " "}{item.chatMessage.sourceTaskIdentifier}
       </Link>}
       {isHuman && !item.isCurrentUser && item.authorName ? (
         <span className="px-1 text-sm font-semibold text-foreground" data-testid="task-chat-human-identity" data-author-user-id={item.authorUserId}>
@@ -307,8 +307,7 @@ function TaskChatBubbleContent({
           className="flex max-w-(--pct-85) flex-col gap-2"
           data-testid="task-chat-bubble-media"
         >
-          <span className="text-xs text-muted-foreground">
-            Images · {imageRefs.length}
+          <span className="text-xs text-muted-foreground">{pageText("images_a67b65") + " "}{imageRefs.length}
           </span>
           <div className="grid grid-cols-4 gap-2">
             {imageRefs
@@ -333,7 +332,7 @@ function TaskChatBubbleContent({
               <button
                 type="button"
                 className="aspect-video min-w-0 rounded-md bg-muted text-sm font-semibold text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                aria-label={`Open ${imageRefs.length - 3} more screenshots`}
+                aria-label={translateDynamic("dynamic:openMoreScreenshots", { value1: imageRefs.length - 3 })}
                 onClick={() => openImage(imageRefs[3].url)}
               >
                 +{imageRefs.length - 3}
@@ -347,8 +346,7 @@ function TaskChatBubbleContent({
       ) : null}
       {!artifactsV1 && attachmentRefs.length > 0 ? (
         <div className="flex max-w-(--pct-85) flex-col gap-2">
-          <span className="text-xs text-muted-foreground">
-            Files · {attachmentRefs.length}
+          <span className="text-xs text-muted-foreground">{pageText("files_27c071") + " "}{attachmentRefs.length}
           </span>
           <AttachmentGroup data-testid="task-chat-bubble-attachments">
             {attachmentRefs.map((ref) => {
@@ -370,7 +368,7 @@ function TaskChatBubbleContent({
                     </AttachmentDescription>
                   </AttachmentContent>
                   <AttachmentTrigger
-                    aria-label={`Open ${ref.name}`}
+                    aria-label={translateDynamic("dynamic:open", { value1: ref.name })}
                     onClick={video ? () => openImage(ref.url) : undefined}
                     render={video ? <button type="button" /> :
                       <a
@@ -396,9 +394,7 @@ function TaskChatBubbleContent({
           className="mx-1 w-(--sz-calc-7) rounded-md border border-amber-500/25 bg-amber-500/5 px-3 py-2 text-xs"
           data-testid="task-chat-verification-caveats"
         >
-          <p className="font-medium text-amber-800 dark:text-amber-200">
-            Verification caveat
-          </p>
+          <p className="font-medium text-amber-800 dark:text-amber-200">{pageText("verificationCaveat_675592")}</p>
           <ul className="mt-1 space-y-1 text-muted-foreground">
             {item.verificationCaveats.map((caveat, index) => (
               <li key={`${caveat.commandOrCheck}:${index}`}>
@@ -440,7 +436,7 @@ function TaskChatBubbleContent({
             <TaskChatBubbleActions copyText={item.text} />
           </div>
           <span className="px-1 text-(length:--text-micro) text-muted-foreground">
-            {sentFromIMessage ? "Sent from iMessage" : null}
+            {sentFromIMessage ? pageText("sentFromIMessage_d048a6") : null}
             {sentFromIMessage && timestamp ? " · " : null}
             {timestamp}
           </span>
@@ -468,7 +464,7 @@ function TaskChatBubbleContent({
       ) : timestamp || sentFromIMessage ? (
         // Timestamps are always visible (round 9) — no longer hover-revealed.
         <span className="px-1 text-(length:--text-micro) text-muted-foreground">
-          {sentFromIMessage ? "Sent from iMessage" : null}
+          {sentFromIMessage ? pageText("sentFromIMessage_d048a6") : null}
           {sentFromIMessage && timestamp ? " · " : null}
           {timestamp}
         </span>

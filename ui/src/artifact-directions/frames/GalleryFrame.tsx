@@ -56,10 +56,10 @@ function Toolbar() {
         <Input readOnly className="h-9 pl-9 pr-9 text-sm" placeholder={pageText("searchArtifacts_15c8e5")} aria-label={pageText("searchArtifacts_200f88")} />
       </div>
       <div className="flex flex-wrap items-center gap-1.5">
-        <Button variant="outline" size="icon" className="h-8 w-8 shrink-0 bg-accent" title="Group artifacts" aria-label="Group artifacts (currently Task)">
+        <Button variant="outline" size="icon" className="h-8 w-8 shrink-0 bg-accent" title={pageText("groupArtifacts_32de41")} aria-label={pageText("groupArtifactsCurrentlyTask_ad9773")}>
           <Layers className="h-3.5 w-3.5" />
         </Button>
-        <div role="tablist" aria-label="Filter artifacts by type" className="flex flex-wrap items-center gap-1.5">
+        <div role="tablist" aria-label={pageText("filterArtifactsByType_785257")} className="flex flex-wrap items-center gap-1.5">
           {KIND_TABS.map((label, index) => (
             <button
               key={label}
@@ -82,12 +82,11 @@ function Toolbar() {
 
 /** pages/Artifacts.tsx:327-344. */
 function StackHeader({ group }: { group: LabGroup }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="flex flex-wrap items-center gap-2 text-sm">
       <span className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground">
-        <ArrowLeft className="h-3.5 w-3.5" />
-        All stacks
-      </span>
+        <ArrowLeft className="h-3.5 w-3.5" />{pageText("allStacks_bf264c")}</span>
       <span className="truncate text-muted-foreground">
         <span className="text-foreground/80">{group.taskIdentifier}</span> {group.title}
       </span>

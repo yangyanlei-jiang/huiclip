@@ -16,7 +16,7 @@ export function CostEstimateLabel({
       className="font-normal text-muted-foreground"
       title={`${estimatedEventCount} estimated ${estimatedEventCount === 1 ? "charge" : "charges"}. Calculated from token usage and published rates; provider bills may differ.`}
     >
-      {allEstimated ? pageText("estimated_ae64c7") : "Partially estimated"}
+      {allEstimated ? pageText("estimated_ae64c7") : pageText("partiallyEstimated_24affb")}
     </Badge>
   );
 }

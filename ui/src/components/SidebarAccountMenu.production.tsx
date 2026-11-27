@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -221,7 +222,7 @@ export function SidebarAccountMenu({
                     href={`https://github.com/paperclipai/paperclip/commit/${stagingCommit}`}
                     target="_blank"
                     rel="noreferrer"
-                    aria-label={`View commit ${stagingCommit} on GitHub`}
+                    aria-label={translateDynamic("dynamic:viewCommitOnGitHub", { value1: stagingCommit })}
                     title={stagingCommit}
                   >
                     SHA {stagingCommit.slice(0, 7)}
@@ -234,7 +235,7 @@ export function SidebarAccountMenu({
               {showInvite && inviteHref ? (
                 <MenuAction
                   label={pageText("invite_b13660")}
-                  description="Invite people to your organization."
+                  description={pageText("invitePeopleToYourOrganization_b77595")}
                   icon={UserPlus}
                   href={inviteHref}
                   topLevel={isCloud}
@@ -243,7 +244,7 @@ export function SidebarAccountMenu({
               ) : null}
               <MenuAction
                 label={pageText("documentation_9e9cf3")}
-                description="Open Paperclip docs in a new tab."
+                description={pageText("openPaperclipDocsInANewTab_30bd26")}
                 icon={BookOpen}
                 href={DOCS_URL}
                 external
@@ -267,9 +268,7 @@ export function SidebarAccountMenu({
                     <span className="block text-sm font-medium text-foreground">
                       {signOutMutation.isPending ? pageText("signingOut_b9412f") : pageText("signOut_dc1649")}
                     </span>
-                    <span className="block text-xs text-muted-foreground">
-                      End this browser session.
-                    </span>
+                    <span className="block text-xs text-muted-foreground">{pageText("endThisBrowserSession_2325ff")}</span>
                   </span>
                 </button>
               ) : null}

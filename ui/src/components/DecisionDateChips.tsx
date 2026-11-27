@@ -1,3 +1,4 @@
+import { controlText } from "@/i18n/controls";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { cloneElement, isValidElement, useState } from "react";
@@ -36,7 +37,7 @@ export function DecisionDateChips({ value, custom, onChange }: DecisionDateChips
     <div className="flex flex-wrap items-center gap-1.5" data-decision-date-chips>
       {ATTENTION_DATE_RANGE_OPTIONS.map(([id, label]) => (
         <ChipButton key={id} active={value === id} onClick={() => onChange(id, custom)}>
-          {label}
+          {controlText(label)}
         </ChipButton>
       ))}
       <Popover open={open} onOpenChange={setOpen}>
@@ -52,9 +53,7 @@ export function DecisionDateChips({ value, custom, onChange }: DecisionDateChips
         </PopoverTrigger>
         <PopoverContent align="start" className="w-auto space-y-2 p-3">
           <div className="flex flex-col gap-1.5">
-            <label className="text-(length:--text-nano) font-medium uppercase tracking-wide text-muted-foreground">
-              From
-            </label>
+            <label className="text-(length:--text-nano) font-medium uppercase tracking-wide text-muted-foreground">{pageText("from_3f6605")}</label>
             <input
               type="date"
               value={custom.from ?? ""}
@@ -64,9 +63,7 @@ export function DecisionDateChips({ value, custom, onChange }: DecisionDateChips
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-(length:--text-nano) font-medium uppercase tracking-wide text-muted-foreground">
-              To
-            </label>
+            <label className="text-(length:--text-nano) font-medium uppercase tracking-wide text-muted-foreground">{pageText("to_ae79ea")}</label>
             <input
               type="date"
               value={custom.to ?? ""}

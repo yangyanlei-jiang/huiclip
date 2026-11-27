@@ -1,3 +1,4 @@
+import { controlText } from "@/i18n/controls";
 import type { MouseEvent } from "react";
 import { Loader2, LogIn, LogOut } from "lucide-react";
 import type { ResourceMembershipState } from "@paperclipai/shared";
@@ -25,9 +26,9 @@ export function MembershipAction({
 }: MembershipActionProps) {
   const isLeft = state === "left";
   const label = pending
-    ? pendingState === "left" ? "Leaving..." : "Joining..."
-    : isLeft ? "Join" : "Leave";
-  const ariaLabel = `${isLeft ? "Join" : "Leave"} ${resourceName}`;
+    ? pendingState === "left" ? controlText("Leaving") : controlText("Joining")
+    : isLeft ? controlText("Join") : controlText("Leave");
+  const ariaLabel = controlText(isLeft ? "joinNamed" : "leaveNamed", { name: resourceName });
   const Icon = pending ? Loader2 : isLeft ? LogIn : LogOut;
 
   function handleClick(event: MouseEvent<HTMLButtonElement>) {

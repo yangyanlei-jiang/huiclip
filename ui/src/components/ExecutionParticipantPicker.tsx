@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { useMemo, useState } from "react";
@@ -98,7 +99,7 @@ export function ExecutionParticipantPicker({
   const Icon = stageType === "review" ? Eye : ShieldCheck;
 
   if (!policyAvailable) {
-    return <span role="status" className="text-xs text-muted-foreground">Execution policy unavailable. Refresh to try again.</span>;
+    return <span role="status" className="text-xs text-muted-foreground">{pageText("executionPolicyUnavailableRefreshToTryAgain_e6a79a")}</span>;
   }
 
   return (
@@ -125,7 +126,7 @@ export function ExecutionParticipantPicker({
       <PopoverContent className="p-1 w-56" align="start" collisionPadding={16}>
         <input
           className="w-full px-2 py-1.5 text-xs bg-transparent outline-none border-b border-border mb-1 placeholder:text-muted-foreground/50"
-          placeholder={`Search ${label.toLowerCase()}...`}
+          placeholder={translateDynamic("dynamic:searchDots", { value1: label.toLowerCase() })}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           autoFocus
@@ -147,9 +148,7 @@ export function ExecutionParticipantPicker({
               )}
               onClick={() => toggle(`user:${currentUserId}`)}
             >
-              <User className="h-3 w-3 shrink-0 text-muted-foreground" />
-              Assign to me
-            </button>
+              <User className="h-3 w-3 shrink-0 text-muted-foreground" />{pageText("assignToMe_ac5072")}</button>
           )}
           {issue.createdByUserId && issue.createdByUserId !== currentUserId && (
             <button
@@ -160,7 +159,7 @@ export function ExecutionParticipantPicker({
               onClick={() => toggle(`user:${issue.createdByUserId}`)}
             >
               <User className="h-3 w-3 shrink-0 text-muted-foreground" />
-              {creatorUserLabel ?? "Requester"}
+              {creatorUserLabel ?? pageText("requester_bcdf8d")}
             </button>
           )}
           {otherUserOptions

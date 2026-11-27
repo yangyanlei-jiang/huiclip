@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { AgentAvatar } from "@/components/AgentAvatar";
@@ -142,14 +143,14 @@ export function OverviewSection({
       {/* Assignment row */}
       <div className="overflow-x-auto overscroll-x-contain">
         <div className="inline-flex min-w-full flex-wrap items-center gap-2 text-sm text-muted-foreground sm:min-w-max sm:flex-nowrap">
-          <span>For</span>
+          <span>{pageText("for_f78806")}</span>
           <InlineEntitySelector
             ref={assigneeSelectorRef}
             value={editDraft.assigneeAgentId}
             options={assigneeOptions}
             recentOptionIds={recentAssigneeIds}
             placeholder={translateUi("interfaceCopy.responsible")}
-            noneLabel="No responsible"
+            noneLabel={interfaceNotice("interface:noResponsible_797e99")}
             searchPlaceholder={pageText("searchResponsible_bc9f7f")}
             emptyMessage={pageText("noResponsibleFound_a275f8")}
             onChange={(assigneeAgentId) =>
@@ -189,14 +190,14 @@ export function OverviewSection({
               );
             }}
           />
-          <span>in</span>
+          <span>{pageText("in_af10ef")}</span>
           <InlineEntitySelector
             ref={projectSelectorRef}
             value={editDraft.projectId}
             options={projectOptions}
             recentOptionIds={recentProjectIds}
             placeholder={translateUi("interfaceCopy.project")}
-            noneLabel="No project"
+            noneLabel={interfaceNotice("interface:noProject_c326b7")}
             searchPlaceholder={pageText("searchProjects_469d78")}
             emptyMessage={pageText("noProjectsFound_ca7870")}
             onChange={(projectId) => setEditDraft((current) => ({ ...current, projectId }))}
@@ -232,10 +233,7 @@ export function OverviewSection({
       </div>
 
       {!routine.assigneeAgentId ? (
-        <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-amber-900 dark:text-amber-200">
-          Default agent required. This routine can stay as a draft and still run manually, but
-          automation stays paused until you assign a default agent.
-        </div>
+        <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-amber-900 dark:text-amber-200">{pageText("defaultAgentRequiredThisRoutineCanStayAs_e44a06")}</div>
       ) : null}
 
       {/* Instructions */}
@@ -312,9 +310,9 @@ export function OverviewSection({
       <div className="grid gap-3 sm:grid-cols-2">
         <SummaryCard
           icon={Clock3}
-          label="Triggers"
+          label={pageText("triggers_047708")}
           value={activeTriggers === 0 ? "None" : `${activeTriggers} active`}
-          hint={nextFire ? `Next fire ${nextFire}` : "No schedule"}
+          hint={nextFire ? `Next fire ${nextFire}` : pageText("noSchedule_15d88e")}
           to={() => navigateToSection("triggers")}
           ariaLabel={`${activeTriggers} triggers. Open triggers.`}
         />
@@ -322,9 +320,9 @@ export function OverviewSection({
           icon={Play}
           label={pageText("lastRun_333c63")}
           value={lastRun ? lastRun.status.replaceAll("_", " ") : "No runs"}
-          hint={lastRun ? timeAgo(lastRun.triggeredAt) : "Trigger a run"}
+          hint={lastRun ? timeAgo(lastRun.triggeredAt) : pageText("triggerARun_9a3c5f")}
           to={() => navigateToSection("runs")}
-          ariaLabel={lastRun ? `Last run ${lastRun.status}. Open runs.` : "No runs. Open runs."}
+          ariaLabel={lastRun ? `Last run ${lastRun.status}. Open runs.` : interfaceNotice("interface:noRunsOpenRuns_9f4c5e")}
         />
       </div>
 
@@ -352,8 +350,7 @@ export function OverviewSection({
               type="button"
               onClick={() => navigateToSection("activity")}
               className="flex items-center gap-1 pt-2 text-xs text-muted-foreground hover:text-foreground"
-            >
-              View all activity <ArrowRight className="h-3 w-3" />
+            >{pageText("viewAllActivity_fd0f02") + " "}<ArrowRight className="h-3 w-3" />
             </button>
           </div>
         )}
@@ -405,11 +402,7 @@ export function VariablesSection() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3 rounded-md border border-border bg-muted/20 px-4 py-3 text-xs">
-        <span className="flex-1 text-muted-foreground">
-          Variables are auto-detected from <code className="font-mono">{"{{placeholders}}"}</code> in
-          the title &amp; instructions. The variable name is read-only — rename by editing the
-          placeholder.
-        </span>
+        <span className="flex-1 text-muted-foreground">{pageText("variablesAreAutoDetectedFrom_27382f") + " "}<code className="font-mono">{"{{placeholders}}"}</code>{" " + pageText("inTheTitleInstructionsTheVariableNameIs_79995b")}</span>
         <Button variant="secondary" size="sm" onClick={() => navigateToSection("overview")}>
           <Edit3 className="mr-1.5 h-3.5 w-3.5" />{pageText("editInstructions_af6f86")}</Button>
       </div>
@@ -424,7 +417,7 @@ export function VariablesSection() {
       ) : (
         <EmptyState
           icon={Braces}
-          message="No variables yet. Add a {{placeholder}} in the title or instructions to create one."
+          message={pageText("noVariablesYetAddAPlaceholderInThe_621987")}
           action="Edit instructions"
           onAction={() => navigateToSection("overview")}
         />
@@ -434,6 +427,7 @@ export function VariablesSection() {
 }
 
 export function SecretsSection() {
+  const { t: pageText } = usePageTranslation("interface");
   const ctx = useRoutineDetail();
   const { editDraft, setEditDraft, availableSecrets, createSecret } = ctx;
 
@@ -454,10 +448,7 @@ export function SecretsSection() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-md border border-border bg-muted/20 px-4 py-3 text-xs text-muted-foreground">
-        Routine secrets apply to every task this routine creates. They override matching keys in
-        project and agent env. <span className="font-mono">PAPERCLIP_*</span> names are reserved.
-      </div>
+      <div className="rounded-md border border-border bg-muted/20 px-4 py-3 text-xs text-muted-foreground">{pageText("routineSecretsApplyToEveryTaskThisRoutine_cda7f2") + " "}<span className="font-mono">PAPERCLIP_*</span>{" " + pageText("namesAreReserved_f5d222")}</div>
 
 
       <EnvironmentVariablesEditor
@@ -488,7 +479,7 @@ export function DeliverySection() {
       <div className="space-y-3">
         <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">{pageText("concurrency_2ec390")}</p>
         <RadioCardGroup
-          ariaLabel="Concurrency policy"
+          ariaLabel={interfaceNotice("interface:concurrencyPolicy_c55815")}
           value={editDraft.concurrencyPolicy}
           onValueChange={(concurrencyPolicy) =>
             setEditDraft((current) => ({ ...current, concurrencyPolicy }))
@@ -497,11 +488,9 @@ export function DeliverySection() {
         />
       </div>
       <div className="space-y-3">
-        <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
-          Catch-up
-        </p>
+        <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">{pageText("catchUp_5b8ae5")}</p>
         <RadioCardGroup
-          ariaLabel="Catch-up policy"
+          ariaLabel={interfaceNotice("interface:catchUpPolicy_2987b5")}
           value={editDraft.catchUpPolicy}
           onValueChange={(catchUpPolicy) =>
             setEditDraft((current) => ({ ...current, catchUpPolicy }))
@@ -510,11 +499,9 @@ export function DeliverySection() {
         />
       </div>
       <div className="space-y-3">
-        <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
-          Advanced run policy
-        </p>
+        <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">{pageText("advancedRunPolicy_6b2e4e")}</p>
         <RadioCardGroup
-          ariaLabel="Advanced run policy"
+          ariaLabel={interfaceNotice("interface:advancedRunPolicy_6b2e4e")}
           value={editDraft.activityGatePolicy}
           onValueChange={(activityGatePolicy) =>
             setEditDraft((current) => ({ ...current, activityGatePolicy }))
@@ -523,15 +510,12 @@ export function DeliverySection() {
           disabled={!hasScheduleTrigger}
         />
         {!hasScheduleTrigger ? (
-          <p className="text-xs text-muted-foreground">
-            Add a schedule trigger to gate runs on activity. Webhook, manual, and API fires always
-            run.
-          </p>
+          <p className="text-xs text-muted-foreground">{pageText("addAScheduleTriggerToGateRunsOn_28ff10")}</p>
         ) : gateEnabled ? (
           <div className="space-y-2 rounded-lg border border-border p-3">
             <Label className="text-xs font-medium">{pageText("activityScope_c06a04")}</Label>
             <RadioCardGroup
-              ariaLabel="Activity gate scope"
+              ariaLabel={interfaceNotice("interface:activityGateScope_6d6cc8")}
               value={editDraft.activityGateScope}
               onValueChange={(activityGateScope) =>
                 setEditDraft((current) => ({ ...current, activityGateScope }))
@@ -568,6 +552,7 @@ function NextFiresPreview({
   triggers: RoutineDetailType["triggers"];
   concurrencyPolicy: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const preview = useMemo(() => {
     const schedule = triggers
       .filter((trigger) => trigger.kind === "schedule" && trigger.enabled && trigger.cronExpression)
@@ -588,9 +573,7 @@ function NextFiresPreview({
 
   return (
     <div className="space-y-3">
-      <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
-        Next 5 fires
-      </p>
+      <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">{pageText("next5Fires_9c31db")}</p>
       {preview ? (
         <>
           <div className="space-y-1.5 rounded-lg border border-border p-3 font-mono text-xs">
@@ -608,16 +591,12 @@ function NextFiresPreview({
               </div>
             ))}
           </div>
-          <p className="text-(length:--text-micro) text-muted-foreground/60">
-            Preview assumes the previous run is still in flight when the next fires. Times shown in{" "}
+          <p className="text-(length:--text-micro) text-muted-foreground/60">{pageText("previewAssumesThePreviousRunIsStillIn_3053f7")}{" "}
             {preview.timeZone}.
           </p>
         </>
       ) : (
-        <p className="rounded-lg border border-dashed border-border p-3 text-xs text-muted-foreground">
-          No enabled schedule trigger to preview. Add a schedule in Triggers to see how this policy
-          treats upcoming fires.
-        </p>
+        <p className="rounded-lg border border-dashed border-border p-3 text-xs text-muted-foreground">{pageText("noEnabledScheduleTriggerToPreviewAddA_5984fa")}</p>
       )}
     </div>
   );

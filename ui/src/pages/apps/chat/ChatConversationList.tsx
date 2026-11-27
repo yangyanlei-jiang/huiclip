@@ -40,19 +40,19 @@ export function ChatConversationList({
     return (
       <EmptyState
         icon={MessageSquare}
-        message="No conversations yet"
+        message={pageText("noConversationsYet_f58811")}
         description={
           provider === "speko"
-            ? "Open an assigned task and choose Talk to agent."
+            ? pageText("openAnAssignedTaskAndChooseTalkTo_e3dc1a")
             : provider === "agentmail"
-            ? "Send an email to this agent’s address to start one."
-            : "Mention the agent in an enabled destination to start one."
+            ? pageText("sendAnEmailToThisAgentSAddress_3caedd")
+            : pageText("mentionTheAgentInAnEnabledDestinationTo_cc798e")
         }
       />
     );
   return (
     <ul
-      aria-label="Conversations"
+      aria-label={pageText("conversations_07c59b")}
       className="divide-y divide-border border-y border-border"
     >
       {rows.map((row) => (
@@ -75,11 +75,11 @@ export function ChatConversationList({
                   className="break-words font-medium hover:underline"
                   to={`/issues/${row.issueId}`}
                 >
-                  {row.issueTitle ?? row.issueIdentifier ?? "Paperclip task"}
+                  {row.issueTitle ?? row.issueIdentifier ?? pageText("paperclipTask_678b33")}
                 </Link>
               ) : (
                 <span className="font-medium">
-                  {row.issueTitle ?? "Waiting for task"}
+                  {row.issueTitle ?? pageText("waitingForTask_a9e024")}
                 </span>
               )}
             </div>

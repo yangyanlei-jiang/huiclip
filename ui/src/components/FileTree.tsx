@@ -1,3 +1,4 @@
+import { controlText } from "@/i18n/controls";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import type { CSSProperties, KeyboardEvent, ReactNode } from "react";
@@ -294,7 +295,7 @@ export function FileTree({
   loading = false,
   error,
   empty,
-  ariaLabel = "Files",
+  ariaLabel = controlText("Files"),
 }: FileTreeProps) {
   const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
@@ -402,9 +403,9 @@ export function FileTree({
     return (
       <div aria-label={ariaLabel} role="tree" className="p-3">
         <div className="rounded-md border border-dashed border-border px-4 py-8 text-center">
-          <div className="text-sm font-medium">{empty?.title ?? "No files"}</div>
+          <div className="text-sm font-medium">{empty?.title ?? pageText("noFiles_ccc17f")}</div>
           <div className="mt-1 text-xs text-muted-foreground">
-            {empty?.description ?? "Files will appear here when they are available."}
+            {empty?.description ?? pageText("filesWillAppearHereWhenTheyAreAvailable_d6a8fa")}
           </div>
         </div>
       </div>

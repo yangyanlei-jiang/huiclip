@@ -30,7 +30,7 @@ export function DesignSidebar({ onNewTask, recentTasks = [] }: { onNewTask: () =
           <SidebarCompanyMenu showChevron={false} />
           <Tooltip><TooltipTrigger asChild><Button variant="ghost" size="icon-sm" className="design-sidebar-search" aria-label={pageText("globalSearch_a2b8a1")} onClick={() => document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true, bubbles: true, cancelable: true }))}><Search aria-hidden /></Button></TooltipTrigger><TooltipContent side="right">{pageText("searchTasksAgentsProjects_d21c47")}</TooltipContent></Tooltip>
         </div>
-        <nav className="design-sidebar-navigation" aria-label="Main navigation">
+        <nav className="design-sidebar-navigation" aria-label={pageText("mainNavigation_efd197")}>
           <div className="design-sidebar-primary">
             <Button variant="ghost" className="design-sidebar-new-task" onClick={onNewTask}><CirclePlus aria-hidden />{pageText("newTask_cc3dbd")}</Button>
             <SidebarNavItem className="design-sidebar-item" to={`${root}/dashboard`} label={pageText("dashboard_d87f47")} icon={LayoutDashboard} />

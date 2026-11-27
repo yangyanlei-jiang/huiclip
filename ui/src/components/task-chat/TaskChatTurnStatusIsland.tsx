@@ -230,7 +230,7 @@ function PlanRow({ row, onShowAll }: { row: TaskChatTurnPlanRow; onShowAll: () =
           {row.allCompleted
             ? <CheckCircle2 className="size-4 shrink-0 text-(--status-task-icon-done)" aria-hidden />
             : <Circle className="size-4 shrink-0" aria-hidden />}
-          <span>{row.count}{" " + pageText("earlier_f12e99") + " "}{row.count === 1 ? "step" : "steps"}{row.allCompleted ? " " + pageText("done_e5fd9c") : ""}</span>
+          <span>{row.count}{" " + pageText("earlier_f12e99") + " "}{row.count === 1 ? pageText("step_bd370d") : pageText("steps_657891")}{row.allCompleted ? " " + pageText("done_e5fd9c") : ""}</span>
         </button>
       </li>
     );
@@ -240,7 +240,7 @@ function PlanRow({ row, onShowAll }: { row: TaskChatTurnPlanRow; onShowAll: () =
       <li>
         <button type="button" className={ROW_BUTTON_CLASS_NAME} onClick={onShowAll} data-testid="task-chat-turn-plan-more">
           <Circle className="size-4 shrink-0 opacity-0" aria-hidden />
-          <span>+{row.count}{" " + pageText("more_e7c95b") + " "}{row.count === 1 ? "step" : "steps"}</span>
+          <span>+{row.count}{" " + pageText("more_e7c95b") + " "}{row.count === 1 ? pageText("step_bd370d") : pageText("steps_657891")}</span>
         </button>
       </li>
     );
@@ -277,6 +277,7 @@ export interface TaskChatTurnPlanProps {
 }
 
 export function TaskChatTurnPlan({ plan, workspace = null, defaultCollapsed = false, compact = false }: TaskChatTurnPlanProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const listId = useId();
   const [expandedOverride, setExpandedOverride] = useState<boolean | null>(null);
   const [showAll, setShowAll] = useState(false);
@@ -306,14 +307,14 @@ export function TaskChatTurnPlan({ plan, workspace = null, defaultCollapsed = fa
         data-testid="task-chat-turn-plan-progress"
       >
         <span aria-hidden>{completed}/{total}</span>
-        <span className="sr-only">{completed} of {total} steps done</span>
+        <span className="sr-only">{completed}{" " + pageText("of_de04fa") + " "}{total}{" " + pageText("stepsDone_f99ea4")}</span>
       </span>
     </>
   );
 
   return (
     <section
-      aria-label="Agent plan"
+      aria-label={pageText("agentPlan_879d8b")}
       className="mx-auto w-full max-w-(--sz-turn-status-island) overflow-hidden rounded-xl border border-border bg-popover/95 text-foreground shadow-sm backdrop-blur"
       data-testid="task-chat-turn-status-island"
       data-plan-state={plan.complete ? "complete" : problem ? "blocked" : "active"}
@@ -345,7 +346,7 @@ export function TaskChatTurnPlan({ plan, workspace = null, defaultCollapsed = fa
       <div
         className="h-0.5 w-full bg-muted"
         role="progressbar"
-        aria-label="Plan progress"
+        aria-label={pageText("planProgress_c3433c")}
         aria-valuemin={0}
         aria-valuemax={total}
         aria-valuenow={completed}
@@ -361,7 +362,7 @@ export function TaskChatTurnPlan({ plan, workspace = null, defaultCollapsed = fa
       {expanded ? (
         <ol
           id={listId}
-          aria-label="Within-turn checklist"
+          aria-label={pageText("withinTurnChecklist_93bb76")}
           className="flex max-h-(--sz-turn-plan-list-max-h) flex-col gap-0.5 overflow-y-auto p-1.5"
         >
           {rows.map((row) => (
@@ -375,7 +376,7 @@ export function TaskChatTurnPlan({ plan, workspace = null, defaultCollapsed = fa
             <li>
               <button type="button" className={ROW_BUTTON_CLASS_NAME} onClick={() => setShowAll(false)}>
                 <Circle className="size-4 shrink-0 opacity-0" aria-hidden />
-                <span>Show fewer</span>
+                <span>{pageText("showFewer_d94dfb")}</span>
               </button>
             </li>
           ) : null}

@@ -1,3 +1,5 @@
+import { adapterCopy } from "../i18n/adapter-copy";
+import { t as interfaceNotice } from "@/i18n";
 import { t as interfaceMessage } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation } from "@/i18n";
@@ -1063,7 +1065,7 @@ function OnboardingWizardInner({
     autoConnectStartedRef.current = true;
     setLoading(false);
     setAdapterEnvLoading(false);
-    setError("Configuration changed during setup. Connect again to test the current settings.");
+    setError(interfaceNotice("interface:configurationChangedDuringSetupConnectAgainToTest_27d9f4"));
   }, [claudeSetupSelectionKey]);
   const adapterSetupSelectionRef = useRef("");
   const adapterEnvErrorSelectionRef = useRef<string | null>(null);
@@ -1295,7 +1297,7 @@ function OnboardingWizardInner({
         }
       }
       const provisionalAdapter = disabledTypes.has("process") ? recommendedAdapters[0]?.type : "process";
-      if (!sourceSelected && !provisionalAdapter) throw new Error("No agent adapters are available on this instance.");
+      if (!sourceSelected && !provisionalAdapter) throw new Error(adapterCopy("No agent adapters are available on this instance."));
       const createAdapter = sourceSelected ? adapterType : provisionalAdapter!;
       if (!stillTheSameCompany(companyId)) return null;
       setSetupAgentId(id);
@@ -1348,7 +1350,7 @@ function OnboardingWizardInner({
     }).catch(cause => {
       if (!stillTheSameCompany(companyId)) return;
       setSetupError(true);
-      setError(cause instanceof Error ? cause.message : "Could not create agent setup.");
+      setError(cause instanceof Error ? cause.message : interfaceNotice("interface:couldNotCreateAgentSetup_e05dd7"));
     }).finally(() => {
       preparingSetup.current.delete(companyId);
       setSetupAttempt(attempt => attempt + 1);
@@ -1893,13 +1895,13 @@ function OnboardingWizardInner({
     if (companyIdNow === companyIdAtStart || companyIdNow === returnedCompanyId) {
       return true;
     }
-    setError("Organization created, but onboarding switched to another organization.");
+    setError(interfaceNotice("interface:organizationCreatedButOnboardingSwitchedToAnotherOrganization_34c2fb"));
     return false;
   }
 
   async function handleLaunchToDashboard() {
     if (!createdCompanyId || !createdAgentId) {
-      setError(INCOMPLETE_ONBOARDING_STATE_MESSAGE);
+      setError(adapterCopy(INCOMPLETE_ONBOARDING_STATE_MESSAGE));
       return;
     }
     setLoading(true);
@@ -2017,8 +2019,8 @@ function OnboardingWizardInner({
     } catch (err) {
       if (isCurrent()) setError(
         err instanceof Error
-          ? `Could not store the API key: ${describeError(err).body}`
-          : "Could not store the API key.",
+          ? t("adapter:storeKeyFailed", { detail: describeError(err).body })
+          : interfaceNotice("interface:couldNotStoreTheAPIKey_754ac3"),
       );
       return false;
     }
@@ -2069,7 +2071,7 @@ function OnboardingWizardInner({
       grantId = selected?.grantId;
     }
     if (!isCurrent()) return;
-    if (!grantId) throw new Error("Choose a subscription account in Connections, then retry setup.");
+    if (!grantId) throw new Error(adapterCopy("Choose a subscription account in Connections, then retry setup."));
     managedSubscriptionRef.current = { companyId, binding, grantId };
     await selectManagedDefault(companyId, binding.provider, grantId, isCurrent, visibleDefault);
   }
@@ -2189,7 +2191,7 @@ function OnboardingWizardInner({
       await agentsApi.update(id, JSON.parse(setupSnapshot), companyId);
     });
     void setupSave.current.catch(cause => {
-      if (stillTheSameCompany(companyId)) setError(cause instanceof Error ? cause.message : "Could not save agent setup.");
+      if (stillTheSameCompany(companyId)) setError(cause instanceof Error ? cause.message : interfaceNotice("interface:couldNotSaveAgentSetup_dc2893"));
     });
   }, [setupSnapshot, setupAgentId, createdCompanyId]);
 
@@ -2203,7 +2205,7 @@ function OnboardingWizardInner({
     if (!runnerDiscoveryReady) return null;
     if (!createdCompanyId) {
       setAdapterEnvError(
-        "Create or select an organization before testing adapter environment."
+        interfaceNotice("interface:createOrSelectAnOrganizationBeforeTestingAdapter_c2a356")
       );
       return null;
     }
@@ -2242,7 +2244,7 @@ function OnboardingWizardInner({
         } catch {
           if (!testIsCurrent()) return null;
           setAdapterEnvError(
-            "Could not load environment settings to determine which environment to test in. Retry the test.",
+            interfaceNotice("interface:couldNotLoadEnvironmentSettingsToDetermineWhich_6a626e"),
           );
           return null;
         }
@@ -2278,7 +2280,7 @@ function OnboardingWizardInner({
           const native = adapters.find(adapter => adapter.type === "paperclip_runner");
           if (!codex || (codex.defaultRunner !== "paperclip" && codex.defaultRunner !== "legacy")
             || !codex.supportedRunners?.includes(codex.defaultRunner)) {
-            throw new Error("Could not confirm Codex runner availability for this environment. Retry setup.");
+            throw new Error(adapterCopy("Could not confirm Codex runner availability for this environment. Retry setup."));
           }
           if (codex.defaultRunner !== "paperclip" && !codex?.disabled && !codex?.overriddenBuiltin
             && !native?.disabled && !native?.overriddenBuiltin) {
@@ -2288,7 +2290,7 @@ function OnboardingWizardInner({
               || typeof probe.details.leaseId !== "string" || !probe.details.leaseId) {
               throw new Error(typeof probe.details?.platformQualificationDiagnostic === "string"
                 ? probe.details.platformQualificationDiagnostic
-                : probe.summary || "The environment's platform qualification could not be confirmed. Retry the connection probe.");
+                : probe.summary || adapterCopy("The environment's platform qualification could not be confirmed. Retry the connection probe."));
             }
             const refreshed = await queryClient.fetchQuery({ queryKey: availabilityKey, staleTime: 0,
               queryFn: () => adaptersApi.list({ companyId: createdCompanyId, environmentId }, { signal }) });
@@ -2297,7 +2299,7 @@ function OnboardingWizardInner({
             const defaultRunner = refreshedCodex?.defaultRunner;
             if ((defaultRunner !== "paperclip" && defaultRunner !== "legacy")
               || !refreshedCodex?.supportedRunners?.includes(defaultRunner)) {
-              throw new Error("Could not confirm the environment's default runner. Retry setup.");
+              throw new Error(adapterCopy("Could not confirm the environment's default runner. Retry setup."));
             }
           }
         }
@@ -2339,7 +2341,7 @@ function OnboardingWizardInner({
       if (!selectionIsCurrent()) return null;
       adapterEnvErrorSelectionRef.current = selection || null;
       setAdapterEnvError(
-        err instanceof Error ? err.message : "Adapter environment test failed"
+        err instanceof Error ? err.message : interfaceNotice("interface:adapterEnvironmentTestFailed_2c5244")
       );
       return null;
     } finally {
@@ -2396,7 +2398,7 @@ function OnboardingWizardInner({
     if (!createdCompanyId) return;
     if (!setupPrepared && !createdAgentId) return;
     if (!connectionModelReady) {
-      setError("Choose a model for this gateway connection before connecting your agent.");
+      setError(interfaceNotice("interface:chooseAModelForThisGatewayConnectionBefore_1eec8b"));
       return;
     }
     const defaultSelection = defaultSelectionsRef.current.get(JSON.stringify([createdCompanyId, managedProvider]));
@@ -2423,7 +2425,7 @@ function OnboardingWizardInner({
         const selectedModelId = model.trim();
         if (!isValidOpenCodeModelId(selectedModelId)) {
           setError(
-            "OpenCode requires an explicit model in provider/model format."
+            interfaceNotice("interface:opencodeRequiresAnExplicitModelInProviderModel_55ac18")
           );
           return;
         }
@@ -2437,7 +2439,7 @@ function OnboardingWizardInner({
         }
         if (adapterModelsLoading || adapterModelsFetching) {
           setError(
-            "OpenCode models are still loading. Please wait and try again."
+            interfaceNotice("interface:opencodeModelsAreStillLoadingPleaseWaitAnd_feb201")
           );
           return;
         }
@@ -2445,8 +2447,8 @@ function OnboardingWizardInner({
         if (!discoveredModels.some((entry) => entry.id === selectedModelId)) {
           setError(
             discoveredModels.length === 0
-              ? "No OpenCode models discovered. Run `opencode models` and authenticate providers."
-              : `Configured OpenCode model is unavailable: ${selectedModelId}`
+              ? interfaceNotice("interface:noOpenCodeModelsDiscoveredRunOpencodeModelsAnd_ef17f9")
+              : t("adapter:openCodeUnavailable", { model: selectedModelId })
           );
           return;
         }
@@ -2476,7 +2478,7 @@ function OnboardingWizardInner({
       }
       if (credentialMode === "api" && selectedApiKey?.aiConnection?.mode === "responsible_user") {
         const grantId = selectedApiKey.id.startsWith("ai:") ? selectedApiKey.id.slice(3) : undefined;
-        if (!grantId) throw new Error("Choose a connected API account before continuing.");
+        if (!grantId) throw new Error(adapterCopy("Choose a connected API account before continuing."));
         if (!await selectManagedDefault(createdCompanyId, selectedApiKey.aiConnection.provider, grantId, isCurrent, grantId)) return;
       }
       if (credentialMode !== "api" && canUseLocalLogin && managedProvider && !managedBindingForStep() && !savedSubscription && !savedKeys.storedLogin.data) {
@@ -2490,7 +2492,7 @@ function OnboardingWizardInner({
       const existingAgent = createdAgentId ? await agentsApi.get(createdAgentId, createdCompanyId) : undefined;
       if (!isCurrent()) return;
       if (existingAgent?.runtimeConfig.aiConnection && credentialMode === "api" && selectedApiKey?.binding && !managedBinding) {
-        throw new Error("Choose a connected API account or Enter a new API key to replace this agent’s connected account.");
+        throw new Error(adapterCopy("Choose a connected API account or Enter a new API key to replace this agent’s connected account."));
       }
       const existingRunner = existingAgent && runner === "auto" && agentHarnessType(existingAgent.adapterType, existingAgent.adapterConfig) === adapterType
         ? agentRunner(existingAgent.adapterType) : undefined;
@@ -2550,9 +2552,9 @@ function OnboardingWizardInner({
           setError(
             nativeCodexError || (result.status === "fail"
               ? cloudInstance
-                ? "Paperclip couldn't finish connecting this agent. Try connecting again."
-                : "The environment test failed. Fix the reported checks before you hire this agent."
-              : "No working authentication was found. Fix the reported checks before you hire this agent."),
+                ? interfaceNotice("interface:paperclipCouldnTFinishConnectingThisAgentTry_4ff724")
+                : interfaceNotice("interface:theEnvironmentTestFailedFixTheReportedChecks_5dffa4")
+              : interfaceNotice("interface:noWorkingAuthenticationWasFoundFixTheReported_1db8ce")),
           );
           return;
         }
@@ -2712,14 +2714,14 @@ function OnboardingWizardInner({
       const result = await runAdapterEnvironmentTest(configWithUnset);
       if (result?.status === "fail") {
         setError(
-          "Retried with ANTHROPIC_API_KEY unset in adapter config, but the environment test is still failing."
+          interfaceNotice("interface:retriedWithANTHROPICAPIKEYUnsetInAdapter_0f7e80")
         );
       }
     } catch (err) {
       setError(
         err instanceof Error
           ? err.message
-          : "Failed to unset ANTHROPIC_API_KEY and retry."
+          : interfaceNotice("interface:failedToUnsetANTHROPICAPIKEYAndRetry_9f84e2")
       );
     } finally {
       setUnsetAnthropicLoading(false);
@@ -2804,7 +2806,7 @@ function OnboardingWizardInner({
   const stepHandoff = beatDelay(1) > 0;
   const heroRoomTarget = step === 1 || !arrived ? heroRoomMotion.closed : arrival && lastStep.current === entryStep ? heroRoomArrival : heroRoomMotion.open;
   const capsuleTarget = step === 1 || !arrived ? capsuleRoomExit : step === 3 && stepHandoff && lastStep.current === 1 ? capsuleRoomEnter : capsuleHeroMotion.animate;
-  const visibleError = error ?? (launchStateIncomplete ? INCOMPLETE_ONBOARDING_STATE_MESSAGE : null);
+  const visibleError = error ?? (launchStateIncomplete ? adapterCopy(INCOMPLETE_ONBOARDING_STATE_MESSAGE) : null);
 
   return (
     <Dialog
@@ -3132,10 +3134,7 @@ function OnboardingWizardInner({
                     />
 
                     {adapterRegistryLoaded && recommendedAdapters.length === 0 && (
-                      <p role="status" className="text-sm text-muted-foreground">
-                        Claude and Codex are unavailable on this instance. Ask an administrator to enable one,
-                        or exit setup and choose New Agent on the Agents page to use another provider.
-                      </p>
+                      <p role="status" className="text-sm text-muted-foreground">{pageText("claudeAndCodexAreUnavailableOnThisInstance_4cbc7e")}</p>
                     )}
 
                     {/* Fades on the first beat but keeps its space until the
@@ -3162,7 +3161,7 @@ function OnboardingWizardInner({
                     >
                       <div className="-ml-3 mt-1">
                         <CredentialModeLink mode={credentialMode} onChange={setCredentialMode} />
-                        {savedKeys.options.length > 0 && <p className="px-3 text-sm text-muted-foreground">{savedKeys.options.length} saved API {savedKeys.options.length === 1 ? "key available" : "keys available"}.</p>}
+                        {savedKeys.options.length > 0 && <p className="px-3 text-sm text-muted-foreground">{savedKeys.options.length}{" " + pageText("savedAPI_86d5e8") + " "}{savedKeys.options.length === 1 ? pageText("keyAvailable_7a2624") : pageText("keysAvailable_33d833")}.</p>}
                         {credentialMode === "subscription" && authSignalStatus === "present" && <p className="px-3 text-sm text-muted-foreground">{t("setup.existingConnection")}</p>}
                       </div>
                     </motion.div>
@@ -3236,13 +3235,11 @@ function OnboardingWizardInner({
                         />}
                         {managedProvider && !selectedApiKey && !hasGatewaySelection && !connectionModels && <p className="text-xs text-muted-foreground">{t("connectModel.defaultAccount", { provider: CONNECT_SOURCE_NAMES[adapterType] ?? managedProvider })}</p>}
                         {hasGatewaySelection && (gatewayLookupFailed ? <>
-                          <p role="alert" className="text-sm text-destructive">Your saved gateway connection could not be loaded. Retry to choose a model and connect your agent.</p>
-                          <Button type="button" variant="outline" disabled={loading || adapterEnvLoading} onClick={() => { void connectionModelState.refresh(); }}>
-                            Retry loading connection
-                          </Button>
+                          <p role="alert" className="text-sm text-destructive">{pageText("yourSavedGatewayConnectionCouldNotBeLoaded_505b27")}</p>
+                          <Button type="button" variant="outline" disabled={loading || adapterEnvLoading} onClick={() => { void connectionModelState.refresh(); }}>{pageText("retryLoadingConnection_41c271")}</Button>
                         </> : <p role="status" className="text-sm text-muted-foreground">{connectionModelState.refreshing
-                          ? "Loading your saved gateway connection…"
-                          : "Gateway connection saved. Choose a model, then Connect to test it and finish setting up your agent."}</p>)}
+                          ? pageText("loadingYourSavedGatewayConnection_1a96be")
+                          : pageText("gatewayConnectionSavedChooseAModelThenConnect_bb77d6")}</p>)}
                         {connectionModels && <ModelDropdown models={connectionModels.models} value={model}
                           onChange={setModel} open={modelOpen} onOpenChange={setModelOpen}
                           allowDefault={false} required groupByProvider={false}
@@ -3352,7 +3349,7 @@ function OnboardingWizardInner({
                     ) : hasSavedSubscription || localLogin.status === "ready" ? null : connectStepHasNoSandbox ? (
                       canUseLocalLogin && managedProvider ? (
                         <LocalProviderLoginInstructions adapterType={adapterType} login={{ ...localLogin, retry: () => { autoConnectStartedRef.current = false; setError(null); localLogin.retry(); } }} />
-                      ) : <p className="text-xs text-muted-foreground">This environment does not support browser sign-in. Choose another sign-in environment or connect with an API key.</p>
+                      ) : <p className="text-xs text-muted-foreground">{pageText("thisEnvironmentDoesNotSupportBrowserSignIn_3b15a9")}</p>
                     ) : null}
                   </motion.div>
 
@@ -3397,9 +3394,7 @@ function OnboardingWizardInner({
                       )}
 
                       {runnerDiscoveryError && (
-                        <Button type="button" variant="outline" disabled={runnerDiscovery.isFetching || loginEnvironmentsFetching || loginSettingsFetching || loginPolicyFetching} onClick={() => void retryRunnerAvailability()}>
-                          Retry setup
-                        </Button>
+                        <Button type="button" variant="outline" disabled={runnerDiscovery.isFetching || loginEnvironmentsFetching || loginSettingsFetching || loginPolicyFetching} onClick={() => void retryRunnerAvailability()}>{pageText("retrySetup_f1ed13")}</Button>
                       )}
 
                       {adapterEnvResult &&
@@ -3426,12 +3421,8 @@ function OnboardingWizardInner({
 
                       {shouldSuggestUnsetAnthropicApiKey && (
                         <div className="rounded-md border border-amber-300/60 bg-amber-50/40 px-2.5 py-2 space-y-2">
-                          <p className="text-(length:--text-micro) text-amber-900/90 leading-relaxed">
-                            Claude failed while{" "}
-                            <span className="font-mono">ANTHROPIC_API_KEY</span>{" "}
-                            is set. You can clear it in this adapter config
-                            and retry the probe.
-                          </p>
+                          <p className="text-(length:--text-micro) text-amber-900/90 leading-relaxed">{pageText("claudeFailedWhile_0f91d5")}{" "}
+                            <span className="font-mono">ANTHROPIC_API_KEY</span>{" "}{pageText("isSetYouCanClearItInThis_091d7c")}</p>
                           <Button
                             size="sm"
                             variant="outline"
@@ -3443,7 +3434,7 @@ function OnboardingWizardInner({
                           >
                             {unsetAnthropicLoading
                               ? pageText("retrying_54aa30")
-                              : "Unset ANTHROPIC_API_KEY"}
+                              : pageText("unsetANTHROPICAPIKEY_1ef8d3")}
                           </Button>
                         </div>
                       )}
@@ -3476,8 +3467,7 @@ function OnboardingWizardInner({
                           adapterType === "gemini_local" ||
                           adapterType === "kimi_local" ||
                           adapterType === "opencode_local" ? (
-                            <p className="text-muted-foreground">
-                              If auth fails, set{" "}
+                            <p className="text-muted-foreground">{pageText("ifAuthFailsSet_d8fc54")}{" "}
                               <span className="font-mono">
                                 {adapterType === "cursor"
                                   ? "CURSOR_API_KEY"
@@ -3486,8 +3476,7 @@ function OnboardingWizardInner({
                                     : adapterType === "kimi_local"
                                       ? "KIMI_MODEL_NAME + KIMI_MODEL_API_KEY"
                                     : "OPENAI_API_KEY"}
-                              </span>{" "}
-                              in env or run{" "}
+                              </span>{" "}{pageText("inEnvOrRun_235998")}{" "}
                               <span className="font-mono">
                                 {adapterType === "cursor"
                                   ? "agent login"
@@ -3500,7 +3489,7 @@ function OnboardingWizardInner({
                               .
                             </p>
                           ) : (
-                            <p className="text-muted-foreground">If login is required, connect the provider above and retry.</p>
+                            <p className="text-muted-foreground">{pageText("ifLoginIsRequiredConnectTheProviderAbove_797115")}</p>
                           )}
                         </div>
                       )}
@@ -3512,7 +3501,7 @@ function OnboardingWizardInner({
                     <div>
                       <label className="text-xs text-muted-foreground mb-1 block">
                         {adapterType === "openclaw_gateway"
-                          ? "Gateway URL"
+                          ? pageText("gatewayURL_f741a7")
                           : pageText("webhookURL_fa7517")}
                       </label>
                       <input
@@ -3616,6 +3605,17 @@ function OnboardingWizardInner({
   );
 }
 
+function connectionCheckMessage(code: string, message: string) {
+  if (code !== "ai_connection_tested") return message;
+  const match = /^Tested (.+) — (your personal account|the owner’s account authorized for this agent|company-shared account)\. Responsible user: (.+)\.$/.exec(message);
+  if (!match) return message;
+  const [, name, scope, responsible] = match;
+  const scopeKey = scope === "your personal account" ? "personal" : scope === "company-shared account" ? "shared" : "owner";
+  const user = responsible === "the signed-in user" ? interfaceMessage("interface:probeActorSignedIn")
+    : responsible === "unavailable" ? interfaceMessage("interface:probeActorUnavailable") : responsible;
+  return interfaceMessage("interface:probeAccountSummary", { name, scope: interfaceMessage(`interface:probeScope_${scopeKey}`), user });
+}
+
 function AdapterEnvironmentResult({
   result,
   showHints,
@@ -3647,10 +3647,13 @@ function AdapterEnvironmentResult({
             className="leading-relaxed break-words"
           >
             <span className="font-medium uppercase tracking-wide opacity-80">
-              {check.level}
+              {t(`interface:probeLevel_${check.level}`, { defaultValue: check.level })}
             </span>
             <span className="mx-1 opacity-60">·</span>
-            <span>{check.message}</span>
+            <span>{connectionCheckMessage(check.code, check.message)}</span>
+            {check.message.startsWith("paperclip_runner_binary_missing:") && (
+              <span className="block">{t("interface:probeRunnerMissingHelp")}</span>
+            )}
             {check.detail && (
               <span className="block opacity-75 break-all">
                 ({check.detail})

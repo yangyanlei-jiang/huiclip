@@ -166,9 +166,8 @@ export function BlockedInboxView({
         <div className="flex items-start gap-2">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
           <div className="flex-1 space-y-1">
-            <p className="text-sm font-medium">Couldn't load the Blocked tab.</p>
-            <p className="text-xs opacity-80">
-              Other Inbox tabs still work. {describeError(blockedView.error, { action: "load the Blocked tab" }).body}
+            <p className="text-sm font-medium">{pageText("couldnTLoadTheBlockedTab_da9c20")}</p>
+            <p className="text-xs opacity-80">{pageText("otherInboxTabsStillWork_2bf5ad") + " "}{describeError(blockedView.error, { action: "load the Blocked tab" }).body}
             </p>
           </div>
           <Button
@@ -179,7 +178,7 @@ export function BlockedInboxView({
             onClick={blockedView.retry}
             disabled={blockedView.isFetching}
           >
-            {blockedView.isFetching ? "Trying…" : pageText("tryAgain_042c86")}
+            {blockedView.isFetching ? pageText("trying_b7e35a") : pageText("tryAgain_042c86")}
           </Button>
         </div>
       </div>
@@ -196,10 +195,8 @@ export function BlockedInboxView({
           <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
         </span>
         <div className="space-y-1">
-          <p className="text-sm font-medium text-foreground">No work is stopped.</p>
-          <p className="text-xs text-muted-foreground">
-            Tasks that need a decision, recovery, or external action will appear here.
-          </p>
+          <p className="text-sm font-medium text-foreground">{pageText("noWorkIsStopped_74bb52")}</p>
+          <p className="text-xs text-muted-foreground">{pageText("tasksThatNeedADecisionRecoveryOrExternal_91c253")}</p>
         </div>
       </Card>
     );
@@ -211,9 +208,7 @@ export function BlockedInboxView({
         <Card
           data-testid="blocked-inbox-no-search-results"
           className="block border-border/70 bg-card/40 px-4 py-6 text-center text-sm text-muted-foreground"
-        >
-          No stopped items match your search.
-        </Card>
+        >{pageText("noStoppedItemsMatchYourSearch_89937d")}</Card>
       </div>
     );
   }

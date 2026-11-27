@@ -62,7 +62,7 @@ export function SourceResolvedFoldCallout({
   return (
     <section
       role="status"
-      aria-label="Source-resolved watchdog fold"
+      aria-label={pageText("sourceResolvedWatchdogFold_3aa6bc")}
       data-source-resolved-fold
       className={cn(
         "relative w-full overflow-hidden rounded-lg border text-sm shadow-(--shadow-extract-8)",
@@ -83,11 +83,9 @@ export function SourceResolvedFoldCallout({
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow)">
-            <span className="text-emerald-900 dark:text-emerald-200">SOURCE-RESOLVED FOLD</span>
+            <span className="text-emerald-900 dark:text-emerald-200">{pageText("sourceRESOLVEDFOLD_ca626c")}</span>
             <span className="text-muted-foreground/60" aria-hidden>·</span>
-            <span className="font-medium normal-case tracking-normal text-muted-foreground">
-              system audit
-            </span>
+            <span className="font-medium normal-case tracking-normal text-muted-foreground">{pageText("systemAudit_083ece")}</span>
             {finalizedRelative ? (
               <>
                 <span className="text-muted-foreground/60" aria-hidden>·</span>
@@ -97,9 +95,7 @@ export function SourceResolvedFoldCallout({
               </>
             ) : null}
           </div>
-          <p className="mt-1 text-sm leading-6">
-            This run was folded as a source-resolved false positive.
-          </p>
+          <p className="mt-1 text-sm leading-6">{pageText("thisRunWasFoldedAsASourceResolved_d8e88c")}</p>
         </div>
       </header>
       <dl
@@ -109,7 +105,7 @@ export function SourceResolvedFoldCallout({
           "[&>*]:border-emerald-300/40 dark:[&>*]:border-emerald-500/20",
         )}
       >
-        <MetaRow label="Source task">
+        <MetaRow label={pageText("sourceTask_abb83e")}>
           <span className="inline-flex flex-wrap items-center gap-1.5">
             <Link
               to={issueLink(fold.sourceIssueId, fold.sourceIssueIdentifier)}
@@ -122,7 +118,7 @@ export function SourceResolvedFoldCallout({
             </span>
           </span>
         </MetaRow>
-        <MetaRow label="Same-run evidence">
+        <MetaRow label={pageText("sameRunEvidence_9f7121")}>
           <span className="inline-flex flex-wrap items-baseline gap-1.5">
             <span className="rounded bg-background/70 px-1.5 py-0.5 font-mono text-(length:--text-micro) text-emerald-900 dark:bg-background/40 dark:text-emerald-100">
               {fold.sameRunEvidenceKind}
@@ -134,23 +130,23 @@ export function SourceResolvedFoldCallout({
               {evidenceShort}
             </code>
             {evidenceAt ? (
-              <span className="text-(length:--text-micro) text-muted-foreground">at {evidenceAt}</span>
+              <span className="text-(length:--text-micro) text-muted-foreground">{pageText("at_27e90d") + " "}{evidenceAt}</span>
             ) : null}
           </span>
         </MetaRow>
-        <MetaRow label="Silence age before fold">
+        <MetaRow label={pageText("silenceAgeBeforeFold_2ca8d8")}>
           {silenceAgeLabel ? (
             <span>
               {silenceAgeLabel}
               {silenceStartedLabel ? (
-                <span className="text-muted-foreground"> (silence started {silenceStartedLabel})</span>
+                <span className="text-muted-foreground">{" " + pageText("silenceStarted_542966") + " "}{silenceStartedLabel})</span>
               ) : null}
             </span>
           ) : (
             <span className="text-muted-foreground">{pageText("unknown_50d8b4")}</span>
           )}
         </MetaRow>
-        <MetaRow label="Process cleanup">
+        <MetaRow label={pageText("processCleanup_b6604d")}>
           <span
             className="inline-flex flex-wrap items-baseline gap-1.5"
             title={fold.cleanup.outcome}
@@ -162,7 +158,7 @@ export function SourceResolvedFoldCallout({
           </span>
         </MetaRow>
         {fold.evaluationIssueId ? (
-          <MetaRow label="Evaluation task">
+          <MetaRow label={pageText("evaluationTask_b98415")}>
             <Link
               to={issueLink(fold.evaluationIssueId, fold.evaluationIssueIdentifier)}
               className="rounded-sm font-medium underline-offset-2 hover:underline"

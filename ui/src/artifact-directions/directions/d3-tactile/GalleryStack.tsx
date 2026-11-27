@@ -45,7 +45,7 @@ function Summary({ group }: { group: LabGroup }) {
           </span>
           <span>{pageText("updated_f2f857") + " "}<span className="font-mono text-(length:--tac-mono-scale)">{group.updatedLabel}</span>
           </span>
-          {review > 0 ? <span className="sr-only">{review} to review</span> : null}
+          {review > 0 ? <span className="sr-only">{review}{" " + pageText("toReview_cc9941")}</span> : null}
         </p>
         <KindTally artifacts={group.artifacts} className="flex flex-wrap items-baseline gap-y-0.5 text-xs leading-4 text-(--tac-meta)" />
       </div>
@@ -54,8 +54,9 @@ function Summary({ group }: { group: LabGroup }) {
 }
 
 export function GalleryStack({ group }: { group: LabGroup }) {
+  const { t: pageText } = usePageTranslation("interface");
   const days = daysOf(group.artifacts);
-  if (group.artifacts.length === 0) return <p className="py-16 text-center text-sm font-medium text-foreground">No artifacts in this stack match the current filters.</p>;
+  if (group.artifacts.length === 0) return <p className="py-16 text-center text-sm font-medium text-foreground">{pageText("noArtifactsInThisStackMatchTheCurrent_5422bd")}</p>;
   return (
     <div className="flex flex-col gap-7 pt-1">
       <Summary group={group} />

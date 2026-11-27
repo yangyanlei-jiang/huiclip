@@ -1,3 +1,5 @@
+import { controlText } from "@/i18n/controls";
+import { t as interfaceNotice } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState, useEffect } from "react";
@@ -95,7 +97,7 @@ export function Companies() {
   });
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Organizations" }]);
+    setBreadcrumbs([{ label: interfaceNotice("interface:organizations_076052") }]);
   }, [setBreadcrumbs]);
 
   function startEdit(companyId: string, currentName: string) {
@@ -203,7 +205,7 @@ export function Companies() {
                               : "bg-muted text-muted-foreground"
                         }`}
                       >
-                        {company.status}
+                        {controlText(company.status)}
                       </Badge>
                       <Button
                         variant="ghost"
@@ -280,7 +282,7 @@ export function Companies() {
                     {formatCents(company.spentMonthlyCents)}
                     {company.budgetMonthlyCents > 0
                       ? <> / {formatCents(company.budgetMonthlyCents)} <span className="text-xs">({budgetPct}%)</span></>
-                      : <span className="text-xs ml-1">Unlimited budget</span>}
+                      : <span className="text-xs ml-1">{pageText("unlimitedBudget_84c2a3")}</span>}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 ml-auto">
@@ -295,9 +297,7 @@ export function Companies() {
                   className="mt-4 flex items-center justify-between bg-destructive/5 border border-destructive/20 rounded-md px-4 py-3"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <p className="text-sm text-destructive font-medium">
-                    Delete this organization and all its data? This cannot be undone.
-                  </p>
+                  <p className="text-sm text-destructive font-medium">{pageText("deleteThisOrganizationAndAllItsDataThis_29aab2")}</p>
                   <div className="flex items-center gap-2 ml-4 shrink-0">
                     <Button
                       variant="ghost"

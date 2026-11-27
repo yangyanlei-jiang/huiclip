@@ -36,17 +36,17 @@ export function ConnectionInstructionsEditor({ provider, template, value, onChan
   return <section className="space-y-3" aria-label={pageText("agentInstructions_07101b")}>
     <h3 className="text-sm font-medium">{pageText("agentInstructions_07101b")}</h3>
     <div className="flex items-center justify-between gap-4">
-      <label htmlFor={id} className="text-sm">Tell agents to use {provider}</label>
+      <label htmlFor={id} className="text-sm">{pageText("tellAgentsToUse_23db98") + " "}{provider}</label>
       <ToggleSwitch id={id} checked={value.enabled} disabled={disabled} onCheckedChange={(enabled) => onChange({ ...value, enabled })} />
     </div>
-    {!value.enabled && <InlineBanner tone="warning">Agents can still use this connection’s tools, but won’t receive these instructions.</InlineBanner>}
-    {editing ? <Textarea aria-label="Instructions text" value={value.text} disabled={disabled} maxLength={CONNECTION_INSTRUCTIONS_MAX_LENGTH}
+    {!value.enabled && <InlineBanner tone="warning">{pageText("agentsCanStillUseThisConnectionSTools_4e5434")}</InlineBanner>}
+    {editing ? <Textarea aria-label={pageText("instructionsText_ba3b5d")} value={value.text} disabled={disabled} maxLength={CONNECTION_INSTRUCTIONS_MAX_LENGTH}
       className="min-h-40" onChange={(event) => onChange({ ...value, text: event.target.value })} />
       : <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">{value.text}</p>}
-    {!value.text.trim() && <p role="alert" className="text-sm text-destructive">Enter instructions.</p>}
+    {!value.text.trim() && <p role="alert" className="text-sm text-destructive">{pageText("enterInstructions_12097f")}</p>}
     <div className="flex items-center gap-3">
-      <Button variant="ghost" size="sm" disabled={disabled} onClick={() => setEditing(!editing)}>{editing ? "Done editing" : pageText("editInstructions_af6f86")}</Button>
-      {changed && <Button variant="ghost" size="sm" disabled={disabled} onClick={() => onChange({ ...defaultConnectionAgentInstructions(template)!, enabled: value.enabled })}>Reset to default</Button>}
+      <Button variant="ghost" size="sm" disabled={disabled} onClick={() => setEditing(!editing)}>{editing ? pageText("doneEditing_b49384") : pageText("editInstructions_af6f86")}</Button>
+      {changed && <Button variant="ghost" size="sm" disabled={disabled} onClick={() => onChange({ ...defaultConnectionAgentInstructions(template)!, enabled: value.enabled })}>{pageText("resetToDefault_39c90e")}</Button>}
     </div>
   </section>;
 }
@@ -77,29 +77,30 @@ export function ConnectionInstructionsSettings({ connection, provider, template,
     {mutation.error && <div role="alert"><InlineBanner tone="danger">{describeError(mutation.error).body}</InlineBanner></div>}
     {dirty && <div className="flex items-center justify-between">
       <Button variant="ghost" disabled={mutation.isPending} onClick={() => { setDraft(null); mutation.reset(); }}>{translateUi("interfaceCopy.cancel")}</Button>
-      <Button disabled={!canConfigure || mutation.isPending || !value.text.trim()} onClick={() => mutation.mutate()}>{mutation.isPending ? pageText("saving_56a228") : "Save instructions"}</Button>
+      <Button disabled={!canConfigure || mutation.isPending || !value.text.trim()} onClick={() => mutation.mutate()}>{mutation.isPending ? pageText("saving_56a228") : pageText("saveInstructions_8e0e26")}</Button>
     </div>}
   </div>;
 }
 
 export function AgentConnectionInstructions({ companyId, agentId }: { companyId: string; agentId: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const query = useQuery({ queryKey: queryKeys.tools.effectiveProfilesForAgent(companyId, agentId), queryFn: () => toolsApi.getEffectiveProfilesForAgent(companyId, agentId) });
   const view = useQueryView(query);
   const sources = query.data?.installedConnections.filter((connection) => connection.agentInstructions && connection.enabled && connection.status === "active") ?? [];
-  if (query.isLoading || view.kind === "reconnecting") return <p className="text-sm text-muted-foreground">Loading connection instructions…</p>;
+  if (query.isLoading || view.kind === "reconnecting") return <p className="text-sm text-muted-foreground">{pageText("loadingConnectionInstructions_abde6c")}</p>;
   if (view.kind === "error") return <QueryErrorState error={query.error} action="load connection instructions" onRetry={view.retry} retrying={view.isFetching} />;
   if (!sources.length) return null;
-  return <section className="mt-8 space-y-4" aria-label="From connections">
-    <h3 className="text-sm font-medium">From connections</h3>
-    <p className="text-sm text-muted-foreground">Enabled instructions are included when the connection is available for the task. Access can depend on the task’s responsible person and action permissions.</p>
+  return <section className="mt-8 space-y-4" aria-label={pageText("fromConnections_e7d078")}>
+    <h3 className="text-sm font-medium">{pageText("fromConnections_e7d078")}</h3>
+    <p className="text-sm text-muted-foreground">{pageText("enabledInstructionsAreIncludedWhenTheConnectionIs_88ab60")}</p>
     {sources.map((connection) => {
       const config = connectionInstructionsConfig(connection);
       const app = getConnectableAppDefinition(String(config.sourceTemplateKey ?? ""));
       const context = connectionInstructionContext(app, config);
       return <div key={connection.id} className="space-y-3 rounded-lg border border-border p-4">
         <Link className="text-sm font-medium underline underline-offset-2" to={`/apps/${connection.id}/permissions`}>{connection.name}</Link>
-        {!connection.agentInstructions!.enabled && <InlineBanner tone="warning">These instructions are turned off for this connection.</InlineBanner>}
-        {context === null ? <InlineBanner tone="warning">Complete this connection’s configuration before agents receive its instructions.</InlineBanner>
+        {!connection.agentInstructions!.enabled && <InlineBanner tone="warning">{pageText("theseInstructionsAreTurnedOffForThisConnection_a6732e")}</InlineBanner>}
+        {context === null ? <InlineBanner tone="warning">{pageText("completeThisConnectionSConfigurationBeforeAgentsReceive_662166")}</InlineBanner>
           : <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">{connection.agentInstructions!.text}</p>}
       </div>;
     })}

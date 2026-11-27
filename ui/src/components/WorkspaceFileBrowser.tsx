@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../i18n";
 import { t as interfaceMessage } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import {
@@ -141,11 +142,12 @@ function WorkspaceFileBreadcrumbs({
   folderPath: string | null;
   onOpenFolder: (path: string | null) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const segments = folderPath?.split("/").filter(Boolean) ?? [];
   if (!rootLabel && segments.length === 0) return null;
 
   return (
-    <nav aria-label="Current folder" className="min-w-0 overflow-hidden text-(length:--text-micro) text-muted-foreground">
+    <nav aria-label={pageText("currentFolder_5aeab2")} className="min-w-0 overflow-hidden text-(length:--text-micro) text-muted-foreground">
       <ol className="flex min-w-0 items-center gap-1 overflow-hidden">
         {rootLabel ? (
           <li className="min-w-0 shrink">
@@ -213,8 +215,8 @@ function WorkspaceFileRow({ item, treeItemId, selected, highlighted, depth, onOp
         <a
           href={downloadUrl}
           download={name}
-          aria-label={`Download ${name}`}
-          title={`Download ${name}`}
+          aria-label={translateDynamic("dynamic:download", { value1: name })}
+          title={translateDynamic("dynamic:download", { value1: name })}
           onClick={(event) => event.stopPropagation()}
           className="ml-auto inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-70 hover:bg-background/70 hover:text-foreground hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
@@ -433,7 +435,7 @@ function WorkspaceFileTree({
                   style={{ paddingLeft: `${1 + (node.depth + 1) * 0.875}rem` }}
                 >
                   <span className="h-3.5 w-3.5 shrink-0" />
-                  <span>Load more from this folder</span>
+                  <span>{pageText("loadMoreFromThisFolder_41bf33")}</span>
                 </button>
               ) : null}
             </>
@@ -458,7 +460,7 @@ function WorkspaceFileTree({
   }
 
   return (
-    <div role="tree" id={listboxId} aria-label="Workspace files" className="space-y-0.5 py-1">
+    <div role="tree" id={listboxId} aria-label={pageText("workspaceFiles_7e0294")} className="space-y-0.5 py-1">
       {nodes.map(renderNode)}
     </div>
   );
@@ -1013,7 +1015,7 @@ export function WorkspaceFileBrowser({
     body = (
       <StateMessage
         icon={<FolderOpen aria-hidden="true" className="h-5 w-5 text-muted-foreground" />}
-        title="No organization selected"
+        title={pageText("noOrganizationSelected_5685fd")}
         body="Choose an organization before browsing another project workspace."
       />
     );
@@ -1021,7 +1023,7 @@ export function WorkspaceFileBrowser({
     body = (
       <StateMessage
         icon={<Loader2 aria-hidden="true" className="h-5 w-5 animate-spin text-muted-foreground" />}
-        title="Loading project workspaces"
+        title={pageText("loadingProjectWorkspaces_0863f4")}
         body="Registered workspaces will appear here."
       />
     );
@@ -1029,7 +1031,7 @@ export function WorkspaceFileBrowser({
     body = (
       <StateMessage
         icon={<FolderOpen aria-hidden="true" className="h-5 w-5 text-muted-foreground" />}
-        title="No project workspaces"
+        title={pageText("noProjectWorkspaces_db324b")}
         body="No same-organization project has a registered workspace to browse."
       />
     );
@@ -1048,7 +1050,7 @@ export function WorkspaceFileBrowser({
     body = (
       <StateMessage
         icon={<AlertTriangle aria-hidden="true" className="h-5 w-5 text-amber-500" />}
-        title={changedFilesTemporarilyUnavailable ? "Changed files temporarily unavailable" : "Couldn't load files"}
+        title={changedFilesTemporarilyUnavailable ? pageText("changedFilesTemporarilyUnavailable_6c990f") : pageText("couldnTLoadFiles_e9abe9")}
         body={
           changedFilesTemporarilyUnavailable
             ? "Paperclip is limiting workspace scans to keep the server responsive. Try again in a moment."
@@ -1075,7 +1077,7 @@ export function WorkspaceFileBrowser({
     body = (
       <StateMessage
         icon={<Search aria-hidden="true" className="h-5 w-5 text-muted-foreground" />}
-        title={isSearch ? `No files match “${q}”` : "No recently changed files yet"}
+        title={isSearch ? `No files match “${q}”` : pageText("noRecentlyChangedFilesYet_b02a7b")}
         body="Try searching by name or path."
       />
     );
@@ -1115,8 +1117,8 @@ export function WorkspaceFileBrowser({
             value={searchInput}
             onChange={(event) => setSearchInput(event.target.value)}
             onKeyDown={handleSearchKeyDown}
-            placeholder="Search files by name or path…"
-            aria-label="Search workspace files"
+            placeholder={pageText("searchFilesByNameOrPath_140ef0")}
+            aria-label={pageText("searchWorkspaceFiles_729b83")}
             role="combobox"
             aria-expanded={items.length > 0}
             aria-controls={items.length > 0 ? listboxId : undefined}
@@ -1133,8 +1135,8 @@ export function WorkspaceFileBrowser({
           size="icon-sm"
           onClick={() => void listQuery.refetch()}
           disabled={!queriesEnabled || listQuery.isFetching}
-          aria-label="Refresh workspace files"
-          title="Refresh workspace files"
+          aria-label={pageText("refreshWorkspaceFiles_9be8f5")}
+          title={pageText("refreshWorkspaceFiles_9be8f5")}
           className="h-8 w-8 shrink-0"
         >
           <RefreshCcw aria-hidden="true" className={cn("h-3.5 w-3.5", listQuery.isFetching && "animate-spin")} />
@@ -1148,9 +1150,9 @@ export function WorkspaceFileBrowser({
       />
 
       {data?.state === "available" && data.workspace?.source ? (
-        <p aria-label="Workspace file source" className="text-(length:--text-micro) text-muted-foreground">
-          {data.workspace.source.kind === "live" ? "Live workspace" : (
-            <>Saved copy{data.workspace.source.savedAt ? <> from <time dateTime={data.workspace.source.savedAt}>{formatDateTime(data.workspace.source.savedAt)}</time></> : null}</>
+        <p aria-label={pageText("workspaceFileSource_5dfd4f")} className="text-(length:--text-micro) text-muted-foreground">
+          {data.workspace.source.kind === "live" ? pageText("liveWorkspace_81a609") : (
+            <>{pageText("savedCopy_1bbc68")}{data.workspace.source.savedAt ? <>{" " + pageText("from_0b1e95") + " "}<time dateTime={data.workspace.source.savedAt}>{formatDateTime(data.workspace.source.savedAt)}</time></> : null}</>
           )}
         </p>
       ) : null}
@@ -1168,11 +1170,9 @@ export function WorkspaceFileBrowser({
               type="button"
               onClick={() => loadMoreFolder(currentFolderKey)}
               className="rounded px-1 py-0.5 text-left hover:bg-accent hover:text-foreground"
-            >
-              Load more from this folder
-            </button>
+            >{pageText("loadMoreFromThisFolder_41bf33")}</button>
           ) : (
-            <>Showing first {items.length} — refine the search to narrow.</>
+            <>{pageText("showingFirst_68b951") + " "}{items.length}{" " + pageText("refineTheSearchToNarrow_5fe168")}</>
           )}
         </div>
       ) : null}

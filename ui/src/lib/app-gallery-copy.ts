@@ -1,3 +1,6 @@
+import { t } from "@/i18n";
+import { bundledAppDescription } from "@/i18n/bundled-app-description";
+
 /**
  * Prosumer copy for the Apps surface (PAP-10856).
  *
@@ -160,12 +163,18 @@ const GENERIC: AppCopy = {
 /** Curated, gate-safe copy for a gallery app. */
 export function appCopyFor(key: string, fallbackTagline?: string | null): AppCopy {
   const curated = APP_COPY[key];
-  if (curated) return curated;
+  if (curated) {
+    return {
+      tagline: t(`apps:curated.${key}.tagline`, { defaultValue: curated.tagline }),
+      short: t(`apps:curated.${key}.short`, { defaultValue: curated.short }),
+    };
+  }
   if (fallbackTagline) {
-    const cleaned = sanitizeProsumerCopy(fallbackTagline);
+    const cleaned = sanitizeProsumerCopy(bundledAppDescription(key, fallbackTagline));
     if (cleaned) return { tagline: cleaned, short: cleaned };
   }
-  return GENERIC;
+  const generic = t("apps:curated.generic.tagline", { defaultValue: GENERIC.tagline });
+  return { tagline: generic, short: generic };
 }
 
 /**

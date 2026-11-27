@@ -1,0 +1,92 @@
+name: HuiClip upstream compatibility
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: huiclip-upstream-compatibility
+  cancel-in-progress: false
+jobs:
+  detect:
+    if: github.repository == 'yangyanlei-jiang/huiclip'
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.detect.outputs.tag }}
+      needed: ${{ steps.detect.outputs.needed }}
+      head: ${{ steps.detect.outputs.head }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: community/zh-cn-v1
+          fetch-depth: 0
+          persist-credentials: false
+      - id: detect
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          tag=$(gh api repos/paperclipai/paperclip/releases/latest --jq 'select(.draft == false and .prerelease == false) | .tag_name')
+          [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          git fetch --no-tags https://github.com/paperclipai/paperclip.git "refs/tags/$tag"
+          needed=true
+          if git merge-base --is-ancestor FETCH_HEAD HEAD || git ls-remote --exit-code origin "refs/heads/community/upstream-$tag" >/dev/null; then needed=false; fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "head=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "needed=$needed" >> "$GITHUB_OUTPUT"
+  verify:
+    needs: detect
+    if: needs.detect.outputs.needed == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.detect.outputs.head }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Integrate stable tag in a temporary checkout
+        env:
+          TAG: ${{ needs.detect.outputs.tag }}
+        run: |
+          git fetch --no-tags https://github.com/paperclipai/paperclip.git "refs/tags/$TAG"
+          git -c user.name=HuiClip -c user.email=huiclip@users.noreply.github.com merge --no-edit --no-ff FETCH_HEAD
+          git rev-parse 'HEAD^{tree}' > "$RUNNER_TEMP/verified-tree"
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version: 24
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86
+      - run: pnpm install --frozen-lockfile
+      - run: node community/check-locales.mjs
+      - run: pnpm --filter @paperclipai/plugin-sdk build
+      - run: pnpm --filter @paperclipai/ui typecheck
+      - run: pnpm --filter @paperclipai/ui build
+      - run: pnpm --filter @paperclipai/ui exec vitest run --maxWorkers=2
+      - run: pnpm --filter @paperclipai/paperclip-runner build:typescript
+      - name: Smoke-test server with an isolated database
+        run: bash scripts/server-boot-smoke.sh node --import ./server/node_modules/tsx/dist/loader.mjs server/src/index.ts
+      - id: verified
+        run: echo "tree=$(cat "$RUNNER_TEMP/verified-tree")" >> "$GITHUB_OUTPUT"
+    outputs:
+      tree: ${{ steps.verified.outputs.tree }}
+  candidate:
+    needs: [detect, verify]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ needs.detect.outputs.head }}
+          fetch-depth: 0
+      - name: Save the exact verified tree for community release review
+        env:
+          TAG: ${{ needs.detect.outputs.tag }}
+          VERIFIED_TREE: ${{ needs.verify.outputs.tree }}
+        run: |
+          git fetch --no-tags https://github.com/paperclipai/paperclip.git "refs/tags/$TAG"
+          git -c user.name=HuiClip -c user.email=huiclip@users.noreply.github.com merge --no-edit --no-ff FETCH_HEAD
+          test "$(git rev-parse 'HEAD^{tree}')" = "$VERIFIED_TREE"
+          git push origin "HEAD:refs/heads/community/upstream-$TAG"
+          echo "候选分支 community/upstream-$TAG 已通过基础验证。请核对新增功能、双语页面和原生运行器，再发布 HuiClip 稳定版。" >> "$GITHUB_STEP_SUMMARY"

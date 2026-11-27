@@ -52,10 +52,10 @@ export function ProcessConfigFields({
           }
           immediate
           className={inputClass}
-          placeholder="e.g. node, python"
+          placeholder={pageText("eGNodePython_8c90a4")}
         />
       </Field>
-      <Field configSection="advanced" label="Args (comma-separated)" hint={help.args}>
+      <Field configSection="advanced" label={pageText("argsCommaSeparated_fb37ab")} hint={help.args}>
         <DraftInput
           value={
             isCreate
@@ -73,7 +73,7 @@ export function ProcessConfigFields({
           }
           immediate
           className={inputClass}
-          placeholder="e.g. script.js, --flag"
+          placeholder={pageText("eGScriptJsFlag_74f81c")}
         />
       </Field>
     </>

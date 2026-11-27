@@ -55,26 +55,23 @@ function RunLedgerRow({
       <div className="flex flex-wrap items-center gap-1.5">
         <span className="font-medium text-foreground">{pageText("run_b1b392")}</span>
         <span className="min-w-0 max-w-full truncate font-mono text-foreground">a1b2c3d4</span>
-        <span>by CodexCoder</span>
+        <span>{pageText("byCodexCoder_a47eb5")}</span>
         {onBehalfOf ? (
-          <span className="min-w-0 max-w-full truncate text-muted-foreground">
-            on behalf of <span className="text-foreground">{onBehalfOf}</span>
+          <span className="min-w-0 max-w-full truncate text-muted-foreground">{pageText("onBehalfOf_308287") + " "}<span className="text-foreground">{onBehalfOf}</span>
           </span>
         ) : null}
         <span className="rounded-md border border-border px-1.5 py-0.5 text-(length:--text-micro) capitalize text-muted-foreground">
-          {denial ? pageText("failed_09fef5") : "Succeeded"}
+          {denial ? pageText("failed_09fef5") : pageText("succeeded_c8fbda")}
         </span>
-        <span className="ml-auto shrink-0">2m ago</span>
+        <span className="ml-auto shrink-0">{pageText("2mAgo_71db45")}</span>
       </div>
       <div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-3">
         <div className="min-w-0">
-          <span className="text-foreground">Elapsed</span> 1m 4s
-        </div>
+          <span className="text-foreground">{pageText("elapsed_5fc977")}</span>{" " + pageText("1m4s_002d60")}</div>
         <div className="min-w-0">
-          <span className="text-foreground">Last useful action</span> 2m ago
-        </div>
+          <span className="text-foreground">{pageText("lastUsefulAction_39e32a")}</span>{" " + pageText("2mAgo_71db45")}</div>
         <div className="min-w-0">
-          <span className="text-foreground">{pageText("stop_9e2534")}</span> {denial ? "Denied" : pageText("completed_1798b3")}
+          <span className="text-foreground">{pageText("stop_9e2534")}</span> {denial ? pageText("denied_63b16b") : pageText("completed_1798b3")}
         </div>
       </div>
       {denial}
@@ -88,9 +85,9 @@ function RunDetailHeader({ onBehalfOf, denial }: { onBehalfOf?: string | null; d
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
-        <span className="text-lg font-semibold text-foreground">Run a1b2c3d4</span>
+        <span className="text-lg font-semibold text-foreground">{pageText("runA1b2c3d4_267d58")}</span>
         <span className="rounded-md border border-border px-1.5 py-0.5 text-(length:--text-micro) capitalize text-muted-foreground">
-          {denial ? pageText("failed_5f5f87") : "succeeded"}
+          {denial ? pageText("failed_5f5f87") : pageText("succeeded_88c2e0")}
         </span>
       </div>
       <div className="flex flex-wrap items-center gap-1.5 font-mono text-(length:--text-micro) text-muted-foreground">
@@ -100,8 +97,7 @@ function RunDetailHeader({ onBehalfOf, denial }: { onBehalfOf?: string | null; d
         <span>anthropic/claude-opus-4-8</span>
       </div>
       {onBehalfOf ? (
-        <div className="text-xs text-muted-foreground">
-          On behalf of <span className="text-foreground">{onBehalfOf}</span>
+        <div className="text-xs text-muted-foreground">{pageText("onBehalfOf_903002") + " "}<span className="text-foreground">{onBehalfOf}</span>
         </div>
       ) : null}
       {denial}
@@ -110,6 +106,7 @@ function RunDetailHeader({ onBehalfOf, denial }: { onBehalfOf?: string | null; d
 }
 
 export function ResponsibleUserDenialUxLab() {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="min-h-screen bg-muted/20 p-6">
       <div className="mx-auto max-w-5xl space-y-6">
@@ -117,37 +114,33 @@ export function ResponsibleUserDenialUxLab() {
           <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
             PAP-12462 · P7
           </div>
-          <h1 className="mt-1 text-xl font-semibold text-foreground">
-            Run "on behalf of" surfacing + denial copy
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Before/after of the two run surfaces and the four denial-related states.
-          </p>
+          <h1 className="mt-1 text-xl font-semibold text-foreground">{pageText("runOnBehalfOfSurfacingDenialCopy_ecfc27")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{pageText("beforeAfterOfTheTwoRunSurfacesAnd_f44c1d")}</p>
         </header>
 
         <LabSection
-          title="1 · Run identity — “on behalf of {user}”"
-          description="A run acting for a human now names that user on both the issue run ledger and the run detail header."
+          title={pageText("1RunIdentityOnBehalfOfUser_341891")}
+          description={pageText("aRunActingForAHumanNowNames_791b28")}
         >
-          <BeforeAfter label="Before — run ledger">
+          <BeforeAfter label={pageText("beforeRunLedger_df07f2")}>
             <RunLedgerRow />
           </BeforeAfter>
-          <BeforeAfter label="After — run ledger">
+          <BeforeAfter label={pageText("afterRunLedger_66aa8b")}>
             <RunLedgerRow onBehalfOf="Ada Lovelace" />
           </BeforeAfter>
-          <BeforeAfter label="Before — run detail">
+          <BeforeAfter label={pageText("beforeRunDetail_b8e2ad")}>
             <RunDetailHeader />
           </BeforeAfter>
-          <BeforeAfter label="After — run detail">
+          <BeforeAfter label={pageText("afterRunDetail_1ef40a")}>
             <RunDetailHeader onBehalfOf="Ada Lovelace" />
           </BeforeAfter>
         </LabSection>
 
         <LabSection
-          title="2 · Denial state — responsible user not authorized"
-          description="The agent is allowed, but the user the run acts for is not. Distinct from a plain agent-lacks-permission failure."
+          title={pageText("2DenialStateResponsibleUserNotAuthorized_aad441")}
+          description={pageText("theAgentIsAllowedButTheUserThe_a4edca")}
         >
-          <BeforeAfter label="Before — generic failure text">
+          <BeforeAfter label={pageText("beforeGenericFailureText_8afdbd")}>
             <div className="text-xs">
               <span className="text-red-600 dark:text-red-400">
                 Forbidden: action not permitted
@@ -155,7 +148,7 @@ export function ResponsibleUserDenialUxLab() {
               <span className="ml-1 text-muted-foreground">(RESPONSIBLE_USER_UNAUTHORIZED)</span>
             </div>
           </BeforeAfter>
-          <BeforeAfter label="After — actionable denial copy">
+          <BeforeAfter label={pageText("afterActionableDenialCopy_45d849")}>
             <ResponsibleUserDenialNotice
               code="RESPONSIBLE_USER_UNAUTHORIZED"
               userName="Ada Lovelace"
@@ -164,10 +157,10 @@ export function ResponsibleUserDenialUxLab() {
         </LabSection>
 
         <LabSection
-          title="3 · Denial state — agent lacks permission (unchanged)"
-          description="A denial that is NOT a responsible-user code keeps the existing generic error copy — no responsible-user notice."
+          title={pageText("3DenialStateAgentLacksPermissionUnchanged_4ef561")}
+          description={pageText("aDenialThatIsNOTAResponsibleUser_f70557")}
         >
-          <BeforeAfter label="Agent-lacks-permission failure">
+          <BeforeAfter label={pageText("agentLacksPermissionFailure_1bf517")}>
             <div className="text-xs">
               <span className="text-red-600 dark:text-red-400">
                 Forbidden: agent is not permitted to perform this action
@@ -175,18 +168,16 @@ export function ResponsibleUserDenialUxLab() {
               <span className="ml-1 text-muted-foreground">(deny_missing_membership)</span>
             </div>
           </BeforeAfter>
-          <BeforeAfter label="No responsible-user notice rendered">
-            <div className="text-xs text-muted-foreground">
-              Responsible-user denial notice intentionally absent for non-responsible-user codes.
-            </div>
+          <BeforeAfter label={pageText("noResponsibleUserNoticeRendered_a5f741")}>
+            <div className="text-xs text-muted-foreground">{pageText("responsibleUserDenialNoticeIntentionallyAbsentForNon_4e325f")}</div>
           </BeforeAfter>
         </LabSection>
 
         <LabSection
-          title="4 · Denial state — responsible user unavailable"
-          description="The user this run acts for was removed or deactivated. Steers the agent to mark work blocked."
+          title={pageText("4DenialStateResponsibleUserUnavailable_4e914f")}
+          description={pageText("theUserThisRunActsForWasRemoved_811813")}
         >
-          <BeforeAfter label="Before — generic failure text">
+          <BeforeAfter label={pageText("beforeGenericFailureText_8afdbd")}>
             <div className="text-xs">
               <span className="text-red-600 dark:text-red-400">
                 Forbidden: responsible user unavailable
@@ -194,7 +185,7 @@ export function ResponsibleUserDenialUxLab() {
               <span className="ml-1 text-muted-foreground">(RESPONSIBLE_USER_UNAVAILABLE)</span>
             </div>
           </BeforeAfter>
-          <BeforeAfter label="After — actionable denial copy">
+          <BeforeAfter label={pageText("afterActionableDenialCopy_45d849")}>
             <ResponsibleUserDenialNotice
               code="RESPONSIBLE_USER_UNAVAILABLE"
               userName="Grace Hopper"
@@ -203,10 +194,10 @@ export function ResponsibleUserDenialUxLab() {
         </LabSection>
 
         <LabSection
-          title="In-context — denial inside a failed run ledger row"
-          description="How the notice reads within a run row on the issue timeline."
+          title={pageText("inContextDenialInsideAFailedRunLedger_ac4244")}
+          description={pageText("howTheNoticeReadsWithinARunRow_e84ee8")}
         >
-          <BeforeAfter label="Unauthorized">
+          <BeforeAfter label={pageText("unauthorized_740b83")}>
             <RunLedgerRow
               onBehalfOf="Ada Lovelace"
               denial={
@@ -217,7 +208,7 @@ export function ResponsibleUserDenialUxLab() {
               }
             />
           </BeforeAfter>
-          <BeforeAfter label="Unavailable">
+          <BeforeAfter label={pageText("unavailable_2c9c1f")}>
             <RunLedgerRow
               onBehalfOf="Grace Hopper"
               denial={
@@ -230,9 +221,7 @@ export function ResponsibleUserDenialUxLab() {
           </BeforeAfter>
         </LabSection>
 
-        <p className={cn("text-center text-(length:--text-micro) text-muted-foreground")}>
-          Copy is sourced from the shared <code>describeResponsibleUserDenial</code> contract.
-        </p>
+        <p className={cn("text-center text-(length:--text-micro) text-muted-foreground")}>{pageText("copyIsSourcedFromTheShared_75fe3e") + " "}<code>describeResponsibleUserDenial</code>{" " + pageText("contract_910238")}</p>
       </div>
     </div>
   );

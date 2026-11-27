@@ -54,7 +54,7 @@ export function OpenCodeLocalConfigFields({
         </Field>
       )}
       <ToggleField
-        label="Skip permissions"
+        label={pageText("skipPermissions_d11982")}
         hint={help.dangerouslySkipPermissions}
         checked={
           isCreate

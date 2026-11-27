@@ -130,7 +130,7 @@ export function NewGoalDialog() {
               </span>
             )}
             <span className="text-muted-foreground/60">&rsaquo;</span>
-            <span>{newGoalDefaults.parentId ? "New sub-goal" : "New goal"}</span>
+            <span>{newGoalDefaults.parentId ? pageText("newSubGoal_f73512") : pageText("newGoal_22dcb4")}</span>
           </div>
           <div className="flex items-center gap-1">
             <Button
@@ -156,7 +156,7 @@ export function NewGoalDialog() {
         <div className="px-4 pt-4 pb-2 shrink-0">
           <input
             className="w-full text-lg font-semibold bg-transparent outline-none placeholder:text-muted-foreground/50"
-            placeholder="Goal title"
+            placeholder={pageText("goalTitle_779ae0")}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             onKeyDown={(e) => {
@@ -175,7 +175,7 @@ export function NewGoalDialog() {
             ref={descriptionEditorRef}
             value={description}
             onChange={setDescription}
-            placeholder="Add description..."
+            placeholder={pageText("addDescription_750c9f")}
             bordered={false}
             contentClassName={cn("text-sm text-muted-foreground", expanded ? "min-h-(--sz-220px)" : "min-h-(--sz-120px)")}
             imageUploadHandler={async (file) => {
@@ -239,7 +239,7 @@ export function NewGoalDialog() {
             <PopoverTrigger asChild>
               <button className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs hover:bg-accent/50 transition-colors">
                 <Target className="h-3 w-3 text-muted-foreground" />
-                {currentParent ? currentParent.title : "Parent goal"}
+                {currentParent ? currentParent.title : pageText("parentGoal_bc84c7")}
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-48 p-1" align="start">
@@ -249,9 +249,7 @@ export function NewGoalDialog() {
                   !appliedParentId && "bg-accent"
                 )}
                 onClick={() => { setParentId(""); setParentOpen(false); }}
-              >
-                No parent
-              </button>
+              >{pageText("noParent_73ba83")}</button>
               {(goals ?? []).map((g) => (
                 <button
                   key={g.id}
@@ -275,7 +273,7 @@ export function NewGoalDialog() {
             disabled={!title.trim() || createGoal.isPending}
             onClick={handleSubmit}
           >
-            {createGoal.isPending ? pageText("creating_94d7d8") : newGoalDefaults.parentId ? "Create sub-goal" : "Create goal"}
+            {createGoal.isPending ? pageText("creating_94d7d8") : newGoalDefaults.parentId ? pageText("createSubGoal_e806db") : pageText("createGoal_7b0f38")}
           </Button>
         </div>
       </DialogContent>

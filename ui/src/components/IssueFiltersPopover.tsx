@@ -1,3 +1,5 @@
+import { optionLabel } from "@/i18n/option-label";
+import { t as translateDynamic } from "../i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo, useState } from "react";
@@ -95,8 +97,8 @@ function FilterOptionSearch({
       <Input
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        placeholder={`Search ${label.toLowerCase()}...`}
-        aria-label={`Search ${label.toLowerCase()}`}
+        placeholder={translateDynamic("dynamic:searchDots", { value1: label.toLowerCase() })}
+        aria-label={translateDynamic("dynamic:search", { value1: label.toLowerCase() })}
         className="h-8 pl-7 text-xs"
       />
     </div>
@@ -261,7 +263,7 @@ export function IssueFiltersPopover({
 
                 {inboxScopeFilters.showApprovalStatus ? (
                   <div className="space-y-1" data-filter-options="inbox-approval-status">
-                    <span className="text-xs text-muted-foreground">Approval status</span>
+                    <span className="text-xs text-muted-foreground">{pageText("approvalStatus_a369b4")}</span>
                     <div className="space-y-0.5">
                       {INBOX_APPROVAL_STATUS_OPTIONS.map(([value, label]) => {
                         const selected = inboxScopeFilters.approvalStatus === value;
@@ -293,7 +295,7 @@ export function IssueFiltersPopover({
           ) : null}
 
           <div className="space-y-1.5">
-            <span className="text-xs text-muted-foreground">Quick filters</span>
+            <span className="text-xs text-muted-foreground">{pageText("quickFilters_6bab4f")}</span>
             <div className="flex flex-wrap gap-1.5">
               {issueQuickFilterPresets.map((preset) => {
                 const isActive = issueFilterArraysEqual(state.statuses, preset.statuses);
@@ -308,7 +310,7 @@ export function IssueFiltersPopover({
                     }`}
                     onClick={() => onChange({ statuses: isActive ? [] : [...preset.statuses] })}
                   >
-                    {preset.label}
+                    {optionLabel(preset.label)}
                   </button>
                 );
               })}
@@ -367,7 +369,7 @@ export function IssueFiltersPopover({
                       checked={state.assignees.includes("__unassigned")}
                       onCheckedChange={() => onChange({ assignees: toggleIssueFilterValue(state.assignees, "__unassigned") })}
                     />
-                    <span className="text-sm">No responsible</span>
+                    <span className="text-sm">{pageText("noResponsible_797e99")}</span>
                   </label>
                   {currentUserId ? (
                     <label className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1 hover:bg-accent/50">
@@ -393,7 +395,7 @@ export function IssueFiltersPopover({
 
               {creatorOptions.length > 0 ? (
                 <div className="space-y-1">
-                  <span className="text-xs text-muted-foreground">Creator</span>
+                  <span className="text-xs text-muted-foreground">{pageText("creator_817b79")}</span>
                   {selectedCreatorOptions.length > 0 ? (
                     <div className="flex flex-wrap gap-1">
                       {selectedCreatorOptions.map((creator) => (
@@ -404,7 +406,7 @@ export function IssueFiltersPopover({
                             type="button"
                             className="rounded-full p-0.5 hover:bg-accent"
                             onClick={() => onChange({ creators: state.creators.filter((value) => value !== creator.id) })}
-                            aria-label={`Remove creator ${creator.label}`}
+                            aria-label={translateDynamic("dynamic:removeCreator", { value1: creator.label })}
                           >
                             <X className="h-3 w-3" />
                           </button>
@@ -417,7 +419,7 @@ export function IssueFiltersPopover({
                     <Input
                       value={creatorSearch}
                       onChange={(event) => setCreatorSearch(event.target.value)}
-                      placeholder="Search creators..."
+                      placeholder={pageText("searchCreators_ac4edd")}
                       className="h-8 pl-7 text-xs"
                     />
                   </div>
@@ -439,7 +441,7 @@ export function IssueFiltersPopover({
                         </button>
                       );
                     }) : (
-                      <div className="px-2 py-1 text-xs text-muted-foreground">No creators match.</div>
+                      <div className="px-2 py-1 text-xs text-muted-foreground">{pageText("noCreatorsMatch_098030")}</div>
                     )}
                   </div>
                 </div>
@@ -490,7 +492,7 @@ export function IssueFiltersPopover({
 
               {enableExternalObjectFilters ? (
                 <div className="space-y-1">
-                  <span className="text-xs text-muted-foreground">External object status</span>
+                  <span className="text-xs text-muted-foreground">{pageText("externalObjectStatus_c9b969")}</span>
                   <div className="space-y-0.5">
                     {externalObjectFilterOrder.map((value) => {
                       const iconCategory = value === "failed" ? "failed"
@@ -529,7 +531,7 @@ export function IssueFiltersPopover({
                     checked={state.liveOnly}
                     onCheckedChange={(checked) => onChange({ liveOnly: checked === true })}
                   />
-                  <span className="text-sm">Live runs only</span>
+                  <span className="text-sm">{pageText("liveRunsOnly_750489")}</span>
                 </label> : null}
                 {enableAgentCreatedVisibilityFilter ? (
                   <label className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1 hover:bg-accent/50">
@@ -537,7 +539,7 @@ export function IssueFiltersPopover({
                       checked={state.showAgentCreatedTasks}
                       onCheckedChange={(checked) => onChange({ showAgentCreatedTasks: checked === true })}
                     />
-                    <span className="text-sm">Show agent-created tasks</span>
+                    <span className="text-sm">{pageText("showAgentCreatedTasks_c5be0b")}</span>
                   </label>
                 ) : null}
                 {enableRoutineTasksFilter ? <label className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1 hover:bg-accent/50">
@@ -545,7 +547,7 @@ export function IssueFiltersPopover({
                     checked={state.routineTasksOnly === true}
                     onCheckedChange={(checked) => onChange({ routineTasksOnly: checked === true })}
                   />
-                  <span className="text-sm">Routine tasks</span>
+                  <span className="text-sm">{pageText("routineTasks_93bbdc")}</span>
                 </label> : null}
               </div> : null}
             </div>

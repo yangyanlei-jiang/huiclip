@@ -45,7 +45,7 @@ export function ExecutionBlockerNotice({ presentation, canRetry, onRetry, optimi
     access={presentation.projectAccess} issueId={issueId} agentName={agentName} projectName={projectName}
     canRetry={canRetry && presentation.canRetry} onRetry={onRetry} error={error} className={className} />;
   if (error && !optimistic && !takingLonger) return <div role="alert" className={cn("flex items-center justify-between gap-2 text-sm text-destructive", className)}><span>{describeError(error).body}</span>{canRetry && <Button variant="outline" size="sm" onClick={onRetry}>{translateUi("interfaceCopy.retry")}</Button>}</div>;
-  if (takingLonger) return <div role="status" className={cn("flex items-center justify-between gap-2 text-sm text-muted-foreground", className)}><span>Taking longer than usual…</span>{canRetry && <Button variant="outline" size="sm" onClick={onRetry}>{translateUi("interfaceCopy.retry")}</Button>}</div>;
+  if (takingLonger) return <div role="status" className={cn("flex items-center justify-between gap-2 text-sm text-muted-foreground", className)}><span>{pageText("takingLongerThanUsual_43d19c")}</span>{canRetry && <Button variant="outline" size="sm" onClick={onRetry}>{translateUi("interfaceCopy.retry")}</Button>}</div>;
   const step = !optimistic && presentation?.responsibility === "system" && presentation.recoveryStep
     && ["working", "retry_scheduled"].includes(presentation.state) ? recoveryStepText[presentation.recoveryStep] : null;
   const seconds = Math.max(0, Math.ceil((Date.parse(presentation?.nextRetryAt ?? "") - Date.now()) / 1000));
@@ -55,7 +55,7 @@ export function ExecutionBlockerNotice({ presentation, canRetry, onRetry, optimi
     // generic automatic-retry line while keeping the provider explanation.
     return <ProviderFailureNotice failure={presentation.providerFailure} className={className}
       actions={canRetry && presentation.canRetry ? <Button variant="outline" size="sm" onClick={onRetry}>{translateUi("interfaceCopy.retry")}</Button> : undefined}>
-      {presentation.state === "retry_scheduled" && <p>{step ? `${step}. ${retryIn}` : "Paperclip will retry automatically."}</p>}
+      {presentation.state === "retry_scheduled" && <p>{step ? `${step}. ${retryIn}` : pageText("paperclipWillRetryAutomatically_989a8e")}</p>}
     </ProviderFailureNotice>;
   }
   if (step && presentation?.state === "working") return <div role="status" aria-label={pageText("taskStatus_7dbc57")}
@@ -94,8 +94,8 @@ export function ExecutionBlockerNotice({ presentation, canRetry, onRetry, optimi
           ? step ? `${step}. ${retryIn}` : retryIn
           : presentation.retryWait ? presentation.retryWait.message
           : presentation.workspaceFailure
-            ? <>Couldn’t prepare the task folders. {presentation.workspaceFailure.message}</>
-            : "Couldn’t finish this attempt. Your message is saved."}</span>
+            ? <>{pageText("couldnTPrepareTheTaskFolders_a1cf12") + " "}{presentation.workspaceFailure.message}</>
+            : pageText("couldnTFinishThisAttemptYourMessageIs_c9d84e")}</span>
         {canRetry && presentation.canRetry && <Button variant="outline" size="sm" className="shrink-0" onClick={onRetry}>{translateUi("interfaceCopy.retry")}</Button>}
       </div>
     </div>

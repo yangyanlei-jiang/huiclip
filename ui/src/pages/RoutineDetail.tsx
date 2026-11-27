@@ -1,3 +1,5 @@
+import { controlText } from "@/i18n/controls";
+import { t as interfaceNotice } from "@/i18n";
 import { t as interfaceMessage } from "@/i18n";
 import { useTranslation as usePageTranslation } from "@/i18n";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -338,7 +340,7 @@ export function RoutineDetail() {
 
   useEffect(() => {
     if (!routine) return;
-    if (!triggerSetup) setBreadcrumbs([{ label: "Routines", href: "/routines" }, { label: routine.title }]);
+    if (!triggerSetup) setBreadcrumbs([{ label: interfaceNotice("interface:routines_a445e5"), href: "/routines" }, { label: routine.title }]);
     if (!routineDefaults) return;
     const changedRoutine = hydratedRoutineIdRef.current !== routine.id;
     if (changedRoutine || !isEditDirty) {
@@ -393,8 +395,8 @@ export function RoutineDetail() {
       if (mutationError instanceof ApiError && mutationError.status === 409) {
         setSaveConflict(true);
         pushToast({
-          title: "Routine changed",
-          body: "Someone else updated this routine. Reload to see the latest revision.",
+          title: interfaceNotice("interface:routineChanged_411fc2"),
+          body: interfaceNotice("interface:someoneElseUpdatedThisRoutineReloadToSee_9eb74e"),
           tone: "warn",
         });
         return;
@@ -422,7 +424,7 @@ export function RoutineDetail() {
           : {}),
       }),
     onSuccess: async () => {
-      pushToast({ title: "Routine run started", tone: "success" });
+      pushToast({ title: interfaceNotice("interface:routineRunStarted_ddb07d"), tone: "success" });
       setRunVariablesOpen(false);
       navigateToSection("runs");
       await Promise.all([
@@ -435,7 +437,7 @@ export function RoutineDetail() {
     },
     onError: (runError) => {
       pushToast({
-        title: "Routine run failed",
+        title: interfaceNotice("interface:routineRunFailed_9221cb"),
         body: describeError(runError, { action: "start the routine run" }).body,
         tone: "error",
       });
@@ -446,8 +448,8 @@ export function RoutineDetail() {
     mutationFn: (status: string) => routinesApi.update(routineId!, { status }),
     onSuccess: async (_data, status) => {
       pushToast({
-        title: "Routine saved",
-        body: status === "paused" ? "Automation paused." : "Automation enabled.",
+        title: interfaceNotice("interface:routineSaved_e7e368"),
+        body: status === "paused" ? interfaceNotice("interface:automationPaused_8f65af") : interfaceNotice("interface:automationEnabled_bb3ece"),
         tone: "success",
       });
       await Promise.all([
@@ -486,7 +488,7 @@ export function RoutineDetail() {
           entries: [{ webhookUrl: result.secretMaterial.webhookUrl, webhookSecret: result.secretMaterial.webhookSecret }],
         });
       } else {
-        pushToast({ title: "Trigger added", body: "The routine schedule was saved.", tone: "success" });
+        pushToast({ title: interfaceNotice("interface:triggerAdded_197951"), body: interfaceNotice("interface:theRoutineScheduleWasSaved_0a5e5d"), tone: "success" });
       }
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.routines.detail(routineId!) }),
@@ -506,7 +508,7 @@ export function RoutineDetail() {
   const updateTrigger = useMutation({
     mutationFn: ({ id, patch }: { id: string; patch: Record<string, unknown> }) => routinesApi.updateTrigger(id, patch),
     onSuccess: async () => {
-      pushToast({ title: "Trigger saved", body: "The routine cadence update was saved.", tone: "success" });
+      pushToast({ title: interfaceNotice("interface:triggerSaved_c3ba9b"), body: interfaceNotice("interface:theRoutineCadenceUpdateWasSaved_66d8f6"), tone: "success" });
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.routines.detail(routineId!) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedCompanyId!) }),
@@ -525,7 +527,7 @@ export function RoutineDetail() {
   const deleteTrigger = useMutation({
     mutationFn: (id: string) => routinesApi.deleteTrigger(id),
     onSuccess: async () => {
-      pushToast({ title: "Trigger deleted", tone: "success" });
+      pushToast({ title: interfaceNotice("interface:triggerDeleted_b4c027"), tone: "success" });
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.routines.detail(routineId!) }),
         queryClient.invalidateQueries({ queryKey: queryKeys.routines.list(selectedCompanyId!) }),
@@ -664,7 +666,7 @@ export function RoutineDetail() {
   );
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Repeat} message="Select an organization to view routines." />;
+    return <EmptyState icon={Repeat} message={pageText("selectAnOrganizationToViewRoutines_3ad8b0")} />;
   }
 
   const legacyTab = new URLSearchParams(window.location.search).get("tab");
@@ -700,7 +702,7 @@ export function RoutineDetail() {
     return (
       <EmptyState
         icon={AlertCircle}
-        message="We couldn't load this routine."
+        message={pageText("weCouldnTLoadThisRoutine_0160ef")}
       />
     );
   }
@@ -744,8 +746,8 @@ export function RoutineDetail() {
     onToggleAutomation: () => {
       if (!automationEnabled && !routine.assigneeAgentId) {
         pushToast({
-          title: "Default agent required",
-          body: "Set a default agent before enabling routine automation.",
+          title: interfaceNotice("interface:defaultAgentRequired_982397"),
+          body: interfaceNotice("interface:setADefaultAgentBeforeEnablingRoutineAutomation_27f60c"),
           tone: "warn",
         });
         return;
@@ -798,9 +800,7 @@ export function RoutineDetail() {
       <a
         href="#routine-section"
         className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-20 focus:rounded focus:bg-background focus:px-3 focus:py-1.5 focus:text-sm"
-      >
-        Skip to section
-      </a>
+      >{pageText("skipToSection_573880")}</a>
 
       {/* The global shell owns routine navigation. This surface keeps one
           content scroll owner and a compact action header. */}
@@ -831,7 +831,7 @@ export function RoutineDetail() {
                 ref={titleInputRef}
                 data-autosize-title
                 className="min-w-0 flex-1 resize-none overflow-hidden bg-transparent text-base font-semibold leading-7 outline-none placeholder:text-muted-foreground/50"
-                placeholder="Routine title"
+                placeholder={pageText("routineTitle_6ed0d9")}
                 rows={1}
                 value={editDraft.title}
                 onChange={(event) => {
@@ -862,9 +862,7 @@ export function RoutineDetail() {
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate(routineDetailHref(routine.id))}
-              >
-                Back to overview
-              </Button>
+              >{pageText("backToOverview_ec986c")}</Button>
             ) : (
               <Button
                 variant="ghost"
@@ -883,9 +881,7 @@ export function RoutineDetail() {
                     setOverviewEditing(false);
                   }}
                 >
-                  <X className="h-3.5 w-3.5" />
-                  Cancel editing
-                </Button>
+                  <X className="h-3.5 w-3.5" />{pageText("cancelEditing_26bbc0")}</Button>
               ) : (
                 <Button variant="outline" size="sm" onClick={() => setOverviewEditing(true)}>
                   <Pencil className="h-3.5 w-3.5" />{pageText("editRoutine_6e3689")}</Button>
@@ -898,9 +894,9 @@ export function RoutineDetail() {
                 checked={automationEnabled}
                 onCheckedChange={contextValue.onToggleAutomation}
                 disabled={automationToggleDisabled}
-                aria-label={automationEnabled ? "Pause automatic triggers" : "Enable automatic triggers"}
+                aria-label={automationEnabled ? pageText("pauseAutomaticTriggers_f8d1d6") : pageText("enableAutomaticTriggers_6664ae")}
               />
-              <span className={`text-sm font-medium ${automationLabelClassName}`}>{automationLabel}</span>
+              <span className={`text-sm font-medium ${automationLabelClassName}`}>{controlText(automationLabel)}</span>
             </div>
           </div>
         </header>
@@ -921,7 +917,7 @@ export function RoutineDetail() {
             }
           >
             <RoutineSectionHeading
-              title={SECTION_TITLES[section]}
+              title={controlText(SECTION_TITLES[section])}
               copyText={section === "overview"
                 ? routineOverviewCopyText({
                     editing: overviewEditing,

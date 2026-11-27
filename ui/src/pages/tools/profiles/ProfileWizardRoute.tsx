@@ -1,3 +1,5 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect } from "react";
 import { useParams, useSearchParams } from "@/lib/router";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
@@ -14,6 +16,7 @@ import { TEMPLATES, type TemplateKey } from "./profile-model";
  * the rest of the tool-access surface.
  */
 export function ProfileWizardRoute({ mode }: { mode: "new" | "edit" }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { selectedCompany, selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const params = useParams<{ profileId?: string }>();
@@ -28,16 +31,16 @@ export function ProfileWizardRoute({ mode }: { mode: "new" | "edit" }) {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: selectedCompany?.name ?? "Organization", href: "/dashboard" },
-      { label: "Apps", href: "/apps" },
-      { label: "Access profiles", href: advancedTabHref("profiles") },
-      { label: mode === "edit" ? "Resume draft" : "New profile" },
+      { label: selectedCompany?.name ?? interfaceNotice("interface:organization_519255"), href: "/dashboard" },
+      { label: interfaceNotice("interface:apps_d9a368"), href: "/apps" },
+      { label: interfaceNotice("interface:accessProfiles_e271a6"), href: advancedTabHref("profiles") },
+      { label: mode === "edit" ? interfaceNotice("interface:resumeDraft_95f84e") : interfaceNotice("interface:newProfile_ca36da") },
     ]);
     return () => setBreadcrumbs([]);
-  }, [setBreadcrumbs, selectedCompany?.name, mode]);
+  }, [setBreadcrumbs, selectedCompany?.name, mode, pageText]);
 
   if (!selectedCompanyId) {
-    return <div className="p-6 text-sm text-muted-foreground">Select an organization to create a profile.</div>;
+    return <div className="p-6 text-sm text-muted-foreground">{pageText("selectAnOrganizationToCreateAProfile_2b1945")}</div>;
   }
 
   return (
@@ -45,11 +48,9 @@ export function ProfileWizardRoute({ mode }: { mode: "new" | "edit" }) {
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-5 p-4 sm:p-6">
         <header>
           <h1 className="text-xl font-bold text-foreground">
-            {mode === "edit" ? "Finish your profile" : "New access profile"}
+            {mode === "edit" ? pageText("finishYourProfile_11e8e1") : pageText("newAccessProfile_6be0f9")}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Choose which tools this profile allows, then assign it to the agents that need them.
-          </p>
+          <p className="mt-1 text-sm text-muted-foreground">{pageText("chooseWhichToolsThisProfileAllowsThenAssign_4bcb74")}</p>
         </header>
         <ProfileWizard
           companyId={selectedCompanyId}

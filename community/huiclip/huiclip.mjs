@@ -94,6 +94,8 @@ function environment(config) {
   ));
   return {
     ...env,
+    VITE_HUICLIP_VERSION: manifest.version,
+    PAPERCLIP_UPDATE_CHECK: "0",
     PORT: String(config.server.port),
     CODEX_HOME: join(home, "codex"),
     PAPERCLIP_API_URL: `http://127.0.0.1:${config.server.port}`,

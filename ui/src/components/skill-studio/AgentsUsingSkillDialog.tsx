@@ -108,6 +108,7 @@ export function AgentsUsingSkillDialog({
   skill: CompanySkillDetail;
   canManage?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const toast = useOptionalToastActions();
   const adapterCaps = useAdapterCapabilities();
@@ -235,10 +236,10 @@ export function AgentsUsingSkillDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle>Agents using {skill.name}</DialogTitle>
+          <DialogTitle>{pageText("agentsUsing_468c31") + " "}{skill.name}</DialogTitle>
           <DialogDescription>
             {count === 0
-              ? "No agents have this skill assigned yet."
+              ? pageText("noAgentsHaveThisSkillAssignedYet_147301")
               : `${count} ${count === 1 ? "agent has" : "agents have"} this skill in their desired set.`}
           </DialogDescription>
         </DialogHeader>
@@ -247,8 +248,8 @@ export function AgentsUsingSkillDialog({
           {count === 0 ? (
             <div className="rounded-md border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
               {canManage
-                ? "Add an agent below to assign this skill."
-                : "This skill isn't assigned to any agents."}
+                ? pageText("addAnAgentBelowToAssignThisSkill_7b66e8")
+                : pageText("thisSkillIsnTAssignedToAnyAgents_dd2c24")}
             </div>
           ) : (
             <ul className="divide-y divide-border">
@@ -358,8 +359,7 @@ function AgentRow({
             }
             className="h-8 rounded-md border border-border bg-background px-2 text-xs text-foreground disabled:opacity-60"
           >
-            <option value={LATEST_VALUE}>
-              Latest{latestRevision !== null ? ` (v${latestRevision})` : ""}
+            <option value={LATEST_VALUE}>{pageText("latest_decd7c")}{latestRevision !== null ? ` (v${latestRevision})` : ""}
             </option>
             {versions.map((version) => (
               <option key={version.id} value={version.id}>
@@ -377,8 +377,7 @@ function AgentRow({
         )}
         {behindLatest > 0 ? (
           <span className="text-(length:--text-nano) text-amber-500">
-            {behindLatest}{" " + pageText("version_c69227")}{behindLatest === 1 ? "" : "s"} behind latest
-          </span>
+            {behindLatest}{" " + pageText("version_c69227")}{behindLatest === 1 ? "" : "s"}{" " + pageText("behindLatest_52a688")}</span>
         ) : null}
       </div>
 
@@ -446,7 +445,7 @@ function AddAgentPicker({
       loadingMessage="Loading agents..."
       placeholder={pageText("addAgent_a4c3a2")}
       searchPlaceholder={pageText("searchAgents_52c3f9")}
-      emptyMessage="All eligible agents already have this skill."
+      emptyMessage={pageText("allEligibleAgentsAlreadyHaveThisSkill_4d0d1d")}
       disabled={disabled}
       onValueChange={(_value, option) => {
         onSelect(option.agent);
