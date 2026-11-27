@@ -14,7 +14,7 @@ HuiClip 是基于 Paperclip 的独立中文社区版。你可以在同一个工�
 
 ## 本机试用
 
-需要 macOS 或 Linux、Git、Node.js 24.11+、pnpm 9.15.4、npm 和 tar。
+需要 macOS 或 Linux、Node.js 24.11+、pnpm 9.15.4、npm 和 tar。仅从源码打包时需要 Git。
 
 从 npm 启动（推荐）：
 
@@ -35,7 +35,7 @@ npm install --global --prefix ../huiclip-cli ../huiclip-packages/huiclip-0.1.5.t
 ../huiclip-cli/bin/huiclip run
 ```
 
-打开 [http://127.0.0.1:1549](http://127.0.0.1:1549)。默认数据目录为 `~/.huiclip`。可用 `../huiclip-cli/bin/huiclip info` 查看配置、CLI 凭据文件位置、数据库端口和系统服务名。包从当前分支提交生成，npm 注册表暂未提供发行包。
+打开 [http://127.0.0.1:1549](http://127.0.0.1:1549)。默认数据目录为 `~/.huiclip`。可用 `npx --yes huiclip@0.1.5 info` 查看配置、数据库端口和系统服务名。
 
 ## 中文指南
 
