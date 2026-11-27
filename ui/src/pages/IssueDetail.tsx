@@ -1,3 +1,4 @@
+import { displayOnboardingTaskTitle } from "@/lib/onboarding-launch";
 import { controlText } from "@/i18n/controls";
 import { t as plainText } from "@/i18n";
 import { t as interfaceNotice } from "@/i18n";
@@ -3190,7 +3191,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
   agent: Agent; issue: Issue | null; ensureIssue: () => Promise<Issue>;
 } }) {
   const { t: pageText } = usePageTranslation("interface");
-  const { t: translateUi } = useUiTranslation();
+  const { t: translateUi, i18n } = useUiTranslation();
   const { issueId: routeIssueId, companyPrefix } = useParams<{ issueId: string; companyPrefix: string }>();
   const issueId = conversation ? conversation.issue?.id : routeIssueId;
   const [loadingTitleIssueId, setLoadingTitleIssueId] = useState<string | null>(null);
@@ -4223,7 +4224,9 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       }),
     [comments, optimisticComments],
   );
-  const breadcrumbTitle = issue?.title ?? issueHeaderSeed?.title ?? "";
+  const breadcrumbTitle = issue
+    ? displayOnboardingTaskTitle(issue, i18n.resolvedLanguage ?? i18n.language)
+    : issueHeaderSeed?.title ?? "";
   const breadcrumbIdentifier =
     issue?.identifier ?? issueHeaderSeed?.identifier ?? (issueId && /^[a-z0-9]+-\d+$/i.test(issueId) ? issueId : undefined);
   const breadcrumbStatus = issue?.status ?? issueHeaderSeed?.status;

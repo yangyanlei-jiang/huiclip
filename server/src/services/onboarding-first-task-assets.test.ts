@@ -182,3 +182,16 @@ describe("chief-of-staff persona", () => {
     });
   });
 });
+
+it("Chinese onboarding keeps option IDs while localizing the greeting, opening card and agent brief", async () => {
+  const greeting = await renderOnboardingFirstTaskGreeting({ agentName: "ceo" }, "zh-CN");
+  expect(greeting).toContain("欢迎使用 Paperclip");
+  expect(greeting).toContain("ceo");
+  const card = await buildOnboardingFirstTaskOpeningQuestion("zh-CN");
+  expect(card.submitLabel).toBe("继续");
+  expect(card.questions[0]).toMatchObject({
+    prompt: "你想从哪里开始？",
+    options: [{ id: "interview" }, { id: "task", freeText: true }],
+  });
+  expect(await buildOnboardingFirstTaskBrief({ usePlanProposal: true, locale: "zh-CN" })).toContain("默认使用简体中文");
+});

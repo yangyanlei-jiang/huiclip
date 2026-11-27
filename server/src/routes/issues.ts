@@ -313,6 +313,7 @@ import {
 import {
   buildOnboardingFirstTaskBrief,
   buildOnboardingFirstTaskOpeningQuestion,
+  HUI_CHINESE_CONVERSATION_PREFERENCE,
 } from "../services/onboarding-first-task-assets.js";
 import {
   ISSUE_BLOCKERS_RESOLVED_WAKE_REASON,
@@ -12983,12 +12984,14 @@ export function issueRoutes(
       // time, and ignore any client-supplied description. Flipping the toggle
       // later does not change an existing first task. Best-effort: a read failure
       // must not fail issue creation.
+      const onboardingLocale = req.get("X-Paperclip-UI-Locale");
       let onboardingFirstTaskDescription: string | null = null;
       if (isOnboardingFirstTask && !watchdogProductBugFollowUp) {
         try {
           const experimental = await instanceSettings.getExperimental();
           onboardingFirstTaskDescription = await buildOnboardingFirstTaskBrief({
             usePlanProposal: experimental.enableFirstTaskPlanProposal === true,
+            locale: onboardingLocale,
           });
         } catch (err) {
           logger.warn(
@@ -13321,6 +13324,7 @@ export function issueRoutes(
           const greetingBody = await renderOnboardingGreeting({
             agentName: assigneeAgent?.name ?? null,
             organizationName: company?.name ?? null,
+            locale: onboardingLocale,
           });
           await svc.addComment(
             issue.id,
@@ -13351,7 +13355,8 @@ export function issueRoutes(
               kind: "ask_user_questions",
               idempotencyKey: `onboarding-first-task:${issue.id}:opening-question`,
               continuationPolicy: "wake_assignee",
-              payload: await buildOnboardingFirstTaskOpeningQuestion(),
+              ...(onboardingLocale === "zh-CN" ? { title: "问题" } : {}),
+              payload: await buildOnboardingFirstTaskOpeningQuestion(onboardingLocale),
             },
             { agentId: issue.assigneeAgentId },
           );
@@ -19220,8 +19225,11 @@ export function issueRoutes(
         res.json(existing ? (await withConversationReadState(db, companyId, req.actor.userId, [existing]))[0] : null);
         return;
       }
+      const chineseConversation = req.get("X-Paperclip-UI-Locale") === "zh-CN";
       const issue = await svc.create(companyId, {
-        title: `Chat with ${agent.name}`, assigneeAgentId: agent.id,
+        title: chineseConversation ? `与 ${agent.name} 对话` : `Chat with ${agent.name}`,
+        ...(chineseConversation ? { description: HUI_CHINESE_CONVERSATION_PREFERENCE } : {}),
+        assigneeAgentId: agent.id,
         conversationAgentId: agent.id, conversationUserId: req.actor.userId,
         conversationState: "waiting", status: "in_review", createdByUserId: req.actor.userId,
       });

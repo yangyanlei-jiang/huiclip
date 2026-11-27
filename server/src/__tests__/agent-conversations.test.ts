@@ -225,6 +225,15 @@ import {
       expect(owned.status).toBe(200);
       expect(owned.body.map((chat: { id: string }) => chat.id)).toEqual([resolved[0].body.id]);
       expect((await request(appFor(colleague)).get(listPath)).body).toEqual([]);
+      const existingWithDifferentLocale = await request(app).post(path)
+        .set("X-Paperclip-UI-Locale", "zh-CN").expect(200);
+      expect(existingWithDifferentLocale.body).toMatchObject({
+        id: resolved[0].body.id, title: resolved[0].body.title, description: null,
+      });
+      const chinese = await request(appFor(colleague)).post(path)
+        .set("X-Paperclip-UI-Locale", "zh-CN").expect(200);
+      expect(chinese.body.title).toMatch(/^与 .* 对话$/);
+      expect(chinese.body.description).toContain("默认使用简体中文");
       expect((await request(appFor(randomUUID(), false)).get(listPath)).status).toBe(403);
       await instanceSettingsService(db).updateExperimental({ enableAgentChat: false });
       expect((await request(app).get(listPath)).status).toBe(200);

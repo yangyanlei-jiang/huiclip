@@ -1,3 +1,4 @@
+import { i18n } from "@/i18n";
 import type { Issue } from "@paperclipai/shared";
 import { api } from "./client";
 export const agentChatsApi = {
@@ -10,5 +11,6 @@ export const agentChatsApi = {
     api.post<Issue>(
       `/companies/${companyId}/chats/${encodeURIComponent(agentRef)}`,
       {},
+      { headers: { "X-Paperclip-UI-Locale": i18n.resolvedLanguage ?? i18n.language } },
     ),
 };

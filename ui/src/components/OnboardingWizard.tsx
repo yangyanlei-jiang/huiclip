@@ -117,6 +117,7 @@ import { defaultCreateValues } from "./agent-config-defaults";
 import { onboardingDraftStorage, restoreOnboardingState } from "../lib/onboarding-state";
 import {
   buildOnboardingIssuePayload,
+  onboardingTaskTitle,
   buildOnboardingProjectPayload,
   selectDefaultCompanyGoalId,
   selectReusableOnboardingProject,
@@ -285,7 +286,6 @@ function ModelSourceMark({
 }
 
 export { ONBOARDING_STORAGE_KEY } from "../lib/onboarding-state";
-const DEFAULT_TASK_TITLE = "Paperclip onboarding";
 
 const INCOMPLETE_ONBOARDING_STATE_MESSAGE =
   "Onboarding state is incomplete. Please restart onboarding and try again.";
@@ -446,7 +446,8 @@ function OnboardingWizardInner({
   saved: Record<string, unknown> | null;
 }) {
   const { t: pageText } = usePageTranslation("interface");
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale = i18n.resolvedLanguage ?? i18n.language;
   const {
     onboardingOpen,
     onboardingOptions,
@@ -1923,7 +1924,7 @@ function OnboardingWizardInner({
         } else {
           const project = await projectsApi.create(
             createdCompanyId,
-            buildOnboardingProjectPayload(goalId)
+            buildOnboardingProjectPayload(goalId, locale)
           );
           projectId = project.id;
           queryClient.invalidateQueries({
@@ -1938,7 +1939,7 @@ function OnboardingWizardInner({
         const issue = await issuesApi.create(
           createdCompanyId,
           buildOnboardingIssuePayload({
-            title: DEFAULT_TASK_TITLE,
+            title: onboardingTaskTitle(locale),
             assigneeAgentId: createdAgentId,
             projectId,
             goalId

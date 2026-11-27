@@ -1,6 +1,9 @@
+import { ONBOARDING_FIRST_TASK_ORIGIN_KIND } from "@paperclipai/shared";
 import { describe, expect, it } from "vitest";
 import {
   buildOnboardingIssuePayload,
+  displayOnboardingTaskTitle,
+  onboardingTaskTitle,
   buildOnboardingProjectPayload,
   selectDefaultCompanyGoalId,
   selectReusableOnboardingProject,
@@ -155,4 +158,14 @@ describe("onboarding launch payloads", () => {
       onboardingFirstTask: true,
     });
   });
+});
+
+it("localizes the system onboarding title without replacing an ordinary issue or custom title", () => {
+  const seeded = { title: "Paperclip onboarding", originKind: ONBOARDING_FIRST_TASK_ORIGIN_KIND } as const;
+  expect(displayOnboardingTaskTitle(seeded, "zh-CN")).toBe("Paperclip 新手引导");
+  expect(displayOnboardingTaskTitle(seeded, "en")).toBe("Paperclip onboarding");
+  expect(displayOnboardingTaskTitle({ ...seeded, title: "Custom title" }, "zh-CN")).toBe("Custom title");
+  expect(onboardingTaskTitle("zh-CN")).toBe("Paperclip 新手引导");
+  expect(buildOnboardingProjectPayload(null, "zh-CN").name).toBe("新手引导");
+  expect(selectReusableOnboardingProject([{ name: "新手引导", status: "in_progress" }])).not.toBeNull();
 });

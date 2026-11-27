@@ -216,6 +216,30 @@ describeEmbeddedPostgres("issue create onboarding first-task routes", () => {
     expect(mockAdapterExecute).not.toHaveBeenCalled();
   });
 
+  it("seeds Chinese guidance and the same deterministic choices for the Chinese UI", async () => {
+    const companyId = await seedCompany();
+    const agentId = await seedAgent(companyId);
+    const created = await request(createApp())
+      .post(`/api/companies/${companyId}/issues`)
+      .set("X-Paperclip-UI-Locale", "zh-CN")
+      .send({ title: "Paperclip 新手引导", onboardingFirstTask: true, assigneeAgentId: agentId })
+      .expect(201);
+    expect(created.body.description).toContain("默认使用简体中文");
+    const [greeting] = await db.select().from(issueComments).where(eq(issueComments.issueId, created.body.id));
+    expect(greeting.body).toContain("欢迎使用 Paperclip");
+    const [interaction] = await db.select().from(issueThreadInteractions)
+      .where(eq(issueThreadInteractions.issueId, created.body.id));
+    expect(interaction).toMatchObject({
+      title: "问题",
+      payload: {
+        submitLabel: "继续",
+        questions: [{ id: "first-task-opening", options: [{ id: "interview" }, { id: "task", freeText: true }] }],
+      },
+    });
+    await drainHeartbeatRunsToQuiescence(db, heartbeatService(db));
+    expect(mockAdapterExecute).not.toHaveBeenCalled();
+  });
+
   it("does not seed the opening card on an unassigned onboarding first task", async () => {
     const companyId = await seedCompany();
     const app = createApp();

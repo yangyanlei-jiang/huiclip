@@ -200,7 +200,7 @@
   "unstarResource": "取消收藏 {{name}}",
   "enableRoutine": "启用 {{name}}",
   "disableRoutine": "停用 {{name}}",
-  "Sign in to connect an assistant. This requires a Paperclip instance with authenticated user accounts.": "请先登录以连接助手。HuiClip 实例需要启用用户账号认证。",
+  "Sign in to connect an assistant. This requires a Paperclip instance with authenticated user accounts.": "请先登录以连接助手。Paperclip 实例需要启用用户账号认证。",
   "Assistant connections need an authenticated instance with a public HTTPS URL. Ask your instance administrator to configure the public URL, then try again.": "连接助手需要启用身份验证的实例和公开的 HTTPS 地址。请联系实例管理员配置该地址，然后重试。",
   "Only human company members can be removed.": "只能移除组织中的人类成员。",
   "Board access is required to remove members.": "移除成员需要董事会权限。",

@@ -1,3 +1,4 @@
+import { i18n } from "@/i18n";
 import type { SetIssueTitle } from "@paperclipai/shared";
 import { ISSUE_SUMMARIES_MAX_IDS } from "@paperclipai/shared";
 import type { IssueSummary } from "@paperclipai/shared";
@@ -406,7 +407,11 @@ export const issuesApi = {
   setTitle: (id: string, data: SetIssueTitle) =>
     api.put<{ id: string; title: string; titleNeedsGeneration: boolean; changed: boolean }>(`/issues/${id}/title`, data),
   create: (companyId: string, data: Record<string, unknown>) =>
-    api.post<Issue>(`/companies/${companyId}/issues`, data),
+    data.onboardingFirstTask === true
+      ? api.post<Issue>(`/companies/${companyId}/issues`, data, {
+          headers: { "X-Paperclip-UI-Locale": i18n.resolvedLanguage ?? i18n.language },
+        })
+      : api.post<Issue>(`/companies/${companyId}/issues`, data),
   update: (id: string, data: Record<string, unknown>) => {
     const response = api.patch<IssueUpdateResponse>(`/issues/${id}`, data);
     return typeof data.comment === "string"

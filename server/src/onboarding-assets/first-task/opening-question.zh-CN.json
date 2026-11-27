@@ -1,0 +1,17 @@
+{
+  "prompt": "你想从哪里开始？",
+  "submitLabel": "继续",
+  "options": [
+    {
+      "id": "interview",
+      "label": "先聊聊需求，再给我一份方案和团队建议",
+      "description": "我会先问你几个问题，再拟一份简短方案和团队分工，由你确认。"
+    },
+    {
+      "id": "task",
+      "label": "我有一项具体任务",
+      "description": "告诉我你想做什么，我来建议怎么完成。",
+      "freeText": true
+    }
+  ]
+}

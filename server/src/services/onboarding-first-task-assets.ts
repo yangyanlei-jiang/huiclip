@@ -13,6 +13,9 @@ import {
 // copies src/onboarding-assets/. into dist/onboarding-assets/), and fill the
 // {{agentName}} / {{organizationName}} / {{proposalMode}} placeholders.
 
+export const HUI_CHINESE_CONVERSATION_PREFERENCE =
+  "默认使用简体中文与用户沟通，包括提问、选项、答复和需要用户确认的内容。若用户明确要求其他语言，则按其要求；代码、标识符和原文引用不要擅自翻译。";
+
 export interface OnboardingFirstTaskPlaceholders {
   agentName?: string | null;
   organizationName?: string | null;
@@ -90,16 +93,21 @@ export function fillFirstTaskPlaceholders(
 // Layer C — the deterministic greeting posted as the agent on the first task.
 export async function renderOnboardingFirstTaskGreeting(
   placeholders: OnboardingFirstTaskPlaceholders,
+  locale?: string,
 ): Promise<string> {
-  const template = await loadFirstTaskAsset("greeting.md");
-  return fillFirstTaskPlaceholders(template, placeholders).trim();
+  const chinese = locale === "zh-CN";
+  const template = await loadFirstTaskAsset(chinese ? "greeting.zh-CN.md" : "greeting.md");
+  const greeting = chinese && !placeholders.agentName?.trim()
+    ? template.replace("我是 {{agentName}}，你的", "我是你的")
+    : template;
+  return fillFirstTaskPlaceholders(greeting, placeholders).trim();
 }
 
 // Layer C — the opening ask_user_questions card seeded as the agent right after
 // the greeting, so the first task is not open-ended: the user either asks to be
 // interviewed or types the task they have in mind. Deterministic, no LLM.
-export async function buildOnboardingFirstTaskOpeningQuestion(): Promise<AskUserQuestionsPayload> {
-  const raw = await loadFirstTaskAsset("opening-question.json");
+export async function buildOnboardingFirstTaskOpeningQuestion(locale?: string): Promise<AskUserQuestionsPayload> {
+  const raw = await loadFirstTaskAsset(locale === "zh-CN" ? "opening-question.zh-CN.json" : "opening-question.json");
   const file = openingQuestionFileSchema.parse(JSON.parse(raw));
   return askUserQuestionsPayloadSchema.parse({
     version: 1,
@@ -124,9 +132,15 @@ export async function buildOnboardingFirstTaskOpeningQuestion(): Promise<AskUser
 // Capture the toggle as a mode here so later changes do not alter this task.
 export async function buildOnboardingFirstTaskBrief(options: {
   usePlanProposal: boolean;
+  locale?: string;
 }): Promise<string> {
-  const brief = await loadFirstTaskAsset("brief.md");
-  return brief.replace("{{proposalMode}}", options.usePlanProposal ? "plan" : "confirmation").trim();
+  const brief = (await loadFirstTaskAsset("brief.md"))
+    .replace("{{proposalMode}}", options.usePlanProposal ? "plan" : "confirmation").trim();
+  return options.locale === "zh-CN"
+    ? `${brief}
+
+${HUI_CHINESE_CONVERSATION_PREFERENCE}`
+    : brief;
 }
 
 // Layer B — the chief-of-staff persona seeded over the first agent's entry
