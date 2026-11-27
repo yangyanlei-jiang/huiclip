@@ -105,18 +105,18 @@ describe("BreadcrumbContext", () => {
 
   it("builds page titles with the selected company name before the HuiClip name", () => {
     expect(buildDocumentTitle([{ label: "Inbox" }], "Anachronist Wiki")).toBe(
-      "Inbox • Anachronist Wiki • 回形夹 · HuiClip",
+      "Inbox • Anachronist Wiki • HuiClip",
     );
     expect(
       buildDocumentTitle(
         [{ label: "Issues", href: "/issues" }, { label: "PAP-3515" }],
         "Anachronist Wiki",
       ),
-    ).toBe("PAP-3515 • Issues • Anachronist Wiki • 回形夹 · HuiClip");
+    ).toBe("PAP-3515 • Issues • Anachronist Wiki • HuiClip");
   });
 
   it("omits blank company names from page titles", () => {
-    expect(buildDocumentTitle([{ label: "Inbox" }], "  ")).toBe("Inbox • 回形夹 · HuiClip");
-    expect(buildDocumentTitle([], null)).toBe("回形夹 · HuiClip");
+    expect(buildDocumentTitle([{ label: "Inbox" }], "  ")).toBe("Inbox • HuiClip");
+    expect(buildDocumentTitle([], null)).toBe("HuiClip");
   });
 });

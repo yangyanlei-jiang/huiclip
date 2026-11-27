@@ -3208,9 +3208,7 @@ function OnboardingWizardInner({
                       </p>
                     ) : credentialMode === "api" ? (
                       <OnboardingLoginCard
-                        instruction={hasGatewaySelection || connectionModels ? "Choose a model for your saved connection" : savedKeys.options.length ? "Choose a saved API key or enter a new one" : `Provide your ${
-                          CONNECT_SOURCE_NAMES[adapterType] ?? adapterType
-                        } API key to connect`}
+                        instruction={hasGatewaySelection || connectionModels ? t("connectModel.chooseModel") : savedKeys.options.length ? t("connectModel.chooseSaved") : t("connectModel.provide", { provider: CONNECT_SOURCE_NAMES[adapterType] ?? adapterType })}
                       >
                         {!hasGatewaySelection && <SavedProviderKeySelect {...savedKeys} disabled={loading || adapterEnvLoading} value={selectedApiKey?.id ?? ""} onChange={(id) => {
                           setGatewayConnection(undefined);
@@ -3233,7 +3231,7 @@ function OnboardingWizardInner({
                           }}
                           onSubmit={() => handleConnectStepPrimary()}
                         />}
-                        {managedProvider && !selectedApiKey && !hasGatewaySelection && !connectionModels && <p className="text-xs text-muted-foreground">This will be your default {CONNECT_SOURCE_NAMES[adapterType] ?? managedProvider} account.</p>}
+                        {managedProvider && !selectedApiKey && !hasGatewaySelection && !connectionModels && <p className="text-xs text-muted-foreground">{t("connectModel.defaultAccount", { provider: CONNECT_SOURCE_NAMES[adapterType] ?? managedProvider })}</p>}
                         {hasGatewaySelection && (gatewayLookupFailed ? <>
                           <p role="alert" className="text-sm text-destructive">Your saved gateway connection could not be loaded. Retry to choose a model and connect your agent.</p>
                           <Button type="button" variant="outline" disabled={loading || adapterEnvLoading} onClick={() => { void connectionModelState.refresh(); }}>
@@ -3464,12 +3462,12 @@ function OnboardingWizardInner({
                               : `${effectiveAdapterCommand} --print - --output-format stream-json --verbose`}
                           </p>
                           <p className="text-muted-foreground">
-                            Prompt:{" "}
+                            {t("connectModel.prompt")}{" "}
                             <span className="font-mono">Respond with hello.</span>
                           </p>
                           {adapterType === "claude_local" || adapterType === "codex_local" ? (
                             <p className="text-muted-foreground">
-                              If authentication fails, connect your subscription in the browser above or use an API key.
+                              {t("connectModel.authHelp")}
                             </p>
                           ) : adapterType === "cursor" ||
                           adapterType === "gemini_local" ||
@@ -3622,12 +3620,8 @@ function AdapterEnvironmentResult({
   result: AdapterEnvironmentTestResult;
   showHints: boolean;
 }) {
-  const statusLabel =
-    result.status === "pass"
-      ? "Passed"
-      : result.status === "warn"
-      ? "Warnings"
-      : "Failed";
+  const { t } = useTranslation();
+  const statusLabel = t(`connectModel.${result.status}`);
   const statusClass =
     result.status === "pass"
       ? "text-green-700 dark:text-green-300 border-green-300 dark:border-green-500/40 bg-green-50 dark:bg-green-500/10"
@@ -3661,7 +3655,7 @@ function AdapterEnvironmentResult({
             )}
             {showHints && check.hint && (
               <span className="block opacity-90 break-words">
-                Hint: {check.hint}
+                {t("connectModel.hint")} {check.hint === "Check the selected account, model access, and native runtime prerequisites, then retry." ? t("connectModel.runtimeHelp") : check.hint}
               </span>
             )}
           </div>

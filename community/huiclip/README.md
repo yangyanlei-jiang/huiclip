@@ -1,4 +1,4 @@
-# 回形夹 · HuiClip
+# HuiClip
 
 HuiClip 是基于 [Paperclip](https://github.com/paperclipai/paperclip) 的独立中文社区版，许可沿用 MIT。
 

@@ -1,7 +1,7 @@
 {
   "name": "huiclip",
-  "version": "0.1.3",
-  "description": "回形夹 · HuiClip — 基于 Paperclip 的独立中文社区版",
+  "version": "0.1.4",
+  "description": "HuiClip — 基于 Paperclip 的独立中文社区版",
   "type": "module",
   "license": "MIT",
   "bin": { "huiclip": "./huiclip.mjs" },

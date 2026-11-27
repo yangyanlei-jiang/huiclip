@@ -1,3 +1,4 @@
+import { useTranslation } from "@/i18n";
 import { healthApi } from "@/api/health";
 import { aiConnectionsApi } from "@/api/ai-connections";
 import { useLocalAiLogin } from "../ai-connections/useLocalAiLogin";
@@ -90,6 +91,7 @@ export function AgentProviderConnection({
     setAuthorizationUrl(null);
     setLoginPhase("preparing");
   };
+  const { t } = useTranslation();
   const [methodChoice, setMethod] = useState<"subscription" | "api" | null>(managedAccount?.initialMethod === "api_key" ? "api" : managedAccount ? "subscription" : null);
   const [advanced, setAdvanced] = useState(false);
   // Connections already selected the provider before showing this step.
@@ -328,8 +330,8 @@ export function AgentProviderConnection({
               <OnboardingLoginCard
                 instruction={
                   savedKeys.options.length
-                    ? "Choose a saved API key or enter a new one"
-                    : `Provide your ${provider} API key to connect`
+                    ? t("connectModel.chooseSaved")
+                    : t("connectModel.provide", { provider })
                 }
               >
                 <SavedProviderKeySelect

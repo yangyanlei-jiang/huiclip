@@ -1,8 +1,8 @@
-# 回形夹 · HuiClip
+# HuiClip
 
 [简体中文](README.md) · [English（Paperclip 原版 README）](https://github.com/paperclipai/paperclip/blob/v2026.1117.0/README.md)
 
-回形夹是基于 Paperclip 的独立中文社区版。你可以在同一个工作区给智能体派任务、处理审批、查看运行记录和跟踪预算。项目的第一规则是保留 Paperclip 原有功能，在此基础上汉化界面、编写中文使用文档。
+HuiClip 是基于 Paperclip 的独立中文社区版。你可以在同一个工作区给智能体派任务、处理审批、查看运行记录和跟踪预算。项目的第一规则是保留 Paperclip 原有功能，在此基础上汉化界面、编写中文使用文档。
 
 ## 界面语言
 
@@ -20,7 +20,7 @@
 git clone --branch community/zh-cn-v1 --single-branch https://github.com/yangyanlei-jiang/huiclip.git
 cd huiclip
 node community/huiclip/pack.mjs ../huiclip-packages
-npm install --global --prefix ../huiclip-cli ../huiclip-packages/huiclip-0.1.3.tgz
+npm install --global --prefix ../huiclip-cli ../huiclip-packages/huiclip-0.1.4.tgz
 ../huiclip-cli/bin/huiclip setup
 ../huiclip-cli/bin/huiclip run
 ```

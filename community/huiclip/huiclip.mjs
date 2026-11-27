@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { spawn } from "node:child_process";
 import { createHash, randomBytes } from "node:crypto";
-import { createReadStream, existsSync, mkdirSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { createReadStream, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { basename, dirname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -132,11 +132,38 @@ async function sourceDigest() {
   return hash.digest("hex");
 }
 
+// The stable upstream server package ships the signed, target-specific runner binaries.
+async function installNativeRunner(destination, options) {
+  const target = `${process.platform}-${process.arch}`;
+  if (!["darwin-arm64", "darwin-x64", "linux-arm64", "linux-x64"].includes(target)) {
+    throw new Error(`此版本尚无适用于 ${target} 的原生运行器。`);
+  }
+  const staging = mkdtempSync(join(destination, ".runner-install-"));
+  try {
+    const version = "2026.1117.0";
+    await execute("npm", ["pack", `@paperclipai/server@${version}`, "--registry=https://registry.npmjs.org",
+      "--ignore-scripts", "--silent", "--pack-destination", staging], options);
+    const archive = join(staging, `paperclipai-server-${version}.tgz`);
+    const hash = createHash("sha512");
+    for await (const chunk of createReadStream(archive)) hash.update(chunk);
+    if (hash.digest("hex") !== "030e6e2108cfd04efc935a023c8e41ebbd3a318876d313248349eaf22f6b3170fc7aa6c7d60ce5d89050ca733fde32fdd73c74aebd42b33d1351a2e1727a418c") {
+      throw new Error("上游运行器安装包的校验值不匹配。");
+    }
+    const bin = join(destination, "packages/paperclip-runner/dist/bin");
+    mkdirSync(bin, { recursive: true });
+    const prefix = "package/dist/vendor/paperclip-runner/bin";
+    await execute("tar", ["-xzf", archive, "-C", bin, "--strip-components=5",
+      `${prefix}/release-manifest.json`, `${prefix}/${target}/paperclip-runnerd`], options);
+  } finally {
+    rmSync(staging, { recursive: true, force: true });
+  }
+}
+
 async function prepareRuntime(env) {
   const cache = join(home, "runtime");
   const destination = join(cache, `${manifest.version}-${(await sourceDigest()).slice(0, 16)}`);
   const ready = join(destination, ".huiclip-ready");
-  if (existsSync(ready)) return destination;
+  if (existsSync(ready)) return realpathSync(destination);
   mkdirSync(cache, { recursive: true, mode: 0o700 });
 
   const lock = destination + ".lock";
@@ -147,7 +174,7 @@ async function prepareRuntime(env) {
     throw error;
   }
   try {
-    if (existsSync(ready)) return destination;
+    if (existsSync(ready)) return realpathSync(destination);
     if (existsSync(destination)) throw new Error(`运行目录未完成初始化：${destination}`);
     mkdirSync(destination, { mode: 0o700 });
     try {
@@ -157,6 +184,7 @@ async function prepareRuntime(env) {
       const options = { cwd: destination, env };
       await execute("pnpm", installArgs, options);
       await execute("pnpm", ["--filter", "@paperclipai/paperclip-runner", "build:typescript"], options);
+      await installNativeRunner(destination, options);
       await execute("pnpm", ["--filter", "@paperclipai/plugin-sdk", "build"], options);
       await execute("pnpm", ["--filter", "@paperclipai/ui", "build"], options);
       writeFileSync(ready, "", { flag: "wx" });
@@ -167,7 +195,7 @@ async function prepareRuntime(env) {
   } finally {
     rmSync(lock, { recursive: true, force: true });
   }
-  return destination;
+  return realpathSync(destination);
 }
 
 function renderService() {
@@ -205,7 +233,7 @@ WantedBy=default.target`;
 }
 
 function help() {
-  console.log(`回形夹 · HuiClip ${manifest.version}
+  console.log(`HuiClip ${manifest.version}
 huiclip onboard --yes        使用实例配置准备并启动本机应用
 huiclip setup                安装依赖并构建本地运行环境
 huiclip run                  启动本机应用
