@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { GOAL_STATUSES, GOAL_LEVELS } from "@paperclipai/shared";
@@ -34,6 +35,7 @@ const levelLabels: Record<string, string> = {
 };
 
 export function NewGoalDialog() {
+  const { t: pageText } = usePageTranslation("interface");
   const { newGoalOpen, newGoalDefaults, closeNewGoal } = useDialog();
   const { selectedCompanyId, selectedCompany } = useCompany();
   const queryClient = useQueryClient();
@@ -273,7 +275,7 @@ export function NewGoalDialog() {
             disabled={!title.trim() || createGoal.isPending}
             onClick={handleSubmit}
           >
-            {createGoal.isPending ? "Creating…" : newGoalDefaults.parentId ? "Create sub-goal" : "Create goal"}
+            {createGoal.isPending ? pageText("creating_94d7d8") : newGoalDefaults.parentId ? "Create sub-goal" : "Create goal"}
           </Button>
         </div>
       </DialogContent>

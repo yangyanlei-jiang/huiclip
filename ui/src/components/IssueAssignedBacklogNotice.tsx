@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { Flag } from "lucide-react";
 import type { Agent } from "@paperclipai/shared";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ export function IssueAssignedBacklogNotice({
   onResume,
   resuming,
 }: IssueAssignedBacklogNoticeProps) {
+  const { t: pageText } = usePageTranslation("interface");
   if (issueStatus !== "backlog") return null;
   if (!assigneeAgent && !assigneeUserId) return null;
 
@@ -50,7 +52,7 @@ export function IssueAssignedBacklogNotice({
                 disabled={resuming}
                 data-testid="issue-assigned-backlog-resume"
               >
-                {resuming ? "Resuming…" : "Resume now"}
+                {resuming ? pageText("resuming_ab0bec") : "Resume now"}
               </Button>
             </div>
           ) : null}

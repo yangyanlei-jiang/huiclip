@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 /**
  * Work Timeline page (PAP-12424 / Phase C of PAP-12405).
  *
@@ -305,6 +306,7 @@ function TimelineSummaryStats({
 }
 
 export function Timeline({ embedded = false }: { embedded?: boolean } = {}) {
+  const { t: pageText } = usePageTranslation("interface");
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const location = useLocation();
@@ -444,8 +446,8 @@ export function Timeline({ embedded = false }: { embedded?: boolean } = {}) {
           variant="outline"
           size="icon-xs"
           onClick={() => adjustZoom(0.8)}
-          aria-label="Zoom out"
-          title="Zoom out"
+          aria-label={pageText("zoomOut_a4ae4b")}
+          title={pageText("zoomOut_a4ae4b")}
         >
           <Minus className="h-3 w-3" />
         </Button>
@@ -454,8 +456,8 @@ export function Timeline({ embedded = false }: { embedded?: boolean } = {}) {
           variant="outline"
           size="icon-xs"
           onClick={() => adjustZoom(1.25)}
-          aria-label="Zoom in"
-          title="Zoom in"
+          aria-label={pageText("zoomIn_4fc05f")}
+          title={pageText("zoomIn_4fc05f")}
         >
           <Plus className="h-3 w-3" />
         </Button>
@@ -529,7 +531,7 @@ export function Timeline({ embedded = false }: { embedded?: boolean } = {}) {
             </Card>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-xs text-muted-foreground">
-                {data.spans.length} run{data.spans.length === 1 ? "" : "s"} ·{" "}
+                {data.spans.length}{" " + pageText("run_df6ad1")}{data.spans.length === 1 ? "" : "s"} ·{" "}
                 {new Date(data.window.from).toLocaleString()} to {new Date(data.window.to).toLocaleString()}
                 {data.window.capped ? " · window capped" : ""}
               </p>

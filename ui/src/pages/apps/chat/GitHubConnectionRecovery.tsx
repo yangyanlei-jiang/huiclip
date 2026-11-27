@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from "react";
 import { AlertTriangle, CircleHelp, ExternalLink, Loader2 } from "lucide-react";
 import type { ChatEndpoint } from "@/api/chatEndpoints";
@@ -54,6 +55,7 @@ export function GitHubAppRecovery({ endpoint, reconnect, credentialFields, requi
   onConnect: (credentials?: GitHubAppCredentials) => Promise<void>;
   onExit: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [replace, setReplace] = useState(!!credentialFields || !reconnect);
   const [credentials, setCredentials] = useState<GitHubAppCredentials>({ appId: endpoint.botExternalId ?? "", privateKey: "", webhookSecret: "" });
   const [privateKeyDraft, setPrivateKeyDraft] = useState("");
@@ -116,7 +118,7 @@ export function GitHubAppRecovery({ endpoint, reconnect, credentialFields, requi
   }
   return <div className="space-y-6">
     {reconnect && <div className="space-y-3">
-      <p className="text-sm">Restore <strong>{appName}</strong> using its saved credentials. Paperclip will check the App and its installation, then repair event delivery.</p>
+      <p className="text-sm">{pageText("restore_3cbe6d") + " "}<strong>{appName}</strong> using its saved credentials. Paperclip will check the App and its installation, then repair event delivery.</p>
       <p className="text-sm text-muted-foreground">Your agent, repository choices, review settings, and task history stay attached to this connection. You don’t need to create another GitHub App.</p>
     </div>}
     {rotateWebhookSecret && <section aria-label="Rotate webhook secret" className="space-y-3">
@@ -153,7 +155,7 @@ export function GitHubAppRecovery({ endpoint, reconnect, credentialFields, requi
       </div>
       {needsPrivateKey && <div className="space-y-2">
         <CredentialLabel id="github-app-id" label="App ID" help="The numeric App ID on the GitHub App’s settings page. This is different from its Client ID or installation ID." />
-        <p id="github-app-id-help" className="text-sm text-muted-foreground">Copy <strong>App ID</strong> from the App’s settings page. {reconnect && "The saved ID is filled in when available."}</p>
+        <p id="github-app-id-help" className="text-sm text-muted-foreground">{pageText("copy_af74f7") + " "}<strong>App ID</strong> from the App’s settings page. {reconnect && "The saved ID is filled in when available."}</p>
         <Input id="github-app-id" aria-describedby="github-app-id-help" inputMode="numeric" value={credentials.appId} disabled={pending} aria-invalid={appIdInvalid} onChange={event => setCredentials({ ...credentials, appId: event.target.value })} />
         {appIdInvalid && <p role="alert" className="text-sm text-destructive">Use the numeric App ID, not the Client ID.</p>}
       </div>}
@@ -195,7 +197,7 @@ export function GitHubAppRecovery({ endpoint, reconnect, credentialFields, requi
     <SetupWizardFooter onSaveExit={onExit} disabled={pending}>
       <Button aria-label={actionLabel} disabled={pending || incomplete || rotationUncertain || (rotateWebhookSecret && !rotationSecret && !rotationAlreadyCommitted)} onClick={() => void connect()}>
         {pending && <Loader2 className="size-4 animate-spin" aria-hidden="true" />}
-        <span className="sm:hidden" aria-hidden="true">{pending ? "Checking…" : reconnect ? "Reconnect" : "Connect"}</span>
+        <span className="sm:hidden" aria-hidden="true">{pending ? pageText("checking_820d60") : reconnect ? pageText("reconnect_6988b1") : pageText("connect_b65463")}</span>
         <span className="hidden sm:inline" aria-hidden="true">{actionLabel}</span>
       </Button>
     </SetupWizardFooter>

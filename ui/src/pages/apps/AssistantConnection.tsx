@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
 import { assistantClientNames, mcpAuthorizationHandoffInstructions, mcpInvitation, mcpSetupSteps, type AssistantClient, type McpConnection } from "@paperclipai/shared";
@@ -71,6 +72,7 @@ export function AssistantConnectionCard({ onNavigate }: { onNavigate: (href: str
 
 /** Only copy user-visible, non-secret setup values. Never execute them here. */
 function CopyValue({ value, label }: { value: string; label: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState(false);
   useEffect(() => { setCopied(false); setError(false); }, [value]);
@@ -82,7 +84,7 @@ function CopyValue({ value, label }: { value: string; label: string }) {
         catch { setError(true); }
       }}>{copied ? <Check className="size-4" /> : <Copy className="size-4" />}</Button>
     </div>
-    <p role="status" className="text-xs text-muted-foreground">{error ? "Couldn’t copy. Select and copy the text above." : copied ? "Copied" : null}</p>
+    <p role="status" className="text-xs text-muted-foreground">{error ? "Couldn’t copy. Select and copy the text above." : copied ? pageText("copied_8e3df4") : null}</p>
   </div>;
 }
 
@@ -93,6 +95,7 @@ function setupUnavailableCopy(errorKind: "auth" | "not_found"): string {
 }
 
 export function AssistantConnection({ initialAssistant = "codex" }: { initialAssistant?: Assistant } = {}) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { selectedCompany, selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -142,7 +145,7 @@ export function AssistantConnection({ initialAssistant = "codex" }: { initialAss
         <section className="space-y-4" aria-label={`Set up ${assistants[assistant]}`}>
           {mcpSetupSteps(serverUrl, assistant).map((step, index) => <div key={`${assistant}-${index}`} className="space-y-2"><p className="text-sm text-muted-foreground">{step.text}</p>{step.code && <CopyValue value={step.code} label={`${assistants[assistant]} setup step ${index + 1}`} />}</div>)}
           {assistant !== "browser" && <p className="text-sm text-muted-foreground">{mcpAuthorizationHandoffInstructions}</p>}
-          <p className="text-sm">Choose <strong>{selectedCompany.name}</strong>, review access, then click <strong>Connect organization</strong>.</p>
+          <p className="text-sm">{pageText("choose_78b7c9") + " "}<strong>{selectedCompany.name}</strong>, review access, then click <strong>Connect organization</strong>.</p>
           <p className="text-xs text-muted-foreground">Creating tasks and adding comments may start agent work using the organization’s configured execution budget.</p>
         </section>
         <CopyValue value={serverUrl} label="MCP server URL" />
@@ -150,13 +153,13 @@ export function AssistantConnection({ initialAssistant = "codex" }: { initialAss
     </>}
     <section className="space-y-3" aria-labelledby="connected-assistants">
       <h2 id="connected-assistants" className="text-sm font-semibold">Your connected assistants</h2>
-      {(connections.isPending || connections.view.kind === "reconnecting") && <p className="text-sm text-muted-foreground">Loading connections…</p>}
+      {(connections.isPending || connections.view.kind === "reconnecting") && <p className="text-sm text-muted-foreground">{pageText("loadingConnections_e2e03e")}</p>}
       {revoke.error && <p role="alert" className="text-sm text-destructive">Couldn’t revoke this connection. Try again. <button type="button" className="underline" onClick={() => void connections.refetch()}>{translateUi("interfaceCopy.refresh")}</button></p>}
       {connections.view.kind === "error" && <QueryErrorState error={connections.error} action="load your connections" onRetry={connections.view.retry} retrying={connections.view.isFetching} />}
       {connections.loaded && connections.rows.length === 0 && <p className="text-sm text-muted-foreground">No assistants connected to {selectedCompany.name} yet.</p>}
       <div className="divide-y divide-border">{connections.rows.map(row => <div key={row.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
         <div className="min-w-0 flex-1 space-y-1"><Identity name={assistantConnectionDisplayName(row)} avatarUrl={row.user?.image} initials={deriveInitials(row.user?.name ?? "You")} className="font-medium" /><p className="text-xs text-muted-foreground">{`Connected as you · ${row.scopes.includes("paperclip:write") ? "Read and write" : "Read only"}${row.scopes.includes("paperclip:configure") ? " · Configure agents, projects and skills" : ""}`}</p></div>
-        <Button variant="outline" size="sm" disabled={revoke.isPending} onClick={() => revoke.mutate(row.id)} aria-label={`Revoke ${assistantConnectionDisplayName(row)}`}>Revoke</Button>
+        <Button variant="outline" size="sm" disabled={revoke.isPending} onClick={() => revoke.mutate(row.id)} aria-label={`Revoke ${assistantConnectionDisplayName(row)}`}>{pageText("revoke_0be720")}</Button>
       </div>)}</div>
     </section>
     <footer className="flex items-center justify-between gap-3 border-t border-border pt-4"><Button variant="ghost" asChild><Link to="/apps">Back to Connections</Link></Button><a className="inline-flex items-center gap-1 text-xs text-muted-foreground underline" href={assistant === "opencode" ? "https://opencode.ai/docs/mcp-servers/" : assistant === "claude" ? "https://code.claude.com/docs/en/mcp" : "https://developers.openai.com/codex/mcp"} target="_blank" rel="noreferrer">Setup documentation <ExternalLink className="size-3" /></a></footer>

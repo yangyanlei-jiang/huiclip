@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useEffect, useRef } from "react";
@@ -15,10 +16,11 @@ function charge(amount: string | null) {
   return `$${whole}.${fraction} USD`;
 }
 export function SpekoCallReport({ report }: { report: VoiceCallReport }) {
+  const { t: pageText } = usePageTranslation("interface");
   return <div className="space-y-3">
     <dl className="flex flex-wrap gap-4 text-sm"><div><dt className="text-muted-foreground">Speko charge</dt><dd>{charge(report.costMicroUsd)}</dd></div>{report.durationSeconds !== null && <div><dt className="text-muted-foreground">Duration</dt><dd>{report.durationSeconds} seconds</dd></div>}</dl>
     <p className="text-xs text-muted-foreground">Agent costs are separate. Recordings remain in Speko.</p>
-    {report.transcript.length ? <ol aria-label="Call transcript" className="space-y-3">{report.transcript.map(turn => <li key={turn.id} className="min-w-0"><p className="text-xs font-medium text-muted-foreground">{turn.speaker === "caller" ? "You" : "Agent"}{turn.interrupted ? " · interrupted" : ""}</p><p className="whitespace-pre-wrap break-words text-sm">{turn.text}</p></li>)}</ol>
+    {report.transcript.length ? <ol aria-label="Call transcript" className="space-y-3">{report.transcript.map(turn => <li key={turn.id} className="min-w-0"><p className="text-xs font-medium text-muted-foreground">{turn.speaker === "caller" ? pageText("you_905cb3") : pageText("agent_5ce2e6")}{turn.interrupted ? " · interrupted" : ""}</p><p className="whitespace-pre-wrap break-words text-sm">{turn.text}</p></li>)}</ol>
       : <p className="text-sm text-muted-foreground">{report.status === "unavailable" ? "The transcript is unavailable. Paperclip will retry while Speko finishes the report." : report.status === "pending" ? "The transcript will appear after Speko finishes the call report." : "Speko did not provide a transcript for this call."}</p>}
   </div>;
 }

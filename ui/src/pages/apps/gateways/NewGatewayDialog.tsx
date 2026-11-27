@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { type FormEvent, useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -36,6 +37,7 @@ export function NewGatewayDialog({
   onOpenChange: (open: boolean) => void;
   onCreated?: (gatewayId: string) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToast();
@@ -135,7 +137,7 @@ export function NewGatewayDialog({
             </span>
           </label>
           <label className="block space-y-1.5">
-            <span className="text-xs font-medium text-muted-foreground">Description (optional)</span>
+            <span className="text-xs font-medium text-muted-foreground">{pageText("descriptionOptional_388de6")}</span>
             <textarea
               className="min-h-16 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               value={description}
@@ -154,7 +156,7 @@ export function NewGatewayDialog({
               type="submit"
               disabled={createMutation.isPending || noProfiles || !name.trim() || !profileId}
             >
-              {createMutation.isPending ? "Creating…" : "Create gateway"}
+              {createMutation.isPending ? pageText("creating_94d7d8") : "Create gateway"}
             </Button>
           </DialogFooter>
         </form>

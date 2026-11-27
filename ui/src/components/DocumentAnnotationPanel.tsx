@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { AgentAvatar } from "./AgentAvatar";
 import { useCallback, useMemo, useRef, useState, useEffect } from "react";
@@ -66,6 +67,7 @@ export interface AnnotationPanelProps {
 }
 
 export function DocumentAnnotationPanel(props: AnnotationPanelProps) {
+  const { t: pageText } = usePageTranslation("interface");
   if (props.isMobile) {
     return (
       <Sheet open={props.open} onOpenChange={props.onOpenChange}>
@@ -75,7 +77,7 @@ export function DocumentAnnotationPanel(props: AnnotationPanelProps) {
           className="paperclip-doc-annotation-sheet z-(--z-60) flex max-h-(--sz-88vh) flex-col rounded-none border-t border-border bg-popover p-0 text-popover-foreground shadow-2xl"
         >
           <SheetTitle className="sr-only">
-            Comments on {props.documentKey} revision {props.documentRevisionNumber}
+            Comments on {props.documentKey}{" " + pageText("revision_eae79d") + " "}{props.documentRevisionNumber}
           </SheetTitle>
           <div className="mx-auto mt-2 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/30" aria-hidden="true" />
           <AnnotationPanelBody {...props} />
@@ -104,6 +106,7 @@ export function DocumentAnnotationPanel(props: AnnotationPanelProps) {
 }
 
 export function AnnotationPanelBody(props: AnnotationPanelProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const copyAnnotationLink = useCopyAnnotationLink();
   const [composerValue, setComposerValue] = useState("");
@@ -304,7 +307,7 @@ export function AnnotationPanelBody(props: AnnotationPanelProps) {
               }
               onClick={() => createThread.mutate(composerValue.trim())}
             >
-              {createThread.isPending ? "Posting…" : "Comment"}
+              {createThread.isPending ? pageText("posting_20c00d") : pageText("comment_153d7a")}
             </Button>
           </div>
         </div>
@@ -328,6 +331,7 @@ export function ThreadCard(props: {
   agentMap?: ReadonlyMap<string, Pick<Agent, "id" | "name"> & Partial<Pick<Agent, "icon" | "appearance">>>;
   userProfileMap?: ReadonlyMap<string, CompanyUserProfile>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { thread } = props;
   const latestComment = thread.comments[thread.comments.length - 1];
 
@@ -410,7 +414,7 @@ export function ThreadCard(props: {
                 disabled={!props.replyDraft.trim() || props.pendingReply}
                 onClick={props.onSubmitReply}
               >
-                {props.pendingReply ? "Sending…" : "Reply"}
+                {props.pendingReply ? pageText("sending_cf7655") : "Reply"}
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -419,7 +423,7 @@ export function ThreadCard(props: {
                     variant="ghost"
                     size="icon-xs"
                     className="text-muted-foreground"
-                    title="More actions"
+                    title={pageText("moreActions_a1e34f")}
                     aria-label="More thread actions"
                   >
                     <MoreHorizontal className="h-3.5 w-3.5" />
@@ -432,9 +436,7 @@ export function ThreadCard(props: {
                       props.onCopyLink();
                     }}
                   >
-                    <Copy className="h-3.5 w-3.5" />
-                    Copy link
-                  </DropdownMenuItem>
+                    <Copy className="h-3.5 w-3.5" />{pageText("copyLink_2f84ee")}</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -442,7 +444,7 @@ export function ThreadCard(props: {
         ) : (
           <p className="px-3 py-2 text-xs text-muted-foreground">
             <span className="font-medium text-foreground">
-              {thread.comments.length} comment{thread.comments.length === 1 ? "" : "s"}
+              {thread.comments.length}{" " + pageText("comment_118a99")}{thread.comments.length === 1 ? "" : "s"}
             </span>
             {latestComment ? <span className="ml-1">· {truncate(latestComment.body, 120)}</span> : null}
           </p>

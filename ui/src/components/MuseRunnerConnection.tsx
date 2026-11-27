@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { describeError } from "@/api/errors";
 import { Bot } from "lucide-react";
@@ -31,6 +32,7 @@ export interface MuseConnectionDetailsProps {
 
 /** The settings view uses the same connection evidence as the invitation. */
 export function MuseConnectionDetails({ connection, pairing, busy, error, offline = false, onTest, onRepair, onPause, onDisconnect, onRefresh, onAttest, onAttestDetectorCleanup }: MuseConnectionDetailsProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const b = connection.binding;
   const [attestation, setAttestation] = useState<MuseAttestStopInput | null>(null);
@@ -112,7 +114,7 @@ export function MuseConnectionDetails({ connection, pairing, busy, error, offlin
     {attestation && <section aria-label="Attest this Muse worker stopped" className="space-y-3 rounded-md border border-border p-3">
       <p className="text-sm font-medium">Confirm the worker for this exact assignment stopped</p>
       <dl className="space-y-2 text-xs">
-        {Object.entries(attestation.boundary).map(([key, value]) => <div key={key} className="flex flex-wrap items-baseline justify-between gap-2"><dt className="text-muted-foreground">{key}</dt><dd className="break-all font-mono">{value === null ? "None" : String(value)}</dd></div>)}
+        {Object.entries(attestation.boundary).map(([key, value]) => <div key={key} className="flex flex-wrap items-baseline justify-between gap-2"><dt className="text-muted-foreground">{key}</dt><dd className="break-all font-mono">{value === null ? pageText("none_6eef66") : String(value)}</dd></div>)}
       </dl>
       <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={confirmed} onChange={event => setConfirmed(event.target.checked)} className="mt-1 accent-primary" /><span>I have stopped this Muse worker for the named assignment and run. This does not certify independent private tools or unknown native effects.</span></label>
       <div className="flex items-center justify-between gap-3">
@@ -121,14 +123,14 @@ export function MuseConnectionDetails({ connection, pairing, busy, error, offlin
       </div>
     </section>}
     {pairing && !b?.paired && <div className="space-y-2">
-      <AgentSetupPrompt key={pairing.bindingId + pairing.revision} prompt={pairing.setupInstruction} label="Copy setup prompt" title="Connect your Muse" agent={{ name: "Muse", icon: <Bot className="size-5" /> }} description="Paste into your current Muse conversation. Complete Connect Paperclip if Muse asks, then approve the Paperclip hostname." />
+      <AgentSetupPrompt key={pairing.bindingId + pairing.revision} prompt={pairing.setupInstruction} label={pageText("copySetupPrompt_c42e18")} title="Connect your Muse" agent={{ name: "Muse", icon: <Bot className="size-5" /> }} description="Paste into your current Muse conversation. Complete Connect Paperclip if Muse asks, then approve the Paperclip hostname." />
       <p className="text-xs text-muted-foreground">One-use setup expires {formatDateTime(pairing.expiresAt)}. Muse keeps the connection credential in its secure vault. Hostname permission applies to future requests to this Paperclip hostname.</p>
     </div>}
     <div className="flex flex-wrap items-center gap-2">
       {live && <Button type="button" variant="outline" disabled={!configure || b.credentialState !== "active" || !b.paired || busy || testing} onClick={onTest}>{testing ? "Testing background reply…" : "Test background reply"}</Button>}
       <Button type="button" variant="outline" disabled={!configure || busy} onClick={onRepair}>{b?.credentialState === "expired" ? "Reconnect Muse" : live ? "Repair connection" : "Connect Muse"}</Button>
       {connection.agentStatus !== "paused" && connection.agentStatus !== "terminated" && <Button type="button" variant="outline" disabled={busy} onClick={onPause}>Pause agent</Button>}
-      {live && <Button type="button" variant="outline" disabled={busy} onClick={onDisconnect}>Disconnect</Button>}
+      {live && <Button type="button" variant="outline" disabled={busy} onClick={onDisconnect}>{pageText("disconnect_ed28e0")}</Button>}
       <Button type="button" variant="ghost" disabled={busy} onClick={onRefresh}>{translateUi("interfaceCopy.refresh")}</Button>
       <Button type="button" asChild variant="ghost"><a href="https://muse.ai" target="_blank" rel="noopener noreferrer">Open Muse</a></Button>
     </div>

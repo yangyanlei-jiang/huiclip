@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import type { ReactNode } from "react";
 import type { Issue, Project } from "@paperclipai/shared";
@@ -50,6 +51,7 @@ export interface TaskDetailTasksPanelProps {
 }
 
 export function TaskDetailTasksPanel({ ancestors = [], createdFrom = null, subtasks, createdTasks, projects, isLoading, hasError, onRetry, issueLinkState }: TaskDetailTasksPanelProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const sortedSubtasks = sortTasks(subtasks);
   const groups = new Map<string, { name: string; path?: string; tasks: Issue[] }>();
@@ -93,7 +95,7 @@ export function TaskDetailTasksPanel({ ancestors = [], createdFrom = null, subta
           <TaskDetailTaskList items={group.tasks} ariaLabel={`${group.name} tasks`} issueLinkState={issueLinkState} />
         </TaskGroup>
       ))}
-      {isLoading && <p role="status" className="text-sm text-muted-foreground">Loading tasks…</p>}
+      {isLoading && <p role="status" className="text-sm text-muted-foreground">{pageText("loadingTasks_a3495d")}</p>}
       {hasError && (
         <div role="alert" className="flex items-center gap-2 text-sm text-destructive">
           <span>Could not load all tasks.</span>
@@ -101,7 +103,7 @@ export function TaskDetailTasksPanel({ ancestors = [], createdFrom = null, subta
         </div>
       )}
       {!isLoading && !hasError && !createdFrom && ancestors.length === 0 && subtasks.length === 0 && createdTasks.length === 0 && (
-        <p className="py-6 text-center text-sm text-muted-foreground">No tasks yet.</p>
+        <p className="py-6 text-center text-sm text-muted-foreground">{pageText("noTasksYet_c1c785")}</p>
       )}
     </section>
   );

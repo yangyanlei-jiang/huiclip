@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { brandChipBadge } from "@/lib/status-colors";
@@ -17,6 +18,7 @@ export function BuiltInLifecycleChip({
   compact?: boolean;
   className?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (status !== "needs_setup" && status !== "pending_approval") return null;
   const isPendingApproval = status === "pending_approval";
   return (
@@ -33,7 +35,7 @@ export function BuiltInLifecycleChip({
           : "Needs adapter/model setup before the feature can run"
       }
     >
-      {isPendingApproval ? (compact ? "Approval" : "Pending approval") : compact ? "Setup" : "Needs setup"}
+      {isPendingApproval ? (compact ? pageText("approval_8cc047") : "Pending approval") : compact ? "Setup" : "Needs setup"}
     </Badge>
   );
 }

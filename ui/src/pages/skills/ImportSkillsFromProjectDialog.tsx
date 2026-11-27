@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -233,6 +234,7 @@ function CandidateStatusBadge({
 }: {
   status: CompanySkillProjectScanCandidate["status"];
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   switch (status) {
     case "already_imported":
       return (
@@ -258,8 +260,7 @@ function CandidateStatusBadge({
           variant="outline"
           className="gap-1 px-1.5 py-0 font-normal text-muted-foreground border-border/60"
         >
-          <FileWarning className="h-3 w-3" /> Skipped
-        </Badge>
+          <FileWarning className="h-3 w-3" />{" " + pageText("skipped_5a000a")}</Badge>
       );
     case "new":
     default:
@@ -268,8 +269,7 @@ function CandidateStatusBadge({
           variant="outline"
           className="gap-1 px-1.5 py-0 font-normal text-emerald-600 border-emerald-500/40 dark:text-emerald-400"
         >
-          <CheckCircle2 className="h-3 w-3" /> New
-        </Badge>
+          <CheckCircle2 className="h-3 w-3" />{" " + pageText("new_6403f2")}</Badge>
       );
   }
 }
@@ -280,6 +280,7 @@ export function ImportSkillsFromProjectDialog({
   companyId,
   onImportFromPath,
 }: ImportSkillsFromProjectDialogProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const toast = useToastActions();
@@ -605,8 +606,7 @@ export function ImportSkillsFromProjectDialog({
                   </div>
                 )}
                 <Button variant="outline" size="sm" onClick={backToPick}>
-                  <ArrowLeft className="mr-1 h-3.5 w-3.5" /> Back
-                </Button>
+                  <ArrowLeft className="mr-1 h-3.5 w-3.5" />{" " + pageText("back_b52b36")}</Button>
                 {!scanError && candidates.length > 0 && (
                   <Button
                     size="sm"
@@ -662,6 +662,7 @@ function PickProjectStep({
   onFilterChange,
   onPick,
 }: PickProjectStepProps) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="border-b border-border/60 px-5 py-3">
@@ -670,16 +671,16 @@ function PickProjectStep({
           <Input
             value={filter}
             onChange={(event) => onFilterChange(event.target.value)}
-            placeholder="Filter projects"
+            placeholder={pageText("filterProjects_cd22d7")}
             className="pl-7 text-xs"
-            aria-label="Filter projects"
+            aria-label={pageText("filterProjects_cd22d7")}
             data-testid="project-filter"
           />
         </div>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
         {loading ? (
-          <div className="p-6 text-center text-sm text-muted-foreground">Loading projects…</div>
+          <div className="p-6 text-center text-sm text-muted-foreground">{pageText("loadingProjects_b8f7bb")}</div>
         ) : error ? (
           <QueryErrorState
             className="m-5"
@@ -717,8 +718,7 @@ function PickProjectStep({
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-sm font-medium">{project.name}</div>
                       <div className="mt-0.5 text-xs text-muted-foreground">
-                        {project.workspaces.length} workspace
-                        {project.workspaces.length === 1 ? "" : "s"}
+                        {project.workspaces.length}{" " + pageText("workspace_a279fe")}{project.workspaces.length === 1 ? "" : "s"}
                         {kinds ? ` · ${kinds}` : ""}
                       </div>
                       {disabled && (
@@ -744,6 +744,7 @@ function PickProjectStep({
 }
 
 function ScanningStep({ projectName }: { projectName: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div
       className="flex min-h-0 flex-1 flex-col items-center justify-center gap-4 p-8 text-center"
@@ -754,7 +755,7 @@ function ScanningStep({ projectName }: { projectName: string }) {
         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       </div>
       <div>
-        <p className="text-sm font-medium">Scanning {projectName || "project"} for skills…</p>
+        <p className="text-sm font-medium">Scanning {projectName || pageText("project_98f541")} for skills…</p>
         <p className="mt-1 text-xs text-muted-foreground">
           Looking in well-known skill folders across each workspace.
         </p>
@@ -773,8 +774,7 @@ function ScanningStep({ projectName }: { projectName: string }) {
           variant="outline"
           className="px-1.5 py-0 text-(length:--text-micro) font-normal text-muted-foreground"
         >
-          +{APPROX_TOTAL_SCAN_FOLDERS - HIGHLIGHTED_SCAN_FOLDERS.length} more
-        </Badge>
+          +{APPROX_TOTAL_SCAN_FOLDERS - HIGHLIGHTED_SCAN_FOLDERS.length}{" " + pageText("more_e7c95b")}</Badge>
       </div>
     </div>
   );
@@ -794,6 +794,7 @@ function ProjectSkillBrowser({
   onAddSkill: (workspaceId: string, path: string) => void;
   addingKey: string | null;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const workspaces = scannableWorkspaces(project);
   const initialWorkspace = workspaces.find((workspace) => workspace.isPrimary) ?? workspaces[0] ?? null;
   const [workspaceId, setWorkspaceId] = useState(initialWorkspace?.id ?? "");
@@ -858,8 +859,7 @@ function ProjectSkillBrowser({
       <div className="min-h-0 flex-1 overflow-y-auto">
         {browseQuery.isLoading || browseView.kind === "reconnecting" ? (
           <div className="flex items-center justify-center gap-2 p-8 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" /> Loading folder…
-          </div>
+            <Loader2 className="h-4 w-4 animate-spin" />{" " + pageText("loadingFolder_1d15f4")}</div>
         ) : browseView.kind === "error" ? (
           <QueryErrorState
             className="m-6"
@@ -892,7 +892,7 @@ function ProjectSkillBrowser({
                   </button>
                   {entry.isSkill ? (
                     <Button size="sm" onClick={() => onAddSkill(workspaceId, entry.path)} disabled={addingKey === key}>
-                      {addingKey === key ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Add skill"}
+                      {addingKey === key ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : pageText("addSkill_d61f09")}
                     </Button>
                   ) : entry.kind === "directory" ? (
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -1182,6 +1182,7 @@ interface ResultStepProps {
 }
 
 function ResultStep({ result }: ResultStepProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const importedSkills: CompanySkill[] = useMemo(
     () => [...result.imported, ...result.updated],
     [result],
@@ -1202,8 +1203,8 @@ function ResultStep({ result }: ResultStepProps) {
           <span className="text-emerald-600 dark:text-emerald-400">
             ✓ {result.imported.length} imported
           </span>
-          {result.updated.length > 0 && <span>↻ {result.updated.length} updated</span>}
-          {result.skipped.length > 0 && <span>⊘ {result.skipped.length} skipped</span>}
+          {result.updated.length > 0 && <span>↻ {result.updated.length}{" " + pageText("updated_13a189")}</span>}
+          {result.skipped.length > 0 && <span>⊘ {result.skipped.length}{" " + pageText("skipped_413a93")}</span>}
         </div>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
@@ -1229,8 +1230,7 @@ function ResultStep({ result }: ResultStepProps) {
                   <Link
                     to={skillStudioRoute(skill.id)}
                     className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-foreground no-underline hover:underline"
-                  >
-                    Open <ExternalLink className="h-3 w-3" />
+                  >{pageText("open_cf9b77") + " "}<ExternalLink className="h-3 w-3" />
                   </Link>
                 </li>
               ))}

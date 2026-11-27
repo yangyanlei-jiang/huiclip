@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams, useSearchParams } from "@/lib/router";
@@ -24,6 +25,7 @@ function isCliAuthRateLimit(error: unknown): error is ApiError {
 }
 
 export function CliAuthPage() {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const params = useParams();
   const [searchParams] = useSearchParams();
@@ -142,7 +144,7 @@ export function CliAuthPage() {
             Sign in or create an account, then return to this page to approve the CLI access request.
           </p>
           <Button asChild className="mt-4">
-            <Link to={`/auth?next=${encodeURIComponent(currentPath)}`}>Sign in / Create account</Link>
+            <Link to={`/auth?next=${encodeURIComponent(currentPath)}`}>{pageText("signInCreateAccount_5d2b23")}</Link>
           </Button>
         </Card>
       </div>
@@ -159,7 +161,7 @@ export function CliAuthPage() {
 
         <div className="mt-5 space-y-3 text-sm">
           <div>
-            <div className="text-muted-foreground">Command</div>
+            <div className="text-muted-foreground">{pageText("command_890189")}</div>
             <div className="font-mono text-foreground">{challenge.command}</div>
           </div>
           <div>
@@ -169,7 +171,7 @@ export function CliAuthPage() {
           <div>
             <div className="text-muted-foreground">Requested access</div>
             <div className="text-foreground">
-              {challenge.requestedAccess === "instance_admin_required" ? "Instance admin" : "Board"}
+              {challenge.requestedAccess === "instance_admin_required" ? "Instance admin" : pageText("board_e879b0")}
             </div>
           </div>
           {challenge.requestedCompanyName && (
@@ -197,7 +199,7 @@ export function CliAuthPage() {
             onClick={() => approveMutation.mutate()}
             disabled={!challenge.canApprove || approveMutation.isPending || cancelMutation.isPending}
           >
-            {approveMutation.isPending ? "Approving..." : "Approve CLI access"}
+            {approveMutation.isPending ? pageText("approving_ccd088") : "Approve CLI access"}
           </Button>
           <Button
             type="button"
@@ -205,7 +207,7 @@ export function CliAuthPage() {
             onClick={() => cancelMutation.mutate()}
             disabled={approveMutation.isPending || cancelMutation.isPending}
           >
-            {cancelMutation.isPending ? "Cancelling..." : "Cancel"}
+            {cancelMutation.isPending ? "Cancelling..." : pageText("cancel_77dfd2")}
           </Button>
         </div>
       </Card>

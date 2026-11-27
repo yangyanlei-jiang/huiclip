@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useId, useLayoutEffect, useRef, useState, type Ref, type ReactNode } from "react";
 import { createPortal } from "react-dom";
@@ -78,6 +79,7 @@ export function AgentSetupPrompt({
   onCopied,
   agent,
 }: AgentSetupPromptProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const agents = agent ? [agent] : defaultAgents;
   const recipient = agent ? `your ${agent.name}` : "your agent";
@@ -264,7 +266,7 @@ export function AgentSetupPrompt({
               onClick={() => { if (prompt.trim()) void copyPrompt(); }}
             >
               {status === "copied" ? <Check className="agent-setup-check size-4" /> : <Copy className="size-4" />}
-              {status === "copied" ? "Copied to clipboard" : status === "copying" ? "Copying…" : status === "failed" ? "Try copying again" : "Copy prompt"}
+              {status === "copied" ? pageText("copiedToClipboard_0e7383") : status === "copying" ? "Copying…" : status === "failed" ? "Try copying again" : "Copy prompt"}
             </Button>
             <p className="text-center text-xs text-muted-foreground">
               {status === "copied" ? `Ready to paste into ${recipient}.` : agent ? `Give this prompt to ${recipient}.` : "Works with Codex, ChatGPT, Claude, and more."}

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../api/client";
@@ -18,6 +19,7 @@ interface Connection {
 export function DotRunnerConnection({ companyId, agentId, bindingId, onBinding }: {
   companyId?: string; agentId?: string; bindingId?: string; onBinding: (id: string) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const client = useQueryClient();
   const [pairing, setPairing] = useState<{ pairingCode: string; expiresAt: string } | null>(null);
   const path = `/companies/${companyId}/agents/${agentId}/dot-binding`;
@@ -61,7 +63,7 @@ export function DotRunnerConnection({ companyId, agentId, bindingId, onBinding }
     <p className="text-sm text-muted-foreground">Dot manages its model and external tools. Paperclip supplies task coordination, people, assigned skills, and connected app tools. Dot can start a task directly from its conversation. Enable Read task attachments below to send assigned task file contents to OpenAI. Enable workspace files and commands for work in the assigned workspace. Provider usage and cost are unavailable; stopping a Paperclip run revokes access without confirming an external stop.</p>
     {state.data && !state.data.enabled && <p className="text-sm text-muted-foreground">Enable OpenAI Dot and Assistant connections (MCP) in experimental settings.</p>}
     {state.data?.resourceUrl && <p className="text-sm break-all">Private plugin MCP URL: <code>{state.data.resourceUrl}</code></p>}
-    {b && <p className="text-sm">Connection: {b.status}. Event subscription: {b.subscriptionVerified ? "verified" : "required"}.</p>}
+    {b && <p className="text-sm">Connection: {b.status}. Event subscription: {b.subscriptionVerified ? "verified" : pageText("required_1a77d4")}.</p>}
     {b?.assignment && <p className="text-sm">Assignment: {b.assignment.status === "offered" ? "waiting for Dot to accept" : "accepted by Dot"}.</p>}
     {b?.assignment?.attentionRequired && <p className="text-sm text-destructive" role="alert">Dot has not reported useful activity for 15 minutes. Inspect the Dot before assigning replacement work; Paperclip cannot confirm its external stop.</p>}
     {pairing && setupPrompt && b?.status === "pairing" && <div className="space-y-2">
@@ -79,7 +81,7 @@ export function DotRunnerConnection({ companyId, agentId, bindingId, onBinding }
     <div className="flex flex-wrap items-center gap-2">
       {!b && <Button type="button" variant="outline" disabled={!state.data?.enabled || !state.data?.resourceUrl || pair.isPending} onClick={() => pair.mutate()}>Pair Dot</Button>}
       {b?.subscriptionVerified && <Button type="button" variant="outline" disabled={test.isPending || b.hasPendingChallenge} onClick={() => test.mutate()}>Test event delivery</Button>}
-      <Button type="button" variant="outline" onClick={() => { void state.refetch(); }}>Refresh connection</Button>
+      <Button type="button" variant="outline" onClick={() => { void state.refetch(); }}>{pageText("refreshConnection_e26021")}</Button>
       {b && <Button type="button" variant="outline" disabled={revoke.isPending} onClick={() => revoke.mutate()}>Revoke connection</Button>}
     </div>
     {b?.hasPendingChallenge && <p className="text-sm text-muted-foreground">Waiting for Dot to read and confirm the harmless mailbox challenge.</p>}

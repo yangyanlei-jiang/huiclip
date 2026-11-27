@@ -1,3 +1,5 @@
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
@@ -36,6 +38,7 @@ export function SecretPopoverForm({
   onCancel,
   onSubmit,
 }: SecretPopoverFormProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [name, setName] = useState(initialName);
   const [value, setValue] = useState(initialValue);
@@ -64,7 +67,7 @@ export function SecretPopoverForm({
     try {
       await onSubmit(trimmedName, value);
     } catch (submitError) {
-      setError(submitError instanceof Error ? submitError.message : "Failed to create secret");
+      setError(submitError instanceof Error ? submitError.message : interfaceMessage("interface:errorFailedToCreateSecret"));
       setSubmitting(false);
     }
   }
@@ -115,7 +118,7 @@ export function SecretPopoverForm({
             value={value}
             readOnly={mode === "store"}
             spellCheck={false}
-            placeholder={mode === "create" ? "value" : undefined}
+            placeholder={mode === "create" ? pageText("value_f32b67") : undefined}
             aria-label="Secret value"
             aria-invalid={valueError ? true : undefined}
             onChange={mode === "create" ? (event) => setValue(event.target.value) : undefined}

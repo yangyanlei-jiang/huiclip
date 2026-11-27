@@ -1,3 +1,5 @@
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCurrentAccountGuard } from "../hooks/useAccountBoundMutation";
 import { resolveIssueChatHumanAuthor } from "@/lib/issue-chat-human-author";
@@ -826,6 +828,7 @@ export function IssueAssigneePausedNotice({
   onResume?: () => Promise<void> | void;
   resuming?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (!agent || agent.status !== "paused" || issueStatusIsTerminalDisposition(issueStatus)) return null;
 
   // A freshly created agent is stored as paused with pauseReason "setup" until
@@ -848,9 +851,7 @@ export function IssueAssigneePausedNotice({
           actions={
             stillPreparing ? undefined : (
               <Button size="sm" variant="outline" asChild>
-                <Link to={agentUrl(agent)} data-testid="issue-assignee-finish-setup">
-                  Finish setup
-                </Link>
+                <Link to={agentUrl(agent)} data-testid="issue-assignee-finish-setup">{pageText("finishSetup_c516d2")}</Link>
               </Button>
             )
           }
@@ -900,7 +901,7 @@ export function IssueAssigneePausedNotice({
               disabled={resuming}
               data-testid="issue-assignee-paused-resume"
             >
-              {resuming ? "Resuming…" : "Resume agent"}
+              {resuming ? pageText("resuming_ab0bec") : pageText("resumeAgent_4bfc7e")}
             </Button>
           ) : undefined
         }
@@ -1606,6 +1607,7 @@ function CopyablePreBlock({
   children: string;
   className?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [copied, setCopied] = useState(false);
   const toastActions = useOptionalToastActions();
   return (
@@ -1617,8 +1619,8 @@ function CopyablePreBlock({
           "absolute right-1.5 top-1.5 inline-flex h-6 w-6 items-center justify-center rounded-md bg-background/80 text-muted-foreground opacity-0 backdrop-blur-sm transition-opacity hover:text-foreground group-hover/pre:opacity-100",
           copied && "opacity-100",
         )}
-        title="Copy"
-        aria-label="Copy"
+        title={pageText("copy_af74f7")}
+        aria-label={pageText("copy_af74f7")}
         onClick={() => {
           void copyTextToClipboard(children)
             .then(() => {
@@ -1631,7 +1633,7 @@ function CopyablePreBlock({
                 body:
                   error instanceof Error
                     ? error.message
-                    : "Unable to copy text",
+                    : interfaceMessage("interface:errorUnableToCopyText"),
                 tone: "error",
               });
             });
@@ -2059,6 +2061,7 @@ function IssueChatUserMessage({
   message: ThreadMessage;
   isInterruptingQueuedRun: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const {
     onInterruptQueued,
@@ -2148,9 +2151,7 @@ function IssueChatUserMessage({
           <Badge
             variant="outline"
             className="text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow)"
-          >
-            Follow-up
-          </Badge>
+          >{pageText("followUp_a931af")}</Badge>
         ) : null}
       </div>
       <div
@@ -2187,7 +2188,7 @@ function IssueChatUserMessage({
                 disabled={isInterruptingQueuedRun}
                 onClick={() => void onInterruptQueued(queueTargetRunId)}
               >
-                {isInterruptingQueuedRun ? "Interrupting..." : "Interrupt"}
+                {isInterruptingQueuedRun ? "Interrupting..." : pageText("interrupt_d5db45")}
               </Button>
             ) : null}
             {onCancelQueued ? (
@@ -2201,9 +2202,7 @@ function IssueChatUserMessage({
           </div>
         ) : null}
         {deleted ? (
-          <div className="text-sm italic text-muted-foreground">
-            Comment deleted
-          </div>
+          <div className="text-sm italic text-muted-foreground">{pageText("commentDeleted_ff337d")}</div>
         ) : (
           <div className="min-w-0 max-w-full space-y-3">
             <IssueChatTextParts
@@ -2225,9 +2224,7 @@ function IssueChatUserMessage({
             "mt-1 flex px-1 text-(length:--text-micro) text-muted-foreground",
             isCurrentUser ? "justify-end" : "justify-start",
           )}
-        >
-          Sending...
-        </div>
+        >{pageText("sending_c338c1")}</div>
       ) : (
         <div
           className={cn(
@@ -2252,8 +2249,8 @@ function IssueChatUserMessage({
             <button
               type="button"
               className="inline-flex h-6 w-6 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
-              title="Copy message"
-              aria-label="Copy message"
+              title={pageText("copyMessage_26902e")}
+              aria-label={pageText("copyMessage_26902e")}
               onClick={() => {
                 const text = message.content
                   .filter(
@@ -2273,7 +2270,7 @@ function IssueChatUserMessage({
                       body:
                         error instanceof Error
                           ? error.message
-                          : "Unable to copy message",
+                          : interfaceMessage("interface:errorUnableToCopyMessage"),
                       tone: "error",
                     });
                   });
@@ -2290,8 +2287,8 @@ function IssueChatUserMessage({
             <button
               type="button"
               className="inline-flex h-6 w-6 items-center justify-center text-muted-foreground transition-colors hover:text-destructive"
-              title="Delete comment"
-              aria-label="Delete comment"
+              title={pageText("deleteComment_4be7ed")}
+              aria-label={pageText("deleteComment_4be7ed")}
               onClick={handleDeleteComment}
             >
               <Trash2 className="h-3.5 w-3.5" />
@@ -2337,9 +2334,7 @@ function IssueChatUserMessage({
               variant="outline"
               onClick={() => setDeleteDialogOpen(false)}
             >{translateUi("interfaceCopy.cancel")}</Button>
-            <Button variant="destructive" onClick={confirmDeleteComment}>
-              Delete comment
-            </Button>
+            <Button variant="destructive" onClick={confirmDeleteComment}>{pageText("deleteComment_4be7ed")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -2358,6 +2353,7 @@ function IssueChatAssistantMessage({
   isRunActive: boolean;
   isStoppingRun: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const {
     feedbackDataSharingPreference,
     feedbackTermsUrl,
@@ -2490,8 +2486,8 @@ function IssueChatAssistantMessage({
       <button
         type="button"
         className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-        title="Copy message"
-        aria-label="Copy message"
+        title={pageText("copyMessage_26902e")}
+        aria-label={pageText("copyMessage_26902e")}
         onClick={() => {
           void copyTextToClipboard(copyText)
             .then(() => {
@@ -2504,7 +2500,7 @@ function IssueChatAssistantMessage({
                 body:
                   error instanceof Error
                     ? error.message
-                    : "Unable to copy message",
+                    : interfaceMessage("interface:errorUnableToCopyMessage"),
                 tone: "error",
               });
             });
@@ -2543,8 +2539,8 @@ function IssueChatAssistantMessage({
             variant="ghost"
             size="icon-xs"
             className="text-muted-foreground hover:text-foreground"
-            title="More actions"
-            aria-label="More actions"
+            title={pageText("moreActions_a1e34f")}
+            aria-label={pageText("moreActions_a1e34f")}
           >
             <MoreHorizontal className="h-3.5 w-3.5" />
           </Button>
@@ -2559,15 +2555,13 @@ function IssueChatAssistantMessage({
                   body:
                     error instanceof Error
                       ? error.message
-                      : "Unable to copy message",
+                      : interfaceMessage("interface:errorUnableToCopyMessage"),
                   tone: "error",
                 });
               });
             }}
           >
-            <Copy className="mr-2 h-3.5 w-3.5" />
-            Copy message
-          </DropdownMenuItem>
+            <Copy className="mr-2 h-3.5 w-3.5" />{pageText("copyMessage_26902e")}</DropdownMenuItem>
           {canStopRun && onStopRun && runId ? (
             <DropdownMenuItem
               disabled={isStoppingRun}
@@ -2591,9 +2585,7 @@ function IssueChatAssistantMessage({
           {runHref ? (
             <DropdownMenuItem asChild>
               <Link to={runHref} target="_blank" rel="noreferrer noopener">
-                <Search className="mr-2 h-3.5 w-3.5" />
-                View run
-              </Link>
+                <Search className="mr-2 h-3.5 w-3.5" />{pageText("viewRun_c8005b")}</Link>
             </DropdownMenuItem>
           ) : null}
         </DropdownMenuContent>
@@ -2638,9 +2630,7 @@ function IssueChatAssistantMessage({
               <Badge
                 variant="outline"
                 className="text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow)"
-              >
-                Follow-up
-              </Badge>
+              >{pageText("followUp_a931af")}</Badge>
             ) : null}
           </div>
           {/* Canonical conference-room agent bubble (BoardChat.tsx:712). */}
@@ -2654,9 +2644,7 @@ function IssueChatAssistantMessage({
             )}
           >
             {deleted ? (
-              <div className="text-sm italic text-muted-foreground">
-                Comment deleted
-              </div>
+              <div className="text-sm italic text-muted-foreground">{pageText("commentDeleted_ff337d")}</div>
             ) : (
               <div className="min-w-0 max-w-full space-y-3">
                 <IssueChatAssistantParts message={message} hasCoT={false} />
@@ -2729,9 +2717,7 @@ function IssueChatAssistantMessage({
                 <Badge
                   variant="outline"
                   className="text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow)"
-                >
-                  Follow-up
-                </Badge>
+                >{pageText("followUp_a931af")}</Badge>
               ) : null}
               {isRunning ? (
                 // Running chip shares the liveness-blue badge recipe with the
@@ -2743,17 +2729,13 @@ function IssueChatAssistantMessage({
                     liveBlueBadge,
                   )}
                 >
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                  Running
-                </Badge>
+                  <Loader2 className="h-3 w-3 animate-spin" />{pageText("running_73989d")}</Badge>
               ) : null}
             </div>
           )}
 
           {deleted ? (
-            <div className="rounded-sm bg-muted/40 px-3 py-2 text-sm italic text-muted-foreground">
-              Comment deleted
-            </div>
+            <div className="rounded-sm bg-muted/40 px-3 py-2 text-sm italic text-muted-foreground">{pageText("commentDeleted_ff337d")}</div>
           ) : !folded ? (
             <>
               <div className="space-y-3">
@@ -2814,6 +2796,7 @@ function IssueChatFeedbackButtons({
     options?: { allowSharing?: boolean; reason?: string },
   ) => Promise<void>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [isSaving, setIsSaving] = useState(false);
   const [optimisticVote, setOptimisticVote] =
@@ -2896,8 +2879,8 @@ function IssueChatFeedbackButtons({
             ? "text-green-600 dark:text-green-400"
             : "text-muted-foreground hover:bg-accent hover:text-foreground",
         )}
-        title="Helpful"
-        aria-label="Helpful"
+        title={pageText("helpful_45e36d")}
+        aria-label={pageText("helpful_45e36d")}
         onClick={handleThumbsUp}
       >
         <ThumbsUp className="h-3.5 w-3.5" />
@@ -2913,21 +2896,19 @@ function IssueChatFeedbackButtons({
                 ? "text-amber-600 dark:text-amber-400"
                 : "text-muted-foreground hover:bg-accent hover:text-foreground",
             )}
-            title="Needs work"
-            aria-label="Needs work"
+            title={pageText("needsWork_eafabc")}
+            aria-label={pageText("needsWork_eafabc")}
             onClick={handleThumbsDown}
           >
             <ThumbsDown className="h-3.5 w-3.5" />
           </button>
         </PopoverTrigger>
         <PopoverContent side="top" align="start" className="w-80 p-3">
-          <div className="mb-2 text-sm font-medium">
-            What could have been better?
-          </div>
+          <div className="mb-2 text-sm font-medium">{pageText("whatCouldHaveBeenBetter_2de6ce")}</div>
           <Textarea
             value={downvoteReason}
             onChange={(event) => setDownvoteReason(event.target.value)}
-            placeholder="Add a short note"
+            placeholder={pageText("addAShortNote_9cd96b")}
             className="min-h-20 resize-y bg-background text-sm"
             disabled={isSaving}
           />
@@ -2941,16 +2922,14 @@ function IssueChatFeedbackButtons({
                 setReasonOpen(false);
                 setDownvoteReason("");
               }}
-            >
-              Dismiss
-            </Button>
+            >{pageText("dismiss_70afe9")}</Button>
             <Button
               type="button"
               size="sm"
               disabled={isSaving || !downvoteReason.trim()}
               onClick={handleSubmitReason}
             >
-              {isSaving ? "Saving..." : "Save note"}
+              {isSaving ? pageText("saving_ae7e88") : pageText("saveNote_d69ca0")}
             </Button>
           </div>
         </PopoverContent>
@@ -2976,11 +2955,10 @@ function IssueChatFeedbackButtons({
           </DialogHeader>
           <div className="space-y-3 text-sm text-muted-foreground">
             <p>This vote is always saved locally.</p>
-            <p>
-              Choose{" "}
+            <p>{pageText("choose_78b7c9")}{" "}
               <span className="font-medium text-foreground">{translateUi("interfaceCopy.alwaysAllow")}</span>{" "}
               to share this vote and future voted AI outputs. Choose{" "}
-              <span className="font-medium text-foreground">Don't allow</span>{" "}
+              <span className="font-medium text-foreground">{pageText("donTAllow_63da96")}</span>{" "}
               to keep this vote and future votes local.
             </p>
             <p>You can change this later in Settings &gt; General.</p>
@@ -2990,9 +2968,7 @@ function IssueChatFeedbackButtons({
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex text-sm text-foreground underline underline-offset-4"
-              >
-                Read our terms of service
-              </a>
+              >{pageText("readOurTermsOfService_8a15a6")}</a>
             ) : null}
           </div>
           <DialogFooter>
@@ -3010,7 +2986,7 @@ function IssueChatFeedbackButtons({
                 ).then(() => setPendingSharingDialog(null));
               }}
             >
-              {isSaving ? "Saving..." : "Don't allow"}
+              {isSaving ? pageText("saving_ae7e88") : pageText("donTAllow_63da96")}
             </Button>
             <Button
               type="button"
@@ -3025,7 +3001,7 @@ function IssueChatFeedbackButtons({
                 }).then(() => setPendingSharingDialog(null));
               }}
             >
-              {isSaving ? "Saving..." : "Always allow"}
+              {isSaving ? pageText("saving_ae7e88") : pageText("alwaysAllow_41325d")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -3552,6 +3528,7 @@ function SystemNoticeCommentContent({
   message: ThreadMessage;
   anchorId?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { onImageClick, agentMap, issueStatus, successfulRunHandoff } =
     useContext(IssueChatCtx);
   const toastActions = useOptionalToastActions();
@@ -3635,7 +3612,7 @@ function SystemNoticeCommentContent({
           body:
             error instanceof Error
               ? error.message
-              : "Unable to copy system notice",
+              : interfaceMessage("interface:errorUnableToCopySystemNotice"),
           tone: "error",
         });
       });
@@ -3655,7 +3632,7 @@ function SystemNoticeCommentContent({
           body:
             error instanceof Error
               ? error.message
-              : "Unable to copy system notice link",
+              : interfaceMessage("interface:errorUnableToCopySystemNoticeLink"),
           tone: "error",
         });
       });
@@ -3719,7 +3696,7 @@ function SystemNoticeCommentContent({
             <button
               type="button"
               className="inline-flex h-6 w-6 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
-              title="Copy link"
+              title={pageText("copyLink_2f84ee")}
               aria-label="Copy link to system notice"
               onClick={handleCopyLink}
             >
@@ -3778,6 +3755,7 @@ function IssueChatMetadataRow({
 }
 
 function IssueChatSystemMessage({ message }: { message: ThreadMessage }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const {
     agentMap,
@@ -3916,9 +3894,7 @@ function IssueChatSystemMessage({ message }: { message: ThreadMessage }) {
                 isCurrentUser && "justify-end",
               )}
             >
-              <span className="text-(length:--text-nano) font-medium uppercase tracking-wider text-muted-foreground/70">
-                Assignee
-              </span>
+              <span className="text-(length:--text-nano) font-medium uppercase tracking-wider text-muted-foreground/70">{pageText("assignee_049e3c")}</span>
               <AssigneeChip
                 assignee={assigneeChange.from}
                 resolvers={handoffResolvers}
@@ -3941,9 +3917,7 @@ function IssueChatSystemMessage({ message }: { message: ThreadMessage }) {
 
         {workspaceChange ? (
           <div className="flex flex-wrap items-center gap-1.5 text-xs">
-            <span className="text-(length:--text-nano) font-medium uppercase tracking-wider text-muted-foreground/70">
-              Workspace
-            </span>
+            <span className="text-(length:--text-nano) font-medium uppercase tracking-wider text-muted-foreground/70">{pageText("workspace_4ca0a7")}</span>
             <span className="text-muted-foreground">
               {formatTimelineWorkspaceLabel(workspaceChange.from)}
             </span>
@@ -3975,7 +3949,7 @@ function IssueChatSystemMessage({ message }: { message: ThreadMessage }) {
           >
             {displayedRunAgentName}
           </Link>
-          <span className="text-muted-foreground">run</span>
+          <span className="text-muted-foreground">{pageText("run_df6ad1")}</span>
           <Link
             to={`/agents/${runAgentId}/runs/${runId}`}
             className="inline-flex items-center rounded-md border border-border bg-accent/40 px-1.5 py-0.5 font-mono text-(length:--text-nano) text-muted-foreground transition-colors hover:bg-accent/60 hover:text-foreground"

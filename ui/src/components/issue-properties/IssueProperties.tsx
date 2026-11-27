@@ -1,3 +1,5 @@
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { isLockedIssueStub } from "@/components/LockedIssueChip";
 import { IssuePullRequestLinks } from "../IssuePullRequestLinks";
@@ -152,6 +154,7 @@ function splitMiddleTruncation(value: string): { prefix: string; suffix: string 
 }
 
 function TruncatedCopyable({ value, icon: Icon }: { value: string; icon: ComponentType<{ className?: string }> }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [copied, setCopied] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => () => clearTimeout(timerRef.current), []);
@@ -190,9 +193,7 @@ function TruncatedCopyable({ value, icon: Icon }: { value: string; icon: Compone
       </button>
       {copied && (
         <span className={cn("inline-flex items-center gap-1 text-xs shrink-0", issueStatusText.done)} role="status">
-          <Check className="h-3 w-3 shrink-0" />
-          Copied
-        </span>
+          <Check className="h-3 w-3 shrink-0" />{pageText("copied_8e3df4")}</span>
       )}
     </div>
   );
@@ -259,6 +260,7 @@ export function IssueProperties({
   sidePanelContentOnly = false,
   contextUsage,
 }: IssuePropertiesProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const policyResult = useExecutionPolicy(issue.executionPolicy);
   const policyAvailable = policyResult.success;
@@ -677,7 +679,7 @@ export function IssueProperties({
     },
     onError: (error) => {
       setRuntimeActionMessage(null);
-      setRuntimeActionErrorMessage(error instanceof Error ? error.message : "Failed to control workspace commands.");
+      setRuntimeActionErrorMessage(error instanceof Error ? error.message : interfaceMessage("interface:errorFailedToControlWorkspaceCommandsSentence"));
     },
   });
   const pendingWorkspaceRuntimeAction = controlWorkspaceRuntime.isPending ? controlWorkspaceRuntime.variables ?? null : null;
@@ -925,13 +927,13 @@ export function IssueProperties({
               placeholder="Default model"
               disablePortal
               noneLabel="Default model"
-              searchPlaceholder="Search models..."
-              emptyMessage="No models found."
+              searchPlaceholder={pageText("searchModels_61c1b9")}
+              emptyMessage={pageText("noModelsFound_159d88")}
               onChange={updateAssigneeOverrideModel}
             />
           </div>
           <div className="space-y-1.5">
-            <div className="text-xs text-muted-foreground">Thinking effort</div>
+            <div className="text-xs text-muted-foreground">{pageText("thinkingEffort_ffa438")}</div>
             <div className="flex items-center gap-1.5 flex-wrap">
               {thinkingEffortOptionsFor(assigneeAdapterType, effectiveAssigneeModel).map((option) => (
                 <button
@@ -1210,12 +1212,10 @@ export function IssueProperties({
       type="button"
       className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
       onClick={() => setLabelsOpen(true)}
-      aria-label="Add label"
-      title="Add label"
+      aria-label={pageText("addLabel_807674")}
+      title={pageText("addLabel_807674")}
     >
-      <Plus className="h-3 w-3" />
-      Add label
-    </button>
+      <Plus className="h-3 w-3" />{pageText("addLabel_807674")}</button>
   ) : undefined;
   const watchdogContent = (
     <div className="space-y-3 p-2">
@@ -1224,13 +1224,13 @@ export function IssueProperties({
         <InlineEntitySelector
           value={watchdogAgentInput}
           options={watchdogAgentOptions}
-          placeholder="Select agent"
+          placeholder={pageText("selectAgent_9c68ff")}
           noneLabel="No watchdog agent"
-          searchPlaceholder="Search agents..."
-          emptyMessage="No agents found."
+          searchPlaceholder={pageText("searchAgents_52c3f9")}
+          emptyMessage={pageText("noAgentsFound_6893bf")}
           onChange={setWatchdogAgentInput}
           renderTriggerValue={(option) => {
-            if (!option) return <span className="text-muted-foreground">Select agent</span>;
+            if (!option) return <span className="text-muted-foreground">{pageText("selectAgent_9c68ff")}</span>;
             const agent = (agents ?? []).find((candidate) => candidate.id === option.id);
             return (
               <>
@@ -1251,8 +1251,7 @@ export function IssueProperties({
         />
       </div>
       <div className="space-y-1.5">
-        <div className="text-xs font-medium text-foreground">
-          Instructions <span className="font-normal text-muted-foreground">(optional)</span>
+        <div className="text-xs font-medium text-foreground">{pageText("instructions_ed58f2") + " "}<span className="font-normal text-muted-foreground">{pageText("optional_b16c7a")}</span>
         </div>
         <Textarea
           value={watchdogInstructionsInput}
@@ -1266,7 +1265,7 @@ export function IssueProperties({
         <div className="text-xs text-muted-foreground">
           Watchdog task:{" "}
           <Link to={`/issues/${watchdogIssueRef.id}`} className="text-primary hover:underline">
-            {watchdogIssueRef.identifier ?? "View task"}
+            {watchdogIssueRef.identifier ?? pageText("viewTask_39e023")}
           </Link>
         </div>
       ) : null}
@@ -1282,7 +1281,7 @@ export function IssueProperties({
           disabled={deleteWatchdog.isPending || (!issue.watchdog && !watchdogAgentInput)}
           onClick={removeWatchdog}
         >
-          {deleteWatchdog.isPending ? "Removing…" : "Remove"}
+          {deleteWatchdog.isPending ? pageText("removing_579d7e") : pageText("remove_e96390")}
         </button>
         <Button
           type="button"
@@ -1291,7 +1290,7 @@ export function IssueProperties({
           disabled={!watchdogAgentInput || upsertWatchdog.isPending}
           onClick={saveWatchdog}
         >
-          {upsertWatchdog.isPending ? "Saving…" : issue.watchdog ? "Update" : "Set watchdog"}
+          {upsertWatchdog.isPending ? pageText("saving_56a228") : issue.watchdog ? pageText("update_fb91e2") : "Set watchdog"}
         </Button>
       </div>
     </div>
@@ -1399,7 +1398,7 @@ export function IssueProperties({
         >
           <div className="flex items-center justify-between border-b border-border px-4 py-3">
             <span className="text-sm font-semibold">Monitor</span>
-            {monitorAttemptCount > 0 ? <span className="text-xs text-muted-foreground">Attempt {monitorAttemptCount}</span> : null}
+            {monitorAttemptCount > 0 ? <span className="text-xs text-muted-foreground">{pageText("attempt_43d44f") + " "}{monitorAttemptCount}</span> : null}
           </div>
           <div className="space-y-3 px-4 py-3 text-left">
             <div>
@@ -1423,7 +1422,7 @@ export function IssueProperties({
           <div className="flex gap-2 border-t border-border px-4 py-3">
             {onCheckMonitorNow && canCheckMonitorNow ? (
               <Button type="button" size="sm" variant="outline" disabled={checkingMonitorNow} onClick={() => { setMonitorDetailsOpen(false); onCheckMonitorNow(); }}>
-                {checkingMonitorNow ? "Checking…" : "Check now"}
+                {checkingMonitorNow ? pageText("checking_820d60") : "Check now"}
               </Button>
             ) : null}
             <Button type="button" size="sm" variant="outline" onClick={() => { setMonitorDetailsOpen(false); setMonitorOpen(true); }}>{translateUi("interfaceCopy.edit")}</Button>
@@ -1468,7 +1467,7 @@ export function IssueProperties({
   const scheduledRetryRetryNowSuccess = retryNow.isSuccess
     && (retryNow.data?.outcome === "promoted" || retryNow.data?.outcome === "already_promoted");
   const scheduledRetryAttemptBadge = scheduledRetryAttempt !== null ? (
-    <span className="whitespace-nowrap shrink-0 text-xs text-muted-foreground">Attempt {scheduledRetryAttempt}</span>
+    <span className="whitespace-nowrap shrink-0 text-xs text-muted-foreground">{pageText("attempt_43d44f") + " "}{scheduledRetryAttempt}</span>
   ) : null;
   const scheduledRetryTrigger = (
     <span className="inline-flex min-w-0 items-center gap-1.5">
@@ -1493,8 +1492,7 @@ export function IssueProperties({
           {scheduledRetryIsContinuation ? "Scheduled continuation" : "Scheduled retry"}
         </span>
         {scheduledRetryAttempt !== null ? (
-          <span className="text-xs text-muted-foreground">
-            Attempt {scheduledRetryAttempt}
+          <span className="text-xs text-muted-foreground">{pageText("attempt_43d44f") + " "}{scheduledRetryAttempt}
           </span>
         ) : null}
       </div>
@@ -1568,9 +1566,7 @@ export function IssueProperties({
         >
           {retryNow.isPending ? (
             <span className="inline-flex items-center gap-1.5">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
-              Retrying…
-            </span>
+              <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />{pageText("retrying_231013")}</span>
           ) : scheduledRetryRetryNowSuccess ? (
             <span className="inline-flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
@@ -1578,9 +1574,7 @@ export function IssueProperties({
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5">
-              <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
-              Retry now
-            </span>
+              <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />{pageText("retryNow_84ce86")}</span>
           )}
         </Button>
         <span className="text-right text-xs text-muted-foreground">
@@ -1630,9 +1624,7 @@ export function IssueProperties({
             className="inline-flex items-center rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground disabled:opacity-50"
             disabled={!monitorAtInput}
             onClick={saveMonitor}
-          >
-            Schedule
-          </button>
+          >{pageText("schedule_0a8ada")}</button>
           {executionPolicy?.monitor ? (
             <button
               type="button"
@@ -1674,8 +1666,7 @@ export function IssueProperties({
       ))}
       {selectedIssueLabels.length > 3 && (
         <Badge variant="outline" className="border-border text-muted-foreground">
-          +{selectedIssueLabels.length - 3} more
-        </Badge>
+          +{selectedIssueLabels.length - 3}{" " + pageText("more_e7c95b")}</Badge>
       )}
     </div>
   ) : (
@@ -1685,7 +1676,7 @@ export function IssueProperties({
     <>
       <input
         className="w-full px-2 py-1.5 text-xs bg-transparent outline-none border-b border-border mb-1 placeholder:text-muted-foreground/50"
-        placeholder="Search labels..."
+        placeholder={pageText("searchLabels_707ca4")}
         value={labelSearch}
         onChange={(e) => setLabelSearch(e.target.value)}
         autoFocus={!inline}
@@ -1724,7 +1715,7 @@ export function IssueProperties({
           />
           <input
             className="flex-1 px-2 py-1.5 text-xs bg-transparent outline-none rounded placeholder:text-muted-foreground/50"
-            placeholder="New label"
+            placeholder={pageText("newLabel_8a881f")}
             value={newLabelName}
             onChange={(e) => setNewLabelName(e.target.value)}
           />
@@ -1740,7 +1731,7 @@ export function IssueProperties({
           }
         >
           <Plus className="h-3 w-3" />
-          {createLabel.isPending ? "Creating…" : "Create label"}
+          {createLabel.isPending ? pageText("creating_94d7d8") : pageText("createLabel_168230")}
         </button>
       </div>
     </>
@@ -1925,8 +1916,7 @@ export function IssueProperties({
             values.length === 0 && "bg-accent",
           )}
           onClick={onClear}
-        >
-          No {stageType === "review" ? "reviewers" : "approvers"}
+        >{pageText("no_816c52") + " "}{stageType === "review" ? "reviewers" : "approvers"}
         </button>
         {currentUserId && (
           <button
@@ -2026,7 +2016,7 @@ export function IssueProperties({
     <>
       <input
         className="w-full px-2 py-1.5 text-xs bg-transparent outline-none border-b border-border mb-1 placeholder:text-muted-foreground/50"
-        placeholder="Search projects..."
+        placeholder={pageText("searchProjects_469d78")}
         value={projectSearch}
         onChange={(e) => setProjectSearch(e.target.value)}
         autoFocus={!inline}
@@ -2090,7 +2080,7 @@ export function IssueProperties({
       ))}
       {blockedByRelations.length > 2 ? (
         <Badge asChild variant="outline" className="border-border text-muted-foreground hover:bg-accent/50">
-          <button type="button" onClick={() => setBlockedByOpen(true)}>+{blockedByRelations.length - 2} more</button>
+          <button type="button" onClick={() => setBlockedByOpen(true)}>+{blockedByRelations.length - 2}{" " + pageText("more_e7c95b")}</button>
         </Badge>
       ) : null}
     </div>
@@ -2104,7 +2094,7 @@ export function IssueProperties({
       ))}
       {childIssues.length > 2 ? (
         <Badge asChild variant="outline" className="border-border text-muted-foreground hover:bg-accent/50">
-          <button type="button" onClick={() => setSubtasksOpen(true)}>+{childIssues.length - 2} more</button>
+          <button type="button" onClick={() => setSubtasksOpen(true)}>+{childIssues.length - 2}{" " + pageText("more_e7c95b")}</button>
         </Badge>
       ) : null}
     </div>
@@ -2176,7 +2166,7 @@ export function IssueProperties({
     <>
       <input
         className="w-full px-2 py-1.5 text-xs bg-transparent outline-none border-b border-border mb-1 placeholder:text-muted-foreground/50"
-        placeholder="Search tasks..."
+        placeholder={pageText("searchTasks_927df1")}
         value={parentSearch}
         onChange={(e) => setParentSearch(e.target.value)}
         autoFocus={!inline}
@@ -2262,7 +2252,7 @@ export function IssueProperties({
     <>
       <input
         className="w-full px-2 py-1.5 text-xs bg-transparent outline-none border-b border-border mb-1 placeholder:text-muted-foreground/50"
-        placeholder="Search tasks..."
+        placeholder={pageText("searchTasks_927df1")}
         value={blockedBySearch}
         onChange={(e) => setBlockedBySearch(e.target.value)}
         autoFocus={!inline}
@@ -2362,7 +2352,7 @@ export function IssueProperties({
   const propertiesBody = (
     <div className={cn(streamlinedPropertiesEnabled && "task-detail-properties pl-4")}>
       <PropertySection
-        title={streamlinedPropertiesEnabled ? "Work" : "Triage"}
+        title={streamlinedPropertiesEnabled ? pageText("work_00040b") : "Triage"}
         first
         streamlined={streamlinedPropertiesEnabled}
       >
@@ -2389,7 +2379,7 @@ export function IssueProperties({
 
         <PropertyPicker
           inline={inline}
-          label="Assignee"
+          label={pageText("assignee_049e3c")}
           open={assigneeOpen}
           onOpenChange={(open) => { setAssigneeOpen(open); if (!open) { setAssigneeSearch(""); setPendingAssignee(null); } }}
           triggerContent={assigneeTrigger}
@@ -2457,7 +2447,7 @@ export function IssueProperties({
 
         <PropertyPicker
           inline={inline}
-          label="Labels"
+          label={pageText("labels_222898")}
           open={labelsOpen}
           onOpenChange={(open) => { setLabelsOpen(open); if (!open) setLabelSearch(""); }}
           triggerContent={labelsTrigger}
@@ -2715,7 +2705,7 @@ export function IssueProperties({
         )}
 
         {showScheduledRetryRow && scheduledRetry?.scheduledRetryReason === "workspace_busy" ? (
-          <PropertyRow label="Workspace">
+          <PropertyRow label={pageText("workspace_4ca0a7")}>
             <span className="text-sm text-muted-foreground">Waiting for workspace</span>
           </PropertyRow>
         ) : showScheduledRetryRow && scheduledRetryContent ? (
@@ -2773,12 +2763,12 @@ export function IssueProperties({
         </PropertyPicker>
 
         {contextUsage !== undefined
-          ? contextUsage ? <PropertyRow label="Context">{contextUsage}</PropertyRow> : null
+          ? contextUsage ? <PropertyRow label={pageText("context_cc11b3")}>{contextUsage}</PropertyRow> : null
           : <IssueContextUsageRow issueId={issue.id} assigneeAgentId={issue.assigneeAgentId ?? null} issueStatus={issue.status} hasActiveRun={hasActiveRun} />}
       </PropertySection>
 
       {workspacePickerEligible || hasWorkspaceRuntimeControls || issue.currentExecutionWorkspace?.branchName || issue.currentExecutionWorkspace?.cwd || issue.executionWorkspaceId ? (
-        <PropertySection title="Workspace" streamlined={streamlinedPropertiesEnabled}>
+        <PropertySection title={pageText("workspace_4ca0a7")} streamlined={streamlinedPropertiesEnabled}>
           {workspacePickerEligible ? (
             <PropertyPicker
               inline={inline}
@@ -2854,7 +2844,7 @@ export function IssueProperties({
                     </button>
                     <input
                       className="block w-full bg-transparent px-2 py-1.5 text-xs outline-none placeholder:text-muted-foreground/50"
-                      placeholder="Search workspaces..."
+                      placeholder={pageText("searchWorkspaces_838c97")}
                       value={workspaceSearch}
                       onChange={(event) => setWorkspaceSearch(event.target.value)}
                       autoFocus={!inline}
@@ -2863,7 +2853,7 @@ export function IssueProperties({
                   </div>
                   <div className="max-h-48 overflow-y-auto overscroll-contain py-1">
                     {reusableExecutionWorkspacesLoading ? (
-                      <div className="px-2 py-2 text-xs text-muted-foreground">Loading workspaces...</div>
+                      <div className="px-2 py-2 text-xs text-muted-foreground">{pageText("loadingWorkspaces_f06f20")}</div>
                     ) : reusableExecutionWorkspacesError ? (
                       <div className="px-2 py-2 text-xs text-destructive">Failed to load workspaces.</div>
                     ) : reusableWorkspaceOptions.length === 0 ? (
@@ -2896,14 +2886,12 @@ export function IssueProperties({
             </PropertyPicker>
           ) : null}
           {showWorkspaceDetailLink && issue.executionWorkspaceId && (
-            <PropertyRow label="Workspace">
+            <PropertyRow label={pageText("workspace_4ca0a7")}>
               <Link
                 to={`/execution-workspaces/${issue.executionWorkspaceId}`}
                 className="text-sm text-primary hover:underline inline-flex min-w-0 items-center gap-1.5"
               >
-                <HardDrive className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                View workspace
-                <ArrowUpRight className="h-3 w-3 shrink-0" />
+                <HardDrive className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />{pageText("viewWorkspace_9bfe02")}<ArrowUpRight className="h-3 w-3 shrink-0" />
               </Link>
             </PropertyRow>
           )}
@@ -2929,7 +2917,7 @@ export function IssueProperties({
             </PropertyRow>
           )}
           {issue.currentExecutionWorkspace?.branchName && (
-            <PropertyRow label="Branch">
+            <PropertyRow label={pageText("branch_162751")}>
               <TruncatedCopyable
                 value={issue.currentExecutionWorkspace.branchName}
                 icon={GitBranch}
@@ -2937,7 +2925,7 @@ export function IssueProperties({
             </PropertyRow>
           )}
           {issue.currentExecutionWorkspace?.cwd && !hideHostPaths && (
-            <PropertyRow label="Folder">
+            <PropertyRow label={pageText("folder_30baa2")}>
               <TruncatedCopyable
                 value={issue.currentExecutionWorkspace.cwd}
                 icon={FolderOpen}
@@ -2947,7 +2935,7 @@ export function IssueProperties({
         </PropertySection>
       ) : null}
 
-      <PropertySection title="About" streamlined={streamlinedPropertiesEnabled}>
+      <PropertySection title={pageText("about_6b21fb")} streamlined={streamlinedPropertiesEnabled}>
         {originatingActor ? (
           <PropertyRow label="Originating">
             {originatingActor.kind === "agent" ? (
@@ -2974,7 +2962,7 @@ export function IssueProperties({
           </PropertyRow>
         ) : null}
         {issue.startedAt && (
-          <PropertyRow label="Started">
+          <PropertyRow label={pageText("started_faa9e7")}>
             <span
               className={streamlinedPropertiesEnabled ? "min-w-0 truncate whitespace-nowrap text-sm" : "text-sm"}
               title={streamlinedPropertiesEnabled ? formatDateTime(issue.startedAt) : undefined}
@@ -2982,7 +2970,7 @@ export function IssueProperties({
           </PropertyRow>
         )}
         {issue.completedAt && (
-          <PropertyRow label="Completed">
+          <PropertyRow label={pageText("completed_1798b3")}>
             <span
               className={streamlinedPropertiesEnabled ? "min-w-0 truncate whitespace-nowrap text-sm" : "text-sm"}
               title={streamlinedPropertiesEnabled ? formatDateTime(issue.completedAt) : undefined}
@@ -3006,7 +2994,7 @@ export function IssueProperties({
             const archivedByAgent = (agents ?? []).find((candidate) => candidate.id === issue.archivedByAgentId);
             const archivedByName = agentName(issue.archivedByAgentId);
             return (
-              <PropertyRow label="Archived">
+              <PropertyRow label={pageText("archived_eddc81")}>
                 <div className="flex min-w-0 max-w-full flex-col items-start gap-1">
                   {/* The row label already reads "Archived", so the value shows just
                       the attributing agent (icon + name) — this gives the name the
@@ -3034,7 +3022,7 @@ export function IssueProperties({
                       disabled={unarchiveFromInbox.isPending}
                     >
                       <ArchiveRestore className="h-3 w-3" />
-                      {unarchiveFromInbox.isPending ? "Unarchiving…" : "Unarchive"}
+                      {unarchiveFromInbox.isPending ? "Unarchiving…" : pageText("unarchive_35e71c")}
                     </button>
                   </div>
                   {unarchiveErrorMessage ? (
@@ -3104,12 +3092,10 @@ export function IssueProperties({
                     STREAMLINED_PANE_TAB_CLASS,
                     "inline-flex flex-none items-center bg-muted px-3",
                   )}
-                >
-                  Properties
-                </button>
+                >{pageText("properties_bc6c88")}</button>
               </div>,
               paneHeaderSlot,
-            ) : createPortal(<span className="text-sm font-medium">Properties</span>, paneHeaderSlot)
+            ) : createPortal(<span className="text-sm font-medium">{pageText("properties_bc6c88")}</span>, paneHeaderSlot)
           : null}
         {propertiesBody}
       </>

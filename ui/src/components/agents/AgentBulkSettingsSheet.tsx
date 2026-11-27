@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { describeError } from "@/api/errors";
 import { useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -23,6 +24,7 @@ type Failure = { agent: Agent; message: string };
 export function AgentBulkSettingsSheet({ companyId, agents, totalSelected, onClose }: {
   companyId: string; agents: Agent[]; totalSelected: number; onClose: (updatedIds: string[], complete?: boolean) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const client = useQueryClient();
   const harness = bulkAgentHarness(agents[0]);
   const label = getAdapterLabel(harness);
@@ -132,7 +134,7 @@ export function AgentBulkSettingsSheet({ companyId, agents, totalSelected, onClo
   }
 
   return <Sheet open onOpenChange={open => { if (!open) close(); }}><SheetContent className="w-full sm:max-w-lg" showCloseButton={!saving} onEscapeKeyDown={event => { if (savingRef.current) event.preventDefault(); }} onInteractOutside={event => { if (savingRef.current) event.preventDefault(); }}>
-    <SheetHeader className="px-6 pt-6 pb-0"><SheetTitle>Update {agents.length} {label} {agents.length === 1 ? "agent" : "agents"}</SheetTitle><SheetDescription>{totalSelected > agents.length ? `${otherSelected} other selected ${otherSelected === 1 ? "agent" : "agents"} won’t change.` : "Change their connection, default model, or both."}</SheetDescription></SheetHeader>
+    <SheetHeader className="px-6 pt-6 pb-0"><SheetTitle>{pageText("update_fb91e2") + " "}{agents.length} {label} {agents.length === 1 ? pageText("agent_0608c4") : pageText("agents_e7052a")}</SheetTitle><SheetDescription>{totalSelected > agents.length ? `${otherSelected} other selected ${otherSelected === 1 ? "agent" : "agents"} won’t change.` : "Change their connection, default model, or both."}</SheetDescription></SheetHeader>
     <div className="flex min-h-0 flex-1 flex-col gap-6 overflow-y-auto px-6 py-2">
       <div className="flex flex-wrap gap-2" aria-label="Agents to update">{agents.map(a => <span key={a.id} className={agentIdentityChipClass}><AgentIdentityChipContent agent={a} /></span>)}</div>
       {failures && <div role="alert" className="space-y-2 rounded-md border border-destructive/30 p-3 text-sm"><p className="font-medium">{updatedIds.length} updated · {failures.length} couldn’t be saved</p>{failures.map(f => <p key={f.agent.id} className="text-muted-foreground">{f.agent.name}: {f.message}</p>)}<p className="text-xs text-muted-foreground">Retry updates only the remaining agents. Close and reopen to review changed settings.</p></div>}
@@ -155,6 +157,6 @@ export function AgentBulkSettingsSheet({ companyId, agents, totalSelected, onClo
       {!missing && !changed.length && <p className="text-sm text-muted-foreground">All selected agents already have these settings.</p>}
       <p className="text-xs text-muted-foreground">Applies to future runs. Running work keeps its current settings. Task-specific model overrides stay in place. A model change may start a fresh session; existing sessions may retain their connection until reset.</p>
     </div>
-    <SheetFooter className="flex-row items-center justify-between border-t px-6 py-4"><Button variant="ghost" onClick={close} disabled={saving}>{failures ? "Close" : "Cancel"}</Button><Button onClick={() => void save()} disabled={!canSave}>{saving && <Loader2 className="size-4 animate-spin" aria-hidden />}{saving ? "Updating…" : failures ? `Retry ${failures.length} ${failures.length === 1 ? "agent" : "agents"}` : `Update ${updateCount} ${updateCount === 1 ? "agent" : "agents"}`}</Button></SheetFooter>
+    <SheetFooter className="flex-row items-center justify-between border-t px-6 py-4"><Button variant="ghost" onClick={close} disabled={saving}>{failures ? pageText("close_bbfa77") : pageText("cancel_77dfd2")}</Button><Button onClick={() => void save()} disabled={!canSave}>{saving && <Loader2 className="size-4 animate-spin" aria-hidden />}{saving ? "Updating…" : failures ? `Retry ${failures.length} ${failures.length === 1 ? "agent" : "agents"}` : `Update ${updateCount} ${updateCount === 1 ? "agent" : "agents"}`}</Button></SheetFooter>
   </SheetContent></Sheet>;
 }

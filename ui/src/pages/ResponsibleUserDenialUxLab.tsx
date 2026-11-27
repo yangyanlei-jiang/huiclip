@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type { ReactNode } from "react";
 import { ResponsibleUserDenialNotice } from "@/components/ResponsibleUserDenialNotice";
 import { cn } from "@/lib/utils";
@@ -48,10 +49,11 @@ function RunLedgerRow({
   onBehalfOf?: string | null;
   denial?: ReactNode;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <article className="space-y-1.5 rounded-lg border border-border/60 px-3 py-2 text-xs text-muted-foreground">
       <div className="flex flex-wrap items-center gap-1.5">
-        <span className="font-medium text-foreground">Run</span>
+        <span className="font-medium text-foreground">{pageText("run_b1b392")}</span>
         <span className="min-w-0 max-w-full truncate font-mono text-foreground">a1b2c3d4</span>
         <span>by CodexCoder</span>
         {onBehalfOf ? (
@@ -60,7 +62,7 @@ function RunLedgerRow({
           </span>
         ) : null}
         <span className="rounded-md border border-border px-1.5 py-0.5 text-(length:--text-micro) capitalize text-muted-foreground">
-          {denial ? "Failed" : "Succeeded"}
+          {denial ? pageText("failed_09fef5") : "Succeeded"}
         </span>
         <span className="ml-auto shrink-0">2m ago</span>
       </div>
@@ -72,7 +74,7 @@ function RunLedgerRow({
           <span className="text-foreground">Last useful action</span> 2m ago
         </div>
         <div className="min-w-0">
-          <span className="text-foreground">Stop</span> {denial ? "Denied" : "Completed"}
+          <span className="text-foreground">{pageText("stop_9e2534")}</span> {denial ? "Denied" : pageText("completed_1798b3")}
         </div>
       </div>
       {denial}
@@ -82,12 +84,13 @@ function RunLedgerRow({
 
 /** A faithful copy of the run-detail header identity block (see AgentDetail.tsx RunDetail). */
 function RunDetailHeader({ onBehalfOf, denial }: { onBehalfOf?: string | null; denial?: ReactNode }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
         <span className="text-lg font-semibold text-foreground">Run a1b2c3d4</span>
         <span className="rounded-md border border-border px-1.5 py-0.5 text-(length:--text-micro) capitalize text-muted-foreground">
-          {denial ? "failed" : "succeeded"}
+          {denial ? pageText("failed_5f5f87") : "succeeded"}
         </span>
       </div>
       <div className="flex flex-wrap items-center gap-1.5 font-mono text-(length:--text-micro) text-muted-foreground">

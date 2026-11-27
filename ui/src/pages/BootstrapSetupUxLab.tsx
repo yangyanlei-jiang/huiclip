@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type { ReactElement, ReactNode } from "react";
 import { Loader2, ShieldCheck, Terminal, TriangleAlert } from "lucide-react";
 import { BOOTSTRAP_FALLBACK_COMMAND } from "@/bootstrapSetup";
@@ -58,16 +59,17 @@ function StateChrome({ children }: { children: ReactNode }) {
 }
 
 function SignedOutPrivate() {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <StateChrome>
-      <h1 className="text-xl font-semibold">Finish setting up this Paperclip</h1>
+      <h1 className="text-xl font-semibold">{pageText("finishSettingUpThisPaperclip_1f613d")}</h1>
       <p className="mt-2 text-sm text-muted-foreground">
         No admin has claimed this instance yet. Sign in or create your Paperclip account to become the first
         admin from this browser.
       </p>
       <div className="mt-5">
         <Button asChild>
-          <a href="/auth?next=/">Sign in / Create account</a>
+          <a href="/auth?next=/">{pageText("signInCreateAccount_5d2b23")}</a>
         </Button>
       </div>
       <CliFallback hasActiveInvite={false} />
@@ -76,16 +78,16 @@ function SignedOutPrivate() {
 }
 
 function SignedInPrivate() {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <StateChrome>
-      <h1 className="text-xl font-semibold">Finish setting up this Paperclip</h1>
+      <h1 className="text-xl font-semibold">{pageText("finishSettingUpThisPaperclip_1f613d")}</h1>
       <p className="mt-2 text-sm text-muted-foreground">
         No admin has claimed this instance yet. Claim it now to become the first admin and start onboarding.
       </p>
       <div className="mt-5 flex flex-wrap items-center gap-3">
-        <Button>Claim this instance</Button>
-        <span className="text-sm text-muted-foreground">
-          Signed in as <span className="font-medium text-foreground">jane@appliance.local</span>
+        <Button>{pageText("claimThisInstance_57cb3d")}</Button>
+        <span className="text-sm text-muted-foreground">{pageText("signedInAs_a02107") + " "}<span className="font-medium text-foreground">jane@appliance.local</span>
         </span>
       </div>
       <p className="mt-3 text-xs text-muted-foreground">
@@ -101,9 +103,10 @@ function SignedInPrivate() {
 }
 
 function ClaimingPrivate() {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <StateChrome>
-      <h1 className="text-xl font-semibold">Finish setting up this Paperclip</h1>
+      <h1 className="text-xl font-semibold">{pageText("finishSettingUpThisPaperclip_1f613d")}</h1>
       <p className="mt-2 text-sm text-muted-foreground">
         No admin has claimed this instance yet. Claim it now to become the first admin and start onboarding.
       </p>
@@ -112,8 +115,7 @@ function ClaimingPrivate() {
           <Loader2 className="mr-2 size-4 animate-spin" aria-hidden />
           Claiming…
         </Button>
-        <span className="text-sm text-muted-foreground">
-          Signed in as <span className="font-medium text-foreground">jane@appliance.local</span>
+        <span className="text-sm text-muted-foreground">{pageText("signedInAs_a02107") + " "}<span className="font-medium text-foreground">jane@appliance.local</span>
         </span>
       </div>
       <CliFallback hasActiveInvite={false} />
@@ -122,16 +124,16 @@ function ClaimingPrivate() {
 }
 
 function ClaimErrorPrivate() {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <StateChrome>
-      <h1 className="text-xl font-semibold">Finish setting up this Paperclip</h1>
+      <h1 className="text-xl font-semibold">{pageText("finishSettingUpThisPaperclip_1f613d")}</h1>
       <p className="mt-2 text-sm text-muted-foreground">
         No admin has claimed this instance yet. Claim it now to become the first admin and start onboarding.
       </p>
       <div className="mt-5 flex flex-wrap items-center gap-3">
-        <Button>Claim this instance</Button>
-        <span className="text-sm text-muted-foreground">
-          Signed in as <span className="font-medium text-foreground">jane@appliance.local</span>
+        <Button>{pageText("claimThisInstance_57cb3d")}</Button>
+        <span className="text-sm text-muted-foreground">{pageText("signedInAs_a02107") + " "}<span className="font-medium text-foreground">jane@appliance.local</span>
         </span>
       </div>
       <div

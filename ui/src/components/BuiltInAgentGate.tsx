@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
@@ -35,6 +36,7 @@ export interface BuiltInAgentGateProps {
  * - ready → children
  */
 export function BuiltInAgentGate({ agentKey, companyId, featureLabel, children }: BuiltInAgentGateProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const [configureOpen, setConfigureOpen] = useState(false);
@@ -115,7 +117,7 @@ export function BuiltInAgentGate({ agentKey, companyId, featureLabel, children }
                 onClick={() => state.agent && resume.mutate(state.agent.id)}
                 disabled={resume.isPending}
               >
-                {resume.isPending ? "Resuming…" : "Resume agent"}
+                {resume.isPending ? pageText("resuming_ab0bec") : pageText("resumeAgent_4bfc7e")}
               </Button>
             </>
           }

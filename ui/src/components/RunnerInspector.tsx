@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import {
   useCallback,
@@ -405,6 +406,7 @@ function JsonNode({
   depth: number;
   query: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const expandable = value !== null && typeof value === "object";
   const entries = Array.isArray(value)
     ? value.map((child, index) => [String(index), child] as const)
@@ -450,7 +452,7 @@ function JsonNode({
         <span className="ml-auto hidden items-center gap-0.5 group-hover:flex">
           <button
             type="button"
-            title={pathCopy.copied ? "JSON path copied" : pathCopy.failed ? "Copy failed" : "Copy JSON path"}
+            title={pathCopy.copied ? "JSON path copied" : pathCopy.failed ? pageText("copyFailed_bd5acb") : "Copy JSON path"}
             className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
             onClick={() => void pathCopy.copy(path)}
           >
@@ -458,7 +460,7 @@ function JsonNode({
           </button>
           <button
             type="button"
-            title={valueCopy.copied ? "Value copied" : valueCopy.failed ? "Copy failed" : "Copy value"}
+            title={valueCopy.copied ? "Value copied" : valueCopy.failed ? pageText("copyFailed_bd5acb") : "Copy value"}
             className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
             onClick={copyValue}
           >
@@ -658,6 +660,7 @@ export function RunnerInspector({
   onOpenChange: (open: boolean) => void;
   onRerunWithTrace?: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [inspection, setInspection] = useState<ProviderTraceInspection | null>(null);
   const [events, setEvents] = useState<HeartbeatRunEvent[]>([]);
@@ -1144,7 +1147,7 @@ export function RunnerInspector({
                 <Select value={nativeMethod} onValueChange={setNativeMethod}><SelectTrigger><SelectValue placeholder="Native method" /></SelectTrigger><SelectContent><SelectItem value="all">All native methods</SelectItem>{unique(frames.map(frameMethod)).sort().map((value) => <SelectItem key={value} value={value}>{value}</SelectItem>)}</SelectContent></Select>
                 <Select value={disposition} onValueChange={setDisposition}><SelectTrigger><SelectValue placeholder="Mapping" /></SelectTrigger><SelectContent><SelectItem value="all">All mappings</SelectItem>{["mapped", "generic", "ignored", "rejected", "operator_only"].map((value) => <SelectItem key={value} value={value}>{value}</SelectItem>)}</SelectContent></Select>
                 <Select value={prpType} onValueChange={setPrpType}><SelectTrigger><SelectValue placeholder="PRP type" /></SelectTrigger><SelectContent><SelectItem value="all">All PRP types</SelectItem>{unique(events.map((event) => event.eventType)).sort().map((value) => <SelectItem key={value} value={value}>{value}</SelectItem>)}</SelectContent></Select>
-                <Select value={visibility} onValueChange={setVisibility}><SelectTrigger><SelectValue placeholder="Visibility" /></SelectTrigger><SelectContent><SelectItem value="all">Visible + hidden</SelectItem><SelectItem value="visible">Visible</SelectItem><SelectItem value="hidden">Hidden</SelectItem></SelectContent></Select>
+                <Select value={visibility} onValueChange={setVisibility}><SelectTrigger><SelectValue placeholder={pageText("visibility_7d9ff4")} /></SelectTrigger><SelectContent><SelectItem value="all">Visible + hidden</SelectItem><SelectItem value="visible">Visible</SelectItem><SelectItem value="hidden">Hidden</SelectItem></SelectContent></Select>
               </div>
               <div className="grid min-h-0 flex-1 lg:grid-cols-(--gtc-runner-inspector-pipeline)">
                 <ScrollArea className="border-r border-border">
@@ -1197,7 +1200,7 @@ export function RunnerInspector({
                         <div className="mb-3 flex items-center gap-2"><span className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs font-semibold text-foreground">4</span><h3 className="text-sm font-semibold">Production presentation</h3></div>
                         {selectedEvents.length ? selectedEvents.map((event) => {
                           const decision = visibilityDecision(event);
-                          return <div key={event.id} className="mb-4 grid gap-3 xl:grid-cols-(--gtc-runner-inspector-presentation)"><dl className="grid grid-cols-(--gtc-runner-inspector-fields) gap-x-3 gap-y-1 rounded-lg border border-border p-3 text-sm"><dt className="text-muted-foreground">Visible</dt><dd className="flex items-center gap-1.5">{decision.visible ? <Check className="h-3.5 w-3.5 text-primary" /> : <CircleOff className="h-3.5 w-3.5 text-muted-foreground" />}{decision.visible ? "yes" : "no"}</dd><dt className="text-muted-foreground">Surface</dt><dd>{decision.surface}</dd><dt className="text-muted-foreground">Container</dt><dd>{decision.container}</dd><dt className="text-muted-foreground">{translateUi("interfaceCopy.state")}</dt><dd>{decision.state}</dd><dt className="text-muted-foreground">{translateUi("interfaceCopy.action")}</dt><dd>{decision.action}</dd><dt className="text-muted-foreground">{translateUi("interfaceCopy.reason")}</dt><dd>{decision.reason}</dd><dt className="text-muted-foreground">Reason code</dt><dd><code className="text-xs">{decision.reasonCode}</code></dd></dl><div><p className="mb-2 text-(length:--text-nano) font-medium uppercase tracking-wide text-muted-foreground">Production surface preview</p><ProductionSurfacePreview event={event} runId={runId} /></div></div>;
+                          return <div key={event.id} className="mb-4 grid gap-3 xl:grid-cols-(--gtc-runner-inspector-presentation)"><dl className="grid grid-cols-(--gtc-runner-inspector-fields) gap-x-3 gap-y-1 rounded-lg border border-border p-3 text-sm"><dt className="text-muted-foreground">Visible</dt><dd className="flex items-center gap-1.5">{decision.visible ? <Check className="h-3.5 w-3.5 text-primary" /> : <CircleOff className="h-3.5 w-3.5 text-muted-foreground" />}{decision.visible ? pageText("yes_fb360f") : pageText("no_fd1286")}</dd><dt className="text-muted-foreground">Surface</dt><dd>{decision.surface}</dd><dt className="text-muted-foreground">Container</dt><dd>{decision.container}</dd><dt className="text-muted-foreground">{translateUi("interfaceCopy.state")}</dt><dd>{decision.state}</dd><dt className="text-muted-foreground">{translateUi("interfaceCopy.action")}</dt><dd>{decision.action}</dd><dt className="text-muted-foreground">{translateUi("interfaceCopy.reason")}</dt><dd>{decision.reason}</dd><dt className="text-muted-foreground">Reason code</dt><dd><code className="text-xs">{decision.reasonCode}</code></dd></dl><div><p className="mb-2 text-(length:--text-nano) font-medium uppercase tracking-wide text-muted-foreground">Production surface preview</p><ProductionSurfacePreview event={event} runId={runId} /></div></div>;
                         }) : <p className="text-sm text-muted-foreground">No presentation surface was emitted for this operation.</p>}
                         {Object.keys(presentationDecision).length > 0 ? <details className="rounded-lg border border-border"><summary className="cursor-pointer px-3 py-2 text-xs font-medium text-muted-foreground">Resolved final response decision</summary><div className="p-3 pt-0"><JsonExplorer value={presentationDecision} /></div></details> : null}
                         {verificationCaveats.length > 0 || ignoredAttentionRequests.length > 0 ? (

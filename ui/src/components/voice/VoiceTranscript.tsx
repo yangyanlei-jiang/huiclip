@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type { VoiceTranscriptEntry } from "@/lib/voice-transcript";
 
 export interface VoiceTranscriptProps {
@@ -8,6 +9,7 @@ export interface VoiceTranscriptProps {
 
 /** Announcements belong to the session controller, once per final segment. */
 export function VoiceTranscript({ entries, agentName, unavailable = false }: VoiceTranscriptProps) {
+  const { t: pageText } = usePageTranslation("interface");
   if (unavailable) return <p className="text-sm text-muted-foreground">The transcript is unavailable. Your task history is still available.</p>;
   if (!entries.length) return <p className="text-sm text-muted-foreground">Your conversation will appear here.</p>;
   return (
@@ -15,7 +17,7 @@ export function VoiceTranscript({ entries, agentName, unavailable = false }: Voi
       {entries.map((entry) => (
         <li key={entry.id} className="flex min-w-0 flex-col gap-1">
           <span className="text-xs font-medium text-muted-foreground break-words">
-            {entry.source === "user" ? "You" : entry.source === "application" ? "Paperclip" : agentName}
+            {entry.source === "user" ? pageText("you_905cb3") : entry.source === "application" ? "Paperclip" : agentName}
             {!entry.final && !entry.interrupted && <span> · Speaking</span>}
             {entry.interrupted && <span> · Interrupted</span>}
           </span>

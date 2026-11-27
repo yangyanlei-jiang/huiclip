@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from "react";
 import { AiConnectionPicker } from "./AiConnectionPicker";
 import { LocalProviderLoginInstructions, ProviderApiKeyCard } from "@/components/AdapterLoginChrome";
@@ -26,6 +27,7 @@ const account: AiConnectionSummary = {
 };
 
 export function AiConnectionDesignExamples() {
+  const { t: pageText } = usePageTranslation("interface");
   const [binding, setBinding] = useState<AiConnectionBinding>({
     provider: "anthropic",
     method: "subscription",
@@ -57,7 +59,7 @@ export function AiConnectionDesignExamples() {
         disabled
         onChange={() => {}}
         onSubmit={() => {}}
-        placeholder="Enter API key here"
+        placeholder={pageText("enterAPIKeyHere_4991fd")}
       />
       <LocalProviderLoginInstructions
         adapterType="claude_local"

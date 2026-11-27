@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -13,6 +14,7 @@ import { useToast } from "@/context/ToastContext";
 import { queryKeys } from "@/lib/queryKeys";
 
 export function JoinRequestQueue() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { selectedCompany, selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -166,15 +168,11 @@ export function JoinRequestQueue() {
                       variant="outline"
                       onClick={() => rejectMutation.mutate(request.id)}
                       disabled={rejectMutation.isPending}
-                    >
-                      Reject
-                    </Button>
+                    >{pageText("reject_2b03b5")}</Button>
                     <Button
                       onClick={() => approveMutation.mutate(request.id)}
                       disabled={approveMutation.isPending}
-                    >
-                      Approve
-                    </Button>
+                    >{pageText("approve_7b2c7f")}</Button>
                   </div>
                 ) : null}
               </div>

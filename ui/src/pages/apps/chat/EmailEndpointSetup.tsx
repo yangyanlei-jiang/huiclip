@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { isUuidLike } from "@paperclipai/shared";
 import { ApiError } from "@/api/client";
@@ -93,6 +94,7 @@ export function EmailEndpointSetup() {
 }
 
 function EmailEndpointSetupForm({ companyId }: { companyId: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [params] = useSearchParams();
   const navigate = useNavigate();
@@ -352,7 +354,7 @@ function EmailEndpointSetupForm({ companyId }: { companyId: string }) {
       <div className="space-y-2">
         <Label htmlFor="email-agent">{translateUi("interfaceCopy.agent")}</Label>
         <AgentSelect id="email-agent" value={agentId} disabled={busy || agents.isPending || !inboxesLoaded || !!pendingEndpoint}
-          placeholder="Choose an agent" emptyMessage="No agents found." triggerClassName="h-10"
+          placeholder="Choose an agent" emptyMessage={pageText("noAgentsFound_6893bf")} triggerClassName="h-10"
           agents={(agents.data ?? []).filter(a => !["terminated", "pending_approval"].includes(a.status))}
           onChange={id => { setAgentId(id); setUsername((agents.data?.find(a => a.id === id)?.name ?? "").toLowerCase().replace(/[^a-z0-9._-]+/g, "-").slice(0, 64)); }} />
       </div>
@@ -370,7 +372,7 @@ function EmailEndpointSetupForm({ companyId }: { companyId: string }) {
       {setupError}
       <div className="flex items-center justify-between gap-3 border-t border-border pt-5">
         <Button type="button" variant="ghost" disabled={busy} onClick={cancel}>{translateUi("interfaceCopy.cancel")}</Button>
-        <Button disabled={!canContinue}>{connect.isPending ? "Connecting…" : "Continue"}<ArrowRight className="size-4" /></Button>
+        <Button disabled={!canContinue}>{connect.isPending ? pageText("connecting_fd3e79") : pageText("continue_2e0262")}<ArrowRight className="size-4" /></Button>
       </div>
     </form>}
     {step === 1 && <form className="space-y-6" onSubmit={event => { event.preventDefault(); if (canCreate) setup.mutate(); }}>
@@ -445,9 +447,9 @@ function EmailEndpointSetupForm({ companyId }: { companyId: string }) {
       {setupError}
       {inspected.isPending && <p role="status" className="text-sm text-muted-foreground">Loading email options…</p>}
       <div className="flex items-center justify-between gap-3 border-t border-border pt-5">
-        <Button type="button" variant="ghost" disabled={busy} onClick={() => { setup.reset(); setStep(0); }}><ArrowLeft className="size-4" />Back</Button>
+        <Button type="button" variant="ghost" disabled={busy} onClick={() => { setup.reset(); setStep(0); }}><ArrowLeft className="size-4" />{pageText("back_b52b36")}</Button>
         <Button disabled={!canCreate}>
-          {setup.isPending ? "Connecting…" : pendingAddress ? "Finish connecting" : addressMode === "new" ? "Create email address" : "Connect email address"}<ArrowRight className="size-4" />
+          {setup.isPending ? pageText("connecting_fd3e79") : pendingAddress ? "Finish connecting" : addressMode === "new" ? "Create email address" : "Connect email address"}<ArrowRight className="size-4" />
         </Button>
       </div>
     </form>}
@@ -601,6 +603,7 @@ export function EmailEndpointSettings({
   companyId: string;
   assignedAgentName: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const cache = useQueryClient();
   const query = useQuery({
     queryKey: ["email-inboxes", companyId],
@@ -692,13 +695,13 @@ export function EmailEndpointSettings({
             <h2 id="email-receiving-heading" className="text-sm font-semibold">Receiving email</h2>
             {(inbox.status !== "active" || inbox.lastError) && (
               <StatusBadge status={inbox.status === "active" ? "attention" : inbox.status}
-                label={inbox.status === "active" ? "Needs attention" : inbox.status === "revoked" ? "Access revoked" : undefined} />
+                label={inbox.status === "active" ? pageText("needsAttention_a12672") : inbox.status === "revoked" ? "Access revoked" : undefined} />
             )}
           </div>
           {["active", "paused"].includes(inbox.status) && (
             <Button variant="outline" size="sm" disabled={control.isPending}
               onClick={() => control.mutate(inbox.status === "active" ? "pause" : "resume")}>
-              {inbox.status === "active" ? "Pause" : "Resume"}
+              {inbox.status === "active" ? pageText("pause_781961") : pageText("resume_b3bd0b")}
             </Button>
           )}
         </div>

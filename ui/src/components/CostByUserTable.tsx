@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import type { CostByUserReport } from "@paperclipai/shared";
 import { CostAmount } from "./CostAmount";
@@ -6,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { formatTokens } from "../lib/utils";
 
 export function CostByUserTable({ report }: { report: CostByUserReport }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   return (
     <Card className="gap-3 py-4">
@@ -17,7 +19,7 @@ export function CostByUserTable({ report }: { report: CostByUserReport }) {
           <table aria-label="Costs by user" className="w-full text-sm">
             <thead className="text-muted-foreground">
               <tr className="border-b border-border">
-                <th scope="col" className="py-2 pr-4 text-left font-medium">User</th>
+                <th scope="col" className="py-2 pr-4 text-left font-medium">{pageText("user_9f8a23")}</th>
                 <th scope="col" className="px-4 py-2 text-right font-medium">{translateUi("interfaceCopy.runs")}</th>
                 <th scope="col" className="px-4 py-2 text-right font-medium">{translateUi("interfaceCopy.input")}</th>
                 <th scope="col" className="px-4 py-2 text-right font-medium">{translateUi("interfaceCopy.output")}</th>

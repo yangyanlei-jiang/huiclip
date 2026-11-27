@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation } from "@/i18n";
 import { FastResponseHistory } from "../components/fast-responses/FastResponseHistory";
 import { DecisionHistory } from "../components/decision-models/DecisionHistory";
@@ -133,6 +134,7 @@ function FinanceSummaryCard({
   estimatedDebitCents: number;
   eventCount: number;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <Card>
       <CardHeader className="px-5 pt-5 pb-2">
@@ -161,7 +163,7 @@ function FinanceSummaryCard({
           icon={ReceiptText}
         />
         <MetricTile
-          label="Estimated"
+          label={pageText("estimated_ae64c7")}
           value={formatCents(estimatedDebitCents)}
           subtitle="Estimated debits that are not yet invoice-authoritative"
           icon={Coins}
@@ -177,6 +179,7 @@ export function Costs({
   lockTab = false,
   hideBudgetsTab = false,
 }: CostsProps = {}) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t } = useTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -711,7 +714,7 @@ export function Costs({
             />
           </div>
           {subscriptions && Number(subscriptions.subscription.costCents) > 0 && <p className="text-sm text-muted-foreground">Subscription accounts also have {formatCents(Number(subscriptions.subscription.costCents))} in recorded usage charges for this period, separate from monthly fees.</p>}
-          {subscriptions && subscriptions.unknown.eventCount > 0 && <p className="text-sm text-muted-foreground">Other billing usage: {formatTokens(subscriptions.unknown.inputTokens + subscriptions.unknown.cachedInputTokens + subscriptions.unknown.outputTokens)} tokens{Number(subscriptions.unknown.costCents) > 0 ? ` · ${formatCents(Number(subscriptions.unknown.costCents))} in recorded charges` : ""}, included in the inference ledger.</p>}
+          {subscriptions && subscriptions.unknown.eventCount > 0 && <p className="text-sm text-muted-foreground">Other billing usage: {formatTokens(subscriptions.unknown.inputTokens + subscriptions.unknown.cachedInputTokens + subscriptions.unknown.outputTokens)}{" " + pageText("tokens_339143")}{Number(subscriptions.unknown.costCents) > 0 ? ` · ${formatCents(Number(subscriptions.unknown.costCents))} in recorded charges` : ""}, included in the inference ledger.</p>}
           {subscriptionError && subscriptions && <p role="status" className="text-sm text-muted-foreground">Showing the last loaded API and subscription usage. Updates will resume automatically.</p>}
           {discoverSubscriptions.error && <div role="status" className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
             <p>Connected accounts could not be checked. Existing subscription estimates are still shown.</p>

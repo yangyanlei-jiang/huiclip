@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -24,6 +25,7 @@ import { useSignOut } from "@/hooks/useSignOut";
 const FEEDBACK_TERMS_URL = import.meta.env.VITE_FEEDBACK_TERMS_URL?.trim() || "https://paperclip.ing/tos";
 
 export function InstanceGeneralSettings({ embedded = false }: { embedded?: boolean }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { setBreadcrumbs } = useBreadcrumbs();
   const queryClient = useQueryClient();
@@ -298,9 +300,7 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
-              >
-                Read our terms of service
-              </a>
+              >{pageText("readOurTermsOfService_8a15a6")}</a>
             ) : null}
           </div>
           {feedbackDataSharingPreference === "prompt" ? (
@@ -366,7 +366,7 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
       <section>
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1.5">
-            <h2 className="text-sm font-semibold">Sign out</h2>
+            <h2 className="text-sm font-semibold">{pageText("signOut_dc1649")}</h2>
             <p className="max-w-2xl text-sm text-muted-foreground">
               Sign out of this Paperclip instance. You will be redirected to the login page.
             </p>
@@ -381,7 +381,7 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
             }}
           >
             <LogOut className="size-4" />
-            {signOutMutation.isPending ? "Signing out..." : "Sign out"}
+            {signOutMutation.isPending ? pageText("signingOut_b9412f") : pageText("signOut_dc1649")}
           </Button>
         </div>
       </section>

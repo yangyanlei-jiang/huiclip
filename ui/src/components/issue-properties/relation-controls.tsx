@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState, type MouseEvent } from "react";
 import type { Issue, IssueLockedStub } from "@paperclipai/shared";
@@ -33,6 +34,7 @@ export function RemovableIssueReferencePill({
   onRemove: (issueId: string) => void;
   isMobile?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const locked = isLockedIssueStub(issue);
@@ -143,8 +145,7 @@ export function RemovableIssueReferencePill({
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Remove blocker?</DialogTitle>
-            <DialogDescription>
-              Remove {confirmLabel} as a blocker for this task.
+            <DialogDescription>{pageText("remove_e96390") + " "}{confirmLabel} as a blocker for this task.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -170,6 +171,7 @@ export function ExpandRelationListButton({
   expanded: boolean;
   onClick: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (!expanded && hiddenCount <= 0) return null;
   return (
     <button
@@ -178,7 +180,7 @@ export function ExpandRelationListButton({
       onClick={onClick}
       aria-label={expanded ? "Show fewer items" : `Show ${hiddenCount} more items`}
     >
-      {expanded ? "Show less" : `Show ${hiddenCount} more`}
+      {expanded ? pageText("showLess_4c852b") : `Show ${hiddenCount} more`}
     </button>
   );
 }

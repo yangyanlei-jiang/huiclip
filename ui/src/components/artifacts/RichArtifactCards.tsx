@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { isPatchFile } from "@/lib/patch";
 import { PatchLines } from "@/components/PatchLines";
 import { useState, type ReactNode } from "react";
@@ -137,6 +138,7 @@ interface DiffProps {
   filesChanged?: number | null;
 }
 function Diff({ additions, deletions, filesChanged }: DiffProps) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="flex flex-wrap gap-2 font-mono text-xs">
       {additions != null && (
@@ -151,7 +153,7 @@ function Diff({ additions, deletions, filesChanged }: DiffProps) {
       )}
       {filesChanged != null && (
         <span className="text-muted-foreground">
-          {filesChanged} {filesChanged === 1 ? "file" : "files"}
+          {filesChanged} {filesChanged === 1 ? pageText("file_971c41") : pageText("files_a1f13b")}
         </span>
       )}
     </div>
@@ -483,6 +485,7 @@ function DataTable({ columns, rows }: Pick<DataCardProps, "columns" | "rows">) {
   );
 }
 export function DataCard(props: DataCardProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const csv = [props.columns, ...props.rows]
     .map((row) =>
       row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(","),
@@ -498,7 +501,7 @@ export function DataCard(props: DataCardProps) {
           <Table2 className="size-4" /> CSV · {props.truncated ? "First " : ""}
           {props.rows.length} {props.rows.length === 1 ? "row" : "rows"} ·{" "}
           {props.columns.length}{" "}
-          {props.columns.length === 1 ? "column" : "columns"}
+          {props.columns.length === 1 ? "column" : pageText("columns_4f1b1d")}
         </span>
         <Identity {...props} />
         <span className="break-all font-mono text-xs text-muted-foreground">
@@ -696,12 +699,12 @@ export interface FileCardProps extends ArtifactIdentity {
   actions?: ReactNode;
 }
 export function FileCard(props: FileCardProps) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <Card>
       <div className="flex flex-col gap-4 p-5">
         <span className="flex items-center gap-2 text-xs text-muted-foreground">
-          <File className="size-4" /> File
-          {props.fileSize && ` · ${props.fileSize}`}
+          <File className="size-4" />{" " + pageText("file_2c3caf")}{props.fileSize && ` · ${props.fileSize}`}
         </span>
         <Identity {...props} />
         <div className="flex flex-col gap-1">
@@ -730,13 +733,11 @@ export function FileCard(props: FileCardProps) {
           <div className="flex flex-wrap items-center gap-2">
             {props.actions}
             {props.openUrl && (
-              <SourceLink url={props.openUrl}>Open file</SourceLink>
+              <SourceLink url={props.openUrl}>{pageText("openFile_f11b87")}</SourceLink>
             )}
             {props.downloadUrl ? (
               <Button asChild size="sm" variant="outline">
-                <a href={props.downloadUrl} download={props.filename}>
-                  Download file
-                </a>
+                <a href={props.downloadUrl} download={props.filename}>{pageText("downloadFile_774025")}</a>
               </Button>
             ) : (
               <Button size="sm" variant="outline" disabled>

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ExternalLink, FileImage, AlertTriangle } from 'lucide-react';
@@ -15,6 +16,7 @@ export function SkillPackagePreview({ companyId, repository, commitSha, skill, i
   companyId: string; repository: SkillSourceDiscoveryRequest; commitSha: string | null;
   repositoryPackage?: SkillRepositoryPackage; skill: SkillTreeCandidate; initialFile?: string; onClose: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const inspection = repositoryPackage ? { ...repositoryPackage, references: [] } : skill.inspection;
   const [filePath, setFilePath] = useState(initialFile ?? (repositoryPackage ? skill.path : 'SKILL.md'));
   const nodes = buildFileTree(Object.fromEntries((inspection?.files ?? []).map(file => [file.path, null]))).sort((a, b) => Number(b.name === 'SKILL.md') - Number(a.name === 'SKILL.md'));
@@ -35,7 +37,7 @@ export function SkillPackagePreview({ companyId, repository, commitSha, skill, i
     <DialogContent className="flex max-h-(--sz-calc-18) flex-col overflow-y-auto p-4 sm:max-w-4xl sm:p-6">
       <DialogHeader>
         <DialogTitle>{repositoryPackage ? 'Included repository files' : skill.name}</DialogTitle>
-        <DialogDescription className="break-all font-mono text-xs">{repositoryPackage ? 'Repository root' : root || 'Repository root'}/ · {inspection?.files.length ?? skill.fileCount ?? '?'} files{commitSha ? ` · ${commitSha.slice(0, 8)}` : ''}</DialogDescription>
+        <DialogDescription className="break-all font-mono text-xs">{repositoryPackage ? 'Repository root' : root || 'Repository root'}/ · {inspection?.files.length ?? skill.fileCount ?? '?'}{" " + pageText("files_a1f13b")}{commitSha ? ` · ${commitSha.slice(0, 8)}` : ''}</DialogDescription>
       </DialogHeader>
       {!inspection && <p role="status" className="text-sm text-muted-foreground">Refresh this source to inspect its complete package contents.</p>}
       {skill.error && <p className="text-sm text-muted-foreground">Needs setup: {skill.error}</p>}
@@ -67,7 +69,7 @@ export function SkillPackagePreview({ companyId, repository, commitSha, skill, i
             {file && <span className="text-muted-foreground">{file.sizeBytes.toLocaleString()} bytes{file.executable ? ' · executable' : ''}</span>}
           </div>
           <div className="max-h-(--sz-480px) min-h-40 overflow-auto p-3">
-            {(preview.isFetching || previewView.kind === 'reconnecting') && <p role="status" className="text-sm text-muted-foreground">Loading preview…</p>}
+            {(preview.isFetching || previewView.kind === 'reconnecting') && <p role="status" className="text-sm text-muted-foreground">{pageText("loadingPreview_1b6d8c")}</p>}
             {previewView.kind === 'error' && <div className="space-y-2 text-sm"><QueryErrorState size="inline" error={preview.error} action="load the preview" onRetry={previewView.retry} retrying={previewView.isFetching} /> <Link to="/apps" className="underline">Manage GitHub access</Link></div>}
             {skill.error && <p className="text-sm text-muted-foreground">Preview unavailable for a package that failed validation.</p>}
             {preview.data?.file.encoding === 'base64' && <div className="flex flex-col items-center gap-3 py-8 text-sm text-muted-foreground"><FileImage className="size-6" /><p>Binary asset · included without changes</p><p className="text-xs">Open on GitHub to preview or download this file.</p></div>}

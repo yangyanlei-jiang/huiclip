@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -64,6 +65,7 @@ function scheduleCron(draft: TriggerDraft) {
 }
 
 export function RoutineTriggers() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const ctx = useRoutineDetail();
   const [params, setParams] = useSearchParams();
@@ -165,7 +167,7 @@ export function RoutineTriggers() {
         >
           <span className="flex-1">
             {trigger.kind === "schedule"
-              ? "Schedule"
+              ? pageText("schedule_0a8ada")
               : trigger.kind === "api"
                 ? "API trigger"
                 : "Webhook"}{" "}
@@ -195,7 +197,7 @@ export function RoutineTriggers() {
           <p className="text-sm font-medium">{ctx.secretMessage.title}</p>
           {ctx.secretMessage.entries.map((entry) => (
             <div key={entry.webhookUrl} className="space-y-3">
-              <CopyField label="Webhook URL" value={entry.webhookUrl} />
+              <CopyField label={pageText("webhookURL_fa7517")} value={entry.webhookUrl} />
               <CopyField label="Secret key" value={entry.webhookSecret} />
             </div>
           ))}
@@ -227,7 +229,7 @@ export function RoutineTriggers() {
             }
             title={
               trigger.kind === "schedule"
-                ? (describeCron(trigger.cronExpression) ?? "Schedule")
+                ? (describeCron(trigger.cronExpression) ?? pageText("schedule_0a8ada"))
                 : trigger.kind === "api"
                   ? "API trigger"
                   : trigger.signingMode === "github_hmac"
@@ -511,6 +513,7 @@ function WebhookSettings({
   routineTitle: string;
   onRefresh: () => Promise<void>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [secret, setSecret] = useState("");
   const [replace, setReplace] = useState(false);
   const [checkBaseline, setCheckBaseline] = useState<string | null>(null);
@@ -535,7 +538,7 @@ function WebhookSettings({
           )}
         />
       )}
-      <CopyField label="Webhook URL" value={trigger.webhookUrl ?? ""} />
+      <CopyField label={pageText("webhookURL_fa7517")} value={trigger.webhookUrl ?? ""} />
       {trigger.signingMode !== "none" && (
         <div className="space-y-2">
           {secret ? (

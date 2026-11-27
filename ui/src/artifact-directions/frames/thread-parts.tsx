@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type { ReactNode } from "react";
 import { ArrowUp, AtSign, Check, ChevronDown, ChevronRight, Copy, Plus, ThumbsDown, ThumbsUp } from "lucide-react";
 import { StatusIcon } from "@/components/StatusIcon";
@@ -60,11 +61,12 @@ const ACTION = "inline-flex h-7 w-7 items-center justify-center rounded-md text-
 
 /** TaskChatBubble.tsx:396-404, streamlined runless footer. */
 export function MessageFooter({ timestamp }: { timestamp: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="flex w-full items-center justify-between gap-2 px-1">
       <span className="text-(length:--text-micro) text-muted-foreground">{timestamp}</span>
       <div className="flex items-center gap-0.5">
-        <button type="button" className={ACTION} aria-label="Copy message">
+        <button type="button" className={ACTION} aria-label={pageText("copyMessage_26902e")}>
           <Copy className="h-3.5 w-3.5" />
         </button>
         <button type="button" className={ACTION} aria-label="Good response">
@@ -91,11 +93,11 @@ export function WorkedRow() {
 
 /** TaskChatComposerDock.tsx:14-25 + TaskChatComposer.tsx:1184-1189, 1292-1296, 1371-1545. Not sticky here: the frame does not scroll. */
 export function ComposerShell() {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="mx-auto mt-6 flex w-full max-w-(--tc-shell-max-w) flex-col gap-2 px-1 pb-1 md:px-0 md:pb-0">
       <div className="paperclip-task-chat-composer rounded-(--radius-task-composer) border border-border bg-card p-(--sz-18px) shadow-(--shadow-task-composer) dark:border-0 dark:bg-muted dark:shadow-none">
-        <div className="min-h-(--sz-48px) px-1 py-1 text-sm text-muted-foreground">
-          Message {DESIGNER} — describe what you want done…
+        <div className="min-h-(--sz-48px) px-1 py-1 text-sm text-muted-foreground">{pageText("message_68f414") + " "}{DESIGNER} — describe what you want done…
         </div>
         <div className="mt-2 flex items-center gap-x-2 gap-y-3 flex-wrap">
           <span className="flex size-8 items-center justify-center rounded-md text-muted-foreground">

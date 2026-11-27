@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "@/lib/router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -143,6 +144,7 @@ export function SummarySlotCard({
   description,
   className,
 }: SummarySlotCardProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const [selectedRevisionId, setSelectedRevisionId] = useState<string | null>(null);
   const [configureOpen, setConfigureOpen] = useState(false);
@@ -287,9 +289,7 @@ export function SummarySlotCard({
               onClick={startGeneration}
               disabled={!selector || generateMutation.isPending || Boolean(isGenerating)}
             >
-              {generateMutation.isPending ? <Loader2 className="animate-spin" /> : <RefreshCw />}
-              Refresh
-            </Button>
+              {generateMutation.isPending ? <Loader2 className="animate-spin" /> : <RefreshCw />}{pageText("refresh_56e3ba")}</Button>
           ) : null}
         </div>
       </div>
@@ -344,7 +344,7 @@ export function SummarySlotCard({
               onClick={() => summarizerState.agent && resumeSummarizer.mutate(summarizerState.agent.id)}
               disabled={resumeSummarizer.isPending}
             >
-              {resumeSummarizer.isPending ? "Resuming..." : "Resume agent"}
+              {resumeSummarizer.isPending ? pageText("resuming_93aae7") : pageText("resumeAgent_4bfc7e")}
             </Button>
           }
         >
@@ -379,7 +379,7 @@ export function SummarySlotCard({
               onClick={startGeneration}
               disabled={!selector || generateMutation.isPending}
             >
-              {generateMutation.isPending ? "Retrying..." : "Retry"}
+              {generateMutation.isPending ? pageText("retrying_54aa30") : pageText("retry_9f5cd8")}
             </Button>
           }
         >
@@ -456,8 +456,7 @@ export function SummarySlotCard({
           </MarkdownBody>
 
           <div className="flex flex-col gap-3 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-            <span title={formatDateTime(historicalRevision?.createdAt ?? latestRevision?.createdAt ?? latestDocument.updatedAt)}>
-              Updated {relativeTime(historicalRevision?.createdAt ?? latestRevision?.createdAt ?? latestDocument.updatedAt)}
+            <span title={formatDateTime(historicalRevision?.createdAt ?? latestRevision?.createdAt ?? latestDocument.updatedAt)}>{pageText("updated_f2f857") + " "}{relativeTime(historicalRevision?.createdAt ?? latestRevision?.createdAt ?? latestDocument.updatedAt)}
             </span>
 
             {revisions.length > 1 ? (
@@ -475,7 +474,7 @@ export function SummarySlotCard({
                 >
                   <SelectValue>
                     <History className="size-3.5" aria-hidden="true" />
-                    <span>{revisions.length} revisions</span>
+                    <span>{revisions.length}{" " + pageText("revisions_65b6bf")}</span>
                   </SelectValue>
                 </SelectTrigger>
                 <SelectContent align="end" position="popper">

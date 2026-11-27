@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useMemo } from "react";
 import { SearchableSelect } from "@/components/SearchableSelect";
 import {
@@ -36,6 +37,7 @@ export function ReusableExecutionWorkspaceSelect<TWorkspace extends ReusableExec
   triggerClassName,
   disablePortal,
 }: ReusableExecutionWorkspaceSelectProps<TWorkspace>) {
+  const { t: pageText } = usePageTranslation("interface");
   const groups = useMemo(() => buildReusableExecutionWorkspaceOptionGroups(workspaces), [workspaces]);
 
   return (
@@ -44,7 +46,7 @@ export function ReusableExecutionWorkspaceSelect<TWorkspace extends ReusableExec
       groups={groups}
       onValueChange={onValueChange}
       placeholder={placeholder}
-      searchPlaceholder="Search workspaces..."
+      searchPlaceholder={pageText("searchWorkspaces_838c97")}
       emptyMessage={error ? "Workspaces failed to load." : "No matching workspaces."}
       loadingMessage="Loading workspaces..."
       loading={loading}

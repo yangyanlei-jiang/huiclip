@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { useMemo, useState } from "react";
 import type { Agent, Issue } from "@paperclipai/shared";
@@ -33,6 +34,7 @@ export function ExecutionParticipantPicker({
   currentUserId,
   onUpdate,
 }: ExecutionParticipantPickerProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const policyAvailable = useExecutionPolicy(issue.executionPolicy).success;
@@ -135,8 +137,7 @@ export function ExecutionParticipantPicker({
               values.length === 0 && "bg-accent",
             )}
             onClick={() => updatePolicy([])}
-          >
-            No {label.toLowerCase()}
+          >{pageText("no_816c52") + " "}{label.toLowerCase()}
           </button>
           {currentUserId && (
             <button

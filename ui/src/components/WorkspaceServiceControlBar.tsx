@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useRef, useState } from "react";
 import {
   Check,
@@ -147,6 +148,7 @@ function CopyUrlButton({ url, disabled }: { url: string; disabled?: boolean }) {
 }
 
 function UrlSegment({ entry, compact }: { entry: WorkspaceServiceControlEntry; compact?: boolean }) {
+  const { t: pageText } = usePageTranslation("interface");
   const displayUrl = formatServiceUrl(entry.url) ?? (entry.port ? `:${entry.port}` : null);
   const live = entry.state === "running" && Boolean(entry.url);
 
@@ -181,10 +183,10 @@ function UrlSegment({ entry, compact }: { entry: WorkspaceServiceControlEntry; c
           size="icon-xs"
           disabled={!live}
           className="text-muted-foreground hover:text-foreground"
-          title="Open in new tab"
+          title={pageText("openInNewTab_71bf47")}
         >
           {live ? (
-            <a href={entry.url ?? undefined} target="_blank" rel="noreferrer" aria-label="Open in new tab">
+            <a href={entry.url ?? undefined} target="_blank" rel="noreferrer" aria-label={pageText("openInNewTab_71bf47")}>
               <ExternalLink className="size-3" />
             </a>
           ) : (
@@ -203,6 +205,7 @@ function ActionSlots({
   entry: Pick<WorkspaceServiceControlEntry, "state" | "canStart">;
   onAction: (action: WorkspaceServiceControlAction) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const transitional = isTransitional(entry.state);
   const canStart = entry.canStart ?? true;
 
@@ -214,12 +217,10 @@ function ActionSlots({
         className="w-13 justify-center"
         disabled={!canStart}
         onClick={() => onAction("start")}
-        aria-label="Start"
-        title="Start"
+        aria-label={pageText("start_952f37")}
+        title={pageText("start_952f37")}
       >
-        <Play className="size-3" />
-        Start
-      </Button>
+        <Play className="size-3" />{pageText("start_952f37")}</Button>
     );
   }
 
@@ -231,8 +232,8 @@ function ActionSlots({
           size="icon-xs"
           disabled={!canStart}
           onClick={() => onAction("start")}
-          aria-label="Start"
-          title="Start"
+          aria-label={pageText("start_952f37")}
+          title={pageText("start_952f37")}
         >
           <Play className="size-3" />
         </Button>
@@ -241,8 +242,8 @@ function ActionSlots({
           size="icon-xs"
           disabled={!canStart}
           onClick={() => onAction("restart")}
-          aria-label="Restart"
-          title="Restart"
+          aria-label={pageText("restart_b134bd")}
+          title={pageText("restart_b134bd")}
           className="border border-border text-foreground"
         >
           <RotateCcw className="size-3" />
@@ -258,8 +259,8 @@ function ActionSlots({
         size="icon-xs"
         disabled={transitional}
         onClick={() => onAction("stop")}
-        aria-label="Stop"
-        title="Stop"
+        aria-label={pageText("stop_9e2534")}
+        title={pageText("stop_9e2534")}
         className="border border-border text-foreground"
       >
         <Square className="size-3" />
@@ -269,8 +270,8 @@ function ActionSlots({
         size="icon-xs"
         disabled={transitional || !canStart}
         onClick={() => onAction("restart")}
-        aria-label="Restart"
-        title="Restart"
+        aria-label={pageText("restart_b134bd")}
+        title={pageText("restart_b134bd")}
         className="border border-border text-foreground"
       >
         <RotateCcw className="size-3" />
@@ -423,6 +424,7 @@ function MultiServiceBar({
   defaultServicesOpen?: boolean;
   className?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [open, setOpen] = useState(defaultServicesOpen ?? false);
   const runningCount = services.filter((entry) => entry.state === "running").length;
   const anyTransitional = services.some((entry) => isTransitional(entry.state));
@@ -457,7 +459,7 @@ function MultiServiceBar({
                 aria-label={`${runningCount} of ${services.length} services running — show services`}
               >
                 <StatusIndicator entry={aggregateEntry} />
-                <span className="whitespace-nowrap">{runningCount}/{services.length} running</span>
+                <span className="whitespace-nowrap">{runningCount}/{services.length}{" " + pageText("running_3c49d9")}</span>
                 <ChevronDown className="size-3 text-muted-foreground" />
               </button>
             </PopoverTrigger>

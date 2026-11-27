@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { useEffect, useMemo, useState } from "react";
@@ -220,6 +221,7 @@ function AuditRow({
   userProfileMap: Map<string, CompanyUserProfile>;
   casesEnabled: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const verb = formatActivityVerb(record.action, record.details, { agentMap, userProfileMap });
   const responsible = record.responsibleUserId ? userProfileMap.get(record.responsibleUserId) : null;
@@ -250,8 +252,8 @@ function AuditRow({
             </p>
           ) : null}
           {workflowTransition?.from && workflowTransition?.to ? <p className="text-xs text-muted-foreground">
-            {workflowTransition.from.name ?? "Case instructions"}{workflowTransition.from.phase ? ` · ${workflowTransition.from.phase}` : ""}
-            {" → "}{workflowTransition.to.name ?? "Case instructions"} · {workflowTransition.to.phase}
+            {workflowTransition.from.name ?? pageText("caseInstructions_0df6da")}{workflowTransition.from.phase ? ` · ${workflowTransition.from.phase}` : ""}
+            {" → "}{workflowTransition.to.name ?? pageText("caseInstructions_0df6da")} · {workflowTransition.to.phase}
           </p> : null}
           {documentKey ? (
             <p className="text-xs text-muted-foreground">
@@ -322,6 +324,7 @@ export function AuditFeed({
   onEntityIdChange,
   onClearFilters,
 }: AuditFeedProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const caseHref = useCaseHref();
   const { pushToast } = useToastActions();
@@ -576,7 +579,7 @@ export function AuditFeed({
 
       {showModeToggle ? (
         <Tabs data-canonical-toolbar="audit-scope" value={resolvedMode} onValueChange={(value) => onModeChange?.(value as AuditFeedMode)}>
-          <TabsList className="design-view-toggle" aria-label="Activity scope">
+          <TabsList className="design-view-toggle" aria-label={pageText("activityScope_c06a04")}>
             <TabsTrigger value="all">{translateUi("interfaceCopy.activity")}</TabsTrigger>
             <TabsTrigger
               value="agents"
@@ -622,11 +625,11 @@ export function AuditFeed({
         ) : null}
         {canUseAdvancedControls ? (
           <label className="grid gap-1 text-(length:--text-micro) font-medium text-muted-foreground">
-            <span>Responsible user</span>
+            <span>{pageText("responsibleUser_59fcd1")}</span>
             <Select value={responsibleUser} onValueChange={setResponsibleUser}>
               {/* Wide enough for "All responsible users" — w-44 truncated it. */}
               <SelectTrigger className="w-52">
-                <SelectValue placeholder="Responsible user" />
+                <SelectValue placeholder={pageText("responsibleUser_59fcd1")} />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value={ALL}>All responsible users</SelectItem>
@@ -717,9 +720,7 @@ export function AuditFeed({
           />
         </label>
         {hasActiveFilters ? (
-          <Button variant="ghost" size="sm" onClick={clearFilters}>
-            Clear filters
-          </Button>
+          <Button variant="ghost" size="sm" onClick={clearFilters}>{pageText("clearFilters_412226")}</Button>
         ) : null}
         {canUseAdvancedControls ? (
           <Button
@@ -743,7 +744,7 @@ export function AuditFeed({
         </Card>
       ) : feedView.kind === "loading" || feedView.kind === "reconnecting" ? (
         <Card>
-          <CardContent className="py-14 text-center text-sm text-muted-foreground">Loading…</CardContent>
+          <CardContent className="py-14 text-center text-sm text-muted-foreground">{pageText("loading_33ce41")}</CardContent>
         </Card>
       ) : feedView.kind === "error" ? (
         <QueryErrorState
@@ -769,9 +770,7 @@ export function AuditFeed({
               </p>
             </div>
             {hasActiveFilters ? (
-              <Button variant="outline" size="sm" onClick={clearFilters}>
-                Clear filters
-              </Button>
+              <Button variant="outline" size="sm" onClick={clearFilters}>{pageText("clearFilters_412226")}</Button>
             ) : null}
           </CardContent>
         </Card>
@@ -799,7 +798,7 @@ export function AuditFeed({
             onClick={() => feed.fetchNextPage()}
             disabled={feed.isFetchingNextPage}
           >
-            {feed.isFetchingNextPage ? "Loading…" : "Load more"}
+            {feed.isFetchingNextPage ? pageText("loading_33ce41") : pageText("loadMore_dfe60c")}
           </Button>
         </div>
       ) : null}

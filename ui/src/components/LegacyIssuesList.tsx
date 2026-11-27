@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { QueryErrorState } from "./QueryView";
 import { ISSUE_SORT_FIELDS, sortIssues, type IssueSort, type IssueSortField } from "../lib/issue-sort";
@@ -488,6 +489,7 @@ function IssueSearchInput({
   value: string;
   onDebouncedChange?: (search: string) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [draftValue, setDraftValue] = useState(value);
   const lastCommittedValueRef = useRef(value);
 
@@ -534,9 +536,9 @@ function IssueSearchInput({
             e.currentTarget.blur();
           }
         }}
-        placeholder="Search tasks..."
+        placeholder={pageText("searchTasks_927df1")}
         className="pl-7 text-xs sm:text-sm"
-        aria-label="Search tasks"
+        aria-label={pageText("searchTasks_73ffe8")}
         data-page-search-target="true"
       />
     </div>
@@ -552,6 +554,7 @@ function SubIssueProgressSummaryStrip({
   issueLinkState?: unknown;
   parentIssueIdForCostSummary?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const target = summary.target;
   const targetIssue = target?.issue ?? null;
   const targetPathId = targetIssue?.identifier ?? targetIssue?.id ?? "";
@@ -582,14 +585,11 @@ function SubIssueProgressSummaryStrip({
         <div className="min-w-0 flex-1 space-y-2">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
             <span className="font-medium text-foreground">
-              {summary.doneCount}/{summary.totalCount} done
-            </span>
+              {summary.doneCount}/{summary.totalCount}{" " + pageText("done_e5fd9c")}</span>
             <span className="text-muted-foreground">
-              {summary.inProgressCount} in progress
-            </span>
+              {summary.inProgressCount}{" " + pageText("inProgress_d6e91b")}</span>
             <span className="text-muted-foreground">
-              {summary.blockedCount} blocked
-            </span>
+              {summary.blockedCount}{" " + pageText("blocked_df88b8")}</span>
             {showCostSummary && (
               <>
                 <span
@@ -600,8 +600,7 @@ function SubIssueProgressSummaryStrip({
                     costSummary.issueCount === 1 ? "" : "s"
                   }`}
                 >
-                  {formatTokens(totalTokens)} tokens
-                </span>
+                  {formatTokens(totalTokens)}{" " + pageText("tokens_339143")}</span>
                 <span className="text-muted-foreground tabular-nums">
                   {formatDurationMs(costSummary.runtimeMs)} runtime
                 </span>
@@ -698,6 +697,7 @@ export function IssuesList({
   onSearchChange,
   onUpdateIssue,
 }: IssuesListProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const rootRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
@@ -1726,12 +1726,12 @@ export function IssuesList({
 
         <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
           {/* View mode toggle */}
-          <div className="flex items-center border border-border rounded-md overflow-hidden mr-1" role="group" aria-label="View mode">
+          <div className="flex items-center border border-border rounded-md overflow-hidden mr-1" role="group" aria-label={pageText("viewMode_1b3603")}>
             <button
               className={`flex h-8 w-8 items-center justify-center transition-colors ${viewState.viewMode === "list" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
               onClick={() => updateView({ viewMode: "list" })}
-              title="List view"
-              aria-label="List view"
+              title={pageText("listView_694bbd")}
+              aria-label={pageText("listView_694bbd")}
               aria-pressed={viewState.viewMode === "list"}
             >
               <List className="h-3.5 w-3.5" />
@@ -1739,8 +1739,8 @@ export function IssuesList({
             <button
               className={`flex h-8 w-8 items-center justify-center transition-colors ${viewState.viewMode === "board" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
               onClick={() => updateView({ viewMode: "board" })}
-              title="Board view"
-              aria-label="Board view"
+              title={pageText("boardView_dcbb4d")}
+              aria-label={pageText("boardView_dcbb4d")}
               aria-pressed={viewState.viewMode === "board"}
             >
               <SquareKanban className="h-3.5 w-3.5" />
@@ -1754,7 +1754,7 @@ export function IssuesList({
               size="icon"
               className={cn("hidden h-8 w-8 shrink-0 sm:inline-flex", viewState.nestingEnabled && "bg-accent")}
               onClick={() => updateView({ nestingEnabled: !viewState.nestingEnabled })}
-              title={viewState.nestingEnabled ? "Disable parent-child nesting" : "Enable parent-child nesting"}
+              title={viewState.nestingEnabled ? pageText("disableParentChildNesting_72a560") : pageText("enableParentChildNesting_eb16d8")}
             >
               <ListTree className="h-3.5 w-3.5" />
             </Button>
@@ -1914,7 +1914,7 @@ export function IssuesList({
           {viewState.viewMode === "list" && (
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="icon" className="h-8 w-8 shrink-0" title="Group">
+                <Button variant="outline" size="icon" className="h-8 w-8 shrink-0" title={pageText("group_171a06")}>
                   <Layers className="h-3.5 w-3.5" />
                 </Button>
               </PopoverTrigger>
@@ -2167,12 +2167,10 @@ export function IssuesList({
                               issueBadge === "Paused" ? (
                                 <Badge variant="ghost"
                                   className={cn("ml-1.5 px-1.5 text-(length:--text-nano)", statusBadge.paused)}
-                                  aria-label="Paused"
-                                  title="Paused"
+                                  aria-label={pageText("paused_c7dfb6")}
+                                  title={pageText("paused_c7dfb6")}
                                 >
-                                  <CircleSlash2 className="h-3 w-3" />
-                                  Paused
-                                </Badge>
+                                  <CircleSlash2 className="h-3 w-3" />{pageText("paused_c7dfb6")}</Badge>
                               ) : (
                                 <Badge variant="outline" className="ml-1.5 border-amber-500/40 bg-amber-500/10 px-1.5 text-(length:--text-nano) text-amber-700 dark:text-amber-300">
                                   {issueBadge}
@@ -2182,12 +2180,10 @@ export function IssuesList({
                             {isSuccessfulRunHandoffRequired(issue) ? (
                               <Badge variant="outline"
                                 className="ml-1.5 border-amber-400/45 bg-amber-50/60 px-1.5 text-(length:--text-nano) text-amber-700 dark:border-amber-300/35 dark:bg-amber-400/10 dark:text-amber-300"
-                                aria-label="Needs next step"
+                                aria-label={pageText("needsNextStep_76833e")}
                                 title="This task needs a next step"
                               >
-                                <CircleDot className="h-3 w-3" />
-                                Needs next step
-                              </Badge>
+                                <CircleDot className="h-3 w-3" />{pageText("needsNextStep_76833e")}</Badge>
                             ) : null}
                           </>
                         )}
@@ -2285,9 +2281,7 @@ export function IssuesList({
                                         <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                                           <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-dashed border-muted-foreground/35 bg-muted/30">
                                             <User className="h-3.5 w-3.5" />
-                                          </span>
-                                          Assignee
-                                        </span>
+                                          </span>{pageText("assignee_049e3c")}</span>
                                       )}
                                     </button>
                                   </PopoverTrigger>
@@ -2299,7 +2293,7 @@ export function IssuesList({
                                   >
                                     <input
                                       className="mb-1 w-full border-b border-border bg-transparent px-2 py-1.5 text-xs outline-none placeholder:text-muted-foreground/50"
-                                      placeholder="Search responsible..."
+                                      placeholder={pageText("searchResponsible_bc9f7f")}
                                       value={assigneeSearch}
                                       onChange={(e) => setAssigneeSearch(e.target.value)}
                                       autoFocus

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -54,6 +55,7 @@ export function ConnectionIntentInteractionBody({
   addresseeName,
   renderSetup,
 }: ConnectionIntentInteractionBodyProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const [open, setOpen] = useState(false);
   const [adoptionConnectionId, setAdoptionConnectionId] = useState<string | null>(null);
   const focusTargetRef = useRef<HTMLDivElement>(null);
@@ -359,7 +361,7 @@ export function ConnectionIntentInteractionBody({
         <ul aria-label="Tool permissions" className="max-h-48 space-y-2 overflow-y-auto text-xs">
           {accessRequest.tools.map(tool => <li key={tool.catalogEntryId} className="flex items-start justify-between gap-3">
             <span className="min-w-0 break-all font-mono text-foreground">{tool.toolName}</span>
-            <span className="shrink-0 text-muted-foreground">{tool.permission === "allowed" ? "Allowed" : "Ask first"}</span>
+            <span className="shrink-0 text-muted-foreground">{tool.permission === "allowed" ? pageText("allowed_77c7b4") : "Ask first"}</span>
           </li>)}
         </ul>
         {setupView.kind === "error" ? <QueryErrorState size="inline" error={setupQuery.error} action="load this access request" onRetry={setupView.retry} retrying={setupView.isFetching} /> : null}
@@ -367,7 +369,7 @@ export function ConnectionIntentInteractionBody({
         {setupQuery.data?.canGrantAccess === false ? <p role="status" className="text-sm text-muted-foreground">Connection manager required.</p> : null}
         <DecisionCardFooter leading={footerSlot}>
           <div className={footerSlot ? "flex flex-wrap items-center justify-end gap-2" : "flex items-center justify-between gap-2"}>
-          <Button size="sm" variant="ghost" disabled={busy} onClick={() => declineMutation.mutate()}>Not now</Button>
+          <Button size="sm" variant="ghost" disabled={busy} onClick={() => declineMutation.mutate()}>{pageText("notNow_e45714")}</Button>
           <Button size="sm" disabled={busy || !setupQuery.data?.canGrantAccess} onClick={() => completeMutation.mutate(accessRequest.connectionId)}>
             {completeMutation.isPending ? "Granting access…" : "Grant access"}
           </Button>
@@ -499,11 +501,11 @@ export function ConnectionIntentInteractionBody({
         ) : null}
 
         {isChatHandoff ? <div className="mt-4 flex items-center justify-between gap-2">
-          <Button type="button" variant="ghost" disabled={declineMutation.isPending} onClick={() => declineMutation.mutate()}>Not now</Button>
+          <Button type="button" variant="ghost" disabled={declineMutation.isPending} onClick={() => declineMutation.mutate()}>{pageText("notNow_e45714")}</Button>
           {setupQuery.data?.chatSetup ? <Button asChild><a href={setupQuery.data.chatSetup.path} target="_blank" rel="noopener noreferrer">Continue authentication</a></Button> : setupContent}
         </div> : isEmail ? setupUnavailable ? <>
           {setupContent}
-          <Button type="button" variant="ghost" disabled={declineMutation.isPending} onClick={() => declineMutation.mutate()}>Not now</Button>
+          <Button type="button" variant="ghost" disabled={declineMutation.isPending} onClick={() => declineMutation.mutate()}>{pageText("notNow_e45714")}</Button>
         </> : <AgentMailIntentSetup
           companyId={interaction.companyId}
           agentId={interaction.payload.requestingAgentId}
@@ -520,9 +522,7 @@ export function ConnectionIntentInteractionBody({
               variant="ghost"
               disabled={declineMutation.isPending || completeMutation.isPending || authorizing}
               onClick={() => declineMutation.mutate()}
-            >
-              Not now
-            </Button>}
+            >{pageText("notNow_e45714")}</Button>}
             {isAi ? <Button type="button" disabled={completeMutation.isPending || adoptMutation.isPending || selectAiAccountMutation.isPending} onClick={() => open ? closeSetup() : setOpen(true)}>
               <Plug className="h-4 w-4" />{open ? "Close setup" : readyForAdoption ? "Continue setup" : needsOwnAiConnection ? `Connect ${aiProviderName}` : "Fix connection"}
             </Button> : <Dialog open={open} onOpenChange={setOpen}>
@@ -536,8 +536,8 @@ export function ConnectionIntentInteractionBody({
                   {authorizing
                     ? "Continue setup"
                     : needsRetry
-                      ? "Try again"
-                      : setupQuery.data?.existingConnections.length ? "Connect / Use existing" : "Connect"}
+                      ? pageText("tryAgain_042c86")
+                      : setupQuery.data?.existingConnections.length ? "Connect / Use existing" : pageText("connect_b65463")}
                 </Button>
               </DialogTrigger>
               <DialogContent
@@ -549,8 +549,7 @@ export function ConnectionIntentInteractionBody({
                 }}
               >
                 <DialogHeader className="sr-only">
-                  <DialogTitle>
-                    Connect {interaction.payload.serviceName}
+                  <DialogTitle>{pageText("connect_b65463") + " "}{interaction.payload.serviceName}
                   </DialogTitle>
                   <DialogDescription>
                     Complete connection setup without leaving this task.

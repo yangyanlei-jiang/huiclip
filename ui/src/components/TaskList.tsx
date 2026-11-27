@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { Fragment, useId, useState, type ReactNode } from "react";
 import type { Issue } from "@paperclipai/shared";
 import { ChevronDown, ChevronRight, GitBranch } from "lucide-react";
@@ -62,6 +63,7 @@ export function TaskList({ items, allItems = items, initialColumns = defaultTask
   sort?: TaskListOrder;
   onSortChange?: (sort: TaskListSort | undefined) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const localKey = useId();
   const { columns, order: columnOrder, setColumns, setOrder: setColumnOrder } = useTaskListColumnPreferences(preferenceLocation, initialColumns);
   const [localSort, setLocalSort] = useState<TaskListSort>();
@@ -157,7 +159,7 @@ export function TaskList({ items, allItems = items, initialColumns = defaultTask
         </div>
       )}
       {hasMore ? <div ref={sentinel} className="flex items-center gap-3 py-2 text-sm text-muted-foreground">
-        <span>Rendering {Math.min(limit, rowIds.length)} of {rowIds.length} tasks</span>
+        <span>Rendering {Math.min(limit, rowIds.length)} of {rowIds.length}{" " + pageText("tasks_55d872")}</span>
         <Button variant="outline" size="sm" onClick={loadMore}>Show more tasks</Button>
       </div> : null}
     </TaskListViewport>

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
@@ -56,6 +57,7 @@ export function StatusCardDetailDrawer({
   onOpenChange: (open: boolean) => void;
   initialTab?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const [tab, setTab] = useState("summary");
@@ -233,7 +235,7 @@ export function StatusCardDetailDrawer({
                 ) : (
                   <Wand2 className="h-3.5 w-3.5" />
                 )}
-                {setupRunning ? "Setting up…" : recompileMutation.isPending ? "Running…" : "Run now"}
+                {setupRunning ? "Setting up…" : recompileMutation.isPending ? pageText("running_7ef25a") : pageText("runNow_2af00e")}
               </Button>
             ) : (
               <Button
@@ -243,7 +245,7 @@ export function StatusCardDetailDrawer({
                 disabled={refreshMutation.isPending || lifecycle === "updating"}
               >
                 <RefreshCw className={cn("h-3.5 w-3.5", refreshMutation.isPending && "animate-spin")} />
-                {refreshMutation.isPending ? "Refreshing…" : "Refresh"}
+                {refreshMutation.isPending ? pageText("refreshing_961411") : pageText("refresh_56e3ba")}
               </Button>
             )}
           </div>
@@ -258,7 +260,7 @@ export function StatusCardDetailDrawer({
             <TabsTrigger value="summary">{translateUi("interfaceCopy.summary")}</TabsTrigger>
             <TabsTrigger value="settings">{translateUi("interfaceCopy.settings")}</TabsTrigger>
             <TabsTrigger value="watched">Watched issues</TabsTrigger>
-            <TabsTrigger value="history">History</TabsTrigger>
+            <TabsTrigger value="history">{pageText("history_90ccd6")}</TabsTrigger>
           </TabsList>
 
           {actionError ? (
@@ -288,8 +290,7 @@ export function StatusCardDetailDrawer({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent align="end" position="popper">
-                        <SelectItem value="__latest__" className="text-xs">
-                          Revision {latestRevisionNumber} · latest
+                        <SelectItem value="__latest__" className="text-xs">{pageText("revision_3beb9a") + " "}{latestRevisionNumber} · latest
                         </SelectItem>
                         <SelectSeparator />
                         {summaryRevisions.slice(0, 30).map((update) => (
@@ -305,7 +306,7 @@ export function StatusCardDetailDrawer({
                       </SelectContent>
                     </Select>
                   ) : latestRevisionNumber > 0 ? (
-                    <span className="text-xs text-muted-foreground">Revision {latestRevisionNumber} · latest</span>
+                    <span className="text-xs text-muted-foreground">{pageText("revision_3beb9a") + " "}{latestRevisionNumber} · latest</span>
                   ) : null}
                 </div>
               ) : null}
@@ -314,8 +315,7 @@ export function StatusCardDetailDrawer({
                 <MarkdownBody className="text-sm leading-7">{draftStream.draft}</MarkdownBody>
               ) : selectedRevision ? (
                 <div className="space-y-2 rounded-md border border-border bg-muted/30 p-3">
-                  <p className="text-xs text-muted-foreground" title={formatDateTime(selectedRevision.startedAt)}>
-                    Revision {revisionNumberOf(selectedRevision)} · {updateKindLabel(selectedRevision.kind)} ·{" "}
+                  <p className="text-xs text-muted-foreground" title={formatDateTime(selectedRevision.startedAt)}>{pageText("revision_3beb9a") + " "}{revisionNumberOf(selectedRevision)} · {updateKindLabel(selectedRevision.kind)} ·{" "}
                     {relativeTime(selectedRevision.startedAt)}
                   </p>
                   {selectedRevisionBody ? (
@@ -392,7 +392,7 @@ export function StatusCardDetailDrawer({
                 <>
                   <div className="text-xs text-muted-foreground">
                     Today: {todayRollup.updateCount}{" "}
-                    {todayRollup.updateCount === 1 ? "update" : "updates"} ·{" "}
+                    {todayRollup.updateCount === 1 ? pageText("update_0a25ba") : "updates"} ·{" "}
                     {formatTokens(todayRollup.totalTokens)} · {formatCents(todayRollup.totalCostCents)}
                     {card.refreshPolicy.dailyTokenCap ? ` · daily cap ${formatTokens(card.refreshPolicy.dailyTokenCap)}` : ""}
                   </div>
@@ -490,9 +490,7 @@ export function StatusCardDetailDrawer({
 
               <div className="flex justify-end border-t border-border pt-4">
                 <Button onClick={() => saveSettingsMutation.mutate()} disabled={saveSettingsMutation.isPending}>
-                  {saveSettingsMutation.isPending ? <Loader2 className="animate-spin" /> : null}
-                  Save
-                </Button>
+                  {saveSettingsMutation.isPending ? <Loader2 className="animate-spin" /> : null}{pageText("save_efc007")}</Button>
               </div>
             </TabsContent>
           </div>

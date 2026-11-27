@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState, useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -35,6 +36,7 @@ import {
 } from "lucide-react";
 
 export function Companies() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const {
     companies,
@@ -116,14 +118,12 @@ export function Companies() {
       <div className="flex items-center justify-end">
         {isCloud ? null : (
           <Button size="sm" onClick={() => openOnboarding()}>
-            <Plus className="h-3.5 w-3.5 mr-1.5" />
-            New Organization
-          </Button>
+            <Plus className="h-3.5 w-3.5 mr-1.5" />{pageText("newOrganization_c1cb93")}</Button>
         )}
       </div>
 
       <div className="min-h-6">
-        {loading && <p className="text-sm text-muted-foreground">Loading organizations...</p>}
+        {loading && <p className="text-sm text-muted-foreground">{pageText("loadingOrganizations_498bb9")}</p>}
         {error ? (
           <QueryErrorState size="inline" error={error} action="load organizations" onRetry={() => void retryCompanies()} />
         ) : null}
@@ -241,26 +241,20 @@ export function Companies() {
                       <DropdownMenuItem
                         onClick={() => startEdit(company.id, company.name)}
                       >
-                        <Pencil className="h-3.5 w-3.5" />
-                        Rename
-                      </DropdownMenuItem>
+                        <Pencil className="h-3.5 w-3.5" />{pageText("rename_d3f4cb")}</DropdownMenuItem>
                       {company.status === "archived" && (
                         <DropdownMenuItem
                           disabled={unarchiveMutation.isPending}
                           onClick={() => unarchiveMutation.mutate(company.id)}
                         >
-                          <ArchiveRestore className="h-3.5 w-3.5" />
-                          Unarchive
-                        </DropdownMenuItem>
+                          <ArchiveRestore className="h-3.5 w-3.5" />{pageText("unarchive_35e71c")}</DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         variant="destructive"
                         onClick={() => setConfirmDeleteId(company.id)}
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
-                        Delete Organization
-                      </DropdownMenuItem>
+                        <Trash2 className="h-3.5 w-3.5" />{pageText("deleteOrganization_f3379d")}</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -271,13 +265,13 @@ export function Companies() {
                 <div className="flex items-center gap-1.5">
                   <Users className="h-3.5 w-3.5" />
                   <span>
-                    {agentCount} {agentCount === 1 ? "agent" : "agents"}
+                    {agentCount} {agentCount === 1 ? pageText("agent_0608c4") : pageText("agents_e7052a")}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <CircleDot className="h-3.5 w-3.5" />
                   <span>
-                    {issueCount} {issueCount === 1 ? "task" : "tasks"}
+                    {issueCount} {issueCount === 1 ? pageText("task_7fbb72") : pageText("tasks_55d872")}
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 tabular-nums">
@@ -291,7 +285,7 @@ export function Companies() {
                 </div>
                 <div className="flex items-center gap-1.5 ml-auto">
                   <Calendar className="h-3.5 w-3.5" />
-                  <span>Created {relativeTime(company.createdAt)}</span>
+                  <span>{pageText("created_accf40") + " "}{relativeTime(company.createdAt)}</span>
                 </div>
               </div>
 
@@ -317,7 +311,7 @@ export function Companies() {
                       onClick={() => deleteMutation.mutate(company.id)}
                       disabled={deleteMutation.isPending}
                     >
-                      {deleteMutation.isPending ? "Deleting…" : "Delete"}
+                      {deleteMutation.isPending ? pageText("deleting_c7ac55") : pageText("delete_f6fdbe")}
                     </Button>
                   </div>
                 </div>

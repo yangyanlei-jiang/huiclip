@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useRef, useState } from "react";
 import type { ProjectRepository } from "@paperclipai/shared";
@@ -33,6 +34,7 @@ export function RepositoryEditor({ selected, onChange, state = "ready", availabl
   disabled?: boolean;
   onConnect: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [showPicker, setShowPicker] = useState(false);
   const picker = useRef<HTMLDivElement>(null);
@@ -47,7 +49,7 @@ export function RepositoryEditor({ selected, onChange, state = "ready", availabl
   const addLabel = selected.length ? "Add another repo" : "Add GitHub repo";
   return (
     <fieldset disabled={disabled} className="flex min-w-0 flex-col gap-3">
-      <div className="flex items-baseline gap-2"><span className="text-sm font-medium">Source repos</span><span className="text-xs text-muted-foreground">optional</span></div>
+      <div className="flex items-baseline gap-2"><span className="text-sm font-medium">Source repos</span><span className="text-xs text-muted-foreground">{pageText("optional_48a7b8")}</span></div>
       {selected.map((repo) => <RepoRow key={repo.id} repo={repo} onRemove={() => onChange(selected.filter((item) => item.id !== repo.id))} />)}
       {state === "disconnected" ? (
         <Popover>
@@ -56,7 +58,7 @@ export function RepositoryEditor({ selected, onChange, state = "ready", availabl
             <div className="flex flex-col gap-3">
               <GithubIcon className="size-5" />
               <div className="flex flex-col gap-1"><p className="text-sm font-medium">Connect GitHub to pick a repo</p><p className="text-xs text-muted-foreground">Choose from repos you can access through your GitHub connections.</p></div>
-              <Button type="button" onClick={onConnect}><GithubIcon className="size-4" />Connect GitHub</Button>
+              <Button type="button" onClick={onConnect}><GithubIcon className="size-4" />{pageText("connectGitHub_ab6f5e")}</Button>
             </div>
           </PopoverContent>
         </Popover>
@@ -72,7 +74,7 @@ export function RepositoryEditor({ selected, onChange, state = "ready", availabl
             renderOption={({ repo }) => <><GitBranch className="size-4 shrink-0 text-muted-foreground" /><span className="flex min-w-0 flex-1 flex-col gap-1"><span className="truncate">{repo.fullName}</span><span className="truncate text-xs text-muted-foreground">{repo.connections.join(" · ")}</span></span>{repo.private && <LockKeyhole className="size-3 shrink-0 text-muted-foreground" />}</>}
             onValueChange={(_, option) => { onChange([...selected, option.repo]); setShowPicker(false); }}
             createItem={state === "error"
-              ? { render: () => <>Try again</>, onSelect: () => { onRetry(); } }
+              ? { render: () => <>{pageText("tryAgain_042c86")}</>, onSelect: () => { onRetry(); } }
               : { render: () => <><Plus className="size-4" />Connect another GitHub account</>, onSelect: onConnect }}
           />
           <div className="flex items-center justify-between gap-2">

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
 import { Dialog as DialogPrimitive } from "radix-ui";
@@ -31,6 +32,7 @@ export function ImageGalleryModal({
   onIndexChange,
   returnFocusRef,
 }: ImageGalleryModalProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const mediaRef = useRef<HTMLImageElement | HTMLVideoElement | null>(null);
@@ -132,7 +134,7 @@ export function ImageGalleryModal({
                 href={attachmentDownloadPath(current)}
                 download={filename}
                 className="text-white/50 hover:text-white transition-colors"
-                title="Download"
+                title={pageText("download_a479c9")}
                 aria-label={`Download ${filename}`}
                 onClick={(e) => e.stopPropagation()}
               >

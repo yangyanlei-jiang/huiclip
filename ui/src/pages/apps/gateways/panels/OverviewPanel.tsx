@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { Copy } from "lucide-react";
 import type { ToolMcpGatewayWithTokens, ToolProfileWithDetails } from "@paperclipai/shared";
@@ -34,6 +35,7 @@ export function OverviewPanel({
   toggleDisabled: boolean;
   onToggle: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { pushToast } = useToast();
   const endpoint = `${typeof window !== "undefined" ? window.location.origin : ""}${gateway.endpointPath}`;
@@ -66,18 +68,18 @@ export function OverviewPanel({
     <div className="space-y-5">
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-lg border border-border p-4">
-          <div className="text-xs font-medium text-muted-foreground">{on ? "On" : "Off"}</div>
+          <div className="text-xs font-medium text-muted-foreground">{on ? pageText("on_e0049a") : pageText("off_e3de5a")}</div>
           <div className="mt-2">
             <ToggleSwitch checked={on} disabled={toggleDisabled} onCheckedChange={onToggle} aria-label="Toggle gateway" />
           </div>
           <p className="mt-2 text-xs text-muted-foreground">Toggle the whole gateway off here.</p>
         </div>
         <StatCard label={translateUi("interfaceCopy.apps")}>
-          {apps.length} {apps.length === 1 ? "app" : "apps"}
+          {apps.length} {apps.length === 1 ? "app" : pageText("apps_802508")}
           {profile ? ` · ${allowedToolsLabel(profile)}` : ""}
         </StatCard>
-        <StatCard label="Tokens">
-          {active} active{expiring > 0 ? ` · ${expiring} expiring` : ""}
+        <StatCard label={pageText("tokens_c38c6c")}>
+          {active}{" " + pageText("active_2bb6b9")}{expiring > 0 ? ` · ${expiring} expiring` : ""}
         </StatCard>
         <StatCard label="Health">
           {needsAttention.length === 0 ? "All green" : `${needsAttention.length} needs attention`}
@@ -96,7 +98,7 @@ export function OverviewPanel({
         <div className="mt-3 flex flex-wrap gap-2">
           <Chip>Scope · {formatScope(gateway, projectNames, agentNames)}</Chip>
           <Chip>Profile · {profile?.name ?? "Unavailable"}</Chip>
-          <Chip>{active} active {active === 1 ? "token" : "tokens"}</Chip>
+          <Chip>{active}{" " + pageText("active_2bb6b9") + " "}{active === 1 ? pageText("token_ee9778") : pageText("tokens_339143")}</Chip>
         </div>
       </section>
 
@@ -119,9 +121,7 @@ export function OverviewPanel({
         <div className="flex items-center justify-between gap-2">
           <h3 className="text-sm font-semibold text-foreground">How clients connect</h3>
           <Button variant="outline" size="sm" onClick={() => void copy(snippet, "Client config")}>
-            <Copy className="mr-1 h-3.5 w-3.5" />
-            Copy
-          </Button>
+            <Copy className="mr-1 h-3.5 w-3.5" />{pageText("copy_af74f7")}</Button>
         </div>
         <pre className="mt-3 overflow-auto whitespace-pre-wrap break-words rounded bg-background p-3 font-mono text-xs text-muted-foreground">
           {snippet}
@@ -149,6 +149,7 @@ function Chip({ children }: { children: React.ReactNode }) {
 }
 
 function AppRow({ app }: { app: GatewayAppRow }) {
+  const { t: pageText } = usePageTranslation("interface");
   const href = app.connection
     ? `/apps/${app.connection.id}/permissions`
     : `/apps/app/${app.application.id}/permissions`;
@@ -159,7 +160,7 @@ function AppRow({ app }: { app: GatewayAppRow }) {
           {gatewayAppDisplayName(app)}
         </Link>
         <div className="text-xs text-muted-foreground">
-          {app.toolCount} {app.toolCount === 1 ? "tool" : "tools"}
+          {app.toolCount} {app.toolCount === 1 ? pageText("tool_1937c4") : pageText("tools_0284c6")}
           {app.needsAttention && app.attentionReason ? ` · ${app.attentionReason}` : ""}
         </div>
       </div>
@@ -171,7 +172,7 @@ function AppRow({ app }: { app: GatewayAppRow }) {
             : "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
         )}
       >
-        {app.needsAttention ? "Needs attention" : "Healthy"}
+        {app.needsAttention ? pageText("needsAttention_a12672") : pageText("healthy_80ea15")}
       </span>
     </li>
   );

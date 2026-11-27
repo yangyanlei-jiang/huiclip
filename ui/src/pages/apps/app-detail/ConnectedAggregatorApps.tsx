@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, RefreshCw } from "lucide-react";
@@ -14,6 +15,7 @@ import { AppLogo } from "../AppLogo";
 const catalogBySlug = new Map(AGGREGATOR_APP_CATALOG.map(app => [app.slug, app]));
 
 export function ConnectedAggregatorApps({ connection }: { connection: ToolConnection }) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const { userId, settled, failed } = useAccountIdentity();
   const queryKey = queryKeys.tools.aggregatorApps(connection.id, userId);
@@ -62,7 +64,7 @@ export function ConnectedAggregatorApps({ connection }: { connection: ToolConnec
         disabled={!settled || queryPending || syncing || Boolean(unavailable)}
         onClick={() => refresh.mutate(userId)}>
         <RefreshCw className={syncing ? "size-4 animate-spin" : "size-4"} aria-hidden="true" />
-        {syncing ? "Refreshing…" : `Refresh ${providerName}`}
+        {syncing ? pageText("refreshing_961411") : `Refresh ${providerName}`}
       </Button>
     </div>
     {queryView.kind === "error" ? <QueryErrorState error={query.error} action={`load ${providerName} apps`} onRetry={queryView.retry} retrying={queryView.isFetching} /> : null}
@@ -88,7 +90,7 @@ export function ConnectedAggregatorApps({ connection }: { connection: ToolConnec
             <AppLogo name={app.appName} brandKey={app.appSlug} logoUrl={logoUrl} />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium" title={app.appName}>{app.appName}</p>
-              {accounts.length > 1 ? <p className="text-xs text-muted-foreground">{accounts.length} accounts</p>
+              {accounts.length > 1 ? <p className="text-xs text-muted-foreground">{accounts.length}{" " + pageText("accounts_10db27")}</p>
                 : accounts[0]?.alias ? <p className="truncate text-xs text-muted-foreground">{accounts[0].alias}</p> : null}
             </div>
             <span className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">

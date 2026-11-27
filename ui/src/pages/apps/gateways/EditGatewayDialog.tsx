@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { type FormEvent, useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -31,6 +32,7 @@ export function EditGatewayDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToast();
@@ -103,7 +105,7 @@ export function EditGatewayDialog({
             </select>
           </label>
           <label className="block space-y-1.5">
-            <span className="text-xs font-medium text-muted-foreground">Description (optional)</span>
+            <span className="text-xs font-medium text-muted-foreground">{pageText("descriptionOptional_388de6")}</span>
             <textarea
               className="min-h-16 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               value={description}
@@ -114,7 +116,7 @@ export function EditGatewayDialog({
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button type="submit" disabled={updateMutation.isPending || !name.trim() || !profileId}>
-              {updateMutation.isPending ? "Saving…" : "Save changes"}
+              {updateMutation.isPending ? pageText("saving_56a228") : pageText("saveChanges_179359")}
             </Button>
           </DialogFooter>
         </form>

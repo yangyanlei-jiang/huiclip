@@ -1,3 +1,5 @@
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "@/lib/router";
@@ -248,6 +250,7 @@ function DetailRow({ label, children }: { label: string; children: React.ReactNo
 }
 
 export function ProjectWorkspaceDetail() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { companyPrefix, projectId, workspaceId } = useParams<{
     companyPrefix?: string;
@@ -358,7 +361,7 @@ export function ProjectWorkspaceDetail() {
       setErrorMessage(null);
     },
     onError: (error) => {
-      setErrorMessage(error instanceof Error ? error.message : "Failed to save workspace.");
+      setErrorMessage(error instanceof Error ? error.message : interfaceMessage("interface:errorFailedToSaveWorkspaceSentence"));
     },
   });
 
@@ -369,7 +372,7 @@ export function ProjectWorkspaceDetail() {
       setErrorMessage(null);
     },
     onError: (error) => {
-      setErrorMessage(error instanceof Error ? error.message : "Failed to update workspace.");
+      setErrorMessage(error instanceof Error ? error.message : interfaceMessage("interface:errorFailedToUpdateWorkspaceSentence"));
     },
   });
 
@@ -391,12 +394,12 @@ export function ProjectWorkspaceDetail() {
     },
     onError: (error) => {
       setRuntimeActionMessage(null);
-      setErrorMessage(error instanceof Error ? error.message : "Failed to control workspace commands.");
+      setErrorMessage(error instanceof Error ? error.message : interfaceMessage("interface:errorFailedToControlWorkspaceCommandsSentence"));
     },
   });
 
   if (projectQuery.isLoading || projectView.kind === "reconnecting") {
-    return <p className="text-sm text-muted-foreground">Loading workspace…</p>;
+    return <p className="text-sm text-muted-foreground">{pageText("loadingWorkspace_89f0dd")}</p>;
   }
   if (projectView.kind === "error") {
     return (
@@ -514,7 +517,7 @@ export function ProjectWorkspaceDetail() {
                 />
               </Field>
 
-              <Field label="Visibility">
+              <Field label={pageText("visibility_7d9ff4")}>
                 <select
                   className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none"
                   value={form.visibility}
@@ -662,9 +665,7 @@ export function ProjectWorkspaceDetail() {
 
             <div className="mt-5 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
               <Button className="w-full sm:w-auto" disabled={!isDirty || updateWorkspace.isPending} onClick={saveChanges}>
-                {updateWorkspace.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                Save changes
-              </Button>
+                {updateWorkspace.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}{pageText("saveChanges_179359")}</Button>
               <Button
                 variant="outline"
                 className="w-full sm:w-auto"
@@ -673,9 +674,7 @@ export function ProjectWorkspaceDetail() {
                   setForm(initialState);
                   setErrorMessage(null);
                 }}
-              >
-                Reset
-              </Button>
+              >{pageText("reset_44c57a")}</Button>
               {errorMessage ? <p className="text-sm text-destructive">{errorMessage}</p> : null}
               {!errorMessage && runtimeActionMessage ? <p className="text-sm text-muted-foreground">{runtimeActionMessage}</p> : null}
               {!errorMessage && !isDirty ? <p className="text-sm text-muted-foreground">No unsaved changes.</p> : null}
@@ -698,7 +697,7 @@ export function ProjectWorkspaceDetail() {
             </DetailRow>
             {hideHostPaths ? null : (
               <DetailRow label="Local path">
-                <span className="break-all font-mono text-xs">{workspace.cwd ?? "None"}</span>
+                <span className="break-all font-mono text-xs">{workspace.cwd ?? pageText("none_6eef66")}</span>
               </DetailRow>
             )}
             <DetailRow label="Repo">
@@ -709,9 +708,9 @@ export function ProjectWorkspaceDetail() {
                 </a>
               ) : workspace.repoUrl ? (
                 <span className="break-all font-mono text-xs">{workspace.repoUrl}</span>
-              ) : "None"}
+              ) : pageText("none_6eef66")}
             </DetailRow>
-            <DetailRow label="Default ref">{workspace.defaultRef ?? "None"}</DetailRow>
+            <DetailRow label="Default ref">{workspace.defaultRef ?? pageText("none_6eef66")}</DetailRow>
             <DetailRow label={translateUi("interfaceCopy.updated")}>{new Date(workspace.updatedAt).toLocaleString()}</DetailRow>
           </Card>
 

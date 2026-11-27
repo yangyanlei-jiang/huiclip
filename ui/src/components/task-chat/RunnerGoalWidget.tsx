@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -182,6 +183,7 @@ export function useRunnerGoalControl(issueId: string | null, agentId: string | n
 export type RunnerGoalControl = ReturnType<typeof useRunnerGoalControl>;
 
 export function RunnerGoalWidget({ control }: { control: RunnerGoalControl }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const projection = control.data;
   const goal = projection?.goal ?? null;
@@ -238,8 +240,7 @@ export function RunnerGoalWidget({ control }: { control: RunnerGoalControl }) {
               <span>{formatDuration(goal.elapsedSeconds)}</span>
               {capability?.usageReporting ? (
                 <span>
-                  {formatTokens(goal.tokensUsed)} tokens
-                  {goal.tokenBudget ? ` / ${formatTokens(goal.tokenBudget)}` : ""}
+                  {formatTokens(goal.tokensUsed)}{" " + pageText("tokens_339143")}{goal.tokenBudget ? ` / ${formatTokens(goal.tokenBudget)}` : ""}
                 </span>
               ) : null}
               {goal.iterations > 0 ? <span>{goal.iterations} iterations</span> : null}
@@ -312,7 +313,7 @@ export function RunnerGoalWidget({ control }: { control: RunnerGoalControl }) {
             <DialogFooter>
               <Button type="button" variant="outline" disabled={control.mutation?.isPending} onClick={() => control.setDialog(null)}>{translateUi("interfaceCopy.cancel")}</Button>
               <Button type="submit" disabled={!control.dialog?.objective.trim() || control.mutation?.isPending}>
-                {control.mutation?.isPending ? "Saving…" : control.dialog?.action === "replace" ? "Replace goal" : "Save goal"}
+                {control.mutation?.isPending ? pageText("saving_56a228") : control.dialog?.action === "replace" ? "Replace goal" : "Save goal"}
               </Button>
             </DialogFooter>
           </form>

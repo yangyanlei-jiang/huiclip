@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { PrimaryAgentIndicator } from "@/components/primary-agent/PrimaryAgentPresentation";
 import { AgentBulkRoster } from "@/components/agents/AgentBulkRoster";
 import { AgentAvatar } from "@/components/AgentAvatar";
@@ -174,6 +175,7 @@ function filterOrgTree(nodes: OrgNode[], tab: FilterTab, builtInAgentIds: Set<st
 }
 
 export function Agents() {
+  const { t: pageText } = usePageTranslation("interface");
   const { selectedCompanyId } = useCompany();
   const { openNewAgent } = useDialogActions();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -360,9 +362,7 @@ export function Agents() {
               size="xs"
               variant="outline"
               onClick={() => setConfigureState(builtInState)}
-            >
-              Set up
-            </Button>
+            >{pageText("setUp_a5041f")}</Button>
           </span>
         )}
       </>
@@ -384,7 +384,7 @@ export function Agents() {
         to={agentUrl(agent)}
         className="agent-roster-identity group py-3"
         leading={hasInvalidOrgChain ? (
-          <AlertTriangle className="h-3.5 w-3.5 text-amber-500" aria-label="Invalid reporting chain" />
+          <AlertTriangle className="h-3.5 w-3.5 text-amber-500" aria-label={pageText("invalidReportingChain_720f9d")} />
         ) : (
           <AgentAvatar agent={agent} size={32} />
         )}
@@ -395,7 +395,7 @@ export function Agents() {
             {showEnvironmentColumn && <span className="text-xs text-muted-foreground" title={resolveRenderedEnvironment(agent.id).title}>
               {resolveRenderedEnvironment(agent.id).label} · {resolveRenderedEnvironment(agent.id).detail}
             </span>}
-            {agent.lastHeartbeatAt && <span className="text-xs text-muted-foreground" title="Last heartbeat">{relativeTime(agent.lastHeartbeatAt)}</span>}
+            {agent.lastHeartbeatAt && <span className="text-xs text-muted-foreground" title={pageText("lastHeartbeat_aac4b5")}>{relativeTime(agent.lastHeartbeatAt)}</span>}
           </div>
         )}
       />
@@ -421,15 +421,15 @@ export function Agents() {
         <div className="flex items-center gap-2">
           {/* View toggle */}
           {!forceListView && (
-            <div className="flex items-center border border-border" role="group" aria-label="View mode">
+            <div className="flex items-center border border-border" role="group" aria-label={pageText("viewMode_1b3603")}>
               <button
                 className={cn(
                   "p-1.5 transition-colors",
                   effectiveView === "list" ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent/50"
                 )}
                 onClick={() => setView("list")}
-                title="List view"
-                aria-label="List view"
+                title={pageText("listView_694bbd")}
+                aria-label={pageText("listView_694bbd")}
                 aria-pressed={effectiveView === "list"}
               >
                 <List className="h-3.5 w-3.5" />
@@ -440,8 +440,8 @@ export function Agents() {
                   effectiveView === "org" ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent/50"
                 )}
                 onClick={() => setView("org")}
-                title="Org chart view"
-                aria-label="Org chart view"
+                title={pageText("orgChartView_dfd2b1")}
+                aria-label={pageText("orgChartView_dfd2b1")}
                 aria-pressed={effectiveView === "org"}
               >
                 <GitBranch className="h-3.5 w-3.5" />
@@ -449,20 +449,18 @@ export function Agents() {
             </div>
           )}
           <Button size="sm" variant="outline" onClick={openNewAgent}>
-            <Plus className="h-3.5 w-3.5 mr-1.5" />
-            New Agent
-          </Button>
+            <Plus className="h-3.5 w-3.5 mr-1.5" />{pageText("newAgent_94c537")}</Button>
         </div>
       </div>
 
       {filtered.length > 0 && (
-        <p className="text-xs text-muted-foreground">{filtered.length} agent{filtered.length !== 1 ? "s" : ""}</p>
+        <p className="text-xs text-muted-foreground">{filtered.length}{" " + pageText("agent_0608c4")}{filtered.length !== 1 ? "s" : ""}</p>
       )}
 
       {agents && agents.length === 0 && (
         <EmptyState
           icon={Bot}
-          message="Create your first agent to get started."
+          message={pageText("createYourFirstAgentToGetStarted_71ba80")}
           action="New Agent"
           onAction={openNewAgent}
         />
@@ -545,6 +543,7 @@ function OrgTreeNode({
   builtInByAgentId: Map<string, BuiltInAgentState>;
   onConfigureBuiltIn: (state: BuiltInAgentState) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const agent = agentMap.get(node.id);
   const builtInState = builtInByAgentId.get(node.id);
   const showBuiltInLifecycle = builtInState?.status === "needs_setup" || builtInState?.status === "pending_approval";
@@ -557,7 +556,7 @@ function OrgTreeNode({
         className="group flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-accent/50 transition-colors w-full text-left no-underline text-inherit"
       >
         {hasInvalidOrgChain ? (
-          <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" aria-label="Invalid reporting chain" />
+          <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" aria-label={pageText("invalidReportingChain_720f9d")} />
         ) : (
           <AgentAvatar agent={agent ?? node} size={24} />
         )}
@@ -582,9 +581,7 @@ function OrgTreeNode({
                     e.stopPropagation();
                   }}
                 >
-                  <Button size="xs" variant="outline" onClick={() => onConfigureBuiltIn(builtInState)}>
-                    Set up
-                  </Button>
+                  <Button size="xs" variant="outline" onClick={() => onConfigureBuiltIn(builtInState)}>{pageText("setUp_a5041f")}</Button>
                 </span>
               )}
             </div>
@@ -708,6 +705,7 @@ function LiveRunIndicator({
   runId: string;
   liveCount: number;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <Link
       to={`/agents/${agentRef}/runs/${runId}`}
@@ -718,8 +716,7 @@ function LiveRunIndicator({
         <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
         <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
       </span>
-      <span className="text-(length:--text-micro) font-medium text-blue-600 dark:text-blue-400">
-        Live{liveCount > 1 ? ` (${liveCount})` : ""}
+      <span className="text-(length:--text-micro) font-medium text-blue-600 dark:text-blue-400">{pageText("live_65c821")}{liveCount > 1 ? ` (${liveCount})` : ""}
       </span>
     </Link>
   );

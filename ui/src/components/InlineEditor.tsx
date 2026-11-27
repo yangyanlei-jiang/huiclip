@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState, useRef, useEffect, useCallback, useId } from "react";
 import { cn } from "../lib/utils";
@@ -98,6 +99,7 @@ function OwnedInlineEditor({
   readCurrentValue,
   draftOwner,
 }: InlineEditorProps & { draftOwner: string | undefined }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [editing, setEditing] = useState(false);
   const editingChangeCallback = useRef(onEditingChange);
@@ -500,7 +502,7 @@ function OwnedInlineEditor({
             )}
             role={autosaveState === "error" ? "alert" : "status"}
           >
-            {autosave.label ?? "Idle"}
+            {autosave.label ?? pageText("idle_cc1ebd")}
           </span>
           {autosaveState === "stalled" ? <button type="button" className="ml-2 text-xs text-foreground underline" onClick={autosave.resendNow}>{translateUi("interfaceCopy.retrySaving")}</button> : null}
         </div>

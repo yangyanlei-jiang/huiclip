@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { groupImageResources } from "./image-resources";
 import { useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
@@ -77,6 +78,7 @@ export function TaskChatTurn({
   timestampPrefix,
   leading,
 }: TaskChatTurnProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const streamlined = useStreamlinedTaskChatPresentation();
   const parentRow = !item.settled && item.liveStatus != null;
   // The new Paperclip Runner task surface owns one durable chronological
@@ -106,7 +108,7 @@ export function TaskChatTurn({
             {item.summary.durationLabel
               ? `${item.summary.failed ? "Stopped" : "Worked"} for ${item.summary.durationLabel}`
               : item.summary.failed
-                ? "Stopped"
+                ? pageText("stopped_51e911")
                 : "Worked"}
           </span> : null}
         </div> : null}
@@ -209,10 +211,10 @@ export function TaskChatTurn({
         <SummaryIcon className="h-3.5 w-3.5 shrink-0" />
       ) : null}
       <span>
-        {item.historical ? "Activity" : item.standaloneHeader && item.summary.durationLabel
+        {item.historical ? pageText("activity_81c0d9") : item.standaloneHeader && item.summary.durationLabel
           ? `${item.summary.failed ? "Stopped" : "Worked"} for ${item.summary.durationLabel}`
           : item.summary.failed
-            ? "Stopped"
+            ? pageText("stopped_51e911")
             : "Worked"}
       </span>
       {!item.standaloneHeader && turnSummaryMetrics(item.summary) ? (

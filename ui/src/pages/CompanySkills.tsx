@@ -1,3 +1,5 @@
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { SkillsNavigationTabs } from "@/components/skill-studio/SkillsNavigationTabs";
 import { SkillsToolbar, type DiscoverySort } from "@/components/skill-studio/SkillsToolbar";
@@ -389,6 +391,7 @@ function SourceFilterMenu({
   value: SourceFilter;
   onChange: (next: SourceFilter) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const filters: SourceFilter[] = ["all", "company", "bundled", "optional", "external"];
   const activeFilterCount = value === "all" ? 0 : 1;
@@ -399,7 +402,7 @@ function SourceFilterMenu({
           variant="ghost"
           size="icon-sm"
           className={cn("relative shrink-0", activeFilterCount > 0 && "text-blue-600 dark:text-blue-400")}
-          title={activeFilterCount > 0 ? `Filters: ${activeFilterCount}` : "Filter"}
+          title={activeFilterCount > 0 ? `Filters: ${activeFilterCount}` : pageText("filter_d7decf")}
         >
           <Filter className="h-3.5 w-3.5" />
           {activeFilterCount > 0 ? (
@@ -437,6 +440,7 @@ function CatalogFilterMenu({
   onKindChange: (next: "all" | "bundled" | "optional") => void;
   onCategoryChange: (next: string) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const activeFilterCount = (kindFilter === "all" ? 0 : 1) + (categoryFilter ? 1 : 0);
   return (
@@ -446,7 +450,7 @@ function CatalogFilterMenu({
           variant="ghost"
           size="icon-sm"
           className={cn("relative shrink-0", activeFilterCount > 0 && "text-blue-600 dark:text-blue-400")}
-          title={activeFilterCount > 0 ? `Filters: ${activeFilterCount}` : "Filter"}
+          title={activeFilterCount > 0 ? `Filters: ${activeFilterCount}` : pageText("filter_d7decf")}
         >
           <Filter className="h-3.5 w-3.5" />
           {activeFilterCount > 0 ? (
@@ -832,6 +836,7 @@ function SkillCard({
   onCreateFolderAndMove?: (card: DiscoveryCard) => void;
   onOpenMove?: (card: DiscoveryCard) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const source = sourceMeta(card.sourceBadge ?? "catalog", card.sourceLabel ?? null);
   const SourceIcon = source.icon;
@@ -881,7 +886,7 @@ function SkillCard({
           {badgeFolder !== undefined ? (
             <div className="mt-1 flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
               <FolderSwatch color={badgeFolder?.color} className="h-2 w-2" />
-              <span className="truncate">{badgeFolder ? badgeFolder.name : "Unfiled"}</span>
+              <span className="truncate">{badgeFolder ? badgeFolder.name : pageText("unfiled_c1aca7")}</span>
             </div>
           ) : null}
         </div>
@@ -961,9 +966,7 @@ function SkillCard({
         </div>
         <div className="mt-2 flex flex-wrap items-center gap-1">
           {card.installed ? (
-            <Badge variant="secondary" className="text-(length:--text-nano)">
-              Installed
-            </Badge>
+            <Badge variant="secondary" className="text-(length:--text-nano)">{pageText("installed_7bb440")}</Badge>
           ) : null}
           <Badge variant="outline" className="max-w-full text-(length:--text-nano) text-muted-foreground">
             <SourceIcon className="h-3 w-3" aria-hidden="true" />
@@ -974,9 +977,7 @@ function SkillCard({
           ))}
           {card.required ? (
             <Badge variant="outline" className="ml-auto border-border bg-muted/60 text-(length:--text-nano) text-muted-foreground">
-              <Lock className="h-3 w-3" aria-hidden="true" />
-              Bundled
-            </Badge>
+              <Lock className="h-3 w-3" aria-hidden="true" />{pageText("bundled_e10c08")}</Badge>
           ) : card.sourceKind === "optional" ? (
             <Badge variant="outline" className="ml-auto text-(length:--text-nano) text-muted-foreground">{translateUi("interfaceCopy.optional")}</Badge>
           ) : null}
@@ -1138,6 +1139,7 @@ export function DiscoveryGrid({
   /** Category/folder navigation stays available in production, but the Streamlined UI relies on search and scrolling. */
   showBrowseRails?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const installedView = tab === "installed";
   const authoredView = collectionView === "authored";
@@ -1222,8 +1224,7 @@ export function DiscoveryGrid({
         <aside className={cn("hidden w-60 shrink-0 flex-col overflow-hidden border-r border-border md:flex", showFolderRail && "md:hidden")}>
           <div className="border-b border-border px-4 py-4">
             <h2 className="text-sm font-semibold text-foreground">Browse by category</h2>
-            <p className="text-xs text-muted-foreground">
-              Filter {installedView ? "installed" : "discoverable"} skills.
+            <p className="text-xs text-muted-foreground">{pageText("filter_d7decf") + " "}{installedView ? pageText("installed_85841a") : "discoverable"} skills.
             </p>
           </div>
           <div className="px-4 pb-1 pt-3 text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">{translateUi("interfaceCopy.categories")}</div>
@@ -1262,7 +1263,7 @@ export function DiscoveryGrid({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="w-full justify-between">
-                  <span className="capitalize">{activeCategory ?? "All categories"}</span>
+                  <span className="capitalize">{activeCategory ?? pageText("allCategories_060be0")}</span>
                   <ChevronDown className="h-3.5 w-3.5" />
                 </Button>
               </DropdownMenuTrigger>
@@ -1298,9 +1299,7 @@ export function DiscoveryGrid({
                   aria-label={`Refresh ${activeProjectFolder.name} project skills`}
                   title={`Refresh skills from ${activeProjectFolder.name}`}
                 >
-                  <RefreshCw className={cn("h-3.5 w-3.5", scanPending && "animate-spin")} />
-                  Refresh
-                </Button>
+                  <RefreshCw className={cn("h-3.5 w-3.5", scanPending && "animate-spin")} />{pageText("refresh_56e3ba")}</Button>
               ) : null}
             </div>
           ) : null}
@@ -1365,16 +1364,14 @@ export function DiscoveryGrid({
                       onCategoryChange(null);
                       setSourceBadgeFilter("all");
                     }}
-                  >
-                    Clear filters
-                  </Button>
+                  >{pageText("clearFilters_412226")}</Button>
                 </div>
               ) : null}
             </div>
           ) : (
             <>
               <p className="mb-3 text-xs text-muted-foreground">
-                {sourceFilteredCards.length} {sourceFilteredCards.length === 1 ? "skill" : "skills"}
+                {sourceFilteredCards.length} {sourceFilteredCards.length === 1 ? pageText("skill_34b33e") : pageText("skills_816f2b")}
                 {activeCategory ? <span className="capitalize"> · {activeCategory}</span> : null}
               </p>
               <div className="grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(19rem,1fr))]">
@@ -1415,6 +1412,7 @@ function NewSkillWizard({
   error: string | null;
   onCancel: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [step, setStep] = useState(0);
   const [draft, setDraft] = useState<SkillCreateDraft>(initialDraft);
@@ -1520,7 +1518,7 @@ function NewSkillWizard({
               }}
             />
             <div className="min-w-0">
-              <div className="truncate text-sm font-medium">{draft.name || "New Skill"}</div>
+              <div className="truncate text-sm font-medium">{draft.name || pageText("newSkill_870985")}</div>
               <div className="truncate text-xs text-muted-foreground">{draft.tagline || "No tagline yet."}</div>
             </div>
           </div>
@@ -1571,11 +1569,11 @@ function NewSkillWizard({
             <span className="text-muted-foreground">{translateUi("interfaceCopy.name")}</span>
             <span>{draft.name || "Untitled"}</span>
             <span className="text-muted-foreground">Slug</span>
-            <span className="font-mono">{effectiveSlug || "skill"}</span>
+            <span className="font-mono">{effectiveSlug || pageText("skill_34b33e")}</span>
             <span className="text-muted-foreground">{translateUi("interfaceCopy.scope")}</span>
-            <span>{draft.sharingScope === "private" ? "Private" : "Organization"}</span>
+            <span>{draft.sharingScope === "private" ? pageText("private_237dfa") : pageText("organization_519255")}</span>
             <span className="text-muted-foreground">{translateUi("interfaceCopy.categories")}</span>
-            <span>{draft.categories.length ? draft.categories.join(", ") : "none"}</span>
+            <span>{draft.categories.length ? draft.categories.join(", ") : pageText("none_71f8e7")}</span>
           </div>
           <div className="space-y-2">
             <label className="block text-xs font-medium uppercase tracking-wide text-muted-foreground">{translateUi("interfaceCopy.sharing")}</label>
@@ -1590,7 +1588,7 @@ function NewSkillWizard({
                     draft.sharingScope === scope ? "border-foreground bg-accent/50" : "border-border",
                   )}
                 >
-                  <span className="block font-medium">{scope === "company" ? "Organization" : "Private"}</span>
+                  <span className="block font-medium">{scope === "company" ? pageText("organization_519255") : pageText("private_237dfa")}</span>
                   <span className="mt-1 block text-xs text-muted-foreground">
                     {scope === "company" ? "Visible inside this organization." : "Only visible in your library."}
                   </span>
@@ -1623,7 +1621,7 @@ function NewSkillWizard({
             <Button size="sm" onClick={() => setStep((value) => Math.min(steps.length - 1, value + 1))} disabled={!nameValid}>{translateUi("interfaceCopy.next")}</Button>
           ) : (
             <Button size="sm" onClick={submit} disabled={isPending || !nameValid}>
-              {isPending ? "Creating..." : draft.forkedFromSkillId ? "Create fork" : "Create skill"}
+              {isPending ? pageText("creating_28ea76") : draft.forkedFromSkillId ? "Create fork" : pageText("createSkill_f7fc4f")}
             </Button>
           )}
         </div>
@@ -1800,6 +1798,7 @@ function CatalogDetailPane({
   onOpenInstalled: (skillId: string) => void;
   loadingPrimaryAction: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const fileView = useQueryView(fileQuery);
   if (!skill) {
@@ -1829,7 +1828,7 @@ function CatalogDetailPane({
     cta = (
       <Button onClick={onInstall} disabled={loadingPrimaryAction}>
         {skill.trustLevel === "scripts_executables" ? <AlertTriangle className="mr-1.5 h-3.5 w-3.5" /> : <Download className="mr-1.5 h-3.5 w-3.5" />}
-        {loadingPrimaryAction ? "Preparing..." : "Install skill in this organization"}
+        {loadingPrimaryAction ? pageText("preparing_f440b5") : "Install skill in this organization"}
       </Button>
     );
   } else if (hashOutOfSync) {
@@ -1878,9 +1877,7 @@ function CatalogDetailPane({
             <Tooltip>
               <TooltipTrigger asChild>
                 <Badge variant="outline" className="border-amber-500/40 bg-amber-500/10 text-(length:--text-micro) text-amber-800 dark:text-amber-200">
-                  <ArrowUpCircle className="h-3 w-3" aria-hidden="true" />
-                  Update available
-                </Badge>
+                  <ArrowUpCircle className="h-3 w-3" aria-hidden="true" />{pageText("updateAvailable_21f186")}</Badge>
               </TooltipTrigger>
               <TooltipContent>Catalog content hash has changed since this skill was installed.</TooltipContent>
             </Tooltip>
@@ -1982,6 +1979,7 @@ export function InstallPreviewDialog({
   error: string | null;
   onConfirm: (input: { slug: string | null; force: boolean; agentIds: string[] }) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [slug, setSlug] = useState<string>("");
   const [force, setForce] = useState(false);
@@ -2030,7 +2028,7 @@ export function InstallPreviewDialog({
       <DialogContent className="sm:max-w-2xl" showCloseButton={!isPending}>
         <DialogHeader>
           <DialogTitle>
-            {defaultAction === "update" ? "Update" : defaultAction === "replace" ? "Replace" : "Install"} · {skill.name}
+            {defaultAction === "update" ? pageText("update_fb91e2") : defaultAction === "replace" ? "Replace" : pageText("install_fd6c3e")} · {skill.name}
           </DialogTitle>
           <DialogDescription>
             <span className="capitalize">{skill.kind}</span> · {skill.category}
@@ -2064,8 +2062,8 @@ export function InstallPreviewDialog({
                 )}
               </div>
               <div className="text-muted-foreground">Requires</div>
-              <div className="text-foreground">{skill.requires.length === 0 ? "none" : skill.requires.join(", ")}</div>
-              <div className="text-muted-foreground">Roles</div>
+              <div className="text-foreground">{skill.requires.length === 0 ? pageText("none_71f8e7") : skill.requires.join(", ")}</div>
+              <div className="text-muted-foreground">{pageText("roles_47dcc2")}</div>
               <div className="text-foreground">{skill.recommendedForRoles.length === 0 ? "any" : skill.recommendedForRoles.join(" · ")}</div>
               <div className="text-muted-foreground">Provenance</div>
               <div className="min-w-0">
@@ -2129,9 +2127,7 @@ export function InstallPreviewDialog({
             onClick={() => setAdvancedOpen((value) => !value)}
             className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
           >
-            {advancedOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-            Advanced
-          </button>
+            {advancedOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}{pageText("advanced_4d0647")}</button>
           {advancedOpen ? (
             <div className="space-y-3 rounded-md border border-border p-3 text-xs">
               <div>
@@ -2200,6 +2196,7 @@ function AttachAgentsPopover({
   onSubmit: (nextIds: string[], versionId: string | null) => void;
   fullWidth?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [draftVersionId, setDraftVersionId] = useState<string | null>(selectedVersionId);
   const attachedIds = useMemo(() => new Set(attachedAgentIds), [attachedAgentIds]);
@@ -2240,7 +2237,7 @@ function AttachAgentsPopover({
           </select>
         </div>
       ) : null}
-      emptyMessage={eligible.length === 0 ? "No agents in this organization support skills yet." : "No agents yet."}
+      emptyMessage={eligible.length === 0 ? "No agents in this organization support skills yet." : pageText("noAgentsYet_62561f")}
       isAgentDisabled={(agent) => {
         const option = agent as AttachAgentOption;
         return option.required || !option.supportsSkills;
@@ -2251,9 +2248,7 @@ function AttachAgentsPopover({
       }}
       renderNameSuffix={(agent) => (agent as AttachAgentOption).paused ? (
         <Badge variant="outline" className="[&>svg]:size-2.5 border-amber-500/30 bg-amber-500/10 px-1.5 text-(length:--text-nano) uppercase tracking-wide text-amber-500">
-          <Pause className="h-2.5 w-2.5" aria-hidden="true" />
-          Paused
-        </Badge>
+          <Pause className="h-2.5 w-2.5" aria-hidden="true" />{pageText("paused_c7dfb6")}</Badge>
       ) : null}
     />
   );
@@ -2377,6 +2372,7 @@ function SkillList({
   onSelectPath: (skillId: string, path: string) => void;
   onClearFilters: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const filteredSkills = skills.filter((skill) => {
     const haystack = `${skill.name} ${skill.key} ${skill.slug} ${skill.sourceLabel ?? ""}`.toLowerCase();
     if (!haystack.includes(skillFilter.toLowerCase())) return false;
@@ -2388,8 +2384,7 @@ function SkillList({
   if (filteredSkills.length === 0) {
     if (sourceFilter !== "all" && skills.length > 0) {
       return (
-        <div className="px-4 py-6 text-sm text-muted-foreground">
-          No {SOURCE_FILTER_LABELS[sourceFilter].toLowerCase()} skills installed.{" "}
+        <div className="px-4 py-6 text-sm text-muted-foreground">{pageText("no_816c52") + " "}{SOURCE_FILTER_LABELS[sourceFilter].toLowerCase()} skills installed.{" "}
           <button type="button" className="text-foreground underline" onClick={onClearFilters}>
             Clear filter
           </button>
@@ -2675,6 +2670,7 @@ function SkillLocationCard({
   folderPath: string | null | undefined;
   onMove?: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { copied, failed, copy } = useCopyAction();
   const canonical = folderPath && folderPath.length > 0 ? folderPath : "Unfiled";
   return (
@@ -2693,7 +2689,7 @@ function SkillLocationCard({
           }}
         >
           <Copy className="mr-1.5 h-3.5 w-3.5" />
-          {copied ? "Copied" : failed ? "Copy failed" : "Copy path"}
+          {copied ? pageText("copied_8e3df4") : failed ? pageText("copyFailed_bd5acb") : "Copy path"}
         </Button>
         {onMove ? (
           <Button size="sm" variant="outline" onClick={onMove}>
@@ -2861,6 +2857,7 @@ export function SkillDetailPage({
   deletePending: boolean;
   studioHref?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [diffOpen, setDiffOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -2987,13 +2984,13 @@ export function SkillDetailPage({
                     className={cn("px-3 py-1.5 text-sm", viewMode === "preview" ? "text-foreground" : "text-muted-foreground")}
                     onClick={() => setViewMode("preview")}
                   >
-                    <span className="flex items-center gap-1.5"><Eye className="h-3.5 w-3.5" /> View</span>
+                    <span className="flex items-center gap-1.5"><Eye className="h-3.5 w-3.5" />{" " + pageText("view_69bd4e")}</span>
                   </button>
                   <button
                     className={cn("border-l border-border px-3 py-1.5 text-sm", viewMode === "code" ? "text-foreground" : "text-muted-foreground")}
                     onClick={() => setViewMode("code")}
                   >
-                    <span className="flex items-center gap-1.5"><Code2 className="h-3.5 w-3.5" /> Code</span>
+                    <span className="flex items-center gap-1.5"><Code2 className="h-3.5 w-3.5" />{" " + pageText("code_adac69")}</span>
                   </button>
                 </div>
               ) : null}
@@ -3003,13 +3000,12 @@ export function SkillDetailPage({
                     <Button variant="ghost" size="sm" onClick={() => setEditMode(false)} disabled={savePending}>{translateUi("interfaceCopy.cancel")}</Button>
                     <Button size="sm" onClick={onSave} disabled={savePending || !isDirty}>
                       <Save className="mr-1.5 h-3.5 w-3.5" />
-                      {savePending ? "Saving..." : "Save"}
+                      {savePending ? pageText("saving_ae7e88") : pageText("save_efc007")}
                     </Button>
                   </>
                 ) : (
                   <Button variant="ghost" size="sm" onClick={() => setEditMode(true)}>
-                    <Pencil className="mr-1.5 h-3.5 w-3.5" /> Edit
-                  </Button>
+                    <Pencil className="mr-1.5 h-3.5 w-3.5" />{" " + pageText("edit_530164")}</Button>
                 )
               ) : !skill.editable ? (
                 <Button
@@ -3020,7 +3016,7 @@ export function SkillDetailPage({
                   title={skill.editableReason ?? "Fork this skill to edit it."}
                 >
                   <GitFork className="mr-1.5 h-3.5 w-3.5" />
-                  {skill.sourceType === "github" ? "Make a copy" : "Fork"}
+                  {skill.sourceType === "github" ? pageText("makeACopy_fdf343") : "Fork"}
                 </Button>
               ) : null}
             </div>
@@ -3061,7 +3057,7 @@ export function SkillDetailPage({
     return (
       <div className="space-y-6">
         <section>
-          <h2 className="mb-2 text-sm font-medium">About</h2>
+          <h2 className="mb-2 text-sm font-medium">{pageText("about_6b21fb")}</h2>
           {fileLoading ? (
             <PageSkeleton variant="detail" />
           ) : file?.markdown ? (
@@ -3087,13 +3083,13 @@ export function SkillDetailPage({
             <div className="text-xs text-muted-foreground">{translateUi("interfaceCopy.mode")}</div>
             <div className="mt-1 flex flex-wrap items-center gap-2">
               {skill.editable ? (
-                "Editable"
+                pageText("editable_b91fae")
               ) : (
                 <>
-                  <span>Read only</span>
+                  <span>{pageText("readOnly_601dcc")}</span>
                   <Button type="button" variant="outline" size="xs" onClick={onFork}>
                     <GitFork className="mr-1 h-3 w-3" />
-                    {skill.sourceType === "github" ? "Make a copy" : "Fork"}
+                    {skill.sourceType === "github" ? pageText("makeACopy_fdf343") : "Fork"}
                   </Button>
                 </>
               )}
@@ -3132,8 +3128,7 @@ export function SkillDetailPage({
                 <div className="min-w-0">
                   <div className="font-medium">{versionLabel(version)}</div>
                   <div className="mt-1 text-xs text-muted-foreground">
-                    {relativeTime(version.createdAt)} · {version.fileInventory.length} files
-                  </div>
+                    {relativeTime(version.createdAt)} · {version.fileInventory.length}{" " + pageText("files_a1f13b")}</div>
                 </div>
                 <Button
                   type="button"
@@ -3168,7 +3163,7 @@ export function SkillDetailPage({
       <div className="space-y-3">
         <div className="flex items-center justify-between gap-3">
           <p className="text-sm text-muted-foreground">
-            {attached.length} {attached.length === 1 ? "agent" : "agents"} attached
+            {attached.length} {attached.length === 1 ? pageText("agent_0608c4") : pageText("agents_e7052a")} attached
             {selectedVersion ? ` · ${versionLabel(selectedVersion)}` : " · Latest"}
           </p>
           <AttachAgentsPopover
@@ -3196,9 +3191,7 @@ export function SkillDetailPage({
                       <span className="truncate font-medium">{agent.name}</span>
                       {meta?.paused ? (
                         <Badge variant="outline" className="[&>svg]:size-2.5 border-amber-500/30 bg-amber-500/10 px-1.5 text-(length:--text-nano) uppercase tracking-wide text-amber-500">
-                          <Pause className="h-2.5 w-2.5" aria-hidden="true" />
-                          Paused
-                        </Badge>
+                          <Pause className="h-2.5 w-2.5" aria-hidden="true" />{pageText("paused_c7dfb6")}</Badge>
                       ) : null}
                     </div>
                     <div className="mt-0.5 text-xs text-muted-foreground">{agent.adapterType}</div>
@@ -3206,9 +3199,7 @@ export function SkillDetailPage({
                   <Link
                     to={`/agents/${agent.urlKey}/skills`}
                     className="shrink-0 text-xs text-muted-foreground no-underline hover:text-foreground"
-                  >
-                    View
-                  </Link>
+                  >{pageText("view_69bd4e")}</Link>
                 </div>
               );
             })}
@@ -3282,7 +3273,7 @@ export function SkillDetailPage({
                         onClick={() => setDescExpanded((value) => !value)}
                         className="mt-0.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
                       >
-                        {descExpanded ? "Show less" : "View all"}
+                        {descExpanded ? pageText("showLess_4c852b") : "View all"}
                       </button>
                     ) : null}
                   </div>
@@ -3311,7 +3302,7 @@ export function SkillDetailPage({
                   <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs text-muted-foreground">
                     <Download className="h-3.5 w-3.5" aria-hidden="true" />
                     <span className="font-medium text-foreground">{detail.attachedAgentCount}</span>
-                    <span className="hidden sm:inline">{detail.attachedAgentCount === 1 ? "install" : "installs"}</span>
+                    <span className="hidden sm:inline">{detail.attachedAgentCount === 1 ? pageText("install_89fb51") : "installs"}</span>
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>Agents in this organization that currently have this skill installed.</TooltipContent>
@@ -3334,7 +3325,7 @@ export function SkillDetailPage({
                 title="Fork this skill"
               >
                 <GitFork className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">{skill.sourceType === "github" ? "Make a copy" : "Fork"}</span>
+                <span className="hidden sm:inline">{skill.sourceType === "github" ? pageText("makeACopy_fdf343") : "Fork"}</span>
                 <span className="font-medium text-foreground">{detail.forkCount}</span>
               </button>
             </div>
@@ -3402,15 +3393,14 @@ export function SkillDetailPage({
                         <AgentAvatar agent={meta} size={16} className="h-4 w-4 shrink-0 text-muted-foreground"/>
                         <span className="min-w-0 flex-1 truncate text-foreground">{agent.name}</span>
                         {meta?.paused ? (
-                          <Pause className="h-3 w-3 shrink-0 text-amber-500" aria-label="Paused" />
+                          <Pause className="h-3 w-3 shrink-0 text-amber-500" aria-label={pageText("paused_c7dfb6")} />
                         ) : null}
                       </Link>
                     );
                   })}
                   {detail.usedByAgents.length > 3 ? (
                     <p className="px-1.5 pt-0.5 text-xs text-muted-foreground">
-                      and {detail.usedByAgents.length - 3} more
-                    </p>
+                      and {detail.usedByAgents.length - 3}{" " + pageText("more_e7c95b")}</p>
                   ) : null}
                 </div>
               )}
@@ -3489,13 +3479,10 @@ export function SkillDetailPage({
                   <span className="truncate font-mono text-foreground">{currentPin ?? "untracked"}</span>
                 </div>
                 <Button variant="outline" size="sm" className="w-full" onClick={onCheckUpdates} disabled={checkUpdatesPending || updateStatusLoading}>
-                  <RefreshCw className={cn("mr-1.5 h-3.5 w-3.5", (checkUpdatesPending || updateStatusLoading) && "animate-spin")} />
-                  Check for updates
-                </Button>
+                  <RefreshCw className={cn("mr-1.5 h-3.5 w-3.5", (checkUpdatesPending || updateStatusLoading) && "animate-spin")} />{pageText("checkForUpdates_736b90")}</Button>
                 {updateStatus?.supported && updateStatus.hasUpdate ? (
                   <Button size="sm" className="w-full" onClick={onInstallUpdate} disabled={installUpdatePending}>
-                    <ArrowUpCircle className={cn("mr-1.5 h-3.5 w-3.5", installUpdatePending && "animate-spin")} />
-                    Install update{latestPin ? ` ${latestPin}` : ""}
+                    <ArrowUpCircle className={cn("mr-1.5 h-3.5 w-3.5", installUpdatePending && "animate-spin")} />{pageText("installUpdate_8a3695")}{latestPin ? ` ${latestPin}` : ""}
                   </Button>
                 ) : updateStatus?.supported && !updateStatus.hasUpdate && !updateStatusLoading ? (
                   <p className="text-xs text-muted-foreground">Up to date.</p>
@@ -3536,12 +3523,10 @@ export function SkillDetailPage({
               setEditMode(false);
             }}
             disabled={savePending}
-          >
-            Discard
-          </Button>
+          >{pageText("discard_36fff6")}</Button>
           <Button size="sm" onClick={onSave} disabled={savePending}>
             <Save className="mr-1.5 h-3.5 w-3.5" />
-            {savePending ? "Saving…" : "Save changes"}
+            {savePending ? pageText("saving_56a228") : pageText("saveChanges_179359")}
           </Button>
         </div>
       ) : null}
@@ -3587,9 +3572,7 @@ export function SkillDetailPage({
                   setSettingsCategoryDraft(skill.categories.join(", "));
                 }}
                 disabled={!settingsDirty || updateSettingsPending}
-              >
-                Reset
-              </Button>
+              >{pageText("reset_44c57a")}</Button>
               <Button
                 type="button"
                 size="sm"
@@ -3597,7 +3580,7 @@ export function SkillDetailPage({
                 disabled={!settingsDirty || updateSettingsPending}
               >
                 <Save className="mr-1.5 h-3.5 w-3.5" />
-                {updateSettingsPending ? "Saving…" : "Save settings"}
+                {updateSettingsPending ? pageText("saving_56a228") : "Save settings"}
               </Button>
             </div>
             {detail.editable ? (
@@ -3614,7 +3597,7 @@ export function SkillDetailPage({
                     title={detail.usedByAgents.length > 0 ? "Detach this skill from all agents before removing it." : undefined}
                   >
                     <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-                    {deletePending ? "Removing…" : "Remove"}
+                    {deletePending ? pageText("removing_579d7e") : pageText("remove_e96390")}
                   </Button>
                 </div>
               </div>
@@ -3677,6 +3660,7 @@ function SkillPane({
   onSubmitAttach: (ids: string[], versionId: string | null) => void;
   attachPending: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   if (!detail) {
     if (loading) {
@@ -3730,7 +3714,7 @@ function SkillPane({
               title={removeDisabledReason ?? undefined}
             >
               <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-              {deletePending ? "Removing..." : "Remove"}
+              {deletePending ? pageText("removing_2a76d4") : pageText("remove_e96390")}
             </Button>
             {detail.editable ? (
               <button
@@ -3738,7 +3722,7 @@ function SkillPane({
                 onClick={() => setEditMode(!editMode)}
               >
                 <Pencil className="h-3.5 w-3.5" />
-                {editMode ? "Stop editing" : "Edit"}
+                {editMode ? "Stop editing" : pageText("edit_530164")}
               </button>
             ) : (
               <div className="text-sm text-muted-foreground">{detail.editableReason}</div>
@@ -3788,17 +3772,14 @@ function SkillPane({
                   onClick={onCheckUpdates}
                   disabled={checkUpdatesPending || updateStatusLoading}
                 >
-                  <RefreshCw className={cn("mr-1.5 h-3.5 w-3.5", (checkUpdatesPending || updateStatusLoading) && "animate-spin")} />
-                  Check for updates
-                </Button>
+                  <RefreshCw className={cn("mr-1.5 h-3.5 w-3.5", (checkUpdatesPending || updateStatusLoading) && "animate-spin")} />{pageText("checkForUpdates_736b90")}</Button>
                 {updateStatus?.supported && updateStatus.hasUpdate && (
                   <Button
                     size="sm"
                     onClick={onInstallUpdate}
                     disabled={installUpdatePending}
                   >
-                    <RefreshCw className={cn("mr-1.5 h-3.5 w-3.5", installUpdatePending && "animate-spin")} />
-                    Install update{latestPin ? ` ${latestPin}` : ""}
+                    <RefreshCw className={cn("mr-1.5 h-3.5 w-3.5", installUpdatePending && "animate-spin")} />{pageText("installUpdate_8a3695")}{latestPin ? ` ${latestPin}` : ""}
                   </Button>
                 )}
                 {updateStatus?.supported && !updateStatus.hasUpdate && !updateStatusLoading && (
@@ -3815,7 +3796,7 @@ function SkillPane({
             </div>
             <div className="flex items-center gap-2">
               <span className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">{translateUi("interfaceCopy.mode")}</span>
-              <span>{detail.editable ? "Editable" : "Read only"}</span>
+              <span>{detail.editable ? pageText("editable_b91fae") : pageText("readOnly_601dcc")}</span>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -3883,18 +3864,14 @@ function SkillPane({
                   onClick={() => setViewMode("preview")}
                 >
                   <span className="flex items-center gap-1.5">
-                    <Eye className="h-3.5 w-3.5" />
-                    View
-                  </span>
+                    <Eye className="h-3.5 w-3.5" />{pageText("view_69bd4e")}</span>
                 </button>
                 <button
                   className={cn("border-l border-border px-3 py-1.5 text-sm", viewMode === "code" && "text-foreground", viewMode !== "code" && "text-muted-foreground")}
                   onClick={() => setViewMode("code")}
                 >
                   <span className="flex items-center gap-1.5">
-                    <Code2 className="h-3.5 w-3.5" />
-                    Code
-                  </span>
+                    <Code2 className="h-3.5 w-3.5" />{pageText("code_adac69")}</span>
                 </button>
               </div>
             )}
@@ -3903,7 +3880,7 @@ function SkillPane({
                 <Button variant="ghost" size="sm" onClick={() => setEditMode(false)} disabled={savePending}>{translateUi("interfaceCopy.cancel")}</Button>
                 <Button size="sm" onClick={onSave} disabled={savePending}>
                   <Save className="mr-1.5 h-3.5 w-3.5" />
-                  {savePending ? "Saving..." : "Save"}
+                  {savePending ? pageText("saving_ae7e88") : pageText("save_efc007")}
                 </Button>
               </>
             )}
@@ -3944,6 +3921,7 @@ function SkillPane({
 }
 
 export function CompanySkills({ collectionView }: { collectionView?: "authored" } = {}) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { "*": routePath } = useParams<{ "*": string }>();
   const navigate = useNavigate();
@@ -4350,7 +4328,7 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
       setSource("");
     },
     onError: (error) => {
-      reportSkillError(error, "Skill import failed", "Failed to import skill source.", "Importing skills");
+      reportSkillError(error, "Skill import failed", interfaceMessage("interface:errorFailedToImportSkillSourceSentence"), "Importing skills");
     },
   });
 
@@ -4393,7 +4371,7 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
     },
     onError: (error) => {
       setScanStatusMessage(null);
-      reportSkillError(error, "Project skill scan failed", "Failed to scan project workspaces.", "Scanning projects for skills");
+      reportSkillError(error, "Project skill scan failed", interfaceMessage("interface:errorFailedToScanProjectWorkspacesSentence"), "Scanning projects for skills");
     },
   });
 
@@ -4413,7 +4391,7 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
     onError: (error) => {
       const message = describeError(error).body;
       setCreateError(message);
-      reportSkillError(error, "Skill creation failed", "Failed to create skill.", "Creating a skill");
+      reportSkillError(error, "Skill creation failed", interfaceMessage("interface:errorFailedToCreateSkillSentence"), "Creating a skill");
     },
   });
 
@@ -4514,7 +4492,7 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
       });
     },
     onError: (error) => {
-      reportSkillError(error, "Update failed", "Failed to install skill update.", "Updating this skill");
+      reportSkillError(error, "Update failed", interfaceMessage("interface:errorFailedToInstallSkillUpdateSentence"), "Updating this skill");
     },
   });
 
@@ -4829,7 +4807,7 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
     } catch (moveError) {
       pushToast({
         tone: "error",
-        title: "Failed to move skills",
+        title: interfaceMessage("interface:errorFailedToMoveSkills"),
         body: describeError(moveError).body,
       });
     }
@@ -5062,7 +5040,7 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
       });
     },
     onError: (error) => {
-      reportSkillError(error, "Remove failed", "Failed to remove skill.", "Removing this skill");
+      reportSkillError(error, "Remove failed", interfaceMessage("interface:errorFailedToRemoveSkillSentence"), "Removing this skill");
     },
   });
 
@@ -5155,7 +5133,7 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
       <Dialog open={deleteOpen} onOpenChange={closeDeleteDialog}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Remove skill</DialogTitle>
+            <DialogTitle>{pageText("removeSkill_042bc4")}</DialogTitle>
             <DialogDescription>
               Remove this skill from the organization library. If any agents still use it, removal will be blocked until it is detached.
             </DialogDescription>
@@ -5188,7 +5166,7 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
                   onClick={() => deleteSkill.mutate()}
                   disabled={deleteSkill.isPending || !deleteTargetSkillId}
                 >
-                  {deleteSkill.isPending ? "Removing..." : "Remove skill"}
+                  {deleteSkill.isPending ? pageText("removing_2a76d4") : pageText("removeSkill_042bc4")}
                 </Button>
               </>
             )}
@@ -5377,9 +5355,7 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
               to={studioBackHref}
               className="mb-3 inline-flex items-center gap-1.5 text-sm text-muted-foreground no-underline transition-colors hover:text-foreground"
             >
-              <ChevronLeft className="h-4 w-4" />
-              Back
-            </Link>
+              <ChevronLeft className="h-4 w-4" />{pageText("back_b52b36")}</Link>
             <h1 className="text-2xl font-semibold">{studioTitle}</h1>
             <p className="mt-1 max-w-2xl text-sm text-muted-foreground">{studioDescription}</p>
           </div>
@@ -5408,7 +5384,7 @@ export function CompanySkills({ collectionView }: { collectionView?: "authored" 
             <Tabs value={legacyDiscoveryTab} onValueChange={(value) => setLegacyDiscoveryTab(value as "all" | "installed" | "catalog" | "bundled")}>
               <TabsList variant="line" aria-label="Skills view">
                 <TabsTrigger value="all">{translateUi("interfaceCopy.all")}</TabsTrigger>
-                <TabsTrigger value="installed">Installed</TabsTrigger>
+                <TabsTrigger value="installed">{pageText("installed_7bb440")}</TabsTrigger>
                 <TabsTrigger value="catalog">Catalog</TabsTrigger>
                 <TabsTrigger value="bundled">{translateUi("interfaceCopy.bundled")}</TabsTrigger>
               </TabsList>

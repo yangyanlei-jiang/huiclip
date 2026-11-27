@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { SpekoPhoneLineForm } from "@/components/voice/SpekoPhoneLine";
 import { SpekoIncomingCallCard } from "@/components/voice/SpekoIncomingCalls";
 import { SpekoCallHistoryView, SpekoCallActivityItem, SpekoUnapprovedCallActivityItem } from "@/components/voice/SpekoCallHistory";
@@ -507,6 +508,7 @@ function ComposerActionsExample() {
 }
 
 export function DesignGuide() {
+  const { t: pageText } = usePageTranslation("interface");
   const [agentmailDemoKey, setAgentmailDemoKey] = useState("");
   const [wizardStep, setWizardStep] = useState(0);
   const [status, setStatus] = useState("todo");
@@ -602,10 +604,10 @@ export function DesignGuide() {
           title emphasis, metadata remains stable, and the task identifier trails.
         </p>
         <CollectionToolbar
-          context={<span className="text-sm font-medium">Recent tasks</span>}
-          search={<Input aria-label="Search task collection example" placeholder="Search tasks..." />}
-          controls={<Button variant="outline" size="sm">Filter</Button>}
-          actions={<Button size="sm">New task</Button>}
+          context={<span className="text-sm font-medium">{pageText("recentTasks_21bcad")}</span>}
+          search={<Input aria-label="Search task collection example" placeholder={pageText("searchTasks_927df1")} />}
+          controls={<Button variant="outline" size="sm">{pageText("filter_d7decf")}</Button>}
+          actions={<Button size="sm">{pageText("newTask_17b2b8")}</Button>}
           feedback={<span className="text-xs text-muted-foreground">1 task · Updated newest first</span>}
         />
         <div className="overflow-hidden rounded-lg border border-border">
@@ -614,7 +616,7 @@ export function DesignGuide() {
             presentation="task"
             unreadState="visible"
             metadata={<span className="text-xs text-muted-foreground">Updated 12m ago</span>}
-            actions={<Button variant="ghost" size="xs">More</Button>}
+            actions={<Button variant="ghost" size="xs">{pageText("more_4bab2d")}</Button>}
           />
         </div>
       </Section>
@@ -735,11 +737,11 @@ export function DesignGuide() {
       <Section title="Buttons">
         <SubSection title="Variants">
           <div className="flex items-center gap-2 flex-wrap">
-            <Button variant="default">Default</Button>
+            <Button variant="default">{pageText("default_808d7d")}</Button>
             <Button variant="secondary">Secondary</Button>
             <Button variant="outline">Outline</Button>
             <Button variant="ghost">Ghost</Button>
-            <Button variant="destructive">Destructive</Button>
+            <Button variant="destructive">{pageText("destructive_f58c83")}</Button>
             <Button variant="link">Link</Button>
           </div>
         </SubSection>
@@ -748,7 +750,7 @@ export function DesignGuide() {
           <div className="flex items-center gap-2 flex-wrap">
             <Button size="xs">Extra Small</Button>
             <Button size="sm">Small</Button>
-            <Button size="default">Default</Button>
+            <Button size="default">{pageText("default_808d7d")}</Button>
             <Button size="lg">Large</Button>
           </div>
         </SubSection>
@@ -764,16 +766,16 @@ export function DesignGuide() {
 
         <SubSection title="With icons">
           <div className="flex items-center gap-2 flex-wrap">
-            <Button><Plus /> New Issue</Button>
+            <Button><Plus />{" " + pageText("newIssue_d1e1f6")}</Button>
             <Button variant="outline"><Upload /> Upload</Button>
-            <Button variant="destructive"><Trash2 /> Delete</Button>
-            <Button size="sm"><Plus /> Add</Button>
+            <Button variant="destructive"><Trash2 />{" " + pageText("delete_f6fdbe")}</Button>
+            <Button size="sm"><Plus />{" " + pageText("add_61cc55")}</Button>
           </div>
         </SubSection>
 
         <SubSection title="States">
           <div className="flex items-center gap-2 flex-wrap">
-            <Button disabled>Disabled</Button>
+            <Button disabled>{pageText("disabled_f4f447")}</Button>
             <Button variant="outline" disabled>Disabled Outline</Button>
           </div>
         </SubSection>
@@ -785,10 +787,10 @@ export function DesignGuide() {
       <Section title="Badges">
         <SubSection title="Variants">
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant="default">Default</Badge>
+            <Badge variant="default">{pageText("default_808d7d")}</Badge>
             <Badge variant="secondary">Secondary</Badge>
             <Badge variant="outline">Outline</Badge>
-            <Badge variant="destructive">Destructive</Badge>
+            <Badge variant="destructive">{pageText("destructive_f58c83")}</Badge>
             <Badge variant="ghost">Ghost</Badge>
           </div>
         </SubSection>
@@ -993,7 +995,7 @@ export function DesignGuide() {
       {/* ============================================================ */}
       <Section title="Form Elements">
         <div className="grid gap-6 md:grid-cols-2">
-          <SubSection title="Input">
+          <SubSection title={pageText("input_b568d4")}>
             <Input placeholder="Default input" />
             <Input placeholder="Disabled input" disabled className="mt-2" />
           </SubSection>
@@ -1046,7 +1048,7 @@ export function DesignGuide() {
                   onSave={setInlineDesc}
                   as="p"
                   className="text-sm text-muted-foreground"
-                  placeholder="Add a description..."
+                  placeholder={pageText("addADescription_8c1d83")}
                   multiline
                 />
               </div>
@@ -1058,7 +1060,7 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  SELECT                                                       */}
       {/* ============================================================ */}
-      <Section title="Select">
+      <Section title={pageText("select_859822")}>
         <p className="mb-4 text-sm text-muted-foreground">Native single-value dropdowns share an inset, theme-aware caret and reserve room for it in the base stylesheet. Multiple-selection lists and controls with a custom icon keep their own appearance.</p>
         <div className="grid gap-6 md:grid-cols-2">
           <SubSection title="Default size">
@@ -1067,11 +1069,11 @@ export function DesignGuide() {
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="backlog">Backlog</SelectItem>
+                <SelectItem value="backlog">{pageText("backlog_1fe3af")}</SelectItem>
                 <SelectItem value="todo">Todo</SelectItem>
-                <SelectItem value="in_progress">In Progress</SelectItem>
+                <SelectItem value="in_progress">{pageText("inProgress_f61ead")}</SelectItem>
                 <SelectItem value="in_review">In Review</SelectItem>
-                <SelectItem value="done">Done</SelectItem>
+                <SelectItem value="done">{pageText("done_e9b450")}</SelectItem>
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">Current value: {selectValue}</p>
@@ -1121,9 +1123,7 @@ export function DesignGuide() {
               Watch issue
             </DropdownMenuCheckboxItem>
             <DropdownMenuItem variant="destructive">
-              <Trash2 className="h-4 w-4" />
-              Delete issue
-            </DropdownMenuItem>
+              <Trash2 className="h-4 w-4" />{pageText("deleteIssue_91e845")}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </Section>
@@ -1153,12 +1153,12 @@ export function DesignGuide() {
         <Collapsible open={collapsibleOpen} onOpenChange={setCollapsibleOpen} className="space-y-2">
           <CollapsibleTrigger asChild>
             <Button variant="outline" size="sm">
-              {collapsibleOpen ? "Hide" : "Show"} advanced filters
+              {collapsibleOpen ? "Hide" : pageText("show_d97d1e")} advanced filters
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="rounded-md border border-border p-3">
             <div className="space-y-2">
-              <Label htmlFor="owner-filter">Owner</Label>
+              <Label htmlFor="owner-filter">{pageText("owner_89ff31")}</Label>
               <Input id="owner-filter" placeholder="Filter by agent name" />
             </div>
           </CollapsibleContent>
@@ -1180,17 +1180,17 @@ export function DesignGuide() {
             </SheetHeader>
             <div className="space-y-4 px-4">
               <div className="space-y-1">
-                <Label htmlFor="sheet-title">Title</Label>
+                <Label htmlFor="sheet-title">{pageText("title_768e0c")}</Label>
                 <Input id="sheet-title" defaultValue="Improve onboarding docs" />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="sheet-description">Description</Label>
+                <Label htmlFor="sheet-description">{pageText("description_55f8eb")}</Label>
                 <Textarea id="sheet-description" defaultValue="Capture setup pitfalls and screenshots." />
               </div>
             </div>
             <SheetFooter>
-              <Button variant="outline">Cancel</Button>
-              <Button>Save</Button>
+              <Button variant="outline">{pageText("cancel_77dfd2")}</Button>
+              <Button>{pageText("save_efc007")}</Button>
             </SheetFooter>
           </SheetContent>
         </Sheet>
@@ -1222,13 +1222,9 @@ export function DesignGuide() {
               <CommandEmpty>No results found.</CommandEmpty>
               <CommandGroup heading="Pages">
                 <CommandItem>
-                  <LayoutDashboard className="h-4 w-4" />
-                  Dashboard
-                </CommandItem>
+                  <LayoutDashboard className="h-4 w-4" />{pageText("dashboard_d87f47")}</CommandItem>
                 <CommandItem>
-                  <CircleDot className="h-4 w-4" />
-                  Issues
-                </CommandItem>
+                  <CircleDot className="h-4 w-4" />{pageText("issues_30ce4c")}</CommandItem>
               </CommandGroup>
               <CommandSeparator />
               <CommandGroup heading="Actions">
@@ -1253,7 +1249,7 @@ export function DesignGuide() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="#">Projects</BreadcrumbLink>
+              <BreadcrumbLink href="#">{pageText("projects_53e890")}</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
@@ -1298,8 +1294,8 @@ export function DesignGuide() {
               <p className="text-sm">Card content goes here. This is the main body area.</p>
             </CardContent>
             <CardFooter className="gap-2">
-              <Button size="sm">Action</Button>
-              <Button variant="outline" size="sm">Cancel</Button>
+              <Button size="sm">{pageText("action_97c89a")}</Button>
+              <Button variant="outline" size="sm">{pageText("cancel_77dfd2")}</Button>
             </CardFooter>
           </Card>
         </SubSection>
@@ -1307,7 +1303,7 @@ export function DesignGuide() {
         <SubSection title="Metric Cards">
           <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
             <MetricCard icon={Bot} value={12} label="Active Agents" description="+3 this week" />
-            <MetricCard icon={CircleDot} value={48} label="Open Issues" />
+            <MetricCard icon={CircleDot} value={48} label={pageText("openIssues_6c604c")} />
             <MetricCard icon={DollarSign} value="$1,234" label="Monthly Cost" description="Under budget" />
             <MetricCard icon={Zap} value="99.9%" label="Uptime" />
           </div>
@@ -1321,10 +1317,10 @@ export function DesignGuide() {
         <SubSection title="Default (pill) variant">
           <Tabs defaultValue="overview">
             <TabsList>
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="runs">Runs</TabsTrigger>
+              <TabsTrigger value="overview">{pageText("overview_0efc2e")}</TabsTrigger>
+              <TabsTrigger value="runs">{pageText("runs_fcde5c")}</TabsTrigger>
               <TabsTrigger value="config">Config</TabsTrigger>
-              <TabsTrigger value="costs">Costs</TabsTrigger>
+              <TabsTrigger value="costs">{pageText("costs_799b3e")}</TabsTrigger>
             </TabsList>
             <TabsContent value="overview">
               <p className="text-sm text-muted-foreground py-4">Overview tab content.</p>
@@ -1344,9 +1340,9 @@ export function DesignGuide() {
         <SubSection title="Line variant">
           <Tabs defaultValue="summary">
             <TabsList variant="line">
-              <TabsTrigger value="summary">Summary</TabsTrigger>
-              <TabsTrigger value="details">Details</TabsTrigger>
-              <TabsTrigger value="comments">Comments</TabsTrigger>
+              <TabsTrigger value="summary">{pageText("summary_12b71c")}</TabsTrigger>
+              <TabsTrigger value="details">{pageText("details_dc3dec")}</TabsTrigger>
+              <TabsTrigger value="comments">{pageText("comments_fce06e")}</TabsTrigger>
             </TabsList>
             <TabsContent value="summary">
               <p className="text-sm text-muted-foreground py-4">Summary content with underline tabs.</p>
@@ -1521,7 +1517,7 @@ export function DesignGuide() {
           </div>
         </SubSection>
 
-        <SubSection title="Group">
+        <SubSection title={pageText("group_171a06")}>
           <AvatarGroup>
             <Avatar><AvatarFallback>A1</AvatarFallback></Avatar>
             <Avatar><AvatarFallback>A2</AvatarFallback></Avatar>
@@ -1595,7 +1591,7 @@ export function DesignGuide() {
             <TooltipTrigger asChild>
               <Button variant="ghost" size="icon-sm"><Settings /></Button>
             </TooltipTrigger>
-            <TooltipContent>Settings</TooltipContent>
+            <TooltipContent>{pageText("settings_c7f73b")}</TooltipContent>
           </Tooltip>
         </div>
       </Section>
@@ -1617,17 +1613,17 @@ export function DesignGuide() {
             </DialogHeader>
             <div className="space-y-3">
               <div>
-                <Label>Name</Label>
+                <Label>{pageText("name_709a23")}</Label>
                 <Input placeholder="Enter a name" className="mt-1.5" />
               </div>
               <div>
-                <Label>Description</Label>
+                <Label>{pageText("description_55f8eb")}</Label>
                 <Textarea placeholder="Describe..." className="mt-1.5" />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline">Cancel</Button>
-              <Button>Save</Button>
+              <Button variant="outline">{pageText("cancel_77dfd2")}</Button>
+              <Button>{pageText("save_efc007")}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -1690,7 +1686,7 @@ export function DesignGuide() {
               <span className="absolute inline-flex h-full w-full rounded-full bg-blue-400 animate-pulse" />
               <span className="inline-flex h-full w-full rounded-full bg-blue-500" />
             </span>
-            <span className="text-blue-600 dark:text-blue-400">Live</span>
+            <span className="text-blue-600 dark:text-blue-400">{pageText("live_65c821")}</span>
           </div>
         </div>
       </Section>
@@ -1701,25 +1697,25 @@ export function DesignGuide() {
       <Section title="Property Row Pattern">
         <div className="border border-border rounded-md p-4 space-y-1 max-w-sm">
           <div className="flex items-center justify-between py-1.5">
-            <span className="text-xs text-muted-foreground">Status</span>
+            <span className="text-xs text-muted-foreground">{pageText("status_bae7d5")}</span>
             <StatusBadge status="active" />
           </div>
           {/* PAP-411: priority metadata row hidden behind SHOW_TASK_PRIORITY_UI. */}
           {SHOW_TASK_PRIORITY_UI && (
             <div className="flex items-center justify-between py-1.5">
-              <span className="text-xs text-muted-foreground">Priority</span>
+              <span className="text-xs text-muted-foreground">{pageText("priority_886cbf")}</span>
               <PriorityIcon priority="high" />
             </div>
           )}
           <div className="flex items-center justify-between py-1.5">
-            <span className="text-xs text-muted-foreground">Responsible</span>
+            <span className="text-xs text-muted-foreground">{pageText("responsible_96cd62")}</span>
             <div className="flex items-center gap-1.5">
               <Avatar size="sm"><AvatarFallback>A</AvatarFallback></Avatar>
               <span className="text-xs">Agent Alpha</span>
             </div>
           </div>
           <div className="flex items-center justify-between py-1.5">
-            <span className="text-xs text-muted-foreground">Created</span>
+            <span className="text-xs text-muted-foreground">{pageText("created_accf40")}</span>
             <span className="text-xs">Jan 15, 2025</span>
           </div>
         </div>
@@ -1737,7 +1733,7 @@ export function DesignGuide() {
           <p className="text-sm text-muted-foreground">Shared by connection setup and trigger previews. Setup navigation takes over the section sidebar; each step owns a single footer.</p>
           <div className="max-w-sm space-y-6">
             <SetupWizardNavigation inline labels={["Choose trigger", "Configure", "Review"]} step={wizardStep} availableStep={2} onSelect={setWizardStep} />
-            <SetupWizardFooter onSaveExit={() => setWizardStep(0)}><Button onClick={() => setWizardStep((wizardStep + 1) % 3)}>Continue</Button></SetupWizardFooter>
+            <SetupWizardFooter onSaveExit={() => setWizardStep(0)}><Button onClick={() => setWizardStep((wizardStep + 1) % 3)}>{pageText("continue_2e0262")}</Button></SetupWizardFooter>
           </div>
         </SubSection>
         <SubSection title="Agent chat picker">
@@ -1758,24 +1754,16 @@ export function DesignGuide() {
           </p>
           <Card className="block w-60 p-3 space-y-0.5">
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium bg-accent text-accent-foreground">
-              <LayoutDashboard className="h-4 w-4" />
-              Dashboard
-            </div>
+              <LayoutDashboard className="h-4 w-4" />{pageText("dashboard_d87f47")}</div>
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground cursor-pointer">
-              <CircleDot className="h-4 w-4" />
-              Issues
-              <Badge variant="ghost" className="ml-auto bg-primary text-primary-foreground px-1.5">
+              <CircleDot className="h-4 w-4" />{pageText("issues_30ce4c")}<Badge variant="ghost" className="ml-auto bg-primary text-primary-foreground px-1.5">
                 12
               </Badge>
             </div>
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground cursor-pointer">
-              <Bot className="h-4 w-4" />
-              Agents
-            </div>
+              <Bot className="h-4 w-4" />{pageText("agents_64acf7")}</div>
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground cursor-pointer">
-              <Hexagon className="h-4 w-4" />
-              Projects
-            </div>
+              <Hexagon className="h-4 w-4" />{pageText("projects_53e890")}</div>
           </Card>
         </SubSection>
 
@@ -1786,9 +1774,7 @@ export function DesignGuide() {
               List
             </button>
             <button className="px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-accent/50 rounded-r-md">
-              <Target className="h-3.5 w-3.5 inline mr-1" />
-              Org
-            </button>
+              <Target className="h-3.5 w-3.5 inline mr-1" />{pageText("org_972f71")}</button>
           </div>
         </SubSection>
       </Section>
@@ -1800,7 +1786,7 @@ export function DesignGuide() {
         <div>
           <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-t-md">
             <StatusIcon status="in_progress" />
-            <span className="text-sm font-medium">In Progress</span>
+            <span className="text-sm font-medium">{pageText("inProgress_f61ead")}</span>
             <span className="text-xs text-muted-foreground ml-1">2</span>
           </div>
           <div className="border border-border rounded-b-md">
@@ -1830,7 +1816,7 @@ export function DesignGuide() {
           <div className="space-y-3">
             <div className="rounded-md border border-border p-3">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium text-muted-foreground">Agent</span>
+                <span className="text-xs font-medium text-muted-foreground">{pageText("agent_5ce2e6")}</span>
                 <span className="text-xs text-muted-foreground">Jan 15, 2025</span>
               </div>
               <p className="text-sm">Started working on the authentication module. Will need API keys configured.</p>
@@ -1845,7 +1831,7 @@ export function DesignGuide() {
           </div>
           <div className="space-y-2">
             <Textarea placeholder="Leave a comment..." rows={3} />
-            <Button size="sm">Comment</Button>
+            <Button size="sm">{pageText("comment_153d7a")}</Button>
           </div>
         </div>
       </Section>
@@ -1858,9 +1844,9 @@ export function DesignGuide() {
           <table className="w-full text-xs">
             <thead className="border-b border-border bg-accent/20">
               <tr>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground">Model</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground">Tokens</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground">Cost</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground">{pageText("model_68c2cc")}</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground">{pageText("tokens_c38c6c")}</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground">{pageText("cost_64ae43")}</th>
               </tr>
             </thead>
             <tbody>
@@ -2374,7 +2360,7 @@ export function DesignGuide() {
         <p className="text-sm text-muted-foreground">Use AgentSetupPrompt for prompts handed to an external agent: connections, webhook setup, onboarding, and task handoffs. One click copies the complete prompt, opens its preview, and confirms success inline; clipboard failures offer selectable text.</p>
         <SetupPrompt prompt="Design guide example. This is a preview, not a real provider setup request." />
         <p className="text-sm text-muted-foreground">For a named recipient, pass the optional agent name and logo. The same copy feedback, preview, and manual clipboard recovery apply.</p>
-        <SetupPrompt prompt="Design guide example for Dot. No live pairing code." label="Copy setup prompt" title="Connect your Dot" agent={{ name: "Dot", src: "/brands/adapters/openai-dot.svg" }} />
+        <SetupPrompt prompt="Design guide example for Dot. No live pairing code." label={pageText("copySetupPrompt_c42e18")} title="Connect your Dot" agent={{ name: "Dot", src: "/brands/adapters/openai-dot.svg" }} />
       </Section>
 
       <Section title="Connection Intent">
@@ -2454,7 +2440,7 @@ export function DesignGuide() {
         <p className="text-sm text-muted-foreground">
           Token-backed full-width notice (<span className="font-mono">brandBanner</span> tones). Use{" "}
           <span className="font-mono">info</span> for provenance/context and{" "}
-          <span className="font-mono">warning</span> for paused/attention. Supports an optional bold
+          <span className="font-mono">{pageText("warning_383fd7")}</span> for paused/attention. Supports an optional bold
           title and a trailing actions slot. Replaces hand-rolled{" "}
           <span className="font-mono">bg-yellow-*</span>/<span className="font-mono">bg-blue-*</span>{" "}
           banners.
@@ -2462,7 +2448,7 @@ export function DesignGuide() {
         <div className="space-y-3">
           <InlineBanner
             tone="info"
-            title="Built-in agent"
+            title={pageText("builtInAgent_0941ba")}
             actions={<Button variant="outline" size="sm">Reset to defaults</Button>}
           >
             Ships with Paperclip and powers <strong>Briefs</strong>. It can be paused but not deleted.
@@ -2472,8 +2458,8 @@ export function DesignGuide() {
             title="Briefs is paused."
             actions={
               <>
-                <Button variant="ghost" size="sm">View agent</Button>
-                <Button size="sm">Resume agent</Button>
+                <Button variant="ghost" size="sm">{pageText("viewAgent_98f8d9")}</Button>
+                <Button size="sm">{pageText("resumeAgent_4bfc7e")}</Button>
               </>
             }
           >
@@ -2482,7 +2468,7 @@ export function DesignGuide() {
           <InlineBanner
             tone="danger"
             title="Summary generation failed."
-            actions={<Button size="sm">Retry</Button>}
+            actions={<Button size="sm">{pageText("retry_9f5cd8")}</Button>}
           >
             The linked issue reached a terminal state before a summary was written.
           </InlineBanner>

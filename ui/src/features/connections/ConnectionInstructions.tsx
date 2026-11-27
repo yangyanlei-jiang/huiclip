@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useId, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -28,11 +29,12 @@ export function ConnectionInstructionsEditor({ provider, template, value, onChan
   onChange: (value: ConnectionAgentInstructions) => void;
   disabled?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const id = useId();
   const [editing, setEditing] = useState(false);
   const changed = value.text !== template.text || value.template?.id !== template.id || value.template?.version !== template.version;
-  return <section className="space-y-3" aria-label="Agent instructions">
-    <h3 className="text-sm font-medium">Agent instructions</h3>
+  return <section className="space-y-3" aria-label={pageText("agentInstructions_07101b")}>
+    <h3 className="text-sm font-medium">{pageText("agentInstructions_07101b")}</h3>
     <div className="flex items-center justify-between gap-4">
       <label htmlFor={id} className="text-sm">Tell agents to use {provider}</label>
       <ToggleSwitch id={id} checked={value.enabled} disabled={disabled} onCheckedChange={(enabled) => onChange({ ...value, enabled })} />
@@ -43,7 +45,7 @@ export function ConnectionInstructionsEditor({ provider, template, value, onChan
       : <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">{value.text}</p>}
     {!value.text.trim() && <p role="alert" className="text-sm text-destructive">Enter instructions.</p>}
     <div className="flex items-center gap-3">
-      <Button variant="ghost" size="sm" disabled={disabled} onClick={() => setEditing(!editing)}>{editing ? "Done editing" : "Edit instructions"}</Button>
+      <Button variant="ghost" size="sm" disabled={disabled} onClick={() => setEditing(!editing)}>{editing ? "Done editing" : pageText("editInstructions_af6f86")}</Button>
       {changed && <Button variant="ghost" size="sm" disabled={disabled} onClick={() => onChange({ ...defaultConnectionAgentInstructions(template)!, enabled: value.enabled })}>Reset to default</Button>}
     </div>
   </section>;
@@ -55,6 +57,7 @@ export function ConnectionInstructionsSettings({ connection, provider, template,
   template: ConnectionInstructionTemplate;
   canConfigure: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const client = useQueryClient();
   const [draft, setDraft] = useState<ConnectionAgentInstructions | null>(null);
@@ -74,7 +77,7 @@ export function ConnectionInstructionsSettings({ connection, provider, template,
     {mutation.error && <div role="alert"><InlineBanner tone="danger">{describeError(mutation.error).body}</InlineBanner></div>}
     {dirty && <div className="flex items-center justify-between">
       <Button variant="ghost" disabled={mutation.isPending} onClick={() => { setDraft(null); mutation.reset(); }}>{translateUi("interfaceCopy.cancel")}</Button>
-      <Button disabled={!canConfigure || mutation.isPending || !value.text.trim()} onClick={() => mutation.mutate()}>{mutation.isPending ? "Saving…" : "Save instructions"}</Button>
+      <Button disabled={!canConfigure || mutation.isPending || !value.text.trim()} onClick={() => mutation.mutate()}>{mutation.isPending ? pageText("saving_56a228") : "Save instructions"}</Button>
     </div>}
   </div>;
 }

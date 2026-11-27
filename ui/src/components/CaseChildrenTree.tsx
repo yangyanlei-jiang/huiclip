@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { Link, useCaseHref } from "@/lib/router";
@@ -23,6 +24,7 @@ export function CaseChildrenTree({
   children: CaseRelationRow[];
   maxVisible?: number;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const caseHref = useCaseHref();
   const [expanded, setExpanded] = useState(false);
   if (children.length === 0) {
@@ -64,9 +66,7 @@ export function CaseChildrenTree({
           className="h-7 gap-1 px-2 text-xs text-muted-foreground"
           onClick={() => setExpanded(true)}
         >
-          <ChevronDown className="h-3.5 w-3.5" />
-          Show {hiddenCount} more
-        </Button>
+          <ChevronDown className="h-3.5 w-3.5" />{pageText("show_d97d1e") + " "}{hiddenCount}{" " + pageText("more_e7c95b")}</Button>
       ) : null}
     </div>
   );

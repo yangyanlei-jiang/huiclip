@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { Check, FolderOpen, Loader2, Plus, X } from "lucide-react";
@@ -15,6 +16,7 @@ export interface AllowedProjectsEditorProps {
 }
 
 export function AllowedProjectsEditor({ projects, projectIds, canManage, agentName, onSave }: AllowedProjectsEditorProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [added, setAdded] = useState<string[]>([]);
   const [open, setOpen] = useState(false);
@@ -35,27 +37,27 @@ export function AllowedProjectsEditor({ projects, projectIds, canManage, agentNa
     finally { setSaving(false); }
   }
 
-  return <section aria-label="Allowed projects" className="space-y-4">
+  return <section aria-label={pageText("allowedProjects_7013c6")} className="space-y-4">
     <div className="flex flex-wrap items-start justify-between gap-3">
-      <div className="space-y-1"><h3 className="text-sm font-semibold">Allowed projects</h3>
+      <div className="space-y-1"><h3 className="text-sm font-semibold">{pageText("allowedProjects_7013c6")}</h3>
         <p className="text-sm text-muted-foreground">Projects whose tasks and repositories this agent may access.</p></div>
       {canManage && <Popover open={open} onOpenChange={setOpen}><PopoverTrigger asChild>
-        <Button variant="outline" size="sm" disabled={saving}><Plus className="size-4" aria-hidden />Add project</Button>
+        <Button variant="outline" size="sm" disabled={saving}><Plus className="size-4" aria-hidden />{pageText("addProject_2470e8")}</Button>
       </PopoverTrigger><PopoverContent align="end" className="w-72 space-y-3">
-        <Input aria-label="Search projects" placeholder="Search projects…" value={query} onChange={event => setQuery(event.target.value)} />
+        <Input aria-label={pageText("searchProjects_30c3c3")} placeholder={pageText("searchProjects_16f8bb")} value={query} onChange={event => setQuery(event.target.value)} />
         <div className="max-h-64 space-y-1 overflow-y-auto">{matches.map(project => <label key={project.id} className="flex cursor-pointer items-start gap-3 rounded-md px-2 py-2 hover:bg-accent">
           <Checkbox aria-label={project.name} checked={projectIds.includes(project.id) || pending.includes(project.id)} disabled={projectIds.includes(project.id)} className="mt-0.5"
             onCheckedChange={checked => { setAdded(current => checked ? [...new Set([...current, project.id])] : current.filter(id => id !== project.id)); setSaved(false); }} />
           <span className="min-w-0 text-sm">{project.name}{projectIds.includes(project.id) && <span className="block text-xs text-muted-foreground">Already allowed</span>}</span>
         </label>)}</div>
-        {!matches.length && <p className="text-sm text-muted-foreground">No projects found.</p>}
+        {!matches.length && <p className="text-sm text-muted-foreground">{pageText("noProjectsFound_ca7870")}</p>}
         <Button variant="secondary" size="sm" className="w-full" onClick={() => setOpen(false)}>{translateUi("interfaceCopy.done")}</Button>
       </PopoverContent></Popover>}
     </div>
-    {visibleIds.length ? <ul aria-label="Allowed projects" className="divide-y divide-border rounded-lg border">
+    {visibleIds.length ? <ul aria-label={pageText("allowedProjects_7013c6")} className="divide-y divide-border rounded-lg border">
       {visibleIds.map(id => <li key={id} className="flex items-center gap-3 p-4">
         <FolderOpen className="size-4 shrink-0 text-muted-foreground" aria-hidden /><span className="min-w-0 flex-1 break-words text-sm font-medium">{name(id)}</span>
-        {projectIds.includes(id) ? <span className="inline-flex items-center gap-1 text-xs text-muted-foreground"><Check className="size-3.5" aria-hidden />Allowed</span>
+        {projectIds.includes(id) ? <span className="inline-flex items-center gap-1 text-xs text-muted-foreground"><Check className="size-3.5" aria-hidden />{pageText("allowed_77c7b4")}</span>
           : <><span className="text-xs text-muted-foreground">To add</span><Button variant="ghost" size="icon-sm" disabled={saving} aria-label={`Undo adding ${name(id)}`} onClick={() => setAdded(current => current.filter(value => value !== id))}><X className="size-4" aria-hidden /></Button></>}
       </li>)}
     </ul> : <p className="text-sm text-muted-foreground">No projects allowed yet.</p>}

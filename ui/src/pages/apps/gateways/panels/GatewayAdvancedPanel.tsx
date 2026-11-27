@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -24,6 +25,7 @@ export function GatewayAdvancedPanel({
   companyId: string;
   gateway: ToolMcpGatewayWithTokens;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -78,10 +80,10 @@ export function GatewayAdvancedPanel({
   return (
     <div className="space-y-5">
       <section className="space-y-2">
-        <h3 className="text-sm font-semibold text-foreground">Transport</h3>
+        <h3 className="text-sm font-semibold text-foreground">{pageText("transport_c10d76")}</h3>
         <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
-          <Row label="Transport" value="streamable_http" />
-          <Row label="Authentication" value="bearer" />
+          <Row label={pageText("transport_c10d76")} value="streamable_http" />
+          <Row label={pageText("authentication_ee1acf")} value="bearer" />
           <Row label="Protocol version" value="2025-03-26" />
           <Row label="Public ID" value={gateway.gatewayPublicId} mono />
         </dl>
@@ -90,9 +92,7 @@ export function GatewayAdvancedPanel({
             {endpoint}
           </code>
           <Button variant="outline" size="sm" onClick={() => void copy(endpoint, "Endpoint URL")}>
-            <Copy className="mr-1 h-3.5 w-3.5" />
-            Copy
-          </Button>
+            <Copy className="mr-1 h-3.5 w-3.5" />{pageText("copy_af74f7")}</Button>
         </div>
       </section>
 

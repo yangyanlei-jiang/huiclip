@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { AgentIdentity } from "./AgentIdentity";
 import { AgentAvatar } from "@/components/AgentAvatar";
@@ -326,6 +327,7 @@ function CommentCard({
   queued?: boolean;
   externalReferences?: MarkdownExternalReferenceMap;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const isHighlighted = highlightCommentId === comment.id;
   const isPending = comment.clientStatus === "pending";
   const isQueued = queued || comment.queueState === "queued" || comment.clientStatus === "queued";
@@ -357,14 +359,10 @@ function CommentCard({
         )}
         <span className="flex items-center gap-1.5">
           {isQueued ? (
-            <Badge variant="outline" className="border-amber-400/60 bg-amber-100/70 text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-amber-800 dark:border-amber-400/40 dark:bg-amber-500/20 dark:text-amber-200">
-              Queued
-            </Badge>
+            <Badge variant="outline" className="border-amber-400/60 bg-amber-100/70 text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-amber-800 dark:border-amber-400/40 dark:bg-amber-500/20 dark:text-amber-200">{pageText("queued_6a5998")}</Badge>
           ) : null}
           {followUpRequested ? (
-            <Badge variant="outline" className="text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow)">
-              Follow-up
-            </Badge>
+            <Badge variant="outline" className="text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow)">{pageText("followUp_a931af")}</Badge>
           ) : null}
           {companyId && !isPending && !isDeleted ? (
             <PluginSlotOutlet
@@ -383,7 +381,7 @@ function CommentCard({
             />
           ) : null}
           {isPending ? (
-            <span className="text-xs text-muted-foreground">{isQueued ? "Queueing..." : "Sending..."}</span>
+            <span className="text-xs text-muted-foreground">{isQueued ? "Queueing..." : pageText("sending_c338c1")}</span>
           ) : (
             <a
               href={`#comment-${comment.id}`}
@@ -396,7 +394,7 @@ function CommentCard({
         </span>
       </div>
       {isDeleted ? (
-        <div className="text-sm italic text-muted-foreground">Comment deleted</div>
+        <div className="text-sm italic text-muted-foreground">{pageText("commentDeleted_ff337d")}</div>
       ) : (
         <MarkdownBody className="text-sm" softBreaks externalReferences={externalReferences}>{comment.body}</MarkdownBody>
       )}
@@ -430,12 +428,10 @@ function CommentCard({
               <Link
                 to={`/agents/${comment.runAgentId}/runs/${comment.runId}`}
                 className="inline-flex items-center rounded-md border border-border bg-accent/30 px-2 py-1 text-(length:--text-nano) font-mono text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
-              >
-                run {comment.runId.slice(0, 8)}
+              >{pageText("run_df6ad1") + " "}{comment.runId.slice(0, 8)}
               </Link>
             ) : (
-              <span className="inline-flex items-center rounded-md border border-border bg-accent/30 px-2 py-1 text-(length:--text-nano) font-mono text-muted-foreground">
-                run {comment.runId.slice(0, 8)}
+              <span className="inline-flex items-center rounded-md border border-border bg-accent/30 px-2 py-1 text-(length:--text-nano) font-mono text-muted-foreground">{pageText("run_df6ad1") + " "}{comment.runId.slice(0, 8)}
               </span>
             )
           ) : undefined}
@@ -447,12 +443,10 @@ function CommentCard({
             <Link
               to={`/agents/${comment.runAgentId}/runs/${comment.runId}`}
               className="inline-flex items-center rounded-md border border-border bg-accent/30 px-2 py-1 text-(length:--text-nano) font-mono text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
-            >
-              run {comment.runId.slice(0, 8)}
+            >{pageText("run_df6ad1") + " "}{comment.runId.slice(0, 8)}
             </Link>
           ) : (
-            <span className="inline-flex items-center rounded-md border border-border bg-accent/30 px-2 py-1 text-(length:--text-nano) font-mono text-muted-foreground">
-              run {comment.runId.slice(0, 8)}
+            <span className="inline-flex items-center rounded-md border border-border bg-accent/30 px-2 py-1 text-(length:--text-nano) font-mono text-muted-foreground">{pageText("run_df6ad1") + " "}{comment.runId.slice(0, 8)}
             </span>
           )}
         </div>
@@ -476,6 +470,7 @@ function TimelineEventCard({
   agentMap?: Map<string, Agent>;
   currentUserId?: string | null;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const actorName = formatTimelineActorName(event.actorType, event.actorId, agentMap, currentUserId);
   const actionLabel = event.followUpRequested ? "requested follow-up" : "updated this task";
@@ -513,9 +508,7 @@ function TimelineEventCard({
 
         {event.assigneeChange ? (
           <div className="flex flex-wrap items-center gap-2 text-sm">
-            <span className="w-14 text-(length:--text-nano) font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-              Assignee
-            </span>
+            <span className="w-14 text-(length:--text-nano) font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{pageText("assignee_049e3c")}</span>
             <span className="text-muted-foreground">
               {formatTimelineAssigneeLabel(event.assigneeChange.from, agentMap, currentUserId)}
             </span>
@@ -528,9 +521,7 @@ function TimelineEventCard({
 
         {event.workspaceChange ? (
           <div className="flex flex-wrap items-center gap-2 text-sm">
-            <span className="w-14 text-(length:--text-nano) font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-              Workspace
-            </span>
+            <span className="w-14 text-(length:--text-nano) font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{pageText("workspace_4ca0a7")}</span>
             <span className="text-muted-foreground">
               {formatTimelineWorkspaceLabel(event.workspaceChange.from)}
             </span>
@@ -749,6 +740,7 @@ export function CommentThread({
   composerDisabledReason = null,
   externalReferences,
 }: CommentThreadProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const submitKey = useComposerSubmitKey();
   const [body, setBody] = useState("");
@@ -999,7 +991,7 @@ export function CommentThread({
                 disabled={interruptingQueuedRunId === queuedComments[0].queueTargetRunId}
                 onClick={() => void onInterruptQueued(queuedComments[0]!.queueTargetRunId!)}
               >
-                {interruptingQueuedRunId === queuedComments[0].queueTargetRunId ? "Interrupting..." : "Interrupt"}
+                {interruptingQueuedRunId === queuedComments[0].queueTargetRunId ? "Interrupting..." : pageText("interrupt_d5db45")}
               </Button>
             ) : null}
           </div>
@@ -1064,8 +1056,8 @@ export function CommentThread({
                 options={reassignOptions}
                 placeholder={translateUi("interfaceCopy.responsible")}
                 noneLabel="No responsible"
-                searchPlaceholder="Search responsible..."
-                emptyMessage="No responsible found."
+                searchPlaceholder={pageText("searchResponsible_bc9f7f")}
+                emptyMessage={pageText("noResponsibleFound_a275f8")}
                 onChange={selectAssignee}
                 className="text-xs h-8"
                 renderTriggerValue={(option) => {
@@ -1097,7 +1089,7 @@ export function CommentThread({
               />
             )}
             <Button size="sm" disabled={!canSubmit} onClick={handleSubmit}>
-              {submitting ? "Posting..." : "Comment"}
+              {submitting ? pageText("posting_987e82") : pageText("comment_153d7a")}
             </Button>
           </div>
         </div>

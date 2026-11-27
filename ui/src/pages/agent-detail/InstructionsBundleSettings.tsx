@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from "react";
 import { ChevronDown, Loader2, Settings2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -44,6 +45,7 @@ export function InstructionsBundleSettings({
   blocked: boolean;
   onSwitched: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const [root, setRoot] = useState(mode === "external" ? rootPath : "");
   const [entry, setEntry] = useState(mode === "external" ? entryFile : "");
@@ -152,7 +154,7 @@ export function InstructionsBundleSettings({
             </p>
             <Button size="sm" onClick={() => void loadProfile()} disabled={!trimmedRoot || !trimmedEntry || busy || blocked || unchanged}>
               {busy ? <Loader2 className="animate-spin motion-reduce:animate-none" /> : null}
-              {busy ? "Loading…" : "Load profile"}
+              {busy ? pageText("loading_33ce41") : "Load profile"}
             </Button>
           </div>
         </AgentPanel>

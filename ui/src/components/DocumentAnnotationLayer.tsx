@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { Profiler, useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, MessageSquarePlus } from "lucide-react";
 import type {
@@ -252,6 +253,7 @@ export function DocumentAnnotationLayer({
   captureSelectionRequestId,
   pendingHighlightText = null,
 }: AnnotationLayerProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const [highlightRects, setHighlightRects] = useState<HighlightRect[]>([]);
   const [hoveredThreadId, setHoveredThreadId] = useState<string | null>(null);
   const [toolbarPosition, setToolbarPosition] = useState<ToolbarPosition | null>(null);
@@ -611,9 +613,7 @@ export function DocumentAnnotationLayer({
                   ? newCommentDisabledReason ?? undefined
                   : "Add comment on selection (⌘⇧M)"}
               >
-                <MessageSquarePlus className="h-3.5 w-3.5" aria-hidden="true" />
-                Comment
-              </Button>
+                <MessageSquarePlus className="h-3.5 w-3.5" aria-hidden="true" />{pageText("comment_153d7a")}</Button>
             </div>
           ) : null}
         </div>

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -44,6 +45,7 @@ function isSandboxProviderOnly(plugin: PluginRecord): boolean {
 }
 
 export function CompanySettingsSidebar() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { selectedCompanyId } = useCompany();
   const { hidden: hiddenSettings } = useHiddenSettings();
@@ -108,7 +110,7 @@ export function CompanySettingsSidebar() {
           {showPage("instance.profile") && (
             <SidebarNavItem
               to={`${INSTANCE_SETTINGS_PATH_PREFIX}/profile`}
-              label="Profile"
+              label={pageText("profile_ff4fc0")}
               icon={UserRoundPen}
               end
             />
@@ -116,7 +118,7 @@ export function CompanySettingsSidebar() {
           {showPage("company.members") && (
             <SidebarNavItem
               to="/company/settings/members"
-              label="Members"
+              label={pageText("members_1cb449")}
               icon={Users}
               badge={badges?.joinRequests ?? 0}
               end
@@ -134,12 +136,12 @@ export function CompanySettingsSidebar() {
               />
             ))}
           {showPage("company.secrets") && (
-            <SidebarNavItem to="/company/settings/secrets" label="Secrets" icon={KeyRound} end />
+            <SidebarNavItem to="/company/settings/secrets" label={pageText("secrets_1e3732")} icon={KeyRound} end />
           )}
           {showPage("instance.environments") && (
             <SidebarNavItem
               to={`${INSTANCE_SETTINGS_PATH_PREFIX}/environments`}
-              label="Environments"
+              label={pageText("environments_017b53")}
               icon={MonitorCog}
               end
             />
@@ -148,7 +150,7 @@ export function CompanySettingsSidebar() {
           {showPage("instance.access") && (
             <SidebarNavItem
               to={`${INSTANCE_SETTINGS_PATH_PREFIX}/access`}
-              label="Access"
+              label={pageText("access_2f81a2")}
               icon={Shield}
               end
             />
@@ -162,14 +164,14 @@ export function CompanySettingsSidebar() {
           {showPage("instance.experimental") && (
             <SidebarNavItem
               to={`${INSTANCE_SETTINGS_PATH_PREFIX}/experimental`}
-              label="Experimental"
+              label={pageText("experimental_b718f8")}
               icon={FlaskConical}
             />
           )}
           {showPlugins && (
             <SidebarNavItem
               to={`${INSTANCE_SETTINGS_PATH_PREFIX}/plugins`}
-              label="Plugins"
+              label={pageText("plugins_ab2e26")}
               icon={Puzzle}
             />
           )}
@@ -197,7 +199,7 @@ export function CompanySettingsSidebar() {
           {showPage("instance.adapters") && (
             <SidebarNavItem
               to={`${INSTANCE_SETTINGS_PATH_PREFIX}/adapters`}
-              label="Adapters"
+              label={pageText("adapters_e07a4a")}
               icon={Cpu}
             />
           )}

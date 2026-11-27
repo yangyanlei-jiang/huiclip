@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useQueryView } from "@/components/QueryView";
 import { useEffect, useLayoutEffect, useRef } from "react";
@@ -41,6 +42,7 @@ function CaseFilter({ label, value, options, onChange, disabled }: {
 }
 
 export function Cases() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -179,7 +181,7 @@ export function Cases() {
               ? [{ value: project, label: "Selected project" }] : []),
           ]} />
         </>} />}
-        feedback={hasFilters ? <Button variant="ghost" size="sm" onClick={clearFilters}>Clear filters</Button> : undefined} />
+        feedback={hasFilters ? <Button variant="ghost" size="sm" onClick={clearFilters}>{pageText("clearFilters_412226")}</Button> : undefined} />
 
       {(typesQueryView.kind === "error") || (projectsQueryView.kind === "error") ? <div role="alert" className="flex flex-wrap items-center gap-3 text-sm">
         <p>Some case filters couldn’t be loaded.</p>

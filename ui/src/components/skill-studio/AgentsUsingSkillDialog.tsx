@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -55,6 +56,7 @@ export function AgentsUsingSkillBadge({
   skill: CompanySkillDetail;
   canManage?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [open, setOpen] = useState(false);
   const count = skill.usedByAgents.length;
   const label = `${count} ${count === 1 ? "agent uses" : "agents use"} this skill`;
@@ -73,7 +75,7 @@ export function AgentsUsingSkillBadge({
         )}
       >
         <Users className="h-3.5 w-3.5" aria-hidden="true" />
-        {count} {count === 1 ? "agent" : "agents"}
+        {count} {count === 1 ? pageText("agent_0608c4") : pageText("agents_e7052a")}
       </button>
       <AgentsUsingSkillDialog
         open={open}
@@ -319,6 +321,7 @@ function AgentRow({
   onRemove: () => void;
   onPin: (versionId: string | null) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const behindLatest =
     pinnedRevision !== null && latestRevision !== null && latestRevision > pinnedRevision
@@ -374,7 +377,7 @@ function AgentRow({
         )}
         {behindLatest > 0 ? (
           <span className="text-(length:--text-nano) text-amber-500">
-            {behindLatest} version{behindLatest === 1 ? "" : "s"} behind latest
+            {behindLatest}{" " + pageText("version_c69227")}{behindLatest === 1 ? "" : "s"} behind latest
           </span>
         ) : null}
       </div>
@@ -389,7 +392,7 @@ function AgentRow({
               disabled={busy}
               aria-label={`Confirm removing this skill from ${agent.name}`}
             >
-              {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Remove"}
+              {busy ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : pageText("remove_e96390")}
             </Button>
             <Button variant="ghost" size="sm" onClick={onCancelRemove} disabled={busy}>{translateUi("interfaceCopy.cancel")}</Button>
           </div>
@@ -421,6 +424,7 @@ function AddAgentPicker({
   disabled: boolean;
   onSelect: (agent: Agent) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   type AgentOption = SearchableSelectOption<string> & { agent: Agent };
   const groups = useMemo<readonly SearchableSelectGroup<string, AgentOption>[]>(() => {
     const options: AgentOption[] = agents.map((agent) => ({
@@ -440,8 +444,8 @@ function AddAgentPicker({
       groups={groups}
       loading={loading}
       loadingMessage="Loading agents..."
-      placeholder="Add agent…"
-      searchPlaceholder="Search agents..."
+      placeholder={pageText("addAgent_a4c3a2")}
+      searchPlaceholder={pageText("searchAgents_52c3f9")}
       emptyMessage="All eligible agents already have this skill."
       disabled={disabled}
       onValueChange={(_value, option) => {
@@ -452,9 +456,7 @@ function AddAgentPicker({
       contentClassName="w-72"
       renderValue={() => (
         <span className="flex items-center gap-1.5 text-muted-foreground">
-          <Plus className="h-3.5 w-3.5" aria-hidden="true" />
-          Add agent…
-        </span>
+          <Plus className="h-3.5 w-3.5" aria-hidden="true" />{pageText("addAgent_a4c3a2")}</span>
       )}
       renderOption={(option) => (
         <span className="flex min-w-0 flex-col">

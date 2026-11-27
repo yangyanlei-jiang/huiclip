@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { AgentAvatar } from "./AgentAvatar";
 import { Identity } from "./Identity";
 import { renderAccessIdentity, type AccessSelectOption } from "./AccessSelectIdentity";
@@ -18,6 +19,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { SearchableSelect, type SearchableSelectGroup } from "@/components/SearchableSelect";
 
 export function ProjectAccessMembers({ project, canManage }: { project: Project; canManage: boolean }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [open, setOpen] = useState(false);
   const [selection, setSelection] = useState("");
   const queryClient = useQueryClient();
@@ -99,7 +101,7 @@ export function ProjectAccessMembers({ project, canManage }: { project: Project;
   return (
     <>
       <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
-        <Lock className="h-3.5 w-3.5" aria-hidden="true" /> {canManage ? "Manage access" : "View access"}
+        <Lock className="h-3.5 w-3.5" aria-hidden="true" /> {canManage ? pageText("manageAccess_a86dd5") : pageText("viewAccess_581b9e")}
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-md">
@@ -127,8 +129,7 @@ export function ProjectAccessMembers({ project, canManage }: { project: Project;
                 className="min-w-0 flex-1"
               />
               <Button size="sm" disabled={!canManage || !selection || addMember.isPending} onClick={() => addMember.mutate()}>
-                <UserPlus className="h-3.5 w-3.5" aria-hidden="true" /> Add
-              </Button>
+                <UserPlus className="h-3.5 w-3.5" aria-hidden="true" />{" " + pageText("add_61cc55")}</Button>
             </div>
             {sharingWithSharedAgent ? (
               <p className="rounded-md border border-border bg-muted px-3 py-2 text-sm text-foreground">
@@ -144,7 +145,7 @@ export function ProjectAccessMembers({ project, canManage }: { project: Project;
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-sm font-medium">{member.subjectDisplayName ?? "Unknown member"}</div>
                       <div className="text-xs text-muted-foreground">
-                        {isPersonalOwner ? "Owner" : member.subjectType === "agent" ? "Agent" : "Person"}
+                        {isPersonalOwner ? pageText("owner_89ff31") : member.subjectType === "agent" ? pageText("agent_5ce2e6") : "Person"}
                       </div>
                     </div>
                     {!isPersonalOwner ? (
@@ -161,7 +162,7 @@ export function ProjectAccessMembers({ project, canManage }: { project: Project;
                   </div>
                 );
               })}
-              {membersWaiting ? <p className="py-3 text-sm text-muted-foreground">Loading access…</p> : null}
+              {membersWaiting ? <p className="py-3 text-sm text-muted-foreground">{pageText("loadingAccess_d4fbca")}</p> : null}
               {membersView.kind === "error" ? (
                 <p className="py-3 text-sm text-destructive">Couldn&apos;t load project access members.</p>
               ) : null}

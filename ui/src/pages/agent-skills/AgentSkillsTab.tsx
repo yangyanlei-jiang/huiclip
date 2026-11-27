@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -60,6 +61,7 @@ function pinsFromEntries(entries: AgentDesiredSkillEntry[] | undefined): Record<
 }
 
 export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const [skillDraft, setSkillDraft] = useState<string[]>([]);
   const [lastSavedSkills, setLastSavedSkills] = useState<string[]>([]);
@@ -426,9 +428,9 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
               <Input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search skills"
+                placeholder={pageText("searchSkills_502b0d")}
                 className="h-8 w-full pl-8 sm:w-56"
-                aria-label="Search skills"
+                aria-label={pageText("searchSkills_502b0d")}
               />
             </div>
             <Button asChild variant="outline" size="sm" className="shrink-0">
@@ -470,9 +472,7 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
                 onClick={() => toggleSkill(key, false)}
                 className="inline-flex shrink-0 items-center gap-1 rounded-md border border-amber-400/50 px-2 py-0.5 font-medium transition-colors hover:bg-amber-100/60 dark:hover:bg-amber-900/30"
               >
-                <X className="h-3 w-3" />
-                Remove
-              </button>
+                <X className="h-3 w-3" />{pageText("remove_e96390")}</button>
             </div>
           ))}
         </div>
@@ -554,12 +554,11 @@ function SaveStatusChip({
   unsaved: boolean;
   error: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (pending) {
     return (
       <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Loader2 className="h-3.5 w-3.5 animate-spin" />
-        Saving…
-      </span>
+        <Loader2 className="h-3.5 w-3.5 animate-spin" />{pageText("saving_56a228")}</span>
     );
   }
   if (error) {
@@ -580,9 +579,7 @@ function SaveStatusChip({
   }
   return (
     <span className="inline-flex items-center gap-1.5 text-xs text-(--status-task-done)">
-      <CheckCircle2 className="h-3.5 w-3.5" />
-      Saved
-    </span>
+      <CheckCircle2 className="h-3.5 w-3.5" />{pageText("saved_c0ae8f")}</span>
   );
 }
 

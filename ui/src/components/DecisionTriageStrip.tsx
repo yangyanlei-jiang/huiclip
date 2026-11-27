@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -313,6 +314,7 @@ function QueuePicker({
   disabled?: boolean;
   onAdd: (key: string) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
@@ -369,9 +371,7 @@ function QueuePicker({
             <div className="flex justify-end gap-1">
               <Button type="button" variant="ghost" size="xs" onClick={() => setCreating(false)}>{translateUi("interfaceCopy.cancel")}</Button>
               <Button type="button" size="xs" disabled={!title.trim() || create.isPending} onClick={() => create.mutate(title)}>
-                {create.isPending && <Loader2 className="h-3 w-3 animate-spin" />}
-                Create
-              </Button>
+                {create.isPending && <Loader2 className="h-3 w-3 animate-spin" />}{pageText("create_6e157c")}</Button>
             </div>
           </div>
         ) : (

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useAuthorizationWindow } from "@/hooks/useAuthorizationWindow";
 import { useEffect, useRef, useState } from "react";
@@ -77,6 +78,7 @@ function GitHubAppManifestForm({
   );
 }
 export function GitHubChatSetup() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [params, setParams] = useSearchParams();
   const navigate = useNavigate();
@@ -312,10 +314,10 @@ export function GitHubChatSetup() {
       )}
       <h1 className="text-2xl font-semibold">
         {!bot
-          ? "Choose agent"
+          ? pageText("chooseAgent_08bb32")
           : identityOnly || state?.state === "identity"
               ? "Connect your account"
-              : reconnect && existing ? "Reconnect GitHub" : "Connect GitHub"}
+              : reconnect && existing ? "Reconnect GitHub" : pageText("connectGitHub_ab6f5e")}
       </h1>
       {error ? (
         <p role="alert" className="text-sm text-destructive">

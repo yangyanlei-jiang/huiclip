@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { ExternalLink } from "lucide-react";
@@ -15,6 +16,7 @@ export function ComposioAppSetup({ name, toolkit, connections, onClose, onBack, 
   name: string; toolkit: string; connections: ToolConnection[]; onClose: () => void;
   onBack?: () => void; onConnectNew: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const queries = useQueryClient();
   const { userId, settled } = useAccountIdentity();
   const { pushToast } = useToast();
@@ -57,17 +59,17 @@ export function ComposioAppSetup({ name, toolkit, connections, onClose, onBack, 
     {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
     {result ? <p role="status" className="text-sm text-muted-foreground">Finish connecting {name} in Composio, then return here.</p> : null}
     {result?.authorizationUrl ? <Button asChild variant="outline" className="w-full">
-      <a href={result.authorizationUrl} target="_blank" rel="noopener noreferrer">Connect {name} in Composio<ExternalLink className="size-4" /></a>
+      <a href={result.authorizationUrl} target="_blank" rel="noopener noreferrer">{pageText("connect_b65463") + " "}{name} in Composio<ExternalLink className="size-4" /></a>
     </Button> : null}
     <div className="flex items-center justify-between gap-2">
-      <Button variant="ghost" disabled={busy} onClick={onBack ?? onClose}>{onBack ? "Back" : "Cancel"}</Button>
+      <Button variant="ghost" disabled={busy} onClick={onBack ?? onClose}>{onBack ? pageText("back_b52b36") : pageText("cancel_77dfd2")}</Button>
       <div className="flex items-center gap-2">
       {result && result.status !== "connected" ? <Button variant="ghost" disabled={busy} onClick={() => void submit({ action: "start" })}>Get a new link</Button> : null}
       <Button disabled={!settled || busy || (!connection && connectionId !== "__new__")} onClick={() => {
         if (connectionId === "__new__") onConnectNew();
         else void submit(result ? { action: "complete" } : { action: "start" });
       }}>
-        {busy ? "Checking…" : connectionId === "__new__" ? "Connect new account" : result ? "I’ve connected it" : "Continue"}
+        {busy ? pageText("checking_820d60") : connectionId === "__new__" ? "Connect new account" : result ? "I’ve connected it" : pageText("continue_2e0262")}
       </Button>
       </div>
     </div>

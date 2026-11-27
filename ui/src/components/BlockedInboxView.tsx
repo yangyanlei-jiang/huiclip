@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { AgentIdentity } from "@/components/AgentIdentity";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -70,6 +71,7 @@ export function BlockedInboxView({
   showUpdatedColumn,
   presentation = "legacy",
 }: BlockedInboxViewProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const [collapsedVariants, setCollapsedVariants] = useState<Set<string>>(() => new Set());
 
   const blockedQuery = useQuery({
@@ -177,7 +179,7 @@ export function BlockedInboxView({
             onClick={blockedView.retry}
             disabled={blockedView.isFetching}
           >
-            {blockedView.isFetching ? "Trying…" : "Try again"}
+            {blockedView.isFetching ? "Trying…" : pageText("tryAgain_042c86")}
           </Button>
         </div>
       </div>

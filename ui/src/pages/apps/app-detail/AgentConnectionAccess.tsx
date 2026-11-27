@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from "react";
 import type { Agent, ToolCatalogEntry, ToolPolicy, ToolProfileConfiguration } from "@paperclipai/shared";
 import { AgentAvatar } from "@/components/AgentAvatar";
@@ -13,6 +14,7 @@ export function AgentConnectionAccess({ connectionId, profiles, policies, catalo
   canManage: boolean;
   onRemove: (profileId: string) => Promise<unknown>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [pending, setPending] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const grants = profiles.filter(profile => {
@@ -51,10 +53,10 @@ export function AgentConnectionAccess({ connectionId, profiles, policies, catalo
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <AgentAvatar agent={agent ?? { id: agentId, name: "Agent" }} size={32} />
-            <span className="text-sm font-medium">{agent?.name ?? "Agent"}</span>
+            <span className="text-sm font-medium">{agent?.name ?? pageText("agent_5ce2e6")}</span>
           </div>
           {canManage && <Button variant="outline" size="sm" disabled={pending !== null} onClick={() => void remove(profile.id)}>
-            {pending === profile.id ? "Removing…" : "Remove grant"}
+            {pending === profile.id ? pageText("removing_579d7e") : "Remove grant"}
           </Button>}
         </div>
         <ul className="space-y-2">
@@ -65,7 +67,7 @@ export function AgentConnectionAccess({ connectionId, profiles, policies, catalo
               && policy.selectors?.catalogEntryId === tool.id);
             return <li key={tool.id} className="flex items-center justify-between gap-4 text-sm">
               <span className="min-w-0 break-all">{tool.title || tool.toolName}</span>
-              <span className="shrink-0 text-muted-foreground">{askFirst ? "Ask first" : "Allowed"}</span>
+              <span className="shrink-0 text-muted-foreground">{askFirst ? "Ask first" : pageText("allowed_77c7b4")}</span>
             </li>;
           })}
         </ul>

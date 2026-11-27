@@ -1,3 +1,5 @@
+import englishInterface from "./interface/en.json";
+import chineseInterface from "./interface/zh-CN.json";
 import type { Resource } from "i18next";
 
 import { assertValidLocaleMessages, withEnglishFallback } from "./locale-validation";
@@ -35,7 +37,7 @@ for (const [locale, messages] of Object.entries(localeMessages)) {
 export const supportedLocales = Object.keys(localeMessages);
 
 export const i18nextResources: Resource = Object.fromEntries(
-  Object.entries(localeMessages).map(([locale, messages]) => [locale, { translation: messages }]),
+  Object.entries(localeMessages).map(([locale, messages]) => [locale, { translation: messages, ...(locale === "en" ? { interface: englishInterface } : locale === "zh-CN" ? { interface: chineseInterface } : {}) }]),
 ) as Resource;
 
 export type SupportedLocale = keyof typeof localeMessages;

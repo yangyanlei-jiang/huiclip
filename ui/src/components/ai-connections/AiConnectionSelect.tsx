@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useId } from "react";
 import { Plus, UserRound } from "lucide-react";
@@ -44,6 +45,7 @@ export function AiConnectionSelect({
   adapterType,
   model,
 }: AiConnectionPickerProps & { adapterType: string; model?: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const selectId = useId();
   const personal = personalAiDefault(connections, requirement, currentUserId);
@@ -122,7 +124,7 @@ export function AiConnectionSelect({
         <SelectTrigger id={selectId} aria-label={translateUi("interfaceCopy.connection")} title={selected ? aiConnectionDisplayLabel(selected) : undefined} className="w-full">
           <SelectValue
             placeholder={
-              loading ? "Loading connections…" : "Choose a connection"
+              loading ? pageText("loadingConnections_e2e03e") : "Choose a connection"
             }
           >
             {selected

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from "react";
 import { Apple, Monitor, Terminal } from "lucide-react";
 import {
@@ -124,6 +125,7 @@ export function PathInstructionsModal({
  * Drop-in replacement for the old showDirectoryPicker buttons.
  */
 export function ChoosePathButton({ className }: { className?: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -134,9 +136,7 @@ export function ChoosePathButton({ className }: { className?: string }) {
           className,
         )}
         onClick={() => setOpen(true)}
-      >
-        Choose
-      </button>
+      >{pageText("choose_78b7c9")}</button>
       <PathInstructionsModal open={open} onOpenChange={setOpen} />
     </>
   );

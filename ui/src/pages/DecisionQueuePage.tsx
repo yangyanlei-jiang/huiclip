@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -62,6 +63,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popove
  * is surfaced.
  */
 export function DecisionQueuePage() {
+  const { t: pageText } = usePageTranslation("interface");
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { pushToast } = useToastActions();
@@ -215,7 +217,7 @@ export function DecisionQueuePage() {
   });
 
   if (!selectedCompanyId) {
-    return <p className="text-sm text-muted-foreground">Select an organization first.</p>;
+    return <p className="text-sm text-muted-foreground">{pageText("selectAnOrganizationFirst_a56f90")}</p>;
   }
   // Keep a loaded queue on screen through a failed refetch; only a real
   // failure, or an outage before the first load, replaces the page.
@@ -384,13 +386,14 @@ function SeedRulesCard({
   pending: boolean;
   onToggle: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="rounded-xl border border-border bg-muted/20 p-3">
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-2">
           <Settings2 className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
           <div className="min-w-0 space-y-1">
-            <p className="text-sm font-medium text-foreground">Auto-seeding is {enabled ? "on" : "off"}</p>
+            <p className="text-sm font-medium text-foreground">Auto-seeding is {enabled ? pageText("on_db3d40") : pageText("off_da7a68")}</p>
             <p className="text-xs text-muted-foreground">
               {enabled
                 ? "This queue fills itself automatically. Decisions are added the moment they match any of its rules:"
@@ -413,7 +416,7 @@ function SeedRulesCard({
         </div>
         <Button type="button" variant="outline" size="xs" className="h-7 shrink-0" disabled={pending} onClick={onToggle}>
           {pending && <Loader2 className="h-3 w-3 animate-spin" />}
-          {enabled ? "Disable" : "Enable"}
+          {enabled ? pageText("disable_9a7d4e") : pageText("enable_20063a")}
         </Button>
       </div>
     </div>

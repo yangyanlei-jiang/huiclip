@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import {
   useCallback,
@@ -152,6 +153,7 @@ export function SkillFolderRail({
   onDeleteFolder: (folder: FolderListItem) => void;
   onEnsureMyFolder?: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const model = useMemo(() => treeFromResult(result), [result]);
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
@@ -255,10 +257,8 @@ export function SkillFolderRail({
         className="flex min-w-0 flex-1 flex-col overflow-y-auto border-r border-border pr-3"
       >
       <div className="mb-2 flex items-center justify-between gap-2 pt-0.5">
-        <div className="text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
-          Folders
-        </div>
-        <Button variant="ghost" size="icon-sm" title="New folder" onClick={() => onCreateFolder(null)}>
+        <div className="text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">{pageText("folders_19adc4")}</div>
+        <Button variant="ghost" size="icon-sm" title={pageText("newFolder_a71199")} onClick={() => onCreateFolder(null)}>
           <Plus className="h-3.5 w-3.5" />
         </Button>
       </div>
@@ -565,6 +565,7 @@ function TreeBranch({
   onRenameCommit: (folder: FolderListItem) => void;
   onRenameCancel: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { folder, children } = node;
   const isOpen = expanded.has(folder.id);
   const active = selection === folder.id;
@@ -647,17 +648,15 @@ function TreeBranch({
               ) : null}
               {editable ? (
                 <>
-                  <DropdownMenuItem onSelect={() => onStartRename(folder)}>Rename</DropdownMenuItem>
+                  <DropdownMenuItem onSelect={() => onStartRename(folder)}>{pageText("rename_d3f4cb")}</DropdownMenuItem>
                   <DropdownMenuItem onSelect={() => onEditFolder(folder)}>Edit color</DropdownMenuItem>
                   <DropdownMenuItem onSelect={() => onMoveFolder(folder, isInMySkills ? "company" : "my")}>
                     <MoveRight className="h-3.5 w-3.5" />
-                    Move to {isInMySkills ? "Organization" : "My Skills"}
+                    Move to {isInMySkills ? pageText("organization_519255") : "My Skills"}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem variant="destructive" onSelect={() => onDeleteFolder(folder)}>
-                    <Trash2 className="h-3.5 w-3.5" />
-                    Delete
-                  </DropdownMenuItem>
+                    <Trash2 className="h-3.5 w-3.5" />{pageText("delete_f6fdbe")}</DropdownMenuItem>
                 </>
               ) : null}
             </DropdownMenuContent>
@@ -770,6 +769,7 @@ export function FolderTiles({
   selection: FolderSelection;
   onOpen: (folderId: string) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const model = useMemo(() => treeFromResult(result), [result]);
   const children = useMemo<FolderTreeNode[]>(() => {
     if (selection === "unfiled") return [];
@@ -781,9 +781,7 @@ export function FolderTiles({
 
   return (
     <div className="mb-4">
-      <div className="mb-2 text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
-        Folders
-      </div>
+      <div className="mb-2 text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">{pageText("folders_19adc4")}</div>
       <div className="grid gap-2 [grid-template-columns:repeat(auto-fill,minmax(11rem,1fr))]">
         {children.map((node) => (
           <button
@@ -834,6 +832,7 @@ export function MoveToFolderDialog({
   /** Create a folder under `parentId` (null = top level); resolve to the new id. */
   onCreateFolder: (parentId: string | null, name: string) => Promise<string | null>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const model = useMemo(() => treeFromResult(result), [result]);
   const [query, setQuery] = useState("");
@@ -908,8 +907,8 @@ export function MoveToFolderDialog({
             <FolderSwatch color={folder.color} />
           )}
           <span className="min-w-0 flex-1 truncate">{reservedRootLabel(folder)}</span>
-          {isCurrent ? <span className="text-xs text-muted-foreground">current</span> : null}
-          {bundled ? <span className="text-xs text-muted-foreground">read-only</span> : null}
+          {isCurrent ? <span className="text-xs text-muted-foreground">{pageText("current_405ab5")}</span> : null}
+          {bundled ? <span className="text-xs text-muted-foreground">{pageText("readOnly_1d8d39")}</span> : null}
           {isChosen ? <Check className="h-3.5 w-3.5" /> : null}
           {nestable ? (
             <button
@@ -954,7 +953,7 @@ export function MoveToFolderDialog({
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search folders"
+            placeholder={pageText("searchFolders_196bcf")}
             className="h-8 min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
         </div>
@@ -969,7 +968,7 @@ export function MoveToFolderDialog({
           >
             <FolderSwatch color={null} />
             <span className="min-w-0 flex-1 truncate">{translateUi("interfaceCopy.unfiled")}</span>
-            {currentFolderId == null ? <span className="text-xs text-muted-foreground">current</span> : null}
+            {currentFolderId == null ? <span className="text-xs text-muted-foreground">{pageText("current_405ab5")}</span> : null}
             {chosen === null ? <Check className="h-3.5 w-3.5" /> : null}
           </div>
           {model.roots.map((node) => renderNode(node, 0))}
@@ -1043,6 +1042,7 @@ function InlineNewFolder({
   onSubmit: () => void;
   onCancel: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   return (
     <div className="flex items-center gap-2 py-1" style={{ paddingLeft: `${0.5 + depth * 0.9}rem` }}>
@@ -1059,9 +1059,7 @@ function InlineNewFolder({
         }}
       />
       <Button size="sm" variant="ghost" onClick={onCancel} disabled={pending}>{translateUi("interfaceCopy.cancel")}</Button>
-      <Button size="sm" onClick={onSubmit} disabled={pending || !value.trim()}>
-        Add
-      </Button>
+      <Button size="sm" onClick={onSubmit} disabled={pending || !value.trim()}>{pageText("add_61cc55")}</Button>
     </div>
   );
 }

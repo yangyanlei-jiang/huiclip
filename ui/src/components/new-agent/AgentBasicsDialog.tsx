@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCompany } from "@/context/CompanyContext";
 import { PAPERCLIP_RUNNER_ACPX_PROFILES } from "@paperclipai/adapter-utils";
@@ -60,6 +61,7 @@ export function AgentBasicsDialog({
   setupAgentId?: string;
   onInvite?: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const id = useId();
   const { selectedCompanyId: companyId } = useCompany();
@@ -263,9 +265,7 @@ export function AgentBasicsDialog({
               <fieldset className="space-y-4">
                 <legend className="sr-only">{translateUi("interfaceCopy.adapter")}</legend>
                 {adaptersView.kind === "loading" || adaptersView.kind === "reconnecting" ? (
-                  <p role="status" className="text-sm text-muted-foreground">
-                    Loading adapters…
-                  </p>
+                  <p role="status" className="text-sm text-muted-foreground">{pageText("loadingAdapters_945563")}</p>
                 ) : null}
                 {adaptersView.kind === "error" ? (
                   <QueryErrorState
@@ -342,19 +342,17 @@ export function AgentBasicsDialog({
               onClick={() => (step === "name" ? onClose() : setStep("name"))}
             >
               {step === "name" ? (
-                "Cancel"
+                pageText("cancel_77dfd2")
               ) : (
                 <>
-                  <ArrowLeft className="size-4" />
-                  Back
-                </>
+                  <ArrowLeft className="size-4" />{pageText("back_b52b36")}</>
               )}
             </Button>
             <Button
               type="submit"
               disabled={saving || !name.trim() || (step === "adapter" && !validAdapter)}
             >
-              {saving ? "Saving…" : step === "name" ? "Choose adapter" : "Configure agent"}
+              {saving ? pageText("saving_56a228") : step === "name" ? pageText("chooseAdapter_f322ba") : "Configure agent"}
               <ArrowRight className="size-4" />
             </Button>
           </div>

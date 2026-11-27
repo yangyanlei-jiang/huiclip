@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useMemo } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -11,6 +12,7 @@ import { AppLogo } from "../apps/AppLogo";
 const SHOWN_LOGOS = 3;
 
 export function AgentAllowedConnectors({ agentId, companyId }: { agentId: string; companyId: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const effective = useQuery({
     queryKey: queryKeys.tools.effectiveProfilesForAgent(companyId, agentId),
     queryFn: () => toolsApi.getEffectiveProfilesForAgent(companyId, agentId),
@@ -60,7 +62,7 @@ export function AgentAllowedConnectors({ agentId, companyId }: { agentId: string
         ) : apps.length === 0 ? (
           <p className="text-xs text-muted-foreground">No connectors are allowed yet.</p>
         ) : (
-          <ul aria-label="Connectors" className="flex max-h-(--agent-detail-logo-rows-h) flex-wrap gap-3 overflow-hidden">
+          <ul aria-label={pageText("connectors_4b1e95")} className="flex max-h-(--agent-detail-logo-rows-h) flex-wrap gap-3 overflow-hidden">
             {apps.slice(0, SHOWN_LOGOS).map((app) => (
               <li key={app.id} className="flex shrink-0" title={app.name}>
                 <AppLogo name={app.name} brandKey={app.key} size={24} compact />

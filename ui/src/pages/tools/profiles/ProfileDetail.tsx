@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -59,6 +60,7 @@ export function ProfileDetail({
   initialCreated?: boolean;
   initialReviewOpen?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -199,32 +201,26 @@ export function ProfileDetail({
         actions={
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" disabled={archived} onClick={() => setDialog("edit")}>
-              <Pencil className="mr-1.5 h-4 w-4" />
-              Edit
-            </Button>
+              <Pencil className="mr-1.5 h-4 w-4" />{pageText("edit_530164")}</Button>
             <Button variant="outline" disabled={archived} onClick={() => setDialog("duplicate")}>
               <Copy className="mr-1.5 h-4 w-4" />
               Duplicate
             </Button>
             {archived ? (
               <Button variant="outline" onClick={() => setDialog("restore")}>
-                <ArchiveRestore className="mr-1.5 h-4 w-4" />
-                Restore
-              </Button>
+                <ArchiveRestore className="mr-1.5 h-4 w-4" />{pageText("restore_3cbe6d")}</Button>
             ) : (
               <Button variant="outline" onClick={() => setDialog("archive")}>{translateUi("interfaceCopy.archive")}</Button>
             )}
             <Button variant="outline" className="text-destructive hover:text-destructive" onClick={() => setDialog("delete")}>
-              <Trash2 className="mr-1.5 h-4 w-4" />
-              Delete
-            </Button>
+              <Trash2 className="mr-1.5 h-4 w-4" />{pageText("delete_f6fdbe")}</Button>
           </div>
         }
       />
 
       <div className="flex flex-wrap items-center gap-3 text-sm">
         <Badge variant={archived ? "outline" : "default"}>{STATUS_LABEL[profile.status]}</Badge>
-        <span className="text-muted-foreground">Updated <RelativeTime value={profile.updatedAt} /></span>
+        <span className="text-muted-foreground">{pageText("updated_f2f857") + " "}<RelativeTime value={profile.updatedAt} /></span>
         <span className="text-muted-foreground">{allowsLabel(profile.summary)}</span>
       </div>
 
@@ -240,9 +236,7 @@ export function ProfileDetail({
             <Button size="sm" onClick={() => navigate(`/apps/advanced/profiles/${profile.id}/edit?step=3`)}>
               Assign
             </Button>
-            <Button size="sm" variant="ghost" onClick={() => setSearchParams({})}>
-              Dismiss
-            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setSearchParams({})}>{pageText("dismiss_70afe9")}</Button>
           </div>
         </div>
       ) : null}
@@ -265,9 +259,7 @@ export function ProfileDetail({
       <section className="space-y-3">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-base font-semibold text-foreground">What it allows</h2>
-          <Button variant="outline" size="sm" disabled={archived} onClick={() => navigate(`/apps/advanced/profiles/${profile.id}/edit?step=2`)}>
-            Edit tools
-          </Button>
+          <Button variant="outline" size="sm" disabled={archived} onClick={() => navigate(`/apps/advanced/profiles/${profile.id}/edit?step=2`)}>{pageText("editTools_57d24f")}</Button>
         </div>
         <AllowList rows={allowRows} total={profile.summary.totalToolCount} />
       </section>
@@ -466,6 +458,7 @@ function NewToolsReviewDialog({
 }
 
 function AllowList({ rows, total }: { rows: AllowRow[]; total: number }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   if (rows.length === 0) {
     return (
@@ -493,9 +486,7 @@ function AllowList({ rows, total }: { rows: AllowRow[]; total: number }) {
                   <span className="font-medium text-foreground">{row.tool}</span>
                   {row.degraded ? (
                     <a className="mt-0.5 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline" href={`/apps/${row.connectionId}`}>
-                      <PlugZap className="h-3 w-3" />
-                      Reconnect
-                    </a>
+                      <PlugZap className="h-3 w-3" />{pageText("reconnect_6988b1")}</a>
                   ) : null}
                 </div>
               </td>
@@ -546,6 +537,7 @@ function Assignments({
   archived: boolean;
   onRemove: (binding: ToolProfileBinding) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (profile.bindings.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-border px-4 py-5">
@@ -568,9 +560,7 @@ function Assignments({
             </div>
           </div>
           <Button variant="ghost" size="sm" disabled={archived} onClick={() => onRemove(binding)}>
-            <UserMinus className="mr-1.5 h-4 w-4" />
-            Remove
-          </Button>
+            <UserMinus className="mr-1.5 h-4 w-4" />{pageText("remove_e96390")}</Button>
         </div>
       ))}
     </div>

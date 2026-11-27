@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { Agent, AcceptedPlanDecompositionSummary } from "@paperclipai/shared";
@@ -14,12 +15,11 @@ interface IssuePlanDecompositionsSectionProps {
 }
 
 function StatusBadge({ status }: { status: AcceptedPlanDecompositionSummary["status"] }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (status === "completed") {
     return (
       <span className="inline-flex items-center gap-1 rounded-sm border border-emerald-500/50 bg-emerald-500/10 px-2 py-0.5 text-(length:--text-micro) font-medium text-emerald-900 dark:text-emerald-100">
-        <CheckCircle2 className="h-3 w-3" />
-        Completed
-      </span>
+        <CheckCircle2 className="h-3 w-3" />{pageText("completed_1798b3")}</span>
     );
   }
   return (
@@ -35,6 +35,7 @@ export function IssuePlanDecompositionsSection({
   issueIdentifier,
   agentMap,
 }: IssuePlanDecompositionsSectionProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { data: decompositions } = useQuery({
     queryKey: queryKeys.issues.acceptedPlanDecompositions(issueId),
     queryFn: () => issuesApi.listAcceptedPlanDecompositions(issueId),
@@ -90,14 +91,12 @@ export function IssuePlanDecompositionsSection({
             >
               <div className="flex flex-wrap items-center gap-2">
                 <StatusBadge status={record.status} />
-                <span className="text-xs text-muted-foreground">
-                  Plan {revisionLabel}
+                <span className="text-xs text-muted-foreground">{pageText("plan_ae2f98") + " "}{revisionLabel}
                 </span>
                 <span className="text-xs text-muted-foreground/70">·</span>
                 <span className="inline-flex items-center gap-1 text-xs text-foreground">
                   <GitBranch className="h-3 w-3 text-muted-foreground" />
-                  {created} of {requested} child {requested === 1 ? "task" : "tasks"} created
-                </span>
+                  {created} of {requested} child {requested === 1 ? pageText("task_7fbb72") : pageText("tasks_55d872")}{" " + pageText("created_21c508")}</span>
                 {record.status === "completed" && requested > 0 ? (
                   <span
                     className="inline-flex items-center gap-1 rounded-sm border border-sky-500/40 bg-sky-500/10 px-1.5 py-0.5 text-(length:--text-nano) font-medium text-sky-900 dark:text-sky-100"
@@ -112,12 +111,12 @@ export function IssuePlanDecompositionsSection({
               <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-(length:--text-micro) text-muted-foreground">
                 {ownerName ? <span>Owner: {ownerName}</span> : null}
                 {startedAt ? (
-                  <span title={formatDateTime(startedAt)}>Started {relativeTime(startedAt)}</span>
+                  <span title={formatDateTime(startedAt)}>{pageText("started_faa9e7") + " "}{relativeTime(startedAt)}</span>
                 ) : null}
                 {completedAt ? (
-                  <span title={formatDateTime(completedAt)}>Completed {relativeTime(completedAt)}</span>
+                  <span title={formatDateTime(completedAt)}>{pageText("completed_1798b3") + " "}{relativeTime(completedAt)}</span>
                 ) : updatedAt ? (
-                  <span title={formatDateTime(updatedAt)}>Updated {relativeTime(updatedAt)}</span>
+                  <span title={formatDateTime(updatedAt)}>{pageText("updated_f2f857") + " "}{relativeTime(updatedAt)}</span>
                 ) : null}
                 {issueIdentifier ? (
                   <Link

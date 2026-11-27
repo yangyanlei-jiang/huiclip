@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import type { StatusCardRefreshPolicy } from "@paperclipai/shared";
 import { ChevronDown } from "lucide-react";
@@ -86,6 +87,7 @@ export function StatusCardSettingsForm({
   value: StatusCardSettingsValue;
   onChange: (next: StatusCardSettingsValue) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { refreshPolicy: policy } = value;
   // Change triggers, active-hours, and the daily token cap only govern
@@ -200,9 +202,7 @@ export function StatusCardSettingsForm({
       */}
       {autoUpdating ? (
         <Collapsible className="rounded-md border border-border">
-          <CollapsibleTrigger className="group flex w-full items-center justify-between gap-2 px-3 py-2.5 text-sm font-semibold">
-            Advanced
-            <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+          <CollapsibleTrigger className="group flex w-full items-center justify-between gap-2 px-3 py-2.5 text-sm font-semibold">{pageText("advanced_4d0647")}<ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
           </CollapsibleTrigger>
           <CollapsibleContent className="space-y-6 border-t border-border px-3 py-3">
             <section className="space-y-2">

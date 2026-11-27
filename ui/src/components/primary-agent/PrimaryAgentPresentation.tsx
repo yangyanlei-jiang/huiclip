@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { createContext, useContext, useRef, useState, type CSSProperties } from "react";
 import { ArrowRight, Crown } from "lucide-react";
@@ -29,15 +30,16 @@ export function usePrimaryAgentPresentation(companyId?: string | null) {
 }
 
 export function PrimaryAgentIndicator({ agentId, companyId }: { agentId: string; companyId?: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const primary = usePrimaryAgentPresentation(companyId);
   if (!primary || primary.loading || primary.primaryAgentId !== agentId) return null;
   return <Tooltip>
     <TooltipTrigger asChild>
-      <span role="img" aria-label="My primary agent" className="inline-flex shrink-0 text-primary">
+      <span role="img" aria-label={pageText("myPrimaryAgent_6f9c4d")} className="inline-flex shrink-0 text-primary">
         <Crown aria-hidden="true" className="size-3.5" />
       </span>
     </TooltipTrigger>
-    <TooltipContent>My primary agent</TooltipContent>
+    <TooltipContent>{pageText("myPrimaryAgent_6f9c4d")}</TooltipContent>
   </Tooltip>;
 }
 
@@ -57,6 +59,7 @@ function crownBubbles(): CrownPop["bubbles"] {
 export function PrimaryAgentCrownButton({ agent }: {
   agent: Agent;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const primary = usePrimaryAgentPresentation(agent.companyId);
   const [confirming, setConfirming] = useState(false);
@@ -100,7 +103,7 @@ export function PrimaryAgentCrownButton({ agent }: {
   ) : selected && !loading ? (
     <Tooltip {...tooltip}>
       <TooltipTrigger asChild>
-        <span ref={filledRef} role="img" aria-label="My primary agent" tabIndex={-1} data-pop={pop?.timing}
+        <span ref={filledRef} role="img" aria-label={pageText("myPrimaryAgent_6f9c4d")} tabIndex={-1} data-pop={pop?.timing}
           onPointerMove={wakeTooltip} onBlur={wakeTooltip}
           onAnimationEnd={(event) => { if (event.animationName === "primary-crown-pop") setPop(null); }}
           className={cn(crownClass, "inline-flex size-9 shrink-0 items-center justify-center rounded-md text-primary outline-none focus-visible:ring-ring/50 focus-visible:ring-(length:--rad-3)")}>
@@ -111,7 +114,7 @@ export function PrimaryAgentCrownButton({ agent }: {
           ))}
         </span>
       </TooltipTrigger>
-      <TooltipContent>My primary agent</TooltipContent>
+      <TooltipContent>{pageText("myPrimaryAgent_6f9c4d")}</TooltipContent>
     </Tooltip>
   ) : (
     <Tooltip {...tooltip}>

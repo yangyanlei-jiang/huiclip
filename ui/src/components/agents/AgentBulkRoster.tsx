@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { lazy, Suspense, useEffect, useMemo, useRef, useState, type ReactNode, type SetStateAction } from "react";
 import { createPortal } from "react-dom";
@@ -25,6 +26,7 @@ export function AgentBulkRoster({ companyId, agents, visibleAgents, renderAgent,
   renderChat?: (agent: Agent) => ReactNode;
   renderStatus?: (agent: Agent) => ReactNode;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const client = useQueryClient();
   const openingRef = useRef(false);
@@ -81,7 +83,7 @@ export function AgentBulkRoster({ companyId, agents, visibleAgents, renderAgent,
     <div data-canonical-toolbar="agent-filters" role="toolbar" aria-label="Agent filters" className="flex flex-wrap items-center justify-between gap-3">
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="ghost" size="icon" aria-label="Filter agents" title={filter === "all" ? "Filter" : `Filter: ${getAdapterLabel(filter)}`}
+          <Button variant="ghost" size="icon" aria-label={pageText("filterAgents_9b26f6")} title={filter === "all" ? pageText("filter_d7decf") : `Filter: ${getAdapterLabel(filter)}`}
             className={cn("relative h-8 w-8 shrink-0", filter !== "all" && "text-blue-600 dark:text-blue-400")}>
             <Filter className="h-3.5 w-3.5" aria-hidden />
             {filter !== "all" && <span aria-hidden className="absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-blue-600 text-(length:--text-nano) font-bold text-white">1</span>}
@@ -101,11 +103,11 @@ export function AgentBulkRoster({ companyId, agents, visibleAgents, renderAgent,
           </div>
         </PopoverContent>
       </Popover>
-      <span className="text-xs text-muted-foreground">{visible.length} {visible.length === 1 ? "agent" : "agents"}</span>
+      <span className="text-xs text-muted-foreground">{visible.length} {visible.length === 1 ? pageText("agent_0608c4") : pageText("agents_e7052a")}</span>
     </div>
     {createPortal(<div role="region" aria-label="Bulk actions" aria-hidden={selectedAgents.length === 0} inert={selectedAgents.length === 0}
       data-state={selectedAgents.length > 0 ? "open" : "closed"} className="agent-selection-bar flex flex-wrap items-center gap-3 rounded-lg border bg-background p-3">
-      <span className="text-sm font-medium">{actionAgents.length} selected</span>
+      <span className="text-sm font-medium">{actionAgents.length}{" " + pageText("selected_835f3b")}</span>
       {hidden > 0 && <span className="text-xs text-muted-foreground">{hidden} hidden by filters</span>}
       {groups.length > 1 && <span className="text-xs text-muted-foreground">Choose a harness to edit</span>}
       <div className="flex flex-1 flex-wrap items-center justify-end gap-2">{groups.map(h => <Button key={h} size="sm" variant="outline" disabled={opening} onClick={() => void openEditor(h)}>
@@ -119,7 +121,7 @@ export function AgentBulkRoster({ companyId, agents, visibleAgents, renderAgent,
     <div className="overflow-x-auto"><table aria-label="Agent roster" className="agent-roster w-full text-left text-sm">
       <thead className="text-xs text-muted-foreground [&_th]:px-3 [&_th]:py-3 [&_th]:font-normal"><tr>
         <th className="w-10"><Checkbox aria-label="Select all visible editable agents" checked={all ? true : some ? "indeterminate" : false} disabled={!selectable.length} onCheckedChange={toggleAll} /></th>
-        <th scope="col">{translateUi("interfaceCopy.agent")}</th>{renderChat && <th scope="col"><span className="sr-only">Chat</span></th>}<th scope="col">{translateUi("interfaceCopy.status")}</th><th scope="col">Harness</th><th scope="col">{translateUi("interfaceCopy.connection")}</th><th scope="col">Default model</th>
+        <th scope="col">{translateUi("interfaceCopy.agent")}</th>{renderChat && <th scope="col"><span className="sr-only">{pageText("chat_2ced57")}</span></th>}<th scope="col">{translateUi("interfaceCopy.status")}</th><th scope="col">Harness</th><th scope="col">{translateUi("interfaceCopy.connection")}</th><th scope="col">Default model</th>
       </tr></thead>
       <tbody>{visible.map(agent => {
         const pendingSetup = pendingAgentSetupDisplayAdapter(agent);
@@ -129,7 +131,7 @@ export function AgentBulkRoster({ companyId, agents, visibleAgents, renderAgent,
         {renderChat && <td>{renderChat(agent)}</td>}
         <td>{renderStatus ? renderStatus(agent) : <AgentStatusBadge status={agent.status} />}</td>
         <td className="whitespace-nowrap text-xs">{getAdapterLabel(pendingSetup ?? bulkAgentHarness(agent))}</td>
-        <td className="text-xs">{pendingSetup ? "Not configured" : ["http", "process"].includes(agent.adapterType) ? "Managed externally" : bulkConnectionName(agentConnection(agent), accounts.data)}</td>
+        <td className="text-xs">{pendingSetup ? pageText("notConfigured_811931") : ["http", "process"].includes(agent.adapterType) ? "Managed externally" : bulkConnectionName(agentConnection(agent), accounts.data)}</td>
         <td className="font-mono text-xs">{pendingSetup ? "Not available yet" : agentDefaultModel(agent) ?? "Harness default"}</td>
       </tr>;
       })}</tbody>

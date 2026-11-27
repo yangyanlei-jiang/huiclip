@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { TextAttachmentContext } from "@/context/TextAttachmentContext";
 import { useContext, useEffect, useMemo, useRef, useState, type ComponentProps, type ReactNode } from "react";
@@ -154,6 +155,7 @@ function MarkdownWorkProductRow({
   openRequestId?: number;
   face?: ArtifactFace;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const openTextAttachment = useContext(TextAttachmentContext);
   const [expanded, setExpanded] = useState(false);
@@ -302,7 +304,7 @@ function MarkdownWorkProductRow({
               <a
                 href={metadata.downloadPath}
                 aria-label={`Download ${workProduct.title}`}
-                title="Download"
+                title={pageText("download_a479c9")}
                 className={face ? ROW_ACTION_CLASS : "shrink-0 py-1.5 pr-2 pl-0.5 text-muted-foreground hover:text-foreground"}
               >
                 <Download className="h-3 w-3" />
@@ -436,6 +438,7 @@ export function IssuePropertiesArtifactsTab({
   onOpenDocument,
   uploadState,
 }: IssuePropertiesArtifactsTabProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { enabled: v1 } = useArtifactsV1Enabled();
   const documentAuthoring = documentEditor !== undefined;
@@ -578,9 +581,7 @@ export function IssuePropertiesArtifactsTab({
       >{translateUi("interfaceCopy.retry")}</button>
     </div>
   ) : loading ? (
-    <p role="status" className="px-1 py-3 text-sm text-muted-foreground">
-      Loading artifacts…
-    </p>
+    <p role="status" className="px-1 py-3 text-sm text-muted-foreground">{pageText("loadingArtifacts_344c46")}</p>
   ) : null;
 
   const withUploads = (content: ReactNode, empty = false) => {

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useQueryView } from "@/components/QueryView";
 import { describeError } from "@/api/errors";
 import { useId, useState } from "react";
@@ -14,6 +15,7 @@ import { NativeSelect } from "./ui/select";
 export function WorkspaceReconstructionRecovery({ issueId, blocker, canManage, onRecorded }: {
   issueId: string; blocker: ExecutionBlocker; canManage: boolean; onRecorded: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const id = useId();
   const [selected, setSelected] = useState<string[]>([]);
   const [missingWork, setMissingWork] = useState("");
@@ -40,7 +42,7 @@ export function WorkspaceReconstructionRecovery({ issueId, blocker, canManage, o
         {files.data?.map(file => <div key={file.id} className="flex items-center gap-2">
           <Checkbox id={`${id}-${file.id}`} checked={selected.includes(file.id)} onCheckedChange={checked =>
             setSelected(current => checked === true ? [...current, file.id] : current.filter(value => value !== file.id))} />
-          <Label htmlFor={`${id}-${file.id}`}>{file.originalFilename ?? "Attachment"} ({file.byteSize} bytes)</Label>
+          <Label htmlFor={`${id}-${file.id}`}>{file.originalFilename ?? pageText("attachment_83a562")} ({file.byteSize} bytes)</Label>
         </div>)}
         {files.isPending && <p>Loading saved attachments…</p>}
         {files.data?.length === 0 && <p>Attach the surviving source files to this task first.</p>}

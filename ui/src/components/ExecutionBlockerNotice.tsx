@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { describeError } from "../api/errors";
 import type { IssueRelationIssueSummary, TaskInterruptionPresentation } from "@paperclipai/shared";
@@ -37,6 +38,7 @@ export function ExecutionBlockerNotice({ presentation, canRetry, onRetry, optimi
   agentName?: string;
   projectName?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   useSecondTick(presentation?.state === "retry_scheduled");
   if (presentation?.projectAccess && !optimistic && !takingLonger) return <TaskProjectAccessNotice
@@ -56,14 +58,14 @@ export function ExecutionBlockerNotice({ presentation, canRetry, onRetry, optimi
       {presentation.state === "retry_scheduled" && <p>{step ? `${step}. ${retryIn}` : "Paperclip will retry automatically."}</p>}
     </ProviderFailureNotice>;
   }
-  if (step && presentation?.state === "working") return <div role="status" aria-label="Task status"
+  if (step && presentation?.state === "working") return <div role="status" aria-label={pageText("taskStatus_7dbc57")}
     className={cn("text-sm text-muted-foreground", className)}>{`${step}…`}</div>;
   // A task that has not started yet names the admission hold it waits for.
   if (!optimistic && presentation?.state === "working" && presentation.retryWait) {
     const dependencies = presentation.retryWait.reason === "dependency_blocked" ? blockers ?? [] : [];
     const unfinished = dependencies.filter(blocker => isLockedIssueStub(blocker) || blocker.status !== "done");
     const waitingOn = unfinished.length ? unfinished : dependencies;
-    return <div role="status" aria-label="Task status" className={cn("text-sm text-muted-foreground", className)}>
+    return <div role="status" aria-label={pageText("taskStatus_7dbc57")} className={cn("text-sm text-muted-foreground", className)}>
       <p>{presentation.retryWait.message}</p>
       {waitingOn.length ? <ul className="mt-1 space-y-0.5" data-testid="retry-waiting-on">
         {waitingOn.map(blocker => isLockedIssueStub(blocker)
@@ -71,7 +73,7 @@ export function ExecutionBlockerNotice({ presentation, canRetry, onRetry, optimi
           : <li key={blocker.id} className="flex min-w-0 items-center gap-2">
           <Link to={createIssueDetailPath(blocker.identifier ?? blocker.id)}
             className="font-mono text-xs text-foreground underline-offset-2 hover:underline">
-            {blocker.identifier ?? "Task"}
+            {blocker.identifier ?? pageText("task_7bb0dd")}
           </Link>
           <span className="min-w-0 truncate">{blocker.title}</span>
           <span className="shrink-0 text-xs">{blockerAction[blocker.status] ?? blocker.status.replace(/_/g, " ")}</span>
@@ -83,7 +85,7 @@ export function ExecutionBlockerNotice({ presentation, canRetry, onRetry, optimi
       !["failed", "retry_scheduled"].includes(presentation.state)) return null;
   return (
     <div className={cn(presentation.state === "failed" && "pt-4", className)}>
-      <div role="status" aria-label="Task status" className={cn(
+      <div role="status" aria-label={pageText("taskStatus_7dbc57")} className={cn(
         "flex items-center justify-between gap-3 text-sm",
         presentation.state === "failed" ? "rounded-lg bg-destructive/10 p-4 text-foreground" : "text-muted-foreground",
       )}>

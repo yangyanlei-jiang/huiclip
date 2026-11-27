@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useLocation } from "@/lib/router";
 import { ChatDetailSidebar } from "./chat/ChatDetailSidebar";
@@ -29,6 +30,7 @@ import { SidebarNavItem } from "./SidebarNavItem.production";
  * (PAP-10922).
  */
 export function AppsSidebar() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { pathname } = useLocation();
   const { selectedCompany } = useCompany();
@@ -55,20 +57,18 @@ export function AppsSidebar() {
           className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
         >
           <ChevronLeft className="h-3.5 w-3.5 shrink-0" />
-          <span className="truncate">{selectedCompany?.name ?? "Company"}</span>
+          <span className="truncate">{selectedCompany?.name ?? pageText("company_7a1994")}</span>
         </Link>
         <div className="flex items-center gap-2 px-2 py-1">
           <AppWindow className="h-4 w-4 text-muted-foreground shrink-0" />
-          <span className="flex-1 truncate text-sm font-bold text-foreground">Connectors</span>
+          <span className="flex-1 truncate text-sm font-bold text-foreground">{pageText("connectors_4b1e95")}</span>
         </div>
       </div>
 
       <nav className="flex-1 min-h-0 overflow-y-auto scrollbar-auto-hide px-3 py-2">
-        <div className="px-3 pb-1 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-          Connectors
-        </div>
+        <div className="px-3 pb-1 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">{pageText("connectors_4b1e95")}</div>
         <div className="flex flex-col gap-0.5">
-          <SidebarNavItem to="/apps" label="Browse" icon={Store} end />
+          <SidebarNavItem to="/apps" label={pageText("browse_2f3b5c")} icon={Store} end />
           <SidebarNavItem
             to="/apps/review"
             label={translateUi("interfaceCopy.review")}

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from "react";
 import { Check, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ export function CopyField({
   value: string;
   help?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState(false);
   return (
@@ -42,7 +44,7 @@ export function CopyField({
           ) : (
             <Copy className="h-3.5 w-3.5" />
           )}
-          {copied ? "Copied" : "Copy"}
+          {copied ? pageText("copied_8e3df4") : pageText("copy_af74f7")}
         </Button>
       </div>
       {help && <p className="text-xs text-muted-foreground">{help}</p>}
@@ -65,13 +67,14 @@ export function CopyField({
 }
 
 export function AgentInstructions({ value }: { value: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <section
-      aria-label="Agent instructions"
+      aria-label={pageText("agentInstructions_07101b")}
       className="space-y-3 rounded-md bg-muted/40 p-4"
     >
       <div className="space-y-1">
-        <h2 className="text-sm font-medium">Agent instructions</h2>
+        <h2 className="text-sm font-medium">{pageText("agentInstructions_07101b")}</h2>
         <p className="text-sm text-muted-foreground">
           Give your agent everything it needs to connect this webhook: the URL,
           authentication key, and step-by-step instructions.

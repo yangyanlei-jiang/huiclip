@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { configFieldsForSection } from "../config-sections";
 import type { AdapterConfigFieldsProps } from "../types";
 import {
@@ -23,10 +24,11 @@ export function OpenCodeLocalConfigFields({
   mark,
   hideInstructionsFile,
 }: AdapterConfigFieldsProps) {
+  const { t: pageText } = usePageTranslation("interface");
   return configFieldsForSection(section, (
     <>
       {!hideInstructionsFile && (
-        <Field label="Agent instructions file" hint={instructionsFileHint}>
+        <Field label={pageText("agentInstructionsFile_9765d1")} hint={instructionsFileHint}>
           <div className="flex items-center gap-2">
             <DraftInput
               value={

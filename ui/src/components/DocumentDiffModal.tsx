@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -48,6 +49,7 @@ export function DocumentDiffModal({
   revisionsQueryKey?: QueryKey;
   revisionsQueryFn?: () => Promise<DocumentRevision[]>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { data: revisions } = useQuery({
     queryKey: revisionsQueryKey ?? queryKeys.issues.documentRevisions(issueId ?? "", documentKey),
@@ -109,7 +111,7 @@ export function DocumentDiffModal({
                 onValueChange={(value) => setLeftRevisionId(value)}
               >
                 <SelectTrigger className="h-7 w-60 text-xs border-border/60">
-                  <SelectValue placeholder="Select revision" />
+                  <SelectValue placeholder={pageText("selectRevision_0a6ee4")} />
                 </SelectTrigger>
                 <SelectContent>
                   {sortedRevisions.map((revision) => (
@@ -127,7 +129,7 @@ export function DocumentDiffModal({
                 onValueChange={(value) => setRightRevisionId(value)}
               >
                 <SelectTrigger className="h-7 w-60 text-xs border-border/60">
-                  <SelectValue placeholder="Select revision" />
+                  <SelectValue placeholder={pageText("selectRevision_0a6ee4")} />
                 </SelectTrigger>
                 <SelectContent>
                   {sortedRevisions.map((revision) => (
@@ -143,7 +145,7 @@ export function DocumentDiffModal({
 
         <div className="overflow-auto flex-1 rounded-md border border-border text-xs">
           {!revisions ? (
-            <div className="p-6 text-center text-muted-foreground text-sm">Loading revisions...</div>
+            <div className="p-6 text-center text-muted-foreground text-sm">{pageText("loadingRevisions_496692")}</div>
           ) : !leftRevision || !rightRevision ? (
             <div className="p-6 text-center text-muted-foreground text-sm">Select two revisions to compare.</div>
           ) : leftRevision.id === rightRevision.id ? (

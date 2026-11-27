@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from "react";
 import { aggregatorManagementUrl } from "@paperclipai/shared/aggregator-apps";
 import { Label } from "@/components/ui/label";
@@ -23,6 +24,7 @@ export function AggregatorConnectDialog({ app, connections, initialProvider, onC
   onClose: () => void;
   onNavigate: (href: string) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [selectedAccountId, setSelectedAccountId] = useState("");
   const [selected, setSelected] = useState<AggregatorAppRoute | null>(() => app.routes.find(route => route.provider === initialProvider) ?? (app.routes.length === 1 ? app.routes[0] : null));
   const canChooseProvider = app.routes.length > 1;
@@ -58,7 +60,7 @@ export function AggregatorConnectDialog({ app, connections, initialProvider, onC
           <span className="text-xs text-muted-foreground">Continue →</span>
         </button>;
       })}</div> : <div className="space-y-4">
-        {selected.provider !== "composio" ? <div className="space-y-2"><Label htmlFor="aggregator-account">{provider!.name} account</Label>
+        {selected.provider !== "composio" ? <div className="space-y-2"><Label htmlFor="aggregator-account">{provider!.name}{" " + pageText("account_ca2072")}</Label>
           <select id="aggregator-account" value={account?.id ?? ""} onChange={event => setSelectedAccountId(event.target.value)} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
             {existing.map(connection => <option key={connection.id} value={connection.id}>{connection.name}</option>)}
           </select>
@@ -68,9 +70,9 @@ export function AggregatorConnectDialog({ app, connections, initialProvider, onC
 
       </div>}
       {selected?.provider !== "composio" ? <DialogFooter className="sm:items-center sm:justify-between">
-        <Button variant="ghost" onClick={selected && canChooseProvider ? () => setSelected(null) : onClose}>{selected && canChooseProvider ? "Back" : "Cancel"}</Button>
+        <Button variant="ghost" onClick={selected && canChooseProvider ? () => setSelected(null) : onClose}>{selected && canChooseProvider ? pageText("back_b52b36") : pageText("cancel_77dfd2")}</Button>
         {selected ? <div className="flex flex-wrap items-center gap-3">
-          {managementUrl ? <Button asChild><a href={managementUrl} target="_blank" rel="noopener noreferrer" onClick={onClose}>Continue<ExternalLink className="size-4" /></a></Button> : null}
+          {managementUrl ? <Button asChild><a href={managementUrl} target="_blank" rel="noopener noreferrer" onClick={onClose}>{pageText("continue_2e0262")}<ExternalLink className="size-4" /></a></Button> : null}
           <Button variant="link" size="sm" className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground" onClick={() => { onNavigate(`${aggregatorAppConnectHref(selected)}&new=1`); onClose(); }}>Connect a new account</Button>
         </div> : null}
       </DialogFooter> : null}

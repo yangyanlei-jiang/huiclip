@@ -1,3 +1,5 @@
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -157,7 +159,7 @@ export function RoutineHistoryTab({
     },
     onError: (error) => {
       pushToast({
-        title: "Failed to restore revision",
+        title: interfaceMessage("interface:errorFailedToRestoreRevision"),
         body: describeError(error, { action: "restore the revision" }).body,
         tone: "error",
       });
@@ -366,6 +368,7 @@ function ConflictBanner({
   onDiscard: () => void;
   onSave: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const labels = dirtyFields.length > 0
     ? dirtyFields.map((field) => field.label)
     : ["the routine"];
@@ -381,9 +384,7 @@ function ConflictBanner({
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm" onClick={onDiscard}>
-            Discard changes
-          </Button>
+          <Button variant="outline" size="sm" onClick={onDiscard}>{pageText("discardChanges_fa8fc0")}</Button>
           <Button size="sm" onClick={onSave}>
             Save and continue
           </Button>
@@ -424,12 +425,11 @@ function RevisionList({
   onShowOlder: () => void;
   showOlder: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <aside className="space-y-1">
       <header className="flex items-center justify-between pb-2">
-        <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
-          Revisions
-        </p>
+        <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">{pageText("revisions_2dba79")}</p>
         <span className="text-(length:--text-micro) text-muted-foreground">{totalRevisions} total</span>
       </header>
       {revisions.map((revision) => {
@@ -460,9 +460,7 @@ function RevisionList({
             <div className="flex items-center gap-2 text-sm font-medium">
               <span>rev {revision.revisionNumber}</span>
               {isCurrent && (
-                <Badge variant="outline" className="border-border px-1.5 text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-                  Current
-                </Badge>
+                <Badge variant="outline" className="border-border px-1.5 text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{pageText("current_4fc0e2")}</Badge>
               )}
               {revision.restoredFromRevisionId && (
                 <Badge variant="outline" className="border-amber-500/40 bg-amber-500/10 px-1.5 text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-amber-800 dark:text-amber-200">
@@ -478,8 +476,7 @@ function RevisionList({
         );
       })}
       {totalRevisions > revisions.length && !showOlder && (
-        <Button variant="ghost" size="sm" className="w-full" onClick={onShowOlder}>
-          Show {totalRevisions - revisions.length} older…
+        <Button variant="ghost" size="sm" className="w-full" onClick={onShowOlder}>{pageText("show_d97d1e") + " "}{totalRevisions - revisions.length} older…
         </Button>
       )}
     </aside>
@@ -507,6 +504,7 @@ function RevisionPreview({
   restorePending: boolean;
   highlighted: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const snapshot = revision.snapshot.routine;
   const triggers = revision.snapshot.triggers;
@@ -577,8 +575,7 @@ function RevisionPreview({
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="space-y-1 min-w-0">
             <p className="text-sm font-medium">rev {revision.revisionNumber}</p>
-            <p className="text-xs text-muted-foreground truncate">
-              Saved {relativeTime(revision.createdAt)} by {getActorLabel(revision)}
+            <p className="text-xs text-muted-foreground truncate">{pageText("saved_c0ae8f") + " "}{relativeTime(revision.createdAt)} by {getActorLabel(revision)}
               {revision.changeSummary ? ` · ${revision.changeSummary}` : ""}
             </p>
           </div>
@@ -653,7 +650,7 @@ function RevisionPreview({
                 <span
                   className={`ml-auto text-xs ${trigger.enabled ? "text-emerald-400" : "text-muted-foreground"}`}
                 >
-                  {trigger.enabled ? "enabled" : "disabled"}
+                  {trigger.enabled ? "enabled" : pageText("disabled_07596f")}
                 </span>
               </li>
             ))}

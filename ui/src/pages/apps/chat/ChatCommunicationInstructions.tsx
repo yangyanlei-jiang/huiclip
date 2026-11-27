@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useId, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ export function ChatCommunicationInstructions({ value, onSave }: {
   value: string;
   onSave: (instructions: string) => Promise<void>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const id = useId();
   const [draft, setDraft] = useState<string | null>(null);
@@ -55,7 +57,7 @@ export function ChatCommunicationInstructions({ value, onSave }: {
           {dirty ? <Button type="button" variant="ghost" disabled={pending} onClick={() => { setDraft(null); setError(null); setSaved(false); }}>{translateUi("interfaceCopy.cancel")}</Button>
             : saved ? <span role="status" className="text-sm text-muted-foreground">Saved. Applies to new tasks.</span> : null}
         </div>
-        <Button type="submit" disabled={!dirty || pending}>{pending ? "Saving…" : "Save instructions"}</Button>
+        <Button type="submit" disabled={!dirty || pending}>{pending ? pageText("saving_56a228") : "Save instructions"}</Button>
       </div>
     </form>
   );

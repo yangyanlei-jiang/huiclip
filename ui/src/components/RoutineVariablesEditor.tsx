@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, HelpCircle } from "lucide-react";
@@ -62,6 +63,7 @@ export function RoutineVariablesEditor({
   value: RoutineVariable[];
   onChange: (value: RoutineVariable[]) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(true);
   const syncedVariables = useMemo(
@@ -106,7 +108,7 @@ export function RoutineVariablesEditor({
 
             <div className="grid gap-3 md:grid-cols-2">
               <div className="space-y-1.5">
-                <Label className="text-xs">Label</Label>
+                <Label className="text-xs">{pageText("label_74341e")}</Label>
                 <Input
                   value={variable.label ?? ""}
                   onChange={(event) => onChange(updateVariableList(syncedVariables, variable.name, (current) => ({
@@ -150,9 +152,7 @@ export function RoutineVariablesEditor({
                         ...current,
                         required: event.target.checked,
                       })))}
-                    />
-                    Required
-                  </label>
+                    />{pageText("required_eed6bf")}</label>
                 </div>
 
                 {variable.type === "textarea" ? (
@@ -271,6 +271,7 @@ const BUILTIN_VARIABLE_DOCS: BuiltinVariableDoc[] = [
 ];
 
 export function RoutineVariablesHint() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [helpOpen, setHelpOpen] = useState(false);
 
@@ -304,8 +305,7 @@ export function RoutineVariablesHint() {
               <h3 className="text-xs font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
                 Custom variables
               </h3>
-              <p className="text-muted-foreground">
-                Type{" "}
+              <p className="text-muted-foreground">{pageText("type_3deb74")}{" "}
                 <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs text-foreground">
                   {"{{variable_name}}"}
                 </code>{" "}

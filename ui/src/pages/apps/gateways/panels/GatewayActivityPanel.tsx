@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo, useState } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -65,6 +66,7 @@ function Fact({ label, value, mono = false }: { label: string; value: string; mo
 }
 
 function ActivityRow({ event }: { event: ToolGatewayActivityEvent }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
   const outcome = OUTCOME_META[event.normalizedOutcome] ?? OUTCOME_META.unknown;
@@ -112,12 +114,12 @@ function ActivityRow({ event }: { event: ToolGatewayActivityEvent }) {
           <dl>
             {rawTool ? <Fact label={translateUi("interfaceCopy.tool")} value={rawTool} mono /> : null}
             {event.invocation?.status ? <Fact label="Call status" value={event.invocation.status} /> : null}
-            {event.invocation?.policyDecision ? <Fact label="Decision" value={event.invocation.policyDecision} /> : null}
+            {event.invocation?.policyDecision ? <Fact label={pageText("decision_7f59a1")} value={event.invocation.policyDecision} /> : null}
             {reason ? <Fact label={translateUi("interfaceCopy.reason")} value={reason} mono /> : null}
             {duration ? <Fact label="Duration" value={duration} /> : null}
             {event.invocation?.id ? <Fact label="Invocation ID" value={event.invocation.id} mono /> : null}
             {event.invocation?.errorCode ? <Fact label="Error code" value={event.invocation.errorCode} mono /> : null}
-            {event.invocation?.errorMessage ? <Fact label="Error" value={event.invocation.errorMessage} /> : null}
+            {event.invocation?.errorMessage ? <Fact label={pageText("error_7f2f6a")} value={event.invocation.errorMessage} /> : null}
           </dl>
           {argumentsText ? (
             <div className="mt-2 space-y-1">
@@ -148,6 +150,7 @@ export function GatewayActivityPanel({
   companyId: string;
   gateway: ToolMcpGatewayWithTokens;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const activityQuery = useInfiniteQuery({
     queryKey: queryKeys.tools.activity(companyId, { gateway: gateway.id, window: "30d" }),
     queryFn: ({ pageParam }) =>
@@ -210,7 +213,7 @@ export function GatewayActivityPanel({
             onClick={() => activityQuery.fetchNextPage()}
             disabled={activityQuery.isFetchingNextPage}
           >
-            {activityQuery.isFetchingNextPage ? "Loading…" : "Load more"}
+            {activityQuery.isFetchingNextPage ? pageText("loading_33ce41") : pageText("loadMore_dfe60c")}
           </Button>
         </div>
       ) : null}

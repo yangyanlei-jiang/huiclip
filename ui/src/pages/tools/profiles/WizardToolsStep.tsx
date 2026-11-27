@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, Plug, Plus, Search, X } from "lucide-react";
@@ -53,6 +54,7 @@ export interface WizardToolsStepProps {
 }
 
 export function WizardToolsStep(props: WizardToolsStepProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { appGroups, catalogLoading, selections, onSelectionsChange } = props;
   const [search, setSearch] = useState("");
@@ -76,7 +78,7 @@ export function WizardToolsStep(props: WizardToolsStepProps) {
       .filter((entry) => entry.tools.length > 0);
   }, [appGroups, search, capabilityFilter]);
 
-  if (catalogLoading) return <LoadingState label="Loading tools…" />;
+  if (catalogLoading) return <LoadingState label={pageText("loadingTools_8237fc")} />;
 
   // Cold state A (AP17): nothing connected at all.
   if (appGroups.length === 0) {
@@ -105,7 +107,7 @@ export function WizardToolsStep(props: WizardToolsStepProps) {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search tools…"
+            placeholder={pageText("searchTools_97829a")}
             className="pl-8"
           />
         </div>
@@ -183,6 +185,7 @@ function AppRow({
   onToggleApp: () => void;
   onToggleTool: (toolId: string) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [expanded, setExpanded] = useState(false);
   const state = appCheckState(group, selection);
   const checked = state === "checked" ? true : state === "indeterminate" ? "indeterminate" : false;
@@ -202,8 +205,7 @@ function AppRow({
             <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
           )}
           <span className="flex flex-col">
-            <span className="text-sm font-medium text-foreground">
-              All {group.name} tools ({group.tools.length})
+            <span className="text-sm font-medium text-foreground">{pageText("all_6a7208") + " "}{group.name} tools ({group.tools.length})
             </span>
             <span className="text-xs text-muted-foreground">
               {state === "indeterminate"
@@ -327,6 +329,7 @@ function AdvancedRules({
   rules: AdvancedRule[];
   onChange: (next: AdvancedRule[]) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
   const [kind, setKind] = useState<AdvancedRuleKind>("tool_name");
@@ -369,7 +372,7 @@ function AdvancedRules({
                 <span className="text-foreground">{ruleSummary(rule)}</span>
                 <button
                   type="button"
-                  aria-label="Remove rule"
+                  aria-label={pageText("removeRule_e0d4ff")}
                   onClick={() => onChange(rules.filter((r) => r.id !== rule.id))}
                   className="text-muted-foreground hover:text-destructive"
                 >
@@ -410,7 +413,7 @@ function AdvancedRules({
               <SelectContent>
                 <SelectItem value="read">{translateUi("interfaceCopy.readonly")}</SelectItem>
                 <SelectItem value="write">Makes changes</SelectItem>
-                <SelectItem value="destructive">Destructive</SelectItem>
+                <SelectItem value="destructive">{pageText("destructive_f58c83")}</SelectItem>
               </SelectContent>
             </Select>
           ) : (
@@ -422,9 +425,7 @@ function AdvancedRules({
             />
           )}
           <Button type="button" variant="outline" size="sm" onClick={addRule}>
-            <Plus className="mr-1 h-3.5 w-3.5" />
-            Add rule
-          </Button>
+            <Plus className="mr-1 h-3.5 w-3.5" />{pageText("addRule_11cc2b")}</Button>
         </div>
       </CollapsibleContent>
     </Collapsible>

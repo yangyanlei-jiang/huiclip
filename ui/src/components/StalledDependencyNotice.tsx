@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type { Issue, IssueBlockerStalledWakeContext } from "@paperclipai/shared";
 import { useQueries } from "@tanstack/react-query";
 import { AlertTriangle, RotateCcw } from "lucide-react";
@@ -57,6 +58,7 @@ function StalledDependencyList({ entries }: { entries: IssueBlockerStalledWakeCo
 function StalledDependencyRow({ entry, child, readError, isFetching, refetch }: {
   entry: IssueBlockerStalledWakeContext; child: Issue | undefined; readError: Error | null; isFetching: boolean; refetch: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const ref = entry.stalledIssueIdentifier ?? entry.stalledIssueId;
   const retry = useTaskRetry(child);
   const canRetry = child?.interruption?.canRetry === true;
@@ -69,7 +71,7 @@ function StalledDependencyRow({ entry, child, readError, isFetching, refetch }: 
         {entry.relation === "child" ? "Child" : "Blocker"}
       </span>
       <Link to={createIssueDetailPath(ref)} className="font-mono text-xs underline-offset-2 hover:underline">
-        {entry.stalledIssueIdentifier ?? "Task"}
+        {entry.stalledIssueIdentifier ?? pageText("task_7bb0dd")}
       </Link>
       <span className="min-w-0 flex-1 truncate">{entry.stalledIssueTitle}</span>
       {entry.recoveryAction.nextAction ? (
@@ -99,7 +101,7 @@ function StalledDependencyRow({ entry, child, readError, isFetching, refetch }: 
           className="h-7 gap-1 border-amber-300/80 bg-background/80 text-amber-950 shadow-none hover:bg-amber-100 dark:border-amber-500/50 dark:bg-background/40 dark:text-amber-100 dark:hover:bg-amber-500/15"
         >
           <RotateCcw className="h-3 w-3" aria-hidden />
-          {retry.optimistic && !retry.takingLonger ? "Retrying…" : "Retry"}
+          {retry.optimistic && !retry.takingLonger ? pageText("retrying_231013") : pageText("retry_9f5cd8")}
         </Button>
       ) : null}
     </li>

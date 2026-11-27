@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useCallback, useMemo } from "react";
 import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
@@ -43,6 +44,7 @@ export function signedCancelTreePreviewIds(targetIssueId: string, snapshot: { de
  * success — same conventions as {@link AttentionInteractionResolver}.
  */
 export function DecisionResolver({ companyId, decisionId, originIssue, agentMap, initialDecision, recordedDecision, onResolved }: DecisionResolverProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const { selectedCompany } = useCompany();
   const prefix = selectedCompany?.issuePrefix ?? "";
@@ -168,8 +170,7 @@ export function DecisionResolver({ companyId, decisionId, originIssue, agentMap,
   if (!recordedDecision && detail.isLoading) {
     return (
       <div className="flex items-center gap-2 py-3 text-xs text-muted-foreground">
-        <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading decision…
-      </div>
+        <Loader2 className="h-3.5 w-3.5 animate-spin" />{" " + pageText("loadingDecision_a7a5d4")}</div>
     );
   }
 

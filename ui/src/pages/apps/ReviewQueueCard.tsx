@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Loader2, ShieldQuestion, X } from "lucide-react";
@@ -92,6 +93,7 @@ function ReviewRow({
   item: ToolActionRequestListItem;
   plain: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const { pushToast } = useToast();
   const [resolving, setResolving] = useState<null | "allow" | "always" | "decline">(null);
@@ -203,13 +205,9 @@ function ReviewRow({
           Allow once
         </Button>
         {item.requestedByAgentId && item.connectionId && !item.request.approvalId ? <Button size="sm" variant="outline" onClick={() => alwaysAllow.mutate()} disabled={busy}>
-          {resolving === "always" ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
-          Always allow
-        </Button> : null}
+          {resolving === "always" ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}{pageText("alwaysAllow_41325d")}</Button> : null}
         <Button size="sm" variant="ghost" onClick={() => decline.mutate()} disabled={busy}>
-          {resolving === "decline" ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <X className="mr-1.5 h-3.5 w-3.5" />}
-          Decline
-        </Button>
+          {resolving === "decline" ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <X className="mr-1.5 h-3.5 w-3.5" />}{pageText("decline_b59cf9")}</Button>
       </div>
     </div>
   );

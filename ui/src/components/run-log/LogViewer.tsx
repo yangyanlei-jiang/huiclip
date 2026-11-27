@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useResilientFetch } from "@/hooks/useResilientFetch";
 import { QueryErrorState } from "@/components/QueryView";
 import { isTransientError } from "@/api/errors";
@@ -41,6 +42,7 @@ import {
 } from "./RunDetails";
 
 export function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { visible } = usePageVisibility();
   const connection = useConnectivityStore();
   const [events, setEvents] = useState<HeartbeatRunEvent[]>([]);
@@ -518,9 +520,7 @@ export function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType
               <span className="relative flex h-2 w-2">
                 <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
-              </span>
-              Live
-            </span>
+              </span>{pageText("live_65c821")}</span>
           )}
         </div>
       </div>
@@ -542,7 +542,7 @@ export function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType
               onClick={persistedLog.view.retry}
               disabled={loadingMoreLog}
             >
-              {loadingMoreLog ? "Loading..." : "Load more log"}
+              {loadingMoreLog ? pageText("loading_b04ba4") : "Load more log"}
             </Button>
             <span className="text-xs text-muted-foreground">
               Showing the first {Math.round(logOffset / 1024).toLocaleString("en-US")} KB
@@ -598,7 +598,7 @@ export function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType
           {eventsError && <p className="text-sm text-destructive">{eventsError}</p>}
           {(hasMoreEvents || eventsError) && (
             <Button variant="outline" size="sm" disabled={loadingMoreEvents} onClick={() => loadMoreEventsRef.current?.()}>
-              {loadingMoreEvents ? "Loading..." : eventsError ? "Retry events" : "Load more events"}
+              {loadingMoreEvents ? pageText("loading_b04ba4") : eventsError ? "Retry events" : "Load more events"}
             </Button>
           )}
           <div className="bg-neutral-100 dark:bg-neutral-950 rounded-lg p-3 font-mono text-xs space-y-0.5">

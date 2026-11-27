@@ -1,3 +1,5 @@
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
 import { AlertTriangle, RotateCcw, TimerReset } from "lucide-react";
 import { healthApi, type DevServerHealthStatus } from "../api/health";
@@ -31,6 +33,7 @@ function describeReason(devServer: DevServerHealthStatus): string {
 }
 
 export function DevRestartBanner({ devServer }: { devServer?: DevServerHealthStatus }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [restartPending, setRestartPending] = useState(false);
   useEffect(() => {
     if (!restartPending) return;
@@ -61,7 +64,7 @@ export function DevRestartBanner({ devServer }: { devServer?: DevServerHealthSta
       await healthApi.requestDevServerRestart();
     } catch (error) {
       setRestartPending(false);
-      window.alert(error instanceof Error ? error.message : "Failed to request restart");
+      window.alert(error instanceof Error ? error.message : interfaceMessage("interface:errorFailedToRequestRestart"));
     }
   }
 
@@ -112,7 +115,7 @@ export function DevRestartBanner({ devServer }: { devServer?: DevServerHealthSta
           ) : (
             <div className="inline-flex items-center gap-2 rounded-full bg-amber-900/10 px-3 py-1.5 dark:bg-amber-100/10">
               <RotateCcw className="h-3.5 w-3.5" />
-              <span>Restart <code>pnpm dev:once</code> after the active work is safe to interrupt</span>
+              <span>{pageText("restart_b134bd") + " "}<code>pnpm dev:once</code> after the active work is safe to interrupt</span>
             </div>
           )}
           <button

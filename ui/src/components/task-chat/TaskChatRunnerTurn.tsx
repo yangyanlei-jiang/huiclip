@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { groupImageResources } from "./image-resources";
 import { useRef, type ReactNode } from "react";
 import type { ExecutionProjection } from "@paperclipai/shared";
@@ -111,10 +112,11 @@ function RunnerTurnStatus({
 }
 
 function RunnerCurrentActivityTail({ status, waitingLabel }: { status: string; waitingLabel?: string | null }) {
+  const { t: pageText } = usePageTranslation("interface");
   const shimmer = useTaskChatShimmer("working");
   if (isTerminalRunStatus(status)) return null;
   return <div className="mt-2 flex min-h-8 min-w-0 items-center gap-2 px-1 py-1 text-xs text-muted-foreground" data-testid="task-chat-current-activity" data-turn-position="tail">
-    <span className={cn(!waitingLabel && shimmer && "shimmer-text shimmer-text-muted")} aria-live="polite" data-testid="task-chat-current-activity-label">{waitingLabel ?? "Thinking"}</span>
+    <span className={cn(!waitingLabel && shimmer && "shimmer-text shimmer-text-muted")} aria-live="polite" data-testid="task-chat-current-activity-label">{waitingLabel ?? pageText("thinking_d08d8d")}</span>
   </div>;
 }
 

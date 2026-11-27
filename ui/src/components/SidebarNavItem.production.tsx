@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { createContext, useContext, type ReactNode } from "react";
 import { NavLink } from "@/lib/router";
 import { SIDEBAR_SCROLL_RESET_STATE } from "../lib/navigation-scroll";
@@ -89,6 +90,7 @@ export function SidebarNavItem({
   trailingLabel,
   liveAccessory,
 }: SidebarNavItemProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { isMobile, setSidebarOpen, collapsed, peeking } = useSidebar();
   // A fixed-width contextual pane (SecondarySidebar) forces full labels even
   // when the global app sidebar is collapsed to its rail (PAP-10700).
@@ -185,7 +187,7 @@ export function SidebarNavItem({
                 <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-blue-600 dark:bg-blue-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600 dark:bg-blue-400" />
               </span>
-              <span className="text-(length:--text-micro) font-medium text-blue-600 dark:text-blue-400">{liveCount} live</span>
+              <span className="text-(length:--text-micro) font-medium text-blue-600 dark:text-blue-400">{liveCount}{" " + pageText("live_98aadb")}</span>
             </>
           )}
         </span>

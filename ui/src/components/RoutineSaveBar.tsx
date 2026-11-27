@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
 import { AlertTriangle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -45,6 +46,7 @@ export function RoutineSaveBar({
   onReload: () => void;
   disabled?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const dirtyCount = dirtyFields.length;
   const isDirty = dirtyCount > 0;
   const [confirmDiscardOpen, setConfirmDiscardOpen] = useState(false);
@@ -144,17 +146,13 @@ export function RoutineSaveBar({
                 size="sm"
                 disabled={isSaving || disabled}
                 onClick={() => setConfirmDiscardOpen(true)}
-              >
-                Discard
-              </Button>
+              >{pageText("discard_36fff6")}</Button>
               <Button
                 size="sm"
                 disabled={isSaving || disabled}
                 onClick={onSave}
               >
-                {isSaving ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
-                Save changes
-                <kbd className="ml-2 hidden rounded bg-foreground/10 px-1 text-(length:--text-nano) font-medium sm:inline">
+                {isSaving ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}{pageText("saveChanges_179359")}<kbd className="ml-2 hidden rounded bg-foreground/10 px-1 text-(length:--text-nano) font-medium sm:inline">
                   ⌘S
                 </kbd>
               </Button>
@@ -183,9 +181,7 @@ export function RoutineSaveBar({
                 onDiscard();
                 setConfirmDiscardOpen(false);
               }}
-            >
-              Discard changes
-            </Button>
+            >{pageText("discardChanges_fa8fc0")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

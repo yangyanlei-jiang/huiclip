@@ -1,3 +1,5 @@
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { authApi } from "@/api/auth";
 import { accessApi } from "@/api/access";
@@ -84,28 +86,23 @@ const SHARED_WORKSPACE_CONCURRENCY_OPTIONS: {
 ];
 
 function SaveIndicator({ state }: { state: ProjectFieldSaveState }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (state === "saving") {
     return (
       <span className="inline-flex items-center gap-1 text-(length:--text-micro) text-muted-foreground">
-        <Loader2 className="h-3 w-3 animate-spin" />
-        Saving
-      </span>
+        <Loader2 className="h-3 w-3 animate-spin" />{pageText("saving_369c53")}</span>
     );
   }
   if (state === "saved") {
     return (
       <span className="inline-flex items-center gap-1 text-(length:--text-micro) text-green-600 dark:text-green-400">
-        <Check className="h-3 w-3" />
-        Saved
-      </span>
+        <Check className="h-3 w-3" />{pageText("saved_c0ae8f")}</span>
     );
   }
   if (state === "error") {
     return (
       <span className="inline-flex items-center gap-1 text-(length:--text-micro) text-destructive">
-        <AlertCircle className="h-3 w-3" />
-        Failed
-      </span>
+        <AlertCircle className="h-3 w-3" />{pageText("failed_09fef5")}</span>
     );
   }
   return null;
@@ -159,6 +156,7 @@ function ArchiveDangerZone({
   onArchive: (archived: boolean) => void;
   archivePending?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [confirming, setConfirming] = useState(false);
   const isArchive = !project.archivedAt;
@@ -204,9 +202,9 @@ function ArchiveDangerZone({
           onClick={() => setConfirming(true)}
         >
           {isArchive ? (
-            <><Archive className="h-3 w-3 mr-1" />{action} project</>
+            <><Archive className="h-3 w-3 mr-1" />{action}{" " + pageText("project_98f541")}</>
           ) : (
-            <><ArchiveRestore className="h-3 w-3 mr-1" />{action} project</>
+            <><ArchiveRestore className="h-3 w-3 mr-1" />{action}{" " + pageText("project_98f541")}</>
           )}
         </Button>
       )}
@@ -215,6 +213,7 @@ function ArchiveDangerZone({
 }
 
 export function ProjectProperties({ project, repositories, onUpdate, onFieldUpdate, getFieldSaveState, onArchive, archivePending }: ProjectPropertiesProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { visible: workspaceIsolationControlsVisible } = useWorkspaceIsolationControls();
   const { selectedCompanyId } = useCompany();
@@ -475,7 +474,7 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
               nullable
               as="p"
               className="text-sm text-muted-foreground"
-              placeholder="Add a description..."
+              placeholder={pageText("addADescription_8c1d83")}
               multiline
             />
           ) : (
@@ -484,11 +483,11 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
             </p>
           )}
         </PropertyRow>
-        <PropertyRow label={<FieldLabel label="Visibility" state={fieldState("visibility")} />} alignStart>
+        <PropertyRow label={<FieldLabel label={pageText("visibility_7d9ff4")} state={fieldState("visibility")} />} alignStart>
           <div className="space-y-2">
             <label className="flex items-center gap-2 text-sm">
               <ToggleSwitch
-                aria-label="Private project"
+                aria-label={pageText("privateProject_505bbd")}
                 checked={project.visibility === "private"}
                 onCheckedChange={(checked) => {
                   if (!checked) {
@@ -499,7 +498,7 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
                 }}
                 disabled={!canManagePrivacy || (!onUpdate && !onFieldUpdate)}
               />
-              <span>{project.visibility === "private" ? "Private" : "Open to company"}</span>
+              <span>{project.visibility === "private" ? pageText("private_237dfa") : "Open to company"}</span>
             </label>
             <p className="text-(length:--text-micro) text-muted-foreground">
               {project.visibility === "private"
@@ -718,15 +717,15 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
           )}
           {createWorkspace.isError && ( // query-error-ok: mutation result
 
-            <p className="text-xs text-destructive">Failed to save workspace.</p>
+            <p className="text-xs text-destructive">{interfaceMessage("interface:errorFailedToSaveWorkspaceSentence")}</p>
           )}
           {removeWorkspace.isError && ( // query-error-ok: mutation result
 
-            <p className="text-xs text-destructive">Failed to delete workspace.</p>
+            <p className="text-xs text-destructive">{interfaceMessage("interface:errorFailedToDeleteWorkspaceSentence")}</p>
           )}
           {updateWorkspace.isError && ( // query-error-ok: mutation result
 
-            <p className="text-xs text-destructive">Failed to update workspace.</p>
+            <p className="text-xs text-destructive">{interfaceMessage("interface:errorFailedToUpdateWorkspaceSentence")}</p>
           )}
         </div>}
 
@@ -809,7 +808,7 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
                     />
                   ) : (
                     <span className="text-xs text-muted-foreground">
-                      {executionWorkspacesEnabled ? "Enabled" : "Disabled"}
+                      {executionWorkspacesEnabled ? "Enabled" : pageText("disabled_f4f447")}
                     </span>
                   )}
                 </div>
@@ -929,7 +928,7 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
                         <div>
                           <div className="mb-1 flex items-center gap-1.5">
                             <label className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <span>Base ref</span>
+                              <span>{pageText("baseRef_16e96d")}</span>
                               <SaveIndicator state={fieldState("execution_workspace_base_ref")} />
                             </label>
                           </div>
@@ -1092,9 +1091,7 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
         <>
           <Separator className="my-4" />
           <div className="space-y-4 py-4">
-            <div className="text-xs font-medium text-destructive uppercase tracking-wide">
-              Danger Zone
-            </div>
+            <div className="text-xs font-medium text-destructive uppercase tracking-wide">{pageText("dangerZone_8fc83a")}</div>
             <ArchiveDangerZone
               project={project}
               onArchive={onArchive}

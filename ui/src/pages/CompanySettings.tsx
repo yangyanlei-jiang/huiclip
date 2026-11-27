@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { ChangeEvent, useEffect, useState } from "react";
 import { AgentObservabilitySettingsSection } from "../components/observability/AgentObservabilitySettings";
@@ -34,6 +35,7 @@ import {
 import { InstanceGeneralSettings } from "./InstanceGeneralSettings";
 
 export function CompanySettings() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const {
     companies,
@@ -249,7 +251,7 @@ export function CompanySettings() {
               className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
               type="text"
               value={description}
-              placeholder="Optional organization description"
+              placeholder={pageText("optionalOrganizationDescription_db1d77")}
               onChange={(e) => setDescription(e.target.value)}
             />
           </Field>
@@ -290,7 +292,7 @@ export function CompanySettings() {
                         onClick={handleClearLogo}
                         disabled={clearLogoMutation.isPending}
                       >
-                        {clearLogoMutation.isPending ? "Removing..." : "Remove logo"}
+                        {clearLogoMutation.isPending ? pageText("removing_2a76d4") : "Remove logo"}
                       </Button>
                     </div>
                   )}
@@ -322,7 +324,7 @@ export function CompanySettings() {
             onClick={handleSaveGeneral}
             disabled={generalMutation.isPending || !companyName.trim()}
           >
-            {generalMutation.isPending ? "Saving..." : "Save changes"}
+            {generalMutation.isPending ? pageText("saving_ae7e88") : pageText("saveChanges_179359")}
           </Button>
           {generalMutation.isSuccess && (
             <span className="text-xs text-muted-foreground">{translateUi("interfaceCopy.saved")}</span>
@@ -365,9 +367,7 @@ export function CompanySettings() {
 
       {/* Danger Zone */}
       <div className="space-y-4">
-        <div className="text-xs font-medium text-destructive uppercase tracking-wide">
-          Danger Zone
-        </div>
+        <div className="text-xs font-medium text-destructive uppercase tracking-wide">{pageText("dangerZone_8fc83a")}</div>
         <div className="space-y-3 bg-destructive/5 px-4 py-4">
           <p className="text-sm text-muted-foreground">
             Archive this organization to hide it from the sidebar. This persists in
@@ -394,7 +394,7 @@ export function CompanySettings() {
                 ? "Archiving..."
                 : selectedCompany.status === "archived"
                 ? "Already archived"
-                : "Archive organization"}
+                : pageText("archiveOrganization_26b2c4")}
             </Button>
             {archiveMutation.error && (
               <span className="text-xs text-destructive">

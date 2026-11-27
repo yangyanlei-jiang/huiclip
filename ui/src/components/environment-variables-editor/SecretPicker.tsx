@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useCallback, useMemo, useState } from "react";
 import { CornerUpLeft, Folder, KeyRound, Plus } from "lucide-react";
 import type { CompanySecret, SecretStatus } from "@paperclipai/shared";
@@ -154,6 +155,7 @@ export function SecretPicker({
   triggerClassName,
   disablePortal,
 }: SecretPickerProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const [currentPathKey, setCurrentPathKey] = useState("");
   const boundSecret = useMemo(
     () => secrets.find((secret) => secret.id === secretId) ?? null,
@@ -253,8 +255,8 @@ export function SecretPicker({
       deriveGroups={deriveGroups}
       disabled={disabled}
       disablePortal={disablePortal}
-      placeholder="Select secret…"
-      searchPlaceholder="Search secrets…"
+      placeholder={pageText("selectSecret_2e1106")}
+      searchPlaceholder={pageText("searchSecrets_5fa681")}
       emptyMessage="No matching secrets"
       triggerClassName={cn(
         "h-(--sz-34px) min-h-(--sz-34px) font-mono text-sm",
@@ -264,7 +266,7 @@ export function SecretPicker({
       )}
       renderValue={(option) => {
         if (!option) {
-          return <span className="text-muted-foreground">Select secret…</span>;
+          return <span className="text-muted-foreground">{pageText("selectSecret_2e1106")}</span>;
         }
         if (option.missing) {
           return (
@@ -323,8 +325,7 @@ export function SecretPicker({
               <span className="flex items-center gap-1.5 text-sm">
                 <Plus className="size-3.5 shrink-0" />
                 {query.trim() ? (
-                  <span>
-                    Create secret <span className="font-mono">&ldquo;{query.trim()}&rdquo;</span>…
+                  <span>{pageText("createSecret_f13847") + " "}<span className="font-mono">&ldquo;{query.trim()}&rdquo;</span>…
                   </span>
                 ) : (
                   <span>Create new secret…</span>

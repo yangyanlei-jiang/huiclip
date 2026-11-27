@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type { ReactNode } from "react";
 import {
   Boxes,
@@ -95,6 +96,7 @@ function Section({ label, children }: { label: string; children: ReactNode }) {
 }
 
 function Sidebar({ nav }: { nav: ShellNav }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     // SidebarShell.tsx:15 (240px), Sidebar.tsx:128 — no right border; the edge is the surface change.
     <aside className="flex w-60 shrink-0 flex-col primary-sidebar-surface" aria-label="Primary">
@@ -120,17 +122,17 @@ function Sidebar({ nav }: { nav: ShellNav }) {
             <NavItem key={entry.label} {...entry} />
           ))}
         </div>
-        <Section label="Work">
+        <Section label={pageText("work_00040b")}>
           {WORK.map((entry) => (
             <NavItem key={entry.label} {...entry} active={entry.nav === nav} />
           ))}
         </Section>
-        <Section label="Org">
+        <Section label={pageText("org_972f71")}>
           {ORG.map((entry) => (
             <NavItem key={entry.label} {...entry} />
           ))}
         </Section>
-        <Section label="Recent Tasks">
+        <Section label={pageText("recentTasks_b91b93")}>
           {RECENT.map((title) => (
             <NavItem key={title} label={title} />
           ))}

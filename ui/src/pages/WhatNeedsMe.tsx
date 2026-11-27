@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useCoordinatorWorkspaceEnabled } from "../hooks/useCoordinatorWorkspaceEnabled";
@@ -93,6 +94,7 @@ export function WhatNeedsMe() {
 }
 
 function ClassicWhatNeedsMe() {
+  const { t: pageText } = usePageTranslation("interface");
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -515,7 +517,7 @@ function ClassicWhatNeedsMe() {
   }, [handleDismiss, keyboardItems, navigate, selectedAttentionId]);
 
   if (!selectedCompanyId) {
-    return <p className="text-sm text-muted-foreground">Select an organization first.</p>;
+    return <p className="text-sm text-muted-foreground">{pageText("selectAnOrganizationFirst_a56f90")}</p>;
   }
 
   // Keep a loaded feed on screen through a failed refetch; only a real
@@ -540,7 +542,7 @@ function ClassicWhatNeedsMe() {
   return (
     <div ref={rootRef} className="max-w-3xl space-y-4">
       <div className="space-y-4">
-        <h1 className="text-xl font-bold">Decisions</h1>
+        <h1 className="text-xl font-bold">{pageText("decisions_af2f32")}</h1>
         <DecisionsToolbar
           query={searchQuery}
           onQueryChange={setSearchQuery}
@@ -797,6 +799,7 @@ export function DecisionBundleHeader({
   originIssue: AttentionSubject | null;
   count: number;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const noun = count === 1 ? "decision" : "decisions";
   return (
     <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 rounded-sm border-l-2 border-violet-500/60 bg-violet-500/5 px-3 py-1.5 text-xs">
@@ -816,7 +819,7 @@ export function DecisionBundleHeader({
         </span>
       )}
       {title && <span className="text-muted-foreground">· {title}</span>}
-      <span className="text-muted-foreground">· {count} pending</span>
+      <span className="text-muted-foreground">· {count}{" " + pageText("pending_e22586")}</span>
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -116,6 +117,7 @@ export function AgentTasksPanel({
   /** The conversation issue itself, which is not one of the agent's tasks. */
   excludeIssueId?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [query, setQuery] = useState("");
   const [filters, setFilters] = useState<IssueFilterState>(defaultIssueFilterState);
@@ -161,8 +163,8 @@ export function AgentTasksPanel({
           <Input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search tasks"
-            aria-label="Search tasks"
+            placeholder={pageText("searchTasks_73ffe8")}
+            aria-label={pageText("searchTasks_73ffe8")}
             className="h-8 pl-7 text-sm"
           />
         </div>
@@ -212,7 +214,7 @@ export function AgentTasksPanel({
       </div>
 
       {tasksView.kind === "loading" || tasksView.kind === "reconnecting" ? (
-        <PanelMessage>Loading tasks…</PanelMessage>
+        <PanelMessage>{pageText("loadingTasks_a3495d")}</PanelMessage>
       ) : tasksView.kind === "error" ? (
         <div className="py-4">
           <QueryErrorState
@@ -256,6 +258,7 @@ function ArtifactKindIcon({ artifact }: { artifact: CompanyArtifact }) {
 }
 
 export function AgentArtifactCard({ artifact }: { artifact: CompanyArtifact }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <Link
       // design-allow(card-pattern): navigation <Link> card; Card renders a div and would break anchor semantics
@@ -273,7 +276,7 @@ export function AgentArtifactCard({ artifact }: { artifact: CompanyArtifact }) {
         </span>
       </div>
       <div className="flex items-center gap-1.5 pl-6 text-xs text-muted-foreground">
-        <span>Updated {formatDate(artifact.updatedAt)}</span>
+        <span>{pageText("updated_f2f857") + " "}{formatDate(artifact.updatedAt)}</span>
         <span aria-hidden>·</span>
         <span className="font-mono">{artifact.issue.identifier}</span>
       </div>
@@ -299,6 +302,7 @@ async function listAgentArtifacts(companyId: string, agentId: string) {
 }
 
 export function AgentArtifactsPanel({ companyId, agentId }: { companyId: string; agentId: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const artifactsQuery = useQuery({
     queryKey: queryKeys.artifacts.byAgent(companyId, agentId),
     queryFn: () => listAgentArtifacts(companyId, agentId),
@@ -306,7 +310,7 @@ export function AgentArtifactsPanel({ companyId, agentId }: { companyId: string;
 
   const artifactsView = useQueryView(artifactsQuery);
 
-  if (artifactsView.kind === "loading" || artifactsView.kind === "reconnecting") return <PanelMessage>Loading artifacts…</PanelMessage>;
+  if (artifactsView.kind === "loading" || artifactsView.kind === "reconnecting") return <PanelMessage>{pageText("loadingArtifacts_344c46")}</PanelMessage>;
   if (artifactsView.kind === "error") {
     return (
       <div className="py-4">

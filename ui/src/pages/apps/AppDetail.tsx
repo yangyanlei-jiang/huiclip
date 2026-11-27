@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { AppNotFound, AppReadError } from "./app-detail/AppReadError";
 import { AiConnectionPoolConnector } from "@/components/ai-connections/AiConnectionPoolConnector";
@@ -82,10 +83,11 @@ import { describeError } from "@/api/errors";
 export { connectionAddress, connectionTransportLabel };
 
 export function AppDetail(props: { renderActions?: (connection: ToolConnection) => ReactNode; renderAgentSettings?: (connection: ToolConnection) => ReactNode; renderConnectionSettings?: (connection: ToolConnection) => ReactNode; onReconnect?: (connection: ToolConnection) => void } = {}) {
+  const { t: pageText } = usePageTranslation("interface");
   const { connectionId = "" } = useParams<{ connectionId: string }>();
   const connection = useQuery({ queryKey: queryKeys.tools.connection(connectionId), queryFn: () => toolsApi.getConnection(connectionId), enabled: !!connectionId });
   const view = useQueryView(connection);
-  if (connection.isPending || view.kind === "reconnecting") return <p role="status">Loading connection…</p>;
+  if (connection.isPending || view.kind === "reconnecting") return <p role="status">{pageText("loadingConnection_f1e853")}</p>;
   if (view.kind === "error" && view.errorKind === "not_found") return <AppNotFound />;
   if (view.kind === "error") {
     return <QueryErrorState size="page" error={connection.error} action="load the connection" onRetry={view.retry} retrying={view.isFetching} />;
@@ -795,6 +797,7 @@ export function AppDetailHeader({
   onRenameCancel: () => void;
   onRenameSubmit: (value: string) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const unverifiedHost = unverifiedRemoteHost(connection);
   return (
@@ -825,7 +828,7 @@ export function AppDetailHeader({
                 autoFocus
               />
               <Button type="submit" size="sm" disabled={renamePending || !nameDraft.trim()}>
-                {renamePending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Save"}
+                {renamePending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : pageText("save_efc007")}
               </Button>
               <Button type="button" size="sm" variant="ghost" onClick={onRenameCancel} disabled={renamePending}>{translateUi("interfaceCopy.cancel")}</Button>
             </form>
@@ -848,7 +851,7 @@ export function AppDetailHeader({
             <StatusBadge status={status} />
             {connection.config?.provider !== "agentmail" && actionCount !== null && (
               <span className="text-xs text-muted-foreground">
-                {actionCount} {actionCount === 1 ? "action" : "actions"} available
+                {actionCount} {actionCount === 1 ? pageText("action_34eb4c") : pageText("actions_326b42")} available
               </span>
             )}
             {connectionDisplaySecondaryHint(connection) ? (
@@ -866,10 +869,11 @@ export function AppDetailHeader({
 }
 
 function ToolsLoading({ mcpActions = false }: { mcpActions?: boolean }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="flex items-center gap-2 py-8 text-sm text-muted-foreground" role="status">
       <Loader2 className="h-4 w-4 animate-spin" />
-      {mcpActions ? "Loading MCP actions, this may take a minute." : "Loading tools…"}
+      {mcpActions ? "Loading MCP actions, this may take a minute." : pageText("loadingTools_8237fc")}
     </div>
   );
 }

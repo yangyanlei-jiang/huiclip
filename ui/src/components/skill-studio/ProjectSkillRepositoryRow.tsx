@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type { ProjectSkillRepository } from '@paperclipai/shared';
 import { GithubIcon } from '@/components/icons/github-icon';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ export function ProjectSkillRepositoryRow({ repository, pending, backgroundPendi
   disabled?: boolean;
   onImport: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const actionPending = pending || repository.status === 'pending';
   const importing = actionPending || backgroundPending;
   return <section className="flex flex-col gap-2 py-3" aria-label={`Skills from ${repository.projectName}`} aria-busy={Boolean(importing)}>
@@ -23,7 +25,7 @@ export function ProjectSkillRepositoryRow({ repository, pending, backgroundPendi
       </div>
       <Button size="sm" variant="outline" disabled={actionPending || disabled} onClick={onImport}>
         {importing && <LoaderCircle className="size-3.5 animate-spin motion-reduce:animate-none" />}
-        {actionPending ? 'Importing…' : repository.status === 'error' ? 'Retry import' : backgroundPending ? 'Import remaining skills' : 'Import skills'}
+        {actionPending ? 'Importing…' : repository.status === 'error' ? 'Retry import' : backgroundPending ? 'Import remaining skills' : pageText("importSkills_a4ad3a")}
       </Button>
     </div>
     {importing && <p role="status" className="ml-8 text-xs text-muted-foreground">{pending ? 'Starting import…' : repository.importState === 'importing'

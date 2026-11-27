@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { useMemo, useState, useRef, useCallback, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -321,6 +322,7 @@ interface ActivityFeedProps {
 }
 
 export function ActivityFeed({ className }: ActivityFeedProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { selectedCompanyId } = useCompany();
   const [filter, setFilter] = useState<FilterValue>("all");
   const [groupMode, setGroupMode] = useState<GroupMode>("flat");
@@ -485,9 +487,7 @@ export function ActivityFeed({ className }: ActivityFeedProps) {
         separator = (
           <div className="flex items-center gap-2 px-4 py-1.5" key={`sep-${index}`}>
             <div className="h-px flex-1 bg-border" />
-            <span className="text-(length:--text-nano) font-medium text-muted-foreground uppercase tracking-wider">
-              Earlier
-            </span>
+            <span className="text-(length:--text-nano) font-medium text-muted-foreground uppercase tracking-wider">{pageText("earlier_13f7ae")}</span>
             <div className="h-px flex-1 bg-border" />
           </div>
         );

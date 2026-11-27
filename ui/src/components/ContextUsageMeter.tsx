@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useRef, useState } from "react";
 import { FoldVertical, Loader2 } from "lucide-react";
@@ -118,6 +119,7 @@ function CompactAction({ compact, level }: { compact: ContextCompactState; level
 
 /** The hover card body; exported for Storybook galleries. */
 export function ContextUsageCard({ usage, compact }: { usage: ContextUsage; compact?: ContextCompactState | null }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const percent = Math.min(100, Math.round((usage.usedTokens / usage.contextWindow) * 100));
   const level = contextUsageLevel(usage);
@@ -129,8 +131,7 @@ export function ContextUsageCard({ usage, compact }: { usage: ContextUsage; comp
         <span className={cn("font-medium tabular-nums", LEVEL_TEXT[level])}>{percent}%</span>
       </div>
       <p className="mt-0.5 text-muted-foreground tabular-nums">
-        {formatContextTokens(usage.usedTokens)} of {formatContextTokens(usage.contextWindow)} tokens
-        {usage.observedAt ? <> · updated {timeAgo(usage.observedAt)}</> : null}
+        {formatContextTokens(usage.usedTokens)} of {formatContextTokens(usage.contextWindow)}{" " + pageText("tokens_339143")}{usage.observedAt ? <> · updated {timeAgo(usage.observedAt)}</> : null}
       </p>
       <Bar percent={percent} level={level} className="mt-2 w-full" />
       {level !== "normal" ? (

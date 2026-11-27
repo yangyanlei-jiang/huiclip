@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import {
   Component,
   createContext,
@@ -502,6 +503,7 @@ function LauncherModalShell({
   requestBounds: (key: string, request: PluginModalBoundsRequest) => Promise<void>;
   closeLauncher: (key: string, event: PluginRenderCloseEvent) => Promise<void>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const contentRef = useRef<HTMLDivElement | null>(null);
   const titleId = useId();
 
@@ -601,9 +603,7 @@ function LauncherModalShell({
             size="sm"
             className="ml-auto"
             onClick={() => void closeLauncher(instance.key, { reason: "programmatic" })}
-          >
-            Close
-          </Button>
+          >{pageText("close_bbfa77")}</Button>
         </div>
         <div
           className={cn(

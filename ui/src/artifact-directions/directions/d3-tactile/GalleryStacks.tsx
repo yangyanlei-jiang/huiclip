@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 import type { LabArtifact, LabGroup } from "../../kit";
@@ -55,13 +56,13 @@ function FolderContents({ artifacts }: { artifacts: LabArtifact[] }) {
 const FOCUS = cn(RING, RING_ON.canvas, "focus-visible:ring-offset-4");
 
 function Count({ group, className }: { group: LabGroup; className?: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <span className={className}>
       <span className="whitespace-nowrap">
         <span className="font-mono text-(length:--tac-mono-scale)">{group.count}</span> {countLabel(group.count)}
       </span>
-      <span className="whitespace-nowrap">
-        Updated <span className="font-mono text-(length:--tac-mono-scale)">{group.updatedLabel}</span>
+      <span className="whitespace-nowrap">{pageText("updated_f2f857") + " "}<span className="font-mono text-(length:--tac-mono-scale)">{group.updatedLabel}</span>
       </span>
     </span>
   );

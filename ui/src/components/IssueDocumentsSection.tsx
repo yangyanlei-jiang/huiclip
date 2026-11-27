@@ -1,3 +1,5 @@
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -367,6 +369,7 @@ function AccountIssueDocumentsSection({
   forceEditDocumentKey?: string | null;
   externalReferences?: MarkdownExternalReferenceMap;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const location = useLocation();
@@ -489,7 +492,7 @@ function AccountIssueDocumentsSection({
       invalidateIssueDocuments();
     },
     onError: (err) => {
-      setError(err instanceof Error ? err.message : "Failed to delete document");
+      setError(err instanceof Error ? err.message : interfaceMessage("interface:errorFailedToDeleteDocument"));
     },
   });
 
@@ -508,7 +511,7 @@ function AccountIssueDocumentsSection({
       invalidateIssueDocuments();
     },
     onError: (err) => {
-      setError(err instanceof Error ? err.message : "Failed to restore document revision");
+      setError(err instanceof Error ? err.message : interfaceMessage("interface:errorFailedToRestoreDocumentRevision"));
     },
   });
 
@@ -526,7 +529,7 @@ function AccountIssueDocumentsSection({
       invalidateIssueDocuments();
     },
     onError: (err) => {
-      setError(err instanceof Error ? err.message : "Failed to update document lock");
+      setError(err instanceof Error ? err.message : interfaceMessage("interface:errorFailedToUpdateDocumentLock"));
     },
   });
 
@@ -1187,15 +1190,13 @@ function AccountIssueDocumentsSection({
           />
           <div className="flex items-center justify-end gap-2">
             <Button variant="outline" size="sm" onClick={cancelDraft}>
-              <X className="mr-1.5 h-3.5 w-3.5" />
-              Cancel
-            </Button>
+              <X className="mr-1.5 h-3.5 w-3.5" />{pageText("cancel_77dfd2")}</Button>
             <Button
               size="sm"
               onClick={() => void commitDraft(draft, { clearAfterSave: false, trackAutosave: false })}
               disabled={upsertDocument.isPending}
             >
-              {upsertDocument.isPending ? "Saving..." : "Create document"}
+              {upsertDocument.isPending ? pageText("saving_ae7e88") : "Create document"}
             </Button>
           </div>
         </div>
@@ -1323,7 +1324,7 @@ function AccountIssueDocumentsSection({
                         "text-muted-foreground transition-colors",
                         copiedDocumentKey === doc.key && "text-foreground",
                       )}
-                      title={copiedDocumentKey === doc.key ? "Copied" : "Copy document"}
+                      title={copiedDocumentKey === doc.key ? pageText("copied_8e3df4") : "Copy document"}
                       onClick={() => void copyDocumentBody(doc.key, displayedBody)}
                     >
                       {copiedDocumentKey === doc.key ? (
@@ -1481,7 +1482,7 @@ function AccountIssueDocumentsSection({
                             onClick={() => void overwriteDocumentFromDraft(doc.key)}
                             disabled={upsertDocument.isPending}
                           >
-                            {upsertDocument.isPending ? "Saving..." : "Overwrite remote"}
+                            {upsertDocument.isPending ? pageText("saving_ae7e88") : "Overwrite remote"}
                           </Button>
                         </div>
                       </div>
@@ -1490,7 +1491,7 @@ function AccountIssueDocumentsSection({
                           <div className="mb-2 flex items-center gap-2 text-(length:--text-micro) text-muted-foreground">
                             <span>Remote revision {activeConflict.serverDocument.latestRevisionNumber}</span>
                             <span>•</span>
-                            <span>updated {relativeTime(activeConflict.serverDocument.updatedAt)}</span>
+                            <span>{pageText("updated_13a189") + " "}{relativeTime(activeConflict.serverDocument.updatedAt)}</span>
                           </div>
                           {!isPlanKey(doc.key) && activeConflict.serverDocument.title ? (
                             <p className="mb-2 text-sm font-medium">{activeConflict.serverDocument.title}</p>
@@ -1623,7 +1624,7 @@ function AccountIssueDocumentsSection({
                       onClick={() => deleteDocument.mutate(doc.key)}
                       disabled={deleteDocument.isPending}
                     >
-                      {deleteDocument.isPending ? "Deleting..." : "Delete"}
+                      {deleteDocument.isPending ? pageText("deleting_e16cac") : pageText("delete_f6fdbe")}
                     </Button>
                   </div>
                 </div>

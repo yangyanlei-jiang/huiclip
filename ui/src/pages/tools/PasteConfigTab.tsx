@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
@@ -103,6 +104,7 @@ function askFirstLevelsFrom(result: ConnectToolAppResult): string[] {
  * of the two M8 screens where "MCP" vocabulary is allowed (PAP-10827 vocab map).
  */
 export function PasteConfigTab({ companyId }: { companyId: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const navigate = useNavigate();
   const [draftText, setDraftText] = useState("");
   const [preview, setPreview] = useState<McpJsonImportPreview | null>(null);
@@ -332,7 +334,7 @@ export function PasteConfigTab({ companyId }: { companyId: string }) {
           onClick={() => importMutation.mutate(draftText)}
           disabled={!canSubmit || Boolean(localParseError)}
         >
-          {importMutation.isPending ? "Checking…" : "Check config"}
+          {importMutation.isPending ? pageText("checking_820d60") : "Check config"}
         </Button>
         <span className="text-xs text-muted-foreground">
           We'll read it and show what we found before anything is saved.
@@ -350,7 +352,7 @@ export function PasteConfigTab({ companyId }: { companyId: string }) {
           <div className="space-y-3">
             <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
               <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-              We found {drafts.length} {drafts.length === 1 ? "app" : "apps"} in that config
+              We found {drafts.length} {drafts.length === 1 ? "app" : pageText("apps_802508")} in that config
             </h3>
             {drafts.map((draft, index) => {
               const url = draftConnectUrl(draft);
@@ -430,6 +432,7 @@ function DraftCard({
   canCheck: boolean;
   onCheck?: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="rounded-lg border border-border bg-card p-4">
       <div className="flex items-center justify-between gap-3">
@@ -446,9 +449,7 @@ function DraftCard({
       </div>
 
       {onCheck ? (
-        <label className="mt-4 block max-w-sm space-y-1 text-xs font-medium text-foreground">
-          Connection name
-          <Input
+        <label className="mt-4 block max-w-sm space-y-1 text-xs font-medium text-foreground">{pageText("connectionName_5584ef")}<Input
             value={connectionName}
             onChange={(event) => onConnectionNameChange(event.target.value)}
             placeholder={draft.name}
@@ -518,6 +519,7 @@ function CatalogReview({
   activatedName: string | null;
   onFinish: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const askFirstLevels = askFirstLevelsFrom(result);
   const enabledCount = Object.values(enabled).filter(Boolean).length;
@@ -535,8 +537,7 @@ function CatalogReview({
           </p>
         </div>
         <Button size="sm" onClick={onFinish} disabled={finishing || enabledCount === 0 || Boolean(activatedName)}>
-          {finishing ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
-          Activate {enabledCount} of {total}
+          {finishing ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}{pageText("activate_92ef08") + " "}{enabledCount} of {total}
         </Button>
       </div>
       <ActionGroup

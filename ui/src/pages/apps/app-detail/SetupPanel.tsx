@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState, type ReactNode } from "react";
 import { ChevronRight } from "lucide-react";
@@ -35,13 +36,14 @@ export function SetupPanel({
   permissionsLoading: boolean;
   onOpenPermissions: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   return (
     <div className="space-y-10">
       {identities}
       <SetupLinkSection title={translateUi("interfaceCopy.agents")} summary={agentsSummary} onClick={onOpenPermissions} />
       <SetupLinkSection
-        title="Actions"
+        title={pageText("actions_c3cd63")}
         summary={permissionsLoading ? "Loading permissions…" : permissionsSummary ?? "Manage permissions"}
         onClick={onOpenPermissions}
       />
@@ -254,6 +256,7 @@ export function QuarantinedActionsReview({
   disabled: boolean;
   onSubmit: (enabledIds: string[]) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [enabledIds, setEnabledIds] = useState<Set<string>>(new Set());
   const count = entries.length;
   const selectedIds = entries.filter((entry) => enabledIds.has(entry.id)).map((entry) => entry.id);
@@ -261,8 +264,7 @@ export function QuarantinedActionsReview({
     <section className="space-y-3">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <div className="text-sm font-semibold text-amber-800 dark:text-amber-200">
-            Review {count} new {count === 1 ? "action" : "actions"}
+          <div className="text-sm font-semibold text-amber-800 dark:text-amber-200">{pageText("review_e29a79") + " "}{count}{" " + pageText("new_c2a6b0") + " "}{count === 1 ? pageText("action_34eb4c") : pageText("actions_326b42")}
           </div>
           <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
             Turn on the actions agents may use. Anything left off stays blocked when you save.
@@ -321,7 +323,7 @@ export function QuarantinedActionsReview({
           {selectedIds.length} of {count} will be on
         </span>
         <Button size="sm" disabled={disabled} onClick={() => onSubmit(selectedIds)}>
-          {disabled ? "Saving…" : "Save choices"}
+          {disabled ? pageText("saving_56a228") : "Save choices"}
         </Button>
       </div>
     </section>

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { ExternalLink, FileText, Loader2, Wrench } from "lucide-react";
 import { companySkillsApi } from "@/api/companySkills";
@@ -9,6 +10,7 @@ import { useNavigate } from "@/lib/router";
 import { parseFrontmatterMarkdown } from "@paperclipai/shared";
 
 export function TaskSkillPanel({ companyId, skillId }: { companyId: string; skillId: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const navigate = useNavigate();
   const query = useQuery({
     queryKey: queryKeys.companySkills.detail(companyId, skillId),
@@ -20,9 +22,7 @@ export function TaskSkillPanel({ companyId, skillId }: { companyId: string; skil
   if (query.isLoading || view.kind === "reconnecting") {
     return (
       <div className="flex items-center gap-2 py-8 text-sm text-muted-foreground" role="status">
-        <Loader2 className="size-4 animate-spin" aria-hidden />
-        Loading skill…
-      </div>
+        <Loader2 className="size-4 animate-spin" aria-hidden />{pageText("loadingSkill_2d9a92")}</div>
     );
   }
   if (view.kind === "error") {

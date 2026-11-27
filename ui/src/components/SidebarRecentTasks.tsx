@@ -1,3 +1,5 @@
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState, type FormEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -105,6 +107,7 @@ function RecentTasksList({
   liveIssueIds: ReadonlySet<string>;
   rail: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { entries, storageKey } = useRecentTasks({ companyId, userId });
   const queryClient = useQueryClient();
@@ -148,7 +151,7 @@ function RecentTasksList({
     } catch (error) {
       toastActions?.pushToast({
         title: "Task rename failed",
-        body: errorMessage(error, "Unable to rename this task."),
+        body: errorMessage(error, interfaceMessage("interface:errorUnableToRenameThisTaskSentence")),
         tone: "error",
       });
     } finally {
@@ -249,7 +252,7 @@ function RecentTasksList({
 
   return (
     <>
-      <SidebarSection label="Recent Tasks">
+      <SidebarSection label={pageText("recentTasks_b91b93")}>
         {entries.map((entry) => (
           <div key={entry.id} className="sidebar-action-row group/recent-task relative">
             <SidebarNavItem
@@ -257,7 +260,7 @@ function RecentTasksList({
               label={entry.title}
               iconNode={entry.displayStatus === "monitoring" && !liveIssueIds.has(entry.id) ? <StatusIcon {...taskStatusIconProps(entry)} /> : undefined}
               trailing={entry.status === "in_review" && entry.externalConversationState === "waiting"
-                ? <span className="text-xs text-muted-foreground">Idle</span> : undefined}
+                ? <span className="text-xs text-muted-foreground">{pageText("idle_cc1ebd")}</span> : undefined}
               trailingLabel={entry.status === "in_review" && entry.externalConversationState === "waiting" ? "Idle" : undefined}
               className={rail ? undefined : "sidebar-action-link pointer-coarse:pr-8"}
               liveCount={liveIssueIds.has(entry.id) ? 1 : undefined}
@@ -284,17 +287,13 @@ function RecentTasksList({
                     className={RECENT_TASK_MENU_ITEM_CLASS}
                     onSelect={() => beginRename(entry)}
                   >
-                    <Pencil aria-hidden="true" />
-                    Rename
-                  </DropdownMenuItem>
+                    <Pencil aria-hidden="true" />{pageText("rename_d3f4cb")}</DropdownMenuItem>
                   <DropdownMenuItem
                     className={RECENT_TASK_MENU_ITEM_CLASS}
                     disabled={pendingAction !== null}
                     onSelect={() => void archiveTask(entry)}
                   >
-                    <Archive aria-hidden="true" />
-                    Archive
-                  </DropdownMenuItem>
+                    <Archive aria-hidden="true" />{pageText("archive_2621c6")}</DropdownMenuItem>
                   <DropdownMenuItem
                     className={RECENT_TASK_MENU_ITEM_CLASS}
                     disabled={pendingAction !== null}
@@ -319,7 +318,7 @@ function RecentTasksList({
         <DialogContent className="sm:max-w-md">
           <form className="grid gap-4" onSubmit={(event) => void submitRename(event)}>
             <DialogHeader>
-              <DialogTitle>Rename task</DialogTitle>
+              <DialogTitle>{pageText("renameTask_e827be")}</DialogTitle>
               <DialogDescription>Choose a short, clear name for this task.</DialogDescription>
             </DialogHeader>
             <Input
@@ -340,7 +339,7 @@ function RecentTasksList({
                 type="submit"
                 disabled={pendingAction === "rename" || !renameValue.trim()}
               >
-                {pendingAction === "rename" ? "Saving..." : "Save"}
+                {pendingAction === "rename" ? pageText("saving_ae7e88") : pageText("save_efc007")}
               </Button>
             </DialogFooter>
           </form>

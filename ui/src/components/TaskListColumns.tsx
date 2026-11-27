@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { createContext, useContext, useId, type CSSProperties, type ReactNode } from "react";
 import { DndContext, PointerSensor, closestCenter, pointerWithin, useSensor, useSensors } from "@dnd-kit/core";
 import { SortableContext, horizontalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
@@ -150,14 +151,15 @@ export function TaskListColumnSettings({ visibleColumns, onVisibleColumnsChange,
   onColumnOrderChange?: (columns: readonly TaskListColumnId[]) => void;
   onResetDefaults?: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { order } = useContext(ColumnContext);
   return (
     <FlyoutAppearanceProvider><DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button type="button" variant="ghost" size="icon-xs" className="task-list-settings-trigger" aria-label="Columns"><Ellipsis aria-hidden /></Button>
+        <Button type="button" variant="ghost" size="icon-xs" className="task-list-settings-trigger" aria-label={pageText("columns_cf723c")}><Ellipsis aria-hidden /></Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="task-list-options" aria-label="Columns">
-        <DropdownMenuLabel asChild><FlyoutHeader className="task-list-options-heading">Columns</FlyoutHeader></DropdownMenuLabel>
+      <DropdownMenuContent align="end" className="task-list-options" aria-label={pageText("columns_cf723c")}>
+        <DropdownMenuLabel asChild><FlyoutHeader className="task-list-options-heading">{pageText("columns_cf723c")}</FlyoutHeader></DropdownMenuLabel>
         <FlyoutOptions className="task-list-options-items">
           {order.map(id => (
             <DropdownMenuCheckboxItem

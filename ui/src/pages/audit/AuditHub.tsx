@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useCallback, useEffect } from "react";
 import { History } from "lucide-react";
 import { EmptyState } from "@/components/EmptyState";
@@ -20,6 +21,7 @@ import {
 } from "./audit-navigation";
 
 export function AuditHub({ section }: { section: AuditSection }) {
+  const { t: pageText } = usePageTranslation("interface");
   const navigate = useNavigate();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -115,7 +117,7 @@ export function AuditHub({ section }: { section: AuditSection }) {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-semibold tracking-tight text-foreground">Audit</h1>
+        <h1 className="text-3xl font-semibold tracking-tight text-foreground">{pageText("audit_fa1703")}</h1>
       </div>
 
       <Tabs

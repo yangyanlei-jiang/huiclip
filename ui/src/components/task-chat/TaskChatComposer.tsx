@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCurrentAccountGuard } from "@/hooks/useAccountBoundMutation";
 import { ComposerFileDropTarget } from "./ComposerFileDropTarget";
@@ -427,6 +428,7 @@ export function TaskChatComposer({
   onRunnerGoalCommand,
   onRunnerGoalReassign,
 }: TaskChatComposerProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const streamlined = useStreamlinedTaskChatPresentation();
   const submitKey = useComposerSubmitKey();
@@ -1289,8 +1291,7 @@ export function TaskChatComposer({
             <div className="ml-auto flex shrink-0 items-center gap-1">
               {takeover.pendingCount > 1 ? (
                 <Button type="button" size="sm" variant="ghost" className="h-7 px-2" onClick={takeover.onShowNext}>
-                  {takeover.pendingCount} pending
-                </Button>
+                  {takeover.pendingCount}{" " + pageText("pending_e22586")}</Button>
               ) : null}
               <div ref={setTakeoverControlsSlot} className="flex shrink-0 items-center" data-testid="task-chat-composer-takeover-controls-slot" />
               <Button type="button" size="icon-xs" variant="ghost" className="text-muted-foreground hover:text-foreground"
@@ -1374,8 +1375,7 @@ export function TaskChatComposer({
             {pendingTakeover?.label ?? takeover?.label ?? "Pending input"}
           </span>
           <span className="shrink-0 font-medium">
-            {pendingTakeover?.count ?? takeover?.pendingCount ?? 1} pending
-          </span>
+            {pendingTakeover?.count ?? takeover?.pendingCount ?? 1}{" " + pageText("pending_e22586")}</span>
         </button>
       ) : null}
           {pause && conversationMode ? (
@@ -1572,11 +1572,11 @@ export function TaskChatComposer({
               <InlineEntitySelector
                 value={assigneeValue}
                 options={reassignOptions ?? []}
-                placeholder="Assignee"
+                placeholder={pageText("assignee_049e3c")}
                 mobileTitle="Select assignee"
                 noneLabel="No assignee"
                 searchPlaceholder="Search assignees…"
-                emptyMessage="No matches."
+                emptyMessage={pageText("noMatches_0be6a2")}
                 onChange={updatePendingAssignee}
                 disabled={disabled}
                 triggerTestId="task-chat-composer-assignee"
@@ -1658,7 +1658,7 @@ export function TaskChatComposer({
                 showStop
                   ? stopControl.stopping
                     ? "Stopping…"
-                    : "Stop"
+                    : pageText("stop_9e2534")
                   : queuedEdit
                     ? queuedEdit.stale
                       ? "Queue as new message"

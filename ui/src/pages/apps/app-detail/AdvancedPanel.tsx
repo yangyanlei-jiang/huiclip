@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
@@ -159,6 +160,7 @@ export function ReconnectCard({
   canReconnect?: boolean;
   reconnectUnavailableMessage?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { pushToast } = useToast();
   const authorization = useAuthorizationWindow();
@@ -250,9 +252,7 @@ export function ReconnectCard({
               disabled={verifyVercel.isPending}
               onClick={() => verifyVercel.mutate()}
             >
-              {verifyVercel.isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-              Check again
-            </Button>
+              {verifyVercel.isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}{pageText("checkAgain_e18504")}</Button>
           </div>
         ) : oauth ? (
           <Button
@@ -262,7 +262,7 @@ export function ReconnectCard({
             onClick={() => { authorization.reserve(); reconnectOAuth.mutate(); }}
           >
             {reconnectOAuth.isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-            {reconnectOAuth.isPending ? "Opening sign-in…" : "Reconnect"}
+            {reconnectOAuth.isPending ? "Opening sign-in…" : pageText("reconnect_6988b1")}
           </Button>
         ) : (
           <ReconnectForm connection={connection} galleryEntry={galleryEntry} onReconnected={onReconnected} />
@@ -283,6 +283,7 @@ function ReconnectForm({
   onCancel?: () => void;
   onReconnected: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { pushToast } = useToast();
   const methodKey = typeof connection.config?.connectionMethodKey === "string"
@@ -394,7 +395,7 @@ function ReconnectForm({
       <div className="flex items-center gap-2">
         <Button size="sm" disabled={!filled || reconnect.isPending} onClick={() => reconnect.mutate()}>
           {reconnect.isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-          {reconnect.isPending ? "Checking..." : "Check & reconnect"}
+          {reconnect.isPending ? pageText("checking_494d0f") : "Check & reconnect"}
         </Button>
         {onCancel && (
           <Button size="sm" variant="ghost" onClick={onCancel} disabled={reconnect.isPending}>{translateUi("interfaceCopy.cancel")}</Button>
@@ -468,6 +469,7 @@ export function DangerZone({
   onReconnectIdentity?: () => void;
   onRevokeIdentity?: (grant: ConnectionGrant) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
   const [confirming, setConfirming] = useState(false);
@@ -543,9 +545,7 @@ export function DangerZone({
                     disabled={identityActionPending}
                     onClick={onReconnectIdentity}
                   >
-                    {identityActionPending ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
-                    Reconnect
-                  </Button>
+                    {identityActionPending ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}{pageText("reconnect_6988b1")}</Button>
                 ) : null}
               </div>
             ) : null}
@@ -564,9 +564,7 @@ export function DangerZone({
                     variant="destructive"
                     size="sm"
                     onClick={() => setRevokeTarget(identityGrant)}
-                  >
-                    Revoke
-                  </Button>
+                  >{pageText("revoke_0be720")}</Button>
                 </div>
             ) : null}
 

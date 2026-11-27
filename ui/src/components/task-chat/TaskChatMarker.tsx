@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useId, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -29,6 +30,7 @@ export function TaskChatMarker({
   onTryAgain?: () => Promise<void> | void;
   tryAgainPending?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
   const detailsId = useId();
@@ -108,7 +110,7 @@ export function TaskChatMarker({
               disabled={tryAgainPending}
               data-testid="task-chat-run-failed-try-again"
             >
-              {tryAgainPending ? "Trying again..." : "Try again"}
+              {tryAgainPending ? pageText("tryingAgain_f42d99") : pageText("tryAgain_042c86")}
             </Button>
           ) : null}
         </div>
@@ -143,7 +145,7 @@ export function TaskChatMarker({
                     disabled={tryAgainPending}
                     data-testid="task-chat-run-failed-try-again"
                   >
-                    {tryAgainPending ? "Trying again..." : "Try again"}
+                    {tryAgainPending ? pageText("tryingAgain_f42d99") : pageText("tryAgain_042c86")}
                   </Button>
                 ) : null}
               </div>
@@ -182,7 +184,7 @@ export function TaskChatMarker({
             disabled={tryAgainPending}
             data-testid="task-chat-run-failed-try-again"
           >
-            {tryAgainPending ? "Trying again..." : "Try again"}
+            {tryAgainPending ? pageText("tryingAgain_f42d99") : pageText("tryAgain_042c86")}
           </Button>
         ) : null}
       </span>

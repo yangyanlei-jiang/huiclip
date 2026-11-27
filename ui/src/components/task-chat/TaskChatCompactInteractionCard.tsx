@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { itemVerdictHref } from "@/lib/item-verdict-links";
 import { Link } from "@/lib/router";
@@ -244,12 +245,12 @@ function InteractionActionError({ message }: { message: string | null }) {
 }
 
 function Details({ children }: { children?: ReactNode }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (!children) return null;
   return (
     <details className="mt-2">
       <summary className="flex cursor-pointer list-none items-center gap-1 text-xs font-medium text-muted-foreground">
-        <ChevronDown aria-hidden className="h-3.5 w-3.5" /> Details
-      </summary>
+        <ChevronDown aria-hidden className="h-3.5 w-3.5" />{" " + pageText("details_dc3dec")}</summary>
       <div className="mt-2 rounded-sm bg-muted/40 px-2.5 py-2 text-sm text-muted-foreground">
         {children}
       </div>
@@ -398,6 +399,7 @@ function ReceiptDisclosure({
   externalReferences?: SharedInteractionProps["externalReferences"];
   compact?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const reason = receiptReason(interaction);
   const answerReason =
@@ -560,10 +562,8 @@ function ReceiptDisclosure({
           <div className="rounded-sm bg-muted/45 px-3 py-2.5 text-sm">
             <p>
               <strong>{interaction.payload.toolAction.toolDisplayName}</strong>{" "}
-              · {interaction.payload.toolAction.risk} risk
-            </p>
-            <p className="mt-1">
-              Expires{" "}
+              · {interaction.payload.toolAction.risk}{" " + pageText("risk_11a110")}</p>
+            <p className="mt-1">{pageText("expires_a99be3")}{" "}
               {new Date(
                 interaction.payload.toolAction.expiresAt,
               ).toLocaleString()}
@@ -844,6 +844,7 @@ function ConfirmationCard({
   onUploadImage?: SharedInteractionProps["onUploadImage"];
   mentions?: MentionOption[];
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const preparingApproval = isInteractionPreparingApproval(interaction);
   const [rejecting, setRejecting] = useState(false);
@@ -922,10 +923,8 @@ function ConfirmationCard({
                   : "text-muted-foreground",
               )}
             >
-              {interaction.payload.toolAction.risk} risk
-            </span>
-            <span className="ml-auto text-xs text-muted-foreground">
-              Expires{" "}
+              {interaction.payload.toolAction.risk}{" " + pageText("risk_11a110")}</span>
+            <span className="ml-auto text-xs text-muted-foreground">{pageText("expires_a99be3")}{" "}
               {new Date(
                 interaction.payload.toolAction.expiresAt,
               ).toLocaleString()}
@@ -979,7 +978,7 @@ function ConfirmationCard({
             className="text-xs font-medium leading-4 text-foreground"
           >
             {interaction.payload.rejectReasonLabel ?? "What should change?"}
-            {interaction.payload.rejectRequiresReason ? "" : " (optional)"}
+            {interaction.payload.rejectRequiresReason ? "" : " " + pageText("optional_b16c7a")}
           </p>
           {isPlanConfirmation ? (
             <TaskChatRichInput
@@ -1008,7 +1007,7 @@ function ConfirmationCard({
               onChange={(event) => setReason(event.target.value)}
               placeholder={
                 interaction.payload.declineReasonPlaceholder ??
-                "Add a short note"
+                pageText("addAShortNote_9cd96b")
               }
               className={TAKEOVER_TEXTAREA_CLASS}
               autoFocus
@@ -1046,7 +1045,7 @@ function ConfirmationCard({
               {working === "reject" ? (
                 <Loader2 aria-hidden className="h-4 w-4 animate-spin" />
               ) : null}
-              {interaction.payload.rejectLabel ?? "Reject"}
+              {interaction.payload.rejectLabel ?? pageText("reject_2b03b5")}
             </Button>
           </>
         ) : (
@@ -1062,7 +1061,7 @@ function ConfirmationCard({
                   : void resolve("reject")
               }
             >
-              {interaction.payload.rejectLabel ?? "Reject"}
+              {interaction.payload.rejectLabel ?? pageText("reject_2b03b5")}
             </Button>
             <Button
               type="button"
@@ -1073,7 +1072,7 @@ function ConfirmationCard({
               {working === "accept" ? (
                 <Loader2 aria-hidden className="h-4 w-4 animate-spin" />
               ) : null}
-              {interaction.payload.acceptLabel ?? "Approve"}
+              {interaction.payload.acceptLabel ?? pageText("approve_7b2c7f")}
             </Button>
           </>
         )}
@@ -1097,6 +1096,7 @@ function CheckboxConfirmationCard({
   errorMessage: (error: unknown) => string;
   draftKey?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const restored = draftKey
     ? loadStructuredDraft<{ selected: string[]; reason: string }>(draftKey, {
@@ -1244,14 +1244,14 @@ function CheckboxConfirmationCard({
             className="text-xs font-medium text-foreground"
           >
             {interaction.payload.rejectReasonLabel ?? "What should change?"}
-            {interaction.payload.rejectRequiresReason ? "" : " (optional)"}
+            {interaction.payload.rejectRequiresReason ? "" : " " + pageText("optional_b16c7a")}
           </label>
           <Textarea
             id={`${interaction.id}-reject-reason`}
             value={reason}
             onChange={(event) => setReason(event.target.value)}
             placeholder={
-              interaction.payload.declineReasonPlaceholder ?? "Add a short note"
+              interaction.payload.declineReasonPlaceholder ?? pageText("addAShortNote_9cd96b")
             }
             className={TAKEOVER_TEXTAREA_CLASS}
             autoFocus
@@ -1285,7 +1285,7 @@ function CheckboxConfirmationCard({
               {working === "reject" ? (
                 <Loader2 aria-hidden className="h-4 w-4 animate-spin" />
               ) : null}
-              {interaction.payload.rejectLabel ?? "Decline"}
+              {interaction.payload.rejectLabel ?? pageText("decline_b59cf9")}
             </Button>
           </>
         ) : (
@@ -1301,7 +1301,7 @@ function CheckboxConfirmationCard({
                   : void resolve("reject")
               }
             >
-              {interaction.payload.rejectLabel ?? "Decline"}
+              {interaction.payload.rejectLabel ?? pageText("decline_b59cf9")}
             </Button>
             <Button
               type="button"
@@ -1388,6 +1388,7 @@ function SuggestedTasksCard({
   draftKey?: string;
   coordinator?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const roots = useMemo(
     () => buildSuggestedTaskTree(interaction.payload.tasks),
     [interaction.payload.tasks],
@@ -1512,7 +1513,7 @@ function SuggestedTasksCard({
             id={`${interaction.id}-reject-reason`}
             value={reason}
             onChange={(event) => setReason(event.target.value)}
-            placeholder="Add a short note"
+            placeholder={pageText("addAShortNote_9cd96b")}
             className={TAKEOVER_TEXTAREA_CLASS}
             autoFocus
           />
@@ -1520,7 +1521,7 @@ function SuggestedTasksCard({
       ) : null}
       <InteractionActionError message={actionError} />
       {coordinator && interaction.payload.tasks.length > 1 ? (
-        <p className="mt-3 text-xs text-muted-foreground">{selected.size} of {interaction.payload.tasks.length} selected</p>
+        <p className="mt-3 text-xs text-muted-foreground">{selected.size} of {interaction.payload.tasks.length}{" " + pageText("selected_835f3b")}</p>
       ) : null}
       <ActionRow
         hint={coordinator ? null : `${selected.size} of ${interaction.payload.tasks.length} selected`}
@@ -1534,7 +1535,7 @@ function SuggestedTasksCard({
               disabled={working !== null}
               onClick={() => setRejecting(false)}
             >
-              {coordinator ? "Cancel" : "Back"}
+              {coordinator ? pageText("cancel_77dfd2") : pageText("back_b52b36")}
             </Button>
             <Button
               type="button"
@@ -1546,13 +1547,13 @@ function SuggestedTasksCard({
               {working === "reject" ? (
                 <Loader2 aria-hidden className="h-4 w-4 animate-spin" />
               ) : null}
-              {coordinator ? "Request revision" : "Send back"}
+              {coordinator ? pageText("requestRevision_19b61d") : "Send back"}
             </Button>
           </>
         ) : (
           <>
             {coordinator ? <Button type="button" size="sm" variant="ghost" disabled={working !== null || !onRejectInteraction}
-              onClick={() => { setReason(""); void resolve("reject", ""); }}>Reject</Button> : null}
+              onClick={() => { setReason(""); void resolve("reject", ""); }}>{pageText("reject_2b03b5")}</Button> : null}
             <Button
               type="button"
               size="sm"
@@ -1573,7 +1574,7 @@ function SuggestedTasksCard({
               {working === "accept" ? (
                 <Loader2 aria-hidden className="h-4 w-4 animate-spin" />
               ) : null}
-              {coordinator ? "Create" : "Create selected"}
+              {coordinator ? pageText("create_6e157c") : "Create selected"}
             </Button>
           </>
         )}
@@ -1601,6 +1602,7 @@ function ItemVerdictsCard({
   errorMessage: (error: unknown) => string;
   draftKey?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const takeoverActions = useTaskChatComposerTakeoverActions();
   const items = interaction.payload.items;
@@ -1858,7 +1860,7 @@ function ItemVerdictsCard({
             htmlFor={`${interaction.id}-${item.id}-reason`}
             className="text-xs font-medium text-foreground"
           >
-            {interaction.payload.reasonLabel ?? "Reason"}
+            {interaction.payload.reasonLabel ?? pageText("reason_f219cc")}
           </label>
           <Textarea
             id={`${interaction.id}-${item.id}-reason`}

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { chatEndpointsApi } from "@/api/chatEndpoints";
@@ -19,6 +20,7 @@ export function ChatDetailSidebar({
   endpointId: string;
   NavItem?: typeof SidebarNavItem;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const endpoint = useQuery({
     queryKey: queryKeys.chatEndpoints.detail(endpointId),
@@ -44,7 +46,7 @@ export function ChatDetailSidebar({
           />
           <NavItem
             to={`/apps/chat/${endpointId}/access`}
-            label="Access"
+            label={pageText("access_2f81a2")}
             icon={Users}
             end
           />

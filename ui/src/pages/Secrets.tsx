@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -651,6 +652,7 @@ export function getAwsManagedPathPreview(input: {
 }
 
 export function Secrets() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { selectedCompanyId } = useCompany();
@@ -1544,8 +1546,7 @@ export function Secrets() {
               else openUserDefinition(row.definition);
             }}
           >
-            <KeyRound className="h-4 w-4" /> View details
-          </DropdownMenuItem>
+            <KeyRound className="h-4 w-4" />{" " + pageText("viewDetails_badd38")}</DropdownMenuItem>
           {row.kind === "company" ? (
             <>
               <DropdownMenuItem onSelect={() => setUsageDialogSecretId(row.secret.id)}>
@@ -1566,7 +1567,7 @@ export function Secrets() {
                 }
               >
                 {row.secret.status === "active" ? <Ban className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
-                {row.secret.status === "active" ? "Disable" : "Activate"}
+                {row.secret.status === "active" ? pageText("disable_9a7d4e") : pageText("activate_92ef08")}
               </DropdownMenuItem>
               <DropdownMenuItem
                 disabled={statusMutation.isPending}
@@ -1582,12 +1583,11 @@ export function Secrets() {
                 ) : (
                   <Archive className="h-4 w-4" />
                 )}
-                {row.secret.status === "archived" ? "Unarchive" : "Archive"}
+                {row.secret.status === "archived" ? pageText("unarchive_35e71c") : pageText("archive_2621c6")}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem variant="destructive" onSelect={() => setDeleteConfirm(row.secret)}>
-                <Trash2 className="h-4 w-4" /> Delete secret
-              </DropdownMenuItem>
+                <Trash2 className="h-4 w-4" />{" " + pageText("deleteSecret_d5f3c0")}</DropdownMenuItem>
             </>
           ) : (
             <>
@@ -1625,7 +1625,7 @@ export function Secrets() {
                 ) : (
                   <CheckCircle2 className="h-4 w-4" />
                 )}
-                {row.definition.status === "active" ? "Disable" : "Activate"}
+                {row.definition.status === "active" ? pageText("disable_9a7d4e") : pageText("activate_92ef08")}
               </DropdownMenuItem>
               <DropdownMenuItem
                 disabled={definitionStatusMutation.isPending}
@@ -1641,7 +1641,7 @@ export function Secrets() {
                 ) : (
                   <Archive className="h-4 w-4" />
                 )}
-                {row.definition.status === "archived" ? "Unarchive" : "Archive"}
+                {row.definition.status === "archived" ? pageText("unarchive_35e71c") : pageText("archive_2621c6")}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem variant="destructive" onSelect={() => setDefinitionDeleteConfirm(row.definition)}>
@@ -1817,7 +1817,7 @@ export function Secrets() {
     <div className="flex max-w-6xl flex-col gap-4">
       <div className="flex items-center gap-2">
         <KeyRound className="h-5 w-5 text-muted-foreground" />
-        <h1 className="text-lg font-semibold">Secrets</h1>
+        <h1 className="text-lg font-semibold">{pageText("secrets_1e3732")}</h1>
       </div>
 
       <Tabs
@@ -1866,7 +1866,7 @@ export function Secrets() {
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search by name, key, ref"
                 className="pl-7 text-xs sm:text-sm"
-                aria-label="Search secrets"
+                aria-label={pageText("searchSecrets_10dca0")}
                 data-page-search-target="true"
               />
             </div>
@@ -1882,7 +1882,7 @@ export function Secrets() {
             />
             <div
               role="group"
-              aria-label="View mode"
+              aria-label={pageText("viewMode_1b3603")}
               className={cn(
                 "design-view-toggle inline-flex items-center rounded-md border border-border",
                 searching && "opacity-50",
@@ -1922,15 +1922,13 @@ export function Secrets() {
                   setNewFolderError(null);
                 }}
               >
-                <Folder className="mr-1 h-3.5 w-3.5" /> New folder
-              </Button>
+                <Folder className="mr-1 h-3.5 w-3.5" />{" " + pageText("newFolder_a71199")}</Button>
             ) : null}
             <Button data-toolbar-primary onClick={openCreateSecret} size="sm">
-              <Plus className="h-3.5 w-3.5 mr-1" /> New secret
-            </Button>
+              <Plus className="h-3.5 w-3.5 mr-1" />{" " + pageText("newSecret_8d6234")}</Button>
           </div>
           {newFolderOpen && showFolderView ? (
-            <div className="flex flex-wrap items-start gap-2" role="group" aria-label="Create folder">
+            <div className="flex flex-wrap items-start gap-2" role="group" aria-label={pageText("createFolder_e59f63")}>
               <div className="min-w-48 flex-1 sm:max-w-80">
                 <Input
                   value={newFolderName}
@@ -1953,9 +1951,7 @@ export function Secrets() {
                   </p>
                 ) : null}
               </div>
-              <Button type="button" size="sm" onClick={stageNewFolder}>
-                Create folder
-              </Button>
+              <Button type="button" size="sm" onClick={stageNewFolder}>{pageText("createFolder_e59f63")}</Button>
               <Button type="button" variant="ghost" size="sm" onClick={closeNewFolder}>{translateUi("interfaceCopy.cancel")}</Button>
             </div>
           ) : null}
@@ -2024,7 +2020,7 @@ export function Secrets() {
                   <>
                 <div
                   role="table"
-                  aria-label="Secrets"
+                  aria-label={pageText("secrets_1e3732")}
                   className="hidden min-w-0 @min-[40rem]:block"
                   data-testid="secrets-table-view"
                 >
@@ -2036,7 +2032,7 @@ export function Secrets() {
                     <div role="columnheader" className="font-medium">{translateUi("interfaceCopy.status")}</div>
                     <div role="columnheader" className="font-medium">Version / coverage</div>
                     <div role="columnheader" className="font-medium">{translateUi("interfaceCopy.updated")}</div>
-                    <div role="columnheader" className="sr-only">Actions</div>
+                    <div role="columnheader" className="sr-only">{pageText("actions_c3cd63")}</div>
                   </div>
                   <div role="rowgroup">
                     {showUpRow ? renderUpRow("table") : null}
@@ -2095,10 +2091,9 @@ export function Secrets() {
                             <div className="mt-1">
                               {row.kind === "company" ? (
                                 <MetaChip>
-                                  <ShieldCheck className="h-3 w-3" /> Organization
-                                </MetaChip>
+                                  <ShieldCheck className="h-3 w-3" />{" " + pageText("organization_519255")}</MetaChip>
                               ) : (
-                                <UserSecretChip label="Each user" />
+                                <UserSecretChip label={pageText("eachUser_12db97")} />
                               )}
                             </div>
                           </div>
@@ -2160,8 +2155,7 @@ export function Secrets() {
                           {row.kind === "company" ? (
                             <>
                               <MetaChip>
-                                <ShieldCheck className="h-3 w-3" /> Organization
-                              </MetaChip>
+                                <ShieldCheck className="h-3 w-3" />{" " + pageText("organization_519255")}</MetaChip>
                               <SecretProviderIndicator
                                 secret={row.secret}
                                 providers={providers}
@@ -2171,7 +2165,7 @@ export function Secrets() {
                             </>
                           ) : (
                             <>
-                              <UserSecretChip label="Each user" />
+                              <UserSecretChip label={pageText("eachUser_12db97")} />
                               <StatusBadge status={status} />
                               <CoverageInline companyId={selectedCompanyId} definitionId={row.definition.id} compact />
                             </>
@@ -2188,7 +2182,7 @@ export function Secrets() {
                               "Member-owned values"
                             )}
                           </span>
-                          <span>Updated {formatRelative(row.kind === "company" ? row.secret.updatedAt : row.definition.updatedAt)}</span>
+                          <span>{pageText("updated_f2f857") + " "}{formatRelative(row.kind === "company" ? row.secret.updatedAt : row.definition.updatedAt)}</span>
                         </div>
                       </div>
                     );
@@ -2259,7 +2253,7 @@ export function Secrets() {
                   </span>
                 </SheetTitle>
                 <SheetDescription className="sr-only">
-                  {providerLabel(providers, selectedSecret.provider)} secret {selectedSecret.key}
+                  {providerLabel(providers, selectedSecret.provider)}{" " + pageText("secret_e5e9fa") + " "}{selectedSecret.key}
                 </SheetDescription>
                 <div className="flex min-w-0 items-center gap-2 rounded-md border border-border bg-muted/20 px-2 py-1.5">
                   <code className="min-w-0 flex-1 truncate font-mono text-xs text-foreground">
@@ -2272,13 +2266,11 @@ export function Secrets() {
                     className="h-7 shrink-0 px-2 text-xs"
                     onClick={() => copySecretKey(selectedSecret.key)}
                   >
-                    <Copy className="mr-1 h-3.5 w-3.5" /> Copy
-                  </Button>
+                    <Copy className="mr-1 h-3.5 w-3.5" />{" " + pageText("copy_af74f7")}</Button>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
                   <MetaChip>
-                    <ShieldCheck className="h-3 w-3" /> Organization
-                  </MetaChip>
+                    <ShieldCheck className="h-3 w-3" />{" " + pageText("organization_519255")}</MetaChip>
                   <MetaChip>{modeLabel(selectedSecret.managedMode)}</MetaChip>
                   <MetaChip>{providerLabel(providers, selectedSecret.provider)}</MetaChip>
                   <MetaChip>v{selectedSecret.latestVersion}</MetaChip>
@@ -2293,13 +2285,11 @@ export function Secrets() {
                   {rotateActionLabel(selectedSecret)}
                 </Button>
                 <Button variant="outline" size="sm" onClick={copyDetailLink}>
-                  <Link2 className="h-3.5 w-3.5 mr-1" /> Copy link
-                </Button>
+                  <Link2 className="h-3.5 w-3.5 mr-1" />{" " + pageText("copyLink_2f84ee")}</Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm" aria-label={`More actions for ${selectedSecret.name}`}>
-                      <MoreHorizontal className="mr-1 h-3.5 w-3.5" /> More
-                    </Button>
+                      <MoreHorizontal className="mr-1 h-3.5 w-3.5" />{" " + pageText("more_4bab2d")}</Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-52">
                     <DropdownMenuItem
@@ -2316,7 +2306,7 @@ export function Secrets() {
                       ) : (
                         <CheckCircle2 className="h-4 w-4" />
                       )}
-                      {selectedSecret.status === "active" ? "Disable" : "Activate"}
+                      {selectedSecret.status === "active" ? pageText("disable_9a7d4e") : pageText("activate_92ef08")}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       disabled={statusMutation.isPending}
@@ -2332,12 +2322,11 @@ export function Secrets() {
                       ) : (
                         <Archive className="h-4 w-4" />
                       )}
-                      {selectedSecret.status === "archived" ? "Unarchive" : "Archive"}
+                      {selectedSecret.status === "archived" ? pageText("unarchive_35e71c") : pageText("archive_2621c6")}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem variant="destructive" onSelect={() => setDeleteConfirm(selectedSecret)}>
-                      <Trash2 className="h-4 w-4" /> Delete secret
-                    </DropdownMenuItem>
+                      <Trash2 className="h-4 w-4" />{" " + pageText("deleteSecret_d5f3c0")}</DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -2406,11 +2395,10 @@ export function Secrets() {
                     className="h-7 shrink-0 px-2 text-xs"
                     onClick={() => copySecretKey(selectedDefinition.key)}
                   >
-                    <Copy className="mr-1 h-3.5 w-3.5" /> Copy
-                  </Button>
+                    <Copy className="mr-1 h-3.5 w-3.5" />{" " + pageText("copy_af74f7")}</Button>
                 </div>
                 <div className="flex flex-wrap gap-1.5">
-                  <UserSecretChip label="Each user" />
+                  <UserSecretChip label={pageText("eachUser_12db97")} />
                   <MetaChip>
                     <CoverageInline companyId={selectedCompanyId} definitionId={selectedDefinition.id} compact />
                   </MetaChip>
@@ -2432,8 +2420,7 @@ export function Secrets() {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm" aria-label={`More actions for ${selectedDefinition.name}`}>
-                      <MoreHorizontal className="mr-1 h-3.5 w-3.5" /> More
-                    </Button>
+                      <MoreHorizontal className="mr-1 h-3.5 w-3.5" />{" " + pageText("more_4bab2d")}</Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-52">
                     <DropdownMenuItem onSelect={() => openEditDefinition(selectedDefinition)}>
@@ -2454,7 +2441,7 @@ export function Secrets() {
                       ) : (
                         <CheckCircle2 className="h-4 w-4" />
                       )}
-                      {selectedDefinition.status === "active" ? "Disable" : "Activate"}
+                      {selectedDefinition.status === "active" ? pageText("disable_9a7d4e") : pageText("activate_92ef08")}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       disabled={definitionStatusMutation.isPending}
@@ -2470,7 +2457,7 @@ export function Secrets() {
                       ) : (
                         <Archive className="h-4 w-4" />
                       )}
-                      {selectedDefinition.status === "archived" ? "Unarchive" : "Archive"}
+                      {selectedDefinition.status === "archived" ? pageText("unarchive_35e71c") : pageText("archive_2621c6")}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem variant="destructive" onSelect={() => setDefinitionDeleteConfirm(selectedDefinition)}>
@@ -2583,7 +2570,7 @@ export function Secrets() {
       >
         <DialogContent className="max-h-(--sz-calc-18) overflow-y-auto p-4 sm:max-w-lg sm:p-6">
           <DialogHeader>
-            <DialogTitle>{editingDefinition ? "Edit user-provided secret" : "Create secret"}</DialogTitle>
+            <DialogTitle>{editingDefinition ? "Edit user-provided secret" : pageText("createSecret_f13847")}</DialogTitle>
             <DialogDescription>
               Choose who provides the value. Shared fields keep their values when you switch modes.
             </DialogDescription>
@@ -2610,7 +2597,7 @@ export function Secrets() {
                 >
                   <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="company">{translateUi("interfaceCopy.organization")}</TabsTrigger>
-                    <TabsTrigger value="user">Each user</TabsTrigger>
+                    <TabsTrigger value="user">{pageText("eachUser_12db97")}</TabsTrigger>
                   </TabsList>
                 </Tabs>
                 <p className="text-(length:--text-micro) text-muted-foreground">
@@ -2734,7 +2721,7 @@ export function Secrets() {
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-medium text-foreground" htmlFor="new-secret-usage-guidance">
-                    Usage guidance <span className="text-muted-foreground/70">(optional)</span>
+                    Usage guidance <span className="text-muted-foreground/70">{pageText("optional_b16c7a")}</span>
                   </label>
                   <Textarea
                     id="new-secret-usage-guidance"
@@ -2760,8 +2747,7 @@ export function Secrets() {
                     className="h-5 px-1.5 text-(length:--text-micro) text-muted-foreground"
                     onClick={() => setCreateKeyEditable(true)}
                   >
-                    <Pencil className="mr-1 h-3 w-3" /> Edit
-                  </Button>
+                    <Pencil className="mr-1 h-3 w-3" />{" " + pageText("edit_530164")}</Button>
                 ) : null}
               </div>
               <Input
@@ -2793,8 +2779,7 @@ export function Secrets() {
             </div>
 
             <div>
-              <label className="text-xs font-medium" htmlFor="new-secret-description">
-                Description <span className="text-muted-foreground/70">(optional)</span>
+              <label className="text-xs font-medium" htmlFor="new-secret-description">{pageText("description_55f8eb") + " "}<span className="text-muted-foreground/70">{pageText("optional_b16c7a")}</span>
               </label>
               <Input
                 id="new-secret-description"
@@ -2927,11 +2912,11 @@ export function Secrets() {
             >
               {createMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
               {editingDefinition
-                ? "Save changes"
+                ? pageText("saveChanges_179359")
                 : secretValueProvider === "user"
                   ? "Create user-provided secret"
                   : createMode === "managed"
-                    ? "Create secret"
+                    ? pageText("createSecret_f13847")
                     : "Link reference"}
             </Button>
           </DialogFooter>
@@ -3177,7 +3162,7 @@ export function Secrets() {
       <Dialog open={Boolean(deleteConfirm)} onOpenChange={(open) => !open && setDeleteConfirm(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Delete secret</DialogTitle>
+            <DialogTitle>{pageText("deleteSecret_d5f3c0")}</DialogTitle>
             <DialogDescription>
               Permanently removes <strong>{deleteConfirm?.name}</strong>. Active bindings will fail until you remap them.
             </DialogDescription>
@@ -3189,9 +3174,7 @@ export function Secrets() {
               onClick={() => deleteConfirm && deleteMutation.mutate(deleteConfirm.id)}
               disabled={deleteMutation.isPending}
             >
-              {deleteMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
-              Delete
-            </Button>
+              {deleteMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}{pageText("delete_f6fdbe")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -3217,9 +3200,7 @@ export function Secrets() {
               }
               disabled={deleteDefinitionMutation.isPending}
             >
-              {deleteDefinitionMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
-              Delete
-            </Button>
+              {deleteDefinitionMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}{pageText("delete_f6fdbe")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -3304,6 +3285,7 @@ function SecretsFiltersPopover({
   onProviderChange: (value: SecretProvider | "all") => void;
   onProvidedByChange: (value: ProvidedByFilter) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const resetFilters = () => {
     onStatusChange("active");
@@ -3325,7 +3307,7 @@ function SecretsFiltersPopover({
           variant="outline"
           size="icon"
           className={cn("relative h-8 w-8 shrink-0", activeFilterCount > 0 && "text-blue-600 dark:text-blue-400")}
-          title={activeFilterCount > 0 ? `Filters: ${activeFilterCount}` : "Filter"}
+          title={activeFilterCount > 0 ? `Filters: ${activeFilterCount}` : pageText("filter_d7decf")}
         >
           <Filter className="h-3.5 w-3.5" />
           {activeFilterCount > 0 ? (
@@ -3348,9 +3330,7 @@ function SecretsFiltersPopover({
                 className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
                 onClick={resetFilters}
               >
-                <X className="h-3 w-3" />
-                Clear
-              </button>
+                <X className="h-3 w-3" />{pageText("clear_719ea3")}</button>
             ) : null}
           </div>
 
@@ -3397,7 +3377,7 @@ function SecretsFiltersPopover({
                     checked={providerFilter === "all"}
                     onCheckedChange={() => onProviderChange("all")}
                   />
-                  <span className="text-sm">All providers</span>
+                  <span className="text-sm">{pageText("allProviders_352b58")}</span>
                 </label>
                 {providers.map((provider) => (
                   <label key={provider.id} className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1 hover:bg-accent/50">
@@ -3656,6 +3636,7 @@ function ProviderVaultCard({
   onHealthCheck: () => void;
   onImportSecrets: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const blockReason = getProviderConfigBlockReason(config);
   const details = config.healthDetails;
   return (
@@ -3666,9 +3647,7 @@ function ProviderVaultCard({
             <h3 className="text-sm font-medium leading-snug">{config.displayName}</h3>
             {config.isDefault ? (
               <span className="inline-flex items-center gap-1 text-xs text-amber-600 dark:text-amber-400">
-                <Star className="h-3 w-3 fill-current" />
-                Default
-              </span>
+                <Star className="h-3 w-3 fill-current" />{pageText("default_808d7d")}</span>
             ) : null}
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-2">
@@ -3718,9 +3697,7 @@ function ProviderVaultCard({
             }
             data-testid={`provider-vault-refresh-secrets-${config.id}`}
           >
-            <Cloud className="h-3.5 w-3.5 mr-1" />
-            Refresh secrets
-          </Button>
+            <Cloud className="h-3.5 w-3.5 mr-1" />{pageText("refreshSecrets_44e6b5")}</Button>
         ) : null}
         <Button
           variant="outline"
@@ -3738,9 +3715,7 @@ function ProviderVaultCard({
           onClick={onDisable}
           disabled={pending || config.status === "disabled"}
         >
-          <Ban className="h-3.5 w-3.5 mr-1" />
-          Disable
-        </Button>
+          <Ban className="h-3.5 w-3.5 mr-1" />{pageText("disable_9a7d4e")}</Button>
         <Button
           variant="outline"
           size="sm"
@@ -3748,9 +3723,7 @@ function ProviderVaultCard({
           onClick={onRemove}
           disabled={pending}
         >
-          <Trash2 className="h-3.5 w-3.5 mr-1" />
-          Remove
-        </Button>
+          <Trash2 className="h-3.5 w-3.5 mr-1" />{pageText("remove_e96390")}</Button>
       </div>
     </div>
   );
@@ -3763,6 +3736,7 @@ function ProviderVaultFields({
   form: ProviderVaultForm;
   onChange: React.Dispatch<React.SetStateAction<ProviderVaultForm>>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const setField = (key: keyof ProviderVaultForm, value: string | boolean) => {
     onChange((current) => ({ ...current, [key]: value }));
   };
@@ -3811,7 +3785,7 @@ function ProviderVaultFields({
     <div className="grid gap-3 sm:grid-cols-2">
       <TextField label="Address" value={form.address} onChange={(value) => setField("address", value)} placeholder="https://vault.example.com" />
       <TextField label="Namespace" value={form.namespace} onChange={(value) => setField("namespace", value)} placeholder="admin" />
-      <TextField label="Mount path" value={form.mountPath} onChange={(value) => setField("mountPath", value)} placeholder="secret" />
+      <TextField label="Mount path" value={form.mountPath} onChange={(value) => setField("mountPath", value)} placeholder={pageText("secret_e5e9fa")} />
       <TextField label="Secret path prefix" value={form.secretPathPrefix} onChange={(value) => setField("secretPathPrefix", value)} placeholder="paperclip/prod" />
     </div>
   );
@@ -3922,10 +3896,11 @@ function AwsProviderVaultDiscoveryPanel({
  * into a bug report, so the button has to confirm the clipboard took it.
  */
 function CopyDetailsButton({ text }: { text: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { copied, failed, copy } = useCopyAction();
   return (
     <Button type="button" variant="ghost" size="sm" onClick={() => void copy(text)}>
-      {copied ? "Copied" : failed ? "Copy failed" : "Copy"}
+      {copied ? pageText("copied_8e3df4") : failed ? pageText("copyFailed_bd5acb") : pageText("copy_af74f7")}
     </Button>
   );
 }
@@ -4172,12 +4147,13 @@ function TextField({
   placeholder?: string;
   required?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const id = `provider-vault-${label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
   return (
     <div>
       <label className="text-xs font-medium" htmlFor={id}>
         {label}
-        {required ? null : <span className="text-muted-foreground/70"> (optional)</span>}
+        {required ? null : <span className="text-muted-foreground/70">{" " + pageText("optional_b16c7a")}</span>}
       </label>
       <Input id={id} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} />
     </div>
@@ -4193,6 +4169,7 @@ function CoverageInline({
   definitionId: string;
   compact?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const coverageQuery = useQuery({
     queryKey: queryKeys.secrets.userDefinitionCoverage(companyId, definitionId),
     queryFn: () => secretsApi.userSecretDefinitionCoverage(companyId, definitionId),
@@ -4201,7 +4178,7 @@ function CoverageInline({
   const coverageView = useQueryView(coverageQuery);
   const summary = coverageQuery.data;
   if (coverageQuery.isPending || coverageView.kind === "reconnecting") {
-    return <span className="text-muted-foreground">Loading…</span>;
+    return <span className="text-muted-foreground">{pageText("loading_33ce41")}</span>;
   }
   if (coverageView.kind === "error") return <span className="text-destructive">Coverage unavailable</span>;
   return (
@@ -4230,13 +4207,14 @@ function UserSecretDetailsTab({
   definition: UserSecretDefinition;
   onViewCoverage: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   return (
     <dl className="divide-y divide-border/60 text-xs">
       <DetailRow label={translateUi("interfaceCopy.description")}>
         <span>{definition.description ?? <span className="text-muted-foreground">—</span>}</span>
       </DetailRow>
-      <DetailRow label="Provided by">Each user</DetailRow>
+      <DetailRow label="Provided by">{pageText("eachUser_12db97")}</DetailRow>
       <DetailRow label={translateUi("interfaceCopy.key")}>
         <code>{definition.key}</code>
       </DetailRow>
@@ -4270,6 +4248,7 @@ function UserSecretCoverageTab({
   companyId: string;
   definitionId: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const coverageQuery = useQuery({
     queryKey: queryKeys.secrets.userDefinitionCoverage(companyId, definitionId),
@@ -4278,7 +4257,7 @@ function UserSecretCoverageTab({
   });
   const coverageView = useQueryView(coverageQuery);
   if (coverageQuery.isPending || coverageView.kind === "reconnecting") {
-    return <div className="py-6 text-center text-xs text-muted-foreground">Loading…</div>;
+    return <div className="py-6 text-center text-xs text-muted-foreground">{pageText("loading_33ce41")}</div>;
   }
   if (coverageView.kind === "error" || !coverageQuery.data) {
     return <div className="py-6 text-center text-xs text-destructive">Coverage unavailable.</div>;
@@ -4312,7 +4291,7 @@ function UserSecretCoverageTab({
         </div>
       </div>
       <p className="text-xs text-muted-foreground">
-        Coverage is counts only across {total} member{total === 1 ? "" : "s"}. Secret values are never shown here.
+        Coverage is counts only across {total}{" " + pageText("member_6467ba")}{total === 1 ? "" : "s"}. Secret values are never shown here.
       </p>
     </div>
   );
@@ -4391,6 +4370,7 @@ function AgentAccessSection({
   companyId: string;
   reference: AgentAccessReference;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
@@ -4521,7 +4501,7 @@ function AgentAccessSection({
           : "These agents resolve the responsible user's value as an environment variable at run start."}
       </p>
       {agentsQuery.isPending || agentsView.kind === "reconnecting" ? (
-        <p className="mt-2 text-(length:--text-micro) text-muted-foreground">Loading agents…</p>
+        <p className="mt-2 text-(length:--text-micro) text-muted-foreground">{pageText("loadingAgents_aa8e27")}</p>
       ) : agentsView.kind === "error" ? (
         <p className="mt-2 text-(length:--text-micro) text-muted-foreground">
           Agent list unavailable. Manage access from each agent&apos;s configuration instead.
@@ -4615,9 +4595,7 @@ function AgentAccessSection({
                 <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
               ) : (
                 <Plus className="mr-1 h-3.5 w-3.5" />
-              )}
-              Add
-            </Button>
+              )}{pageText("add_61cc55")}</Button>
           </div>
           {effectiveEnvKey && !envKeyValid ? (
             <p className="mt-1 text-(length:--text-micro) text-destructive">
@@ -4704,8 +4682,9 @@ function DetailRow({ label, children }: { label: string; children: React.ReactNo
 }
 
 export function SecretUsageTab({ loading, bindings }: { loading: boolean; bindings: CompanySecretUsageBinding[] }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (loading) {
-    return <div className="py-6 text-center text-xs text-muted-foreground">Loading…</div>;
+    return <div className="py-6 text-center text-xs text-muted-foreground">{pageText("loading_33ce41")}</div>;
   }
   if (bindings.length === 0) {
     return (
@@ -4783,6 +4762,7 @@ export function SecretEventsTab({
   events: SecretAccessEvent[];
   companyId: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   // Resolve responsible/owner user ids to human names for user-scoped events.
   const anyUserScoped = events.some(
     (event) =>
@@ -4803,7 +4783,7 @@ export function SecretEventsTab({
   };
 
   if (loading) {
-    return <div className="py-6 text-center text-xs text-muted-foreground">Loading…</div>;
+    return <div className="py-6 text-center text-xs text-muted-foreground">{pageText("loading_33ce41")}</div>;
   }
   if (events.length === 0) {
     return (

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -54,6 +55,7 @@ export function ProfilesIndex({
   initialStatusFilter?: "active" | "archived";
   initialResolverOpen?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -125,7 +127,7 @@ export function ProfilesIndex({
 
   const header = (
     <ToolsPageHeader
-      title="Access profiles"
+      title={pageText("accessProfiles_e271a6")}
       description="Decide which tools your agents can use. Build a profile once, then assign it to the agents that need it."
       actions={
         <>
@@ -198,7 +200,7 @@ export function ProfilesIndex({
               statusFilter === key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
             )}
           >
-            {key === "active" ? "Active" : "Archived"}
+            {key === "active" ? pageText("active_a733b8") : pageText("archived_eddc81")}
           </button>
         ))}
       </div>
@@ -224,7 +226,7 @@ export function ProfilesIndex({
             </colgroup>
             <thead>
               <tr className="border-b border-border bg-muted/40 text-left text-xs font-medium text-muted-foreground">
-                <th className="px-3 py-2 font-medium">Profile</th>
+                <th className="px-3 py-2 font-medium">{pageText("profile_ff4fc0")}</th>
                 <th className="px-3 py-2 font-medium">Allows</th>
                 <th className="px-3 py-2 font-medium">Assigned to</th>
                 <th className="px-3 py-2 font-medium">{translateUi("interfaceCopy.status")}</th>
@@ -257,8 +259,7 @@ export function ProfilesIndex({
                         <span>{allowsLabel(profile.summary)}</span>
                         {(profile.newToolsPendingCount ?? 0) > 0 ? (
                           <Badge variant="outline" className="border-amber-500/50 bg-amber-500/10 text-amber-800 dark:text-amber-200">
-                            {profile.newToolsPendingCount} new
-                          </Badge>
+                            {profile.newToolsPendingCount}{" " + pageText("new_c2a6b0")}</Badge>
                         ) : null}
                       </span>
                     </td>
@@ -285,9 +286,7 @@ export function ProfilesIndex({
                             type="button"
                             onClick={open}
                             className="text-xs font-medium text-primary hover:underline"
-                          >
-                            Resume
-                          </button>
+                          >{pageText("resume_b3bd0b")}</button>
                         ) : null}
                       </span>
                     </td>
@@ -347,6 +346,7 @@ function RowMenu({
   onRestore?: () => void;
   onDelete: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   return (
     <DropdownMenu>
@@ -364,9 +364,7 @@ function RowMenu({
         <DropdownMenuItem onSelect={onDuplicate}>Duplicate</DropdownMenuItem>
         {onRestore ? (
           <DropdownMenuItem onSelect={onRestore}>
-            <ArchiveRestore className="mr-1.5 h-4 w-4" />
-            Restore
-          </DropdownMenuItem>
+            <ArchiveRestore className="mr-1.5 h-4 w-4" />{pageText("restore_3cbe6d")}</DropdownMenuItem>
         ) : (
           <DropdownMenuItem onSelect={onArchive}>{translateUi("interfaceCopy.archive")}</DropdownMenuItem>
         )}

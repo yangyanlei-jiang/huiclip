@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { copyTextToClipboard } from "@/lib/clipboard";
 import { useEffect, useId, useRef, useState } from "react";
@@ -241,6 +242,7 @@ export function GitHubPolicyEditor({
   onChange: (policy: GitHubReviewPolicy) => void;
   onValidityChange?: (valid: boolean) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const id = useId();
   const automaticMode = useRef<"linked_authors" | "allowed_authors">(
     "linked_authors",
@@ -285,9 +287,7 @@ export function GitHubPolicyEditor({
         <h2
           id={`${id}-github-instructions-heading`}
           className="text-base font-semibold"
-        >
-          Instructions
-        </h2>
+        >{pageText("instructions_ed58f2")}</h2>
         <MarkdownEditor
           readOnly={readOnly}
           ariaLabel="Agent instructions"
@@ -406,9 +406,7 @@ export function GitHubPolicyEditor({
                   onCheckedChange={(enabled) =>
                     set("issueOpened", enabled === true)
                   }
-                />
-                New issues
-              </Label>
+                />{pageText("newIssues_79760f")}</Label>
             </div>
             <p className="text-xs text-muted-foreground">
               Runs for authorized authors in Access. Use the author filters below to limit whose issues and PRs start work.
@@ -455,7 +453,7 @@ export function GitHubPolicyEditor({
                   )}
                 </div>
               </GitHubSettingsDisclosure>
-              <GitHubSettingsDisclosure title="Labels">
+              <GitHubSettingsDisclosure title={pageText("labels_222898")}>
                 <div className="grid gap-4 sm:grid-cols-2">
                   {filterField(
                     "requiredLabels",
@@ -585,6 +583,7 @@ export function GitHubAccessEditor({
   configuration: GitHubChatConfiguration;
   onChange: (configuration: GitHubChatConfiguration) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const company = useOptionalCompany()?.companies.find((item) => item.id === companyId);
   const accountLink = useRef<HTMLAnchorElement>(null);
@@ -725,7 +724,7 @@ export function GitHubAccessEditor({
                     {linked && (
                       <Check className="size-3.5 text-muted-foreground" />
                     )}
-                    {linked ? "Allowed" : "Unlinked"}
+                    {linked ? pageText("allowed_77c7b4") : "Unlinked"}
                   </span>
                 ) : (
                   <ToggleSwitch
@@ -750,9 +749,7 @@ export function GitHubAccessEditor({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   {removable && (
-                    <DropdownMenuItem onClick={() => removePerson(person)}>
-                      Remove access
-                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => removePerson(person)}>{pageText("removeAccess_a13a95")}</DropdownMenuItem>
                   )}
                   {identity && (
                     <DropdownMenuItem
@@ -983,7 +980,7 @@ export function GitHubAccessEditor({
                 }}
               >
                 <Copy className="size-4" />
-                {linkCopied ? "Copied" : "Copy invitation link"}
+                {linkCopied ? pageText("copied_8e3df4") : "Copy invitation link"}
               </Button>
               <Link
                 ref={accountLink}

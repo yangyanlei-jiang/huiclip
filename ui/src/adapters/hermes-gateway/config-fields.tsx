@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { configFieldsForSection } from "../config-sections";
 import { useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
@@ -106,6 +107,7 @@ export function HermesGatewayConfigFields({
   eff,
   mark,
 }: AdapterConfigFieldsProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const storedApiKey = config.apiKey;
   const hasStoredApiKey = isSecretRef(storedApiKey) || typeof storedApiKey === "string";
   const editApiKeyValue = typeof storedApiKey === "string" ? String(eff("adapterConfig", "apiKey", storedApiKey)) : "";
@@ -156,7 +158,7 @@ export function HermesGatewayConfigFields({
       </Field>
 
       <SecretField
-        label="API key"
+        label={pageText("apiKey_cf678c")}
         value={isCreate ? String(readCreateValue(values, "apiKey", "") ?? "") : editApiKeyValue}
         onCommit={(v) => writeValue("apiKey", v || undefined)}
         placeholder="Hermes API_SERVER_KEY, not PAPERCLIP_API_KEY"
@@ -241,7 +243,7 @@ export function HermesGatewayConfigFields({
         />
       </Field>
 
-      <Field label="Instructions" hint="Optional stable Hermes instructions sent separately from the wake input.">
+      <Field label={pageText("instructions_ed58f2")} hint="Optional stable Hermes instructions sent separately from the wake input.">
         <DraftTextarea
           value={instructions}
           onCommit={(v) => writeValue("instructions", v || undefined)}

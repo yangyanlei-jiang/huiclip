@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { TaskVoiceLauncher } from "@/components/voice/TaskVoiceLauncher";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -167,6 +168,7 @@ function ConnectedTaskComposer({
   binding,
   draftOwner,
 }: ConnectedTaskProps & { binding: ExternalChannelBindingSummary; draftOwner: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const readOwner = useDraftOwnerReader();
   const { pushToast } = useToast();
@@ -570,8 +572,7 @@ function ConnectedTaskComposer({
         <div className="flex min-w-0 flex-wrap items-center gap-2">
           {binding.externalUrl && (
             <Button asChild size="sm" variant="outline">
-              <a href={binding.externalUrl} target="_blank" rel="noreferrer">
-                Open {providerNames[binding.provider]} <ExternalLink />
+              <a href={binding.externalUrl} target="_blank" rel="noreferrer">{pageText("open_cf9b77") + " "}{providerNames[binding.provider]} <ExternalLink />
               </a>
             </Button>
           )}
@@ -972,7 +973,7 @@ function ConnectedTaskComposer({
               }}
             >
               {publish.isPending
-                ? "Sending…"
+                ? pageText("sending_cf7655")
                 : resendWaiting
                   ? "Resend now"
                   : !rejection && (publish.isError || unconfirmedRequest)

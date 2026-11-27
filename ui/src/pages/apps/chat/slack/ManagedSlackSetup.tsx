@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useAuthorizationWindow } from "@/hooks/useAuthorizationWindow";
 import { useQueryView } from "@/components/QueryView";
@@ -15,6 +16,7 @@ import type { OwnSlackAppSetup } from "./OwnSlackAppSetup";
 import { sanitizedSetupErrorMessage } from "../chat-setup-error";
 
 export function ManagedSlackSetup({ endpoint, disabled, saveDetails, onSaved, onBusy, onSaveExit, autoStart = false, reconnect = false }: ComponentProps<typeof OwnSlackAppSetup> & { autoStart?: boolean; reconnect?: boolean }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const client = useQueryClient();
   const choices = useQuery({ queryKey: ["slack-managed-workspaces", endpoint.companyId], queryFn: () => chatEndpointsApi.slackSetupOptions(endpoint.companyId) });
@@ -128,7 +130,7 @@ export function ManagedSlackSetup({ endpoint, disabled, saveDetails, onSaved, on
     {busy || choices.isPending || creating ? <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />{busy ? needsAuthorization ? "Opening Slack…" : "Connecting your agent…" : creating ? "Setting up your Slack app…" : "Loading Slack…"}</p>
       : !choices.data?.managedAvailable ? <p className="text-sm">Managed Slack setup is unavailable. Try again later.</p>
       : reconnectWorkspace ? null : <>
-        {workspaces.length === 1 && <p className="text-sm">Add <strong>{endpoint.assignedAgentName}</strong> to <strong>{workspaces[0]!.workspaceName}</strong>.</p>}
+        {workspaces.length === 1 && <p className="text-sm">{pageText("add_61cc55") + " "}<strong>{endpoint.assignedAgentName}</strong> to <strong>{workspaces[0]!.workspaceName}</strong>.</p>}
         {workspaces.length > 1 && <Select value={grantId ?? ""} onValueChange={setSelectedGrant} disabled={busy || started}>
           <SelectTrigger aria-label="Slack workspace"><SelectValue placeholder="Choose a Slack workspace" /></SelectTrigger>
           <SelectContent>{workspaces.map(workspace => <SelectItem key={workspace.grantId} value={workspace.grantId}>{workspace.workspaceName}</SelectItem>)}</SelectContent>
@@ -141,7 +143,7 @@ export function ManagedSlackSetup({ endpoint, disabled, saveDetails, onSaved, on
     </div>}
     <SetupWizardFooter onSaveExit={onSaveExit} disabled={busy}>
       {(choicesView.kind === "error") || !choices.isPending && !choices.data?.managedAvailable ? <Button disabled={busy || choices.isFetching} onClick={() => void choices.refetch()}>{translateUi("interfaceCopy.retry")}</Button> : <Button disabled={busy || disabled || creating || choices.isPending || !choices.data?.managedAvailable || (workspaces.length > 1 && !grantId && !reconnectWorkspace) || (uncertain && !confirmed)} onClick={() => void run(connect)}>
-        {busy && <Loader2 className="size-4 animate-spin" />}{reconnectWorkspace ? "Reconnect Slack workspace" : registration?.appId ? "Continue in Slack" : "Continue"}
+        {busy && <Loader2 className="size-4 animate-spin" />}{reconnectWorkspace ? "Reconnect Slack workspace" : registration?.appId ? "Continue in Slack" : pageText("continue_2e0262")}
       </Button>}
     </SetupWizardFooter>
   </div>;

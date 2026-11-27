@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { Agent } from "@paperclipai/shared";
@@ -589,6 +590,7 @@ function TaskTreeNode({
   showSelection?: boolean;
   onToggleSelection?: (node: SuggestedTaskTreeNode, checked: boolean) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const visibleChildren = node.children.filter((child) => !child.task.hiddenInPreview);
   const hiddenChildCount = node.children
@@ -669,9 +671,7 @@ function TaskTreeNode({
               <ChevronRight className="h-3 w-3" />
             </Link>
           ) : isSkipped ? (
-            <span className="inline-flex shrink-0 items-center rounded-sm border border-amber-500/60 bg-amber-500/10 px-2.5 py-1 text-(length:--text-micro) font-medium text-amber-900 dark:text-amber-100">
-              Skipped
-            </span>
+            <span className="inline-flex shrink-0 items-center rounded-sm border border-amber-500/60 bg-amber-500/10 px-2.5 py-1 text-(length:--text-micro) font-medium text-amber-900 dark:text-amber-100">{pageText("skipped_5a000a")}</span>
           ) : null}
         </div>
 
@@ -687,7 +687,7 @@ function TaskTreeNode({
               <TaskField label={translateUi("interfaceCopy.project")} value={node.task.projectId} tone="subtle" />
             ) : null}
             {labels.map((label) => (
-              <TaskField key={label} label="Label" value={label} tone="subtle" />
+              <TaskField key={label} label={pageText("label_74341e")} value={label} tone="subtle" />
             ))}
           </div>
         ) : null}
@@ -750,6 +750,7 @@ function SuggestTasksCard({
     reason?: string,
   ) => Promise<void> | void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [rejecting, setRejecting] = useState(false);
   const [working, setWorking] = useState<"accept" | "reject" | null>(null);
   const [rejectReason, setRejectReason] = useState(
@@ -943,9 +944,7 @@ function SuggestTasksCard({
                   variant="outline"
                   disabled={!onRejectInteraction || working !== null}
                   onClick={() => setRejecting((current) => !current)}
-                >
-                  Reject
-                </Button>
+                >{pageText("reject_2b03b5")}</Button>
                 {selectedCount < totalTasks ? (
                   <Button
                     size="sm"
@@ -977,9 +976,7 @@ function SuggestTasksCard({
                 >
                   {working === "reject" ? (
                     <>
-                      <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                      Saving...
-                    </>
+                      <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />{pageText("saving_ae7e88")}</>
                   ) : (
                     "Save rejection"
                   )}
@@ -1806,6 +1803,7 @@ function RequestToolActionCard({
   onRejectInteraction?: (interaction: RequestConfirmationInteraction, reason?: string) => Promise<void> | void;
   externalReferences?: MarkdownExternalReferenceMap;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const payload = interaction.payload.toolAction!;
   const [working, setWorking] = useState<"accept" | "always" | "reject" | null>(null);
@@ -1863,11 +1861,11 @@ function RequestToolActionCard({
         <DecisionCardFooter leading={footerSlot} className="mt-3">
           <div className={cn(!footerSlot && "mt-3", "flex flex-wrap items-center justify-end gap-2")}>
           <Button size="sm" variant="ghost" disabled={!onRejectInteraction || working !== null} onClick={() => void decide("reject")}>
-            {working === "reject" ? "Declining…" : "Decline"}
+            {working === "reject" ? "Declining…" : pageText("decline_b59cf9")}
           </Button>
           <div className="inline-flex" role="group" aria-label="Approve request">
             <Button size="sm" variant={variant} className={payload.rememberActionScope ? "rounded-r-none" : undefined} disabled={!onAcceptInteraction || working !== null} onClick={() => void decide("accept")}>
-              {working === "accept" || working === "always" ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />{working === "always" ? "Saving…" : "Approving…"}</> : "Approve & run"}
+              {working === "accept" || working === "always" ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />{working === "always" ? pageText("saving_56a228") : "Approving…"}</> : "Approve & run"}
             </Button>
             {payload.rememberActionScope ? (
               <DropdownMenu>
@@ -2096,6 +2094,7 @@ function RequestSecretProposalCard({
     reason?: string,
   ) => Promise<void> | void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const payload = interaction.payload.secretProposal!;
   const [working, setWorking] = useState<"accept" | "reject" | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -2139,8 +2138,7 @@ function RequestSecretProposalCard({
       <SecretProposalDetails payload={payload} />
       <ProposalJustification justification={payload.justification} />
       <div className="flex items-center gap-2 text-(length:--text-micro) text-muted-foreground">
-        <Clock className="h-3.5 w-3.5" />
-        Expires {formatDateTime(payload.expiresAt)}
+        <Clock className="h-3.5 w-3.5" />{pageText("expires_a99be3") + " "}{formatDateTime(payload.expiresAt)}
       </div>
 
       {isPending ? (
@@ -2250,6 +2248,7 @@ function ConfirmationActionRow({
    * hierarchy instead of relying on opportunistic flex wrapping. */
   stackActionsOnMobile?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [revising, setRevising] = useState(false);
   const { enabled: coordinatorEnabled } = useCoordinatorWorkspaceEnabled();
@@ -2373,9 +2372,7 @@ function ConfirmationActionRow({
               >
                 {working === "reject" ? (
                   <>
-                    <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                    Sending…
-                  </>
+                    <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />{pageText("sending_cf7655")}</>
                 ) : (
                   "Send revision"
                 )}
@@ -2489,6 +2486,7 @@ function RequestConnectionAuthorizationCard({
     reason?: string,
   ) => Promise<void> | void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [working, setWorking] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const resolutionErrorMessage = useResolutionErrorMessage();
@@ -2548,8 +2546,7 @@ function RequestConnectionAuthorizationCard({
                 className="grid grid-cols-1 items-stretch gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-end"
               >
                 <Button asChild size="sm" variant="cta" className="w-full sm:w-auto">
-                  <a href={href} target="_blank" rel="noreferrer">
-                    Connect {providerName}
+                  <a href={href} target="_blank" rel="noreferrer">{pageText("connect_b65463") + " "}{providerName}
                     <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
                   </a>
                 </Button>
@@ -2562,11 +2559,9 @@ function RequestConnectionAuthorizationCard({
                 >
                   {working ? (
                     <>
-                      <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                      Saving…
-                    </>
+                      <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />{pageText("saving_56a228")}</>
                   ) : (
-                    "Not now"
+                    pageText("notNow_e45714")
                   )}
                 </Button>
               </div>
@@ -2600,7 +2595,7 @@ function RequestConnectionAuthorizationCard({
               Connected by{" "}
               <span className="font-medium text-foreground">
                 {/* "You" is display-cased for a badge; this is mid-sentence. */}
-                {(resolvedByLabel ?? addresseeLabel) === "You" ? "you" : resolvedByLabel ?? addresseeLabel}
+                {(resolvedByLabel ?? addresseeLabel) === "You" ? pageText("you_8af56d") : resolvedByLabel ?? addresseeLabel}
               </span>
               {resolvedByAgent ? <ResolvedByAgentChip /> : null}
               {interaction.resolvedAt ? ` on ${formatDateTime(interaction.resolvedAt)}` : ""}
@@ -2676,6 +2671,7 @@ function RequestConfirmationCard({
   onUploadImage?: (file: File) => Promise<string>;
   externalReferences?: MarkdownExternalReferenceMap;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [working, setWorking] = useState<"accept" | "reject" | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const resolutionErrorMessage = useResolutionErrorMessage();
@@ -2767,9 +2763,7 @@ function RequestConfirmationCard({
           {interaction.payload.detailsMarkdown ? (
             compact ? <details className="group/confirmation-details">
               <summary className="flex cursor-pointer list-none items-center gap-1 rounded-sm text-xs font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                <ChevronRight aria-hidden className="h-3.5 w-3.5 transition-transform group-open/confirmation-details:rotate-90 motion-reduce:transition-none" />
-                Details
-              </summary>
+                <ChevronRight aria-hidden className="h-3.5 w-3.5 transition-transform group-open/confirmation-details:rotate-90 motion-reduce:transition-none" />{pageText("details_dc3dec")}</summary>
               <div className="mt-2 rounded-sm bg-muted/40 px-2.5 py-2 text-sm text-muted-foreground">
                 <MarkdownBody externalReferences={externalReferences}>{interaction.payload.detailsMarkdown}</MarkdownBody>
               </div>
@@ -2884,6 +2878,7 @@ function RequestCheckboxConfirmationResolution({
 }: {
   interaction: RequestCheckboxConfirmationInteraction;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const target = interaction.payload.target ?? null;
   const [expanded, setExpanded] = useState(false);
 
@@ -2915,7 +2910,7 @@ function RequestCheckboxConfirmationResolution({
         {visibleLabels.length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
             {visibleLabels.map((label, index) => (
-              <TaskField key={`${label}-${index}`} label="Selected" value={label} />
+              <TaskField key={`${label}-${index}`} label={pageText("selected_9a976f")} value={label} />
             ))}
             {hasHiddenLabels ? (
               <button
@@ -2927,7 +2922,7 @@ function RequestCheckboxConfirmationResolution({
                 )}
                 aria-expanded={expanded}
               >
-                {expanded ? "Show less" : `+${hiddenCount} more`}
+                {expanded ? pageText("showLess_4c852b") : `+${hiddenCount} more`}
               </button>
             ) : null}
           </div>
@@ -3273,15 +3268,14 @@ function VerdictConsequenceChip({ verdict }: { verdict: RequestItemVerdictValue 
 }
 
 function ItemVerdictDeepLink({ item, interaction }: { item: RequestItemVerdictsItem; interaction: RequestItemVerdictsInteraction }) {
+  const { t: pageText } = usePageTranslation("interface");
   const href = itemVerdictHref(item, interaction);
   if (!href) return null;
   const isInternal = !href.startsWith("/api/") && (href.startsWith("/") || href.startsWith("#"));
   const className =
     "inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1";
   const label = (
-    <>
-      Open
-      {isInternal ? <ArrowUpRight className="h-3 w-3" aria-hidden /> : <ExternalLink className="h-3 w-3" aria-hidden />}
+    <>{pageText("open_cf9b77")}{isInternal ? <ArrowUpRight className="h-3 w-3" aria-hidden /> : <ExternalLink className="h-3 w-3" aria-hidden />}
     </>
   );
   if (isInternal) {
@@ -3737,6 +3731,7 @@ export function IssueThreadInteractionCard({
   onUploadImage,
   externalReferences,
 }: IssueThreadInteractionCardProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { enabled: coordinatorEnabled } = useCoordinatorWorkspaceEnabled();
   const compactDecision = presentationVariant === "coordinator-decision";
   // Single enforcement point (PAP-424, plan from PAP-420; extended by PAP-437):
@@ -3941,7 +3936,7 @@ export function IssueThreadInteractionCard({
                   <span>{statusText}</span>
                 ) : (
                   <>
-                    {isPlan ? "Plan" : interactionKindLabel(interaction.kind)}
+                    {isPlan ? pageText("plan_ae2f98") : interactionKindLabel(interaction.kind)}
                     <span className="text-current/60">/</span>
                     {statusText}
                   </>
@@ -4012,8 +4007,7 @@ export function IssueThreadInteractionCard({
                 <div>proposed by {createdByLabel}</div>
               </div>
             </TooltipTrigger>
-            <TooltipContent side="bottom" className="text-xs">
-              Created {formatDateTime(interaction.createdAt)}
+            <TooltipContent side="bottom" className="text-xs">{pageText("created_accf40") + " "}{formatDateTime(interaction.createdAt)}
             </TooltipContent>
           </Tooltip>
         </div>}
@@ -4150,6 +4144,7 @@ export function IssueThreadInteractionCard({
  * than a human board member) — governed agent resolution introduced in P2.
  */
 function ResolvedByAgentChip() {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -4158,9 +4153,7 @@ function ResolvedByAgentChip() {
           className="ml-1 gap-1 border-indigo-500/50 py-0 text-[length:--text-micro] text-indigo-700 dark:text-indigo-200"
           data-testid="interaction-resolved-by-agent-chip"
         >
-          <Bot className="h-3 w-3" />
-          Agent
-        </Badge>
+          <Bot className="h-3 w-3" />{pageText("agent_5ce2e6")}</Badge>
       </TooltipTrigger>
       <TooltipContent side="bottom" className="max-w-xs text-xs">
         Resolved by an agent under the organization's interaction governance policy — audit-distinct from a human board resolution.

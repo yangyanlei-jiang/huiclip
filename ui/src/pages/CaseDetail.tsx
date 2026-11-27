@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -35,6 +36,7 @@ function CaseRelation({ item, search }: { item: Pick<CaseSummary, "id" | "identi
 
 /** Cases are persistent records. This board page only reads them and their work. */
 export function CaseDetail() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { caseIdentifier } = useParams<{ caseIdentifier: string }>();
   const { search } = useLocation();
@@ -123,9 +125,9 @@ export function CaseDetail() {
       </section>}
 
       {caseData.attachments.length > 0 && <section className="space-y-3" aria-label="Case attachments">
-        <h2 className="text-sm font-semibold">Attachments</h2>
+        <h2 className="text-sm font-semibold">{pageText("attachments_6771ad")}</h2>
         {images.length > 0 && <CaseAttachmentsGallery attachments={images} />}
-        {files.length > 0 && <ul className="space-y-2">{files.map(attachment => <li key={attachment.id}><a href={caseAttachmentUrl(attachment)} target="_blank" rel="noreferrer" className="inline-flex max-w-full items-center gap-2 text-sm text-primary hover:underline"><FileText aria-hidden className="size-4 shrink-0" /><span className="truncate">{attachment.asset.originalFilename ?? "Download attachment"}</span></a></li>)}</ul>}
+        {files.length > 0 && <ul className="space-y-2">{files.map(attachment => <li key={attachment.id}><a href={caseAttachmentUrl(attachment)} target="_blank" rel="noreferrer" className="inline-flex max-w-full items-center gap-2 text-sm text-primary hover:underline"><FileText aria-hidden className="size-4 shrink-0" /><span className="truncate">{attachment.asset.originalFilename ?? pageText("downloadAttachment_9e4ad5")}</span></a></li>)}</ul>}
       </section>}
 
       {caseData.workIssueId && <CaseHandoffHistory caseId={caseData.id} task={caseData.workIssue} agents={agents} />}

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { isPatchFile } from "@/lib/patch";
 import { loadAttachmentText, TEXT_PREVIEW_MAX_BYTES } from "@/lib/text-preview";
 import { useContext, useState } from "react";
@@ -55,6 +56,7 @@ export interface IssueArtifactFileProps extends ArtifactIdentity {
 
 /** Shared by uploads and promoted uploads; both use the issue's existing gallery. */
 export function IssueArtifactFile(props: IssueArtifactFileProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { metadata = null, attachmentId } = props;
   const openGallery = useContext(IssueGalleryContext);
   const openTextAttachment = useContext(TextAttachmentContext);
@@ -153,7 +155,7 @@ export function IssueArtifactFile(props: IssueArtifactFileProps) {
   if (patchEligible && patchData.data !== undefined) {
     return <DocumentCard {...props} patch body={patchData.data} actions={<>
       {openTextAction}
-      {downloadPath ? <Button asChild size="sm" variant="outline"><a href={downloadPath} download={props.filename}>Download file</a></Button> : null}
+      {downloadPath ? <Button asChild size="sm" variant="outline"><a href={downloadPath} download={props.filename}>{pageText("downloadFile_774025")}</a></Button> : null}
     </>} />;
   }
   if (localCsv && !tooLarge && data.data) {
@@ -167,9 +169,7 @@ export function IssueArtifactFile(props: IssueArtifactFileProps) {
             {openTextAction}
             {downloadPath ? (
               <Button asChild size="sm" variant="outline">
-                <a href={downloadPath} download={props.filename}>
-                  Download file
-                </a>
+                <a href={downloadPath} download={props.filename}>{pageText("downloadFile_774025")}</a>
               </Button>
             ) : null}
           </>
@@ -190,7 +190,7 @@ export function IssueArtifactFile(props: IssueArtifactFileProps) {
             {openTextAction}
             {patchEligible && patchView.kind !== "error" ? (
               <Button variant="outline" size="sm" disabled={patchData.isFetching} onClick={() => setPatchRequested(true)}>
-                {patchData.isFetching ? "Loading preview…" : "Preview patch"}
+                {patchData.isFetching ? pageText("loadingPreview_1b6d8c") : "Preview patch"}
               </Button>
             ) : null}
             {localCsv && !tooLarge && dataView.kind !== "error" ? (
@@ -200,7 +200,7 @@ export function IssueArtifactFile(props: IssueArtifactFileProps) {
                 disabled={data.isFetching}
                 onClick={() => setCsvRequested(true)}
               >
-                {data.isFetching ? "Loading preview…" : "Preview data"}
+                {data.isFetching ? pageText("loadingPreview_1b6d8c") : "Preview data"}
               </Button>
             ) : null}
           </>

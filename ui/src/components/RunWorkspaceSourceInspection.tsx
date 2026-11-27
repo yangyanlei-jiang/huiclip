@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useMutation } from "@tanstack/react-query";
 import { ENVIRONMENT_LEASE_POLICIES, WORKSPACE_SOURCE_VERIFICATION_REASONS } from "@paperclipai/shared";
 import { issuesApi } from "../api/issues";
@@ -21,6 +22,7 @@ function recordedFailure(evidence: Record<string, unknown>): string {
 }
 
 export function RunWorkspaceSourceInspection({ issueId, runId, companyId }: { issueId: string; runId: string; companyId: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const listing = useMutation({ mutationFn: () => issuesApi.recoveryActions(issueId, { runId }) });
   const inspection = useMutation({ mutationFn: (actionId: string) => issuesApi.recoveryActions(issueId, { runId, actionId }) });
   const pending = listing.isPending || inspection.isPending;
@@ -48,13 +50,13 @@ export function RunWorkspaceSourceInspection({ issueId, runId, companyId }: { is
       ))}
       {current ? <div className="space-y-2 text-xs" role="status">
         <p className="font-medium">Current recorded-source identity</p>
-        <p className="font-mono text-muted-foreground">Action {current.actionId}</p>
+        <p className="font-mono text-muted-foreground">{pageText("action_97c89a") + " "}{current.actionId}</p>
         <p className="text-muted-foreground">This read-only observation checks recorded identity. It does not confirm provider termination, local files, or successful preservation.</p>
         {current.status === "verified" ? <p>Recorded-source identity verified.</p>
           : current.status === "not_inspected" ? <p>Source not inspected: this record exceeds the inspection limit.</p>
           : <p>Blocked: <code className="font-mono">{current.sourceVerification?.reason ?? current.failureCode}</code>
             {current.sourceVerification?.observedLeasePolicy ? <> · lease policy <code className="font-mono">{current.sourceVerification.observedLeasePolicy}</code></> : null}</p>}
-        <p className="font-mono text-muted-foreground">Observed {formatDateTime(current.observedAt)}</p>
+        <p className="font-mono text-muted-foreground">{pageText("observed_2e159b") + " "}{formatDateTime(current.observedAt)}</p>
       </div> : null}
     </div>
   );

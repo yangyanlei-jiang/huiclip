@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Pause, Play, RotateCcw } from "lucide-react";
@@ -153,6 +154,7 @@ const BUBBLE_VARIANTS = [
 type BubbleVariantId = (typeof BUBBLE_VARIANTS)[number]["id"];
 
 export function TaskChatLab() {
+  const { t: pageText } = usePageTranslation("interface");
   const [selected, setSelected] = useState<TaskChatStateId>("agent-message");
   const [bubbleVariant, setBubbleVariant] = useState<BubbleVariantId>("");
   const [speed, setSpeed] = useState(1);
@@ -215,7 +217,7 @@ export function TaskChatLab() {
               className="flex items-center gap-1 rounded border border-border px-2 py-1 hover:bg-accent"
             >
               {playing ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
-              {playing ? "Pause" : "Play"}
+              {playing ? pageText("pause_781961") : "Play"}
             </button>
             <button
               type="button"

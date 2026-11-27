@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { Sparkles } from "lucide-react";
 import { Link } from "@/lib/router";
 import { cn, relativeTime } from "@/lib/utils";
@@ -48,6 +49,7 @@ export function SourceResolvedFoldCallout({
   finalizedAt,
   className,
 }: SourceResolvedFoldCalloutProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const sourceLabel = fold.sourceIssueIdentifier ?? fold.sourceIssueId.slice(0, 8);
   const evidenceShort = shortenEvidenceId(fold.sameRunEvidenceId);
   const evidenceAt = isoOrLocaleString(fold.sameRunEvidenceAt);
@@ -145,7 +147,7 @@ export function SourceResolvedFoldCallout({
               ) : null}
             </span>
           ) : (
-            <span className="text-muted-foreground">unknown</span>
+            <span className="text-muted-foreground">{pageText("unknown_50d8b4")}</span>
           )}
         </MetaRow>
         <MetaRow label="Process cleanup">

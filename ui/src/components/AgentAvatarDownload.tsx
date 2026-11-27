@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from "react";
 import { Download, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ export function AgentAvatarDownload({
   name: string;
   iconOnly?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [downloading, setDownloading] = useState(false);
   const [failed, setFailed] = useState(false);
   const download = async () => {
@@ -51,8 +53,8 @@ export function AgentAvatarDownload({
         asChild
       >
         <a
-          aria-label="Download avatar"
-          title="Download avatar"
+          aria-label={pageText("downloadAvatar_31115e")}
+          title={pageText("downloadAvatar_31115e")}
           href={avatarUrl}
           download={agentAvatarFilename(name)}
           aria-disabled={downloading}
@@ -66,7 +68,7 @@ export function AgentAvatarDownload({
           ) : (
             <Download className="size-4" />
           )}
-          {!iconOnly && "Download avatar"}
+          {!iconOnly && pageText("downloadAvatar_31115e")}
         </a>
       </Button>
       {failed && (

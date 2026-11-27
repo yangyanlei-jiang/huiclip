@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
@@ -165,6 +166,7 @@ function ActivityRow({
   event: ToolGatewayActivityEvent;
   ruleNamesById: Map<string, string>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -221,7 +223,7 @@ function ActivityRow({
             <span className="block text-foreground">
               <span className="font-medium">{who}</span>'s run received 0 MCP servers —{" "}
               <span className="font-medium">{permittedNotInstalledCount ?? permittedNotInstalledConnections.length}</span>{" "}
-              permitted {(permittedNotInstalledCount ?? permittedNotInstalledConnections.length) === 1 ? "connection" : "connections"} not installed
+              permitted {(permittedNotInstalledCount ?? permittedNotInstalledConnections.length) === 1 ? pageText("connection_814605") : pageText("connections_c0e3ce")} not installed
             </span>
           ) : (
             <span className="block text-foreground">
@@ -257,9 +259,7 @@ function ActivityRow({
 
           <div className="flex flex-wrap gap-3 text-xs">
             {issueId ? (
-              <Link to={`/issues/${issueId}`} className="text-primary hover:underline">
-                View task
-              </Link>
+              <Link to={`/issues/${issueId}`} className="text-primary hover:underline">{pageText("viewTask_39e023")}</Link>
             ) : null}
             {runId && agentId ? (
               <Link to={`/agents/${agentId}/runs/${runId}`} className="text-primary hover:underline">{translateUi("interfaceCopy.viewRun")}</Link>
@@ -272,16 +272,14 @@ function ActivityRow({
               onClick={() => setDetailsOpen((v) => !v)}
               className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
             >
-              {detailsOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-              Details
-            </button>
+              {detailsOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}{pageText("details_dc3dec")}</button>
             {detailsOpen ? (
               <div className="mt-2 space-y-1.5 text-xs">
                 {rawTool ? <DetailFact label="Action name" value={rawTool} mono /> : null}
                 <DetailFact label="Reason code" value={reasonCode} mono />
                 <DetailFact label="Actor type" value={event.actorType ?? "—"} />
                 {runId ? <DetailFact label="Run ID" value={runId} mono /> : null}
-                {transport ? <DetailFact label="Transport" value={transport} mono /> : null}
+                {transport ? <DetailFact label={pageText("transport_c10d76")} value={transport} mono /> : null}
                 {requestMethod && endpoint ? <DetailFact label="HTTP request" value={`${requestMethod} ${endpoint}`} mono /> : null}
                 {mcpMethod ? <DetailFact label="MCP method" value={mcpMethod} mono /> : null}
                 {requestId ? <DetailFact label="Request ID" value={requestId} mono /> : null}
@@ -325,6 +323,7 @@ function ActivityRow({
 }
 
 export function AuditTab({ companyId }: { companyId: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [app, setApp] = useState<string>(ALL);
   const [agent, setAgent] = useState<string>(ALL);
@@ -455,9 +454,7 @@ export function AuditTab({ companyId }: { companyId: string }) {
           className="max-w-xs"
         />
         {hasActiveFilters ? (
-          <Button variant="ghost" size="sm" onClick={clearFilters}>
-            Clear filters
-          </Button>
+          <Button variant="ghost" size="sm" onClick={clearFilters}>{pageText("clearFilters_412226")}</Button>
         ) : null}
       </div>
 
@@ -481,9 +478,7 @@ export function AuditTab({ companyId }: { companyId: string }) {
                   Try a wider time window or different filters.
                 </p>
               </div>
-              <Button variant="outline" size="sm" onClick={clearFilters}>
-                Clear filters
-              </Button>
+              <Button variant="outline" size="sm" onClick={clearFilters}>{pageText("clearFilters_412226")}</Button>
             </CardContent>
           </Card>
         ) : (
@@ -519,7 +514,7 @@ export function AuditTab({ companyId }: { companyId: string }) {
             onClick={() => activity.fetchNextPage()}
             disabled={activity.isFetchingNextPage}
           >
-            {activity.isFetchingNextPage ? "Loading…" : "Load more"}
+            {activity.isFetchingNextPage ? pageText("loading_33ce41") : pageText("loadMore_dfe60c")}
           </Button>
         </div>
       ) : null}

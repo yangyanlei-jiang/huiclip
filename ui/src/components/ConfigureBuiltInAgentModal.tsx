@@ -1,3 +1,5 @@
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { describeError } from "@/api/errors";
 import { useMemo, useState } from "react";
 import { agentHarnessType } from "@paperclipai/shared";
@@ -63,6 +65,7 @@ export function ConfigureBuiltInAgentModal({
   onOpenChange,
   onConfigured,
 }: ConfigureBuiltInAgentModalProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const { definition } = state;
 
@@ -152,7 +155,7 @@ export function ConfigureBuiltInAgentModal({
       onOpenChange(false);
     },
     onError: (err) => {
-      setError(err instanceof ApiError ? err.message : "Failed to configure the built-in agent.");
+      setError(err instanceof ApiError ? err.message : interfaceMessage("interface:errorFailedToConfigureTheBuiltInAgentSentence"));
     },
   });
 
@@ -240,9 +243,7 @@ export function ConfigureBuiltInAgentModal({
             variant="ghost"
             onClick={() => onOpenChange(false)}
             disabled={provision.isPending}
-          >
-            Not now
-          </Button>
+          >{pageText("notNow_e45714")}</Button>
           <Button
             onClick={() => {
               setError(null);

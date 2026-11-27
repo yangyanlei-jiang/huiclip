@@ -1,3 +1,5 @@
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import {
   useEffect,
   useId,
@@ -383,6 +385,7 @@ function WorkspaceFileTree({
   onHoverFile,
   getDownloadUrl,
 }: WorkspaceFileTreeProps) {
+  const { t: pageText } = usePageTranslation("interface");
   function renderNode(node: WorkspaceFileTreeNode): ReactNode {
     if (node.kind === "folder") {
       const expanded = node.lazy
@@ -419,7 +422,7 @@ function WorkspaceFileTree({
                   style={{ paddingLeft: `${1 + (node.depth + 1) * 0.875}rem` }}
                 >
                   <Loader2 aria-hidden="true" className="h-3.5 w-3.5 animate-spin" />
-                  <span>Loading folder…</span>
+                  <span>{pageText("loadingFolder_1d15f4")}</span>
                 </div>
               ) : null}
               {truncated ? (
@@ -511,6 +514,7 @@ export function WorkspaceFileBrowser({
   active = true,
   className,
 }: WorkspaceFileBrowserProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const { visible: pageVisible } = usePageVisibility();
   const source: BrowserSource =
@@ -843,7 +847,7 @@ export function WorkspaceFileBrowser({
 
   const announcement = useMemo(() => {
     if (listQuery.isFetching) return "Loading workspace files…";
-    if (listQuery.isError) return "Unable to load workspace files.";
+    if (listQuery.isError) return interfaceMessage("interface:errorUnableToLoadWorkspaceFilesSentence");
     if (data?.state === "unavailable") return describeUnavailable(data.unavailableReason ?? "").title;
     if (items.length === 0) return "No matching files.";
     return `${items.length} item${items.length === 1 ? "" : "s"} found.`;
@@ -1060,8 +1064,7 @@ export function WorkspaceFileBrowser({
             disabled={!queriesEnabled}
             onClick={() => void listQuery.refetch()}
           >
-            <RefreshCcw aria-hidden="true" className="mr-1 h-3 w-3" /> Retry
-          </Button>
+            <RefreshCcw aria-hidden="true" className="mr-1 h-3 w-3" />{" " + pageText("retry_9f5cd8")}</Button>
         ) : null}
       />
     );

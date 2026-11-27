@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { AgentIdentity } from "@/components/AgentIdentity";
 import { useCombinedInboxTasksEnabled } from "@/hooks/useCombinedInboxTasksEnabled";
 import { useState, useEffect, useMemo } from "react";
@@ -90,6 +91,7 @@ function scoreProjectMatch(name: string, description: string, q: string): number
 }
 
 export function CommandPalette() {
+  const { t: pageText } = usePageTranslation("interface");
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
@@ -224,7 +226,7 @@ export function CommandPalette() {
         if (v && isMobile) setSidebarOpen(false);
       }}>
       <CommandInput
-        placeholder="Search tasks, agents, projects..."
+        placeholder={pageText("searchTasksAgentsProjects_173230")}
         value={query}
         onValueChange={setQuery}
         onKeyDown={(event) => {
@@ -332,9 +334,7 @@ export function CommandPalette() {
                 window.dispatchEvent(new CustomEvent("paperclip:open-file-viewer"));
               }}
             >
-              <FileCode2 className="mr-2 h-4 w-4" />
-              Open file in this issue...
-              <span className="ml-auto text-xs text-muted-foreground">g f</span>
+              <FileCode2 className="mr-2 h-4 w-4" />{pageText("openFileInThisIssue_11d036")}<span className="ml-auto text-xs text-muted-foreground">g f</span>
             </CommandItem>
           )}
           <CommandItem
@@ -356,37 +356,23 @@ export function CommandPalette() {
 
         <CommandGroup heading="Pages">
           <CommandItem onSelect={() => go("/dashboard")}>
-            <LayoutDashboard className="mr-2 h-4 w-4" />
-            Dashboard
-          </CommandItem>
+            <LayoutDashboard className="mr-2 h-4 w-4" />{pageText("dashboard_d87f47")}</CommandItem>
           <CommandItem onSelect={() => go(combinedInboxTasksEnabled ? "/issues?view=mine" : "/inbox")}>
             <Inbox className="mr-2 h-4 w-4" />
-            {combinedInboxTasksEnabled ? "My work" : "Inbox"}
+            {combinedInboxTasksEnabled ? pageText("myWork_57a125") : pageText("inbox_44caf7")}
           </CommandItem>
           <CommandItem onSelect={() => go("/issues")}>
-            <CircleDot className="mr-2 h-4 w-4" />
-            Tasks
-          </CommandItem>
+            <CircleDot className="mr-2 h-4 w-4" />{pageText("tasks_090ec5")}</CommandItem>
           <CommandItem onSelect={() => go("/projects")}>
-            <Hexagon className="mr-2 h-4 w-4" />
-            Projects
-          </CommandItem>
+            <Hexagon className="mr-2 h-4 w-4" />{pageText("projects_53e890")}</CommandItem>
           <CommandItem onSelect={() => go("/goals")}>
-            <Target className="mr-2 h-4 w-4" />
-            Goals
-          </CommandItem>
+            <Target className="mr-2 h-4 w-4" />{pageText("goals_48d8c6")}</CommandItem>
           <CommandItem onSelect={() => go("/agents")}>
-            <Bot className="mr-2 h-4 w-4" />
-            Agents
-          </CommandItem>
+            <Bot className="mr-2 h-4 w-4" />{pageText("agents_64acf7")}</CommandItem>
           <CommandItem onSelect={() => go("/costs")}>
-            <DollarSign className="mr-2 h-4 w-4" />
-            Costs
-          </CommandItem>
+            <DollarSign className="mr-2 h-4 w-4" />{pageText("costs_799b3e")}</CommandItem>
           <CommandItem onSelect={() => go("/activity")}>
-            <History className="mr-2 h-4 w-4" />
-            Activity
-          </CommandItem>
+            <History className="mr-2 h-4 w-4" />{pageText("activity_81c0d9")}</CommandItem>
         </CommandGroup>
 
         {visibleIssues.length > 0 && (

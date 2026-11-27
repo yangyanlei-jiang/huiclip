@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useRef, useState } from "react";
 import type { IssueDocument } from "@paperclipai/shared";
 import { ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY } from "@paperclipai/shared";
@@ -18,6 +19,7 @@ export function IssueContinuationHandoff({
   focusSignal = 0,
   externalReferences,
 }: IssueContinuationHandoffProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const [expanded, setExpanded] = useState(false);
   const [highlighted, setHighlighted] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -62,8 +64,7 @@ export function IssueContinuationHandoff({
               handoff
             </Badge>
           </div>
-          <div className="text-(length:--text-micro) text-muted-foreground">
-            Updated {relativeTime(document.updatedAt)}
+          <div className="text-(length:--text-micro) text-muted-foreground">{pageText("updated_f2f857") + " "}{relativeTime(document.updatedAt)}
             {document.latestRevisionNumber > 0 ? ` - revision ${document.latestRevisionNumber}` : ""}
           </div>
         </div>

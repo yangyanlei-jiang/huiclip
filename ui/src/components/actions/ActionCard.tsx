@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import type { ReactNode } from "react";
 import { Clock, Pencil, ShieldCheck } from "lucide-react";
@@ -191,6 +192,7 @@ export function ActionCard({
   onEditResign,
   className,
 }: ActionCardProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const isStale = variant === "stale";
   const json = typeof input === "string" ? input : JSON.stringify(input, null, 2);
@@ -204,9 +206,7 @@ export function ActionCard({
       disabled={isStale}
       className={mobile ? "w-full" : undefined}
       title={isStale ? "Re-issue the request before approving — the catalog hash changed." : undefined}
-    >
-      Approve
-    </Button>
+    >{pageText("approve_7b2c7f")}</Button>
   );
   const denyButton = (
     <Button size="sm" variant="outline" onClick={onDeny} className={mobile ? "w-full" : undefined}>

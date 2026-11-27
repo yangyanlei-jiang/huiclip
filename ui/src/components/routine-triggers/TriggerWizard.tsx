@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -127,6 +128,7 @@ export function RoutineTriggerWizard({
   onFinish: (draft: TriggerDraft) => void | Promise<void>;
   checkResult?: "waiting" | "received" | "rejected" | "no_event";
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [draft, setDraft] = useState(initialDraft);
   const [busy, setBusy] = useState(false);
@@ -448,7 +450,7 @@ export function RoutineTriggerWizard({
               />
             )}
             <CopyField
-              label={github ? "Payload URL" : "Webhook URL"}
+              label={github ? "Payload URL" : pageText("webhookURL_fa7517")}
               value={webhookUrl}
             />
             {!github && draft.signingMode !== "bearer" && (
@@ -462,7 +464,7 @@ export function RoutineTriggerWizard({
             )}
             {webhookSecret ? (
               <CopyField
-                label={github ? "Secret" : draft.signingMode === "bearer" ? "Authorization header value" : "Secret key"}
+                label={github ? pageText("secret_f4e7a8") : draft.signingMode === "bearer" ? "Authorization header value" : "Secret key"}
                 value={!github && draft.signingMode === "bearer" ? `Bearer ${webhookSecret}` : webhookSecret}
               />
             ) : (
@@ -542,7 +544,7 @@ export function RoutineTriggerWizard({
                   Check that the webhook is enabled in your sending app and that
                   its URL matches. Scripts must send POST with a JSON body.
                 </p>
-                <CopyField label="Webhook URL" value={webhookUrl} />
+                <CopyField label={pageText("webhookURL_fa7517")} value={webhookUrl} />
               </div>
             </details>
           </div>
@@ -575,16 +577,14 @@ export function RoutineTriggerWizard({
                 Review schedule
               </Button>
             ) : (
-              <Button onClick={() => void perform(() => onFinish(draft))}>
-                Add schedule
-              </Button>
+              <Button onClick={() => void perform(() => onFinish(draft))}>{pageText("addSchedule_e95610")}</Button>
             )
           ) : draft.step === 1 ? (
             <Button onClick={advance}>Check connection</Button>
           ) : (
             <Button onClick={() => void perform(() => onFinish(draft))}>
               {checkResult === "received"
-                ? "Finish setup"
+                ? pageText("finishSetup_c516d2")
                 : "Finish without checking"}
             </Button>
           )}

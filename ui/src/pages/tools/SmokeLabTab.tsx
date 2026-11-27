@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -55,9 +56,10 @@ function serviceTone(status: string): "success" | "warn" | "error" | "muted" {
 }
 
 function CellGlyph({ status }: { status: CellStatus }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (status === "pass") return <Check className="mx-auto h-4 w-4 text-emerald-600 dark:text-emerald-400" aria-label="pass" />;
   if (status === "fail") return <X className="mx-auto h-4 w-4 text-destructive" aria-label="fail" />;
-  if (status === "skipped") return <Minus className="mx-auto h-4 w-4 text-amber-500" aria-label="skipped" />;
+  if (status === "skipped") return <Minus className="mx-auto h-4 w-4 text-amber-500" aria-label={pageText("skipped_413a93")} />;
   return <span className="mx-auto block h-1.5 w-1.5 rounded-full bg-muted-foreground/30" aria-label="not run" />;
 }
 
@@ -69,6 +71,7 @@ const HEALTH_STYLES: Record<string, string> = {
 };
 
 export function SmokeLabTab({ companyId }: { companyId: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { enabled, loaded } = useSmokeLabEnabled();
   const qc = useQueryClient();
@@ -201,7 +204,7 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
         <div className="flex flex-wrap items-center gap-2">
           <FlaskConical className="h-5 w-5 text-muted-foreground" />
           <h1 className="text-xl font-bold text-foreground">Smoke Lab</h1>
-          <Badge variant="outline">Experimental</Badge>
+          <Badge variant="outline">{pageText("experimental_b718f8")}</Badge>
           <a
             href="https://github.com/paperclipai/paperclip/blob/master/doc/connections/SMOKE-LAB-TUTORIAL.md"
             target="_blank"
@@ -248,9 +251,7 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
               variant="outline"
               onClick={() => stopMutation.mutate()}
               disabled={anyMutating}
-            >
-              Stop
-            </Button>
+            >{pageText("stop_9e2534")}</Button>
             <Button
               size="sm"
               variant="outline"
@@ -265,8 +266,7 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
               onClick={() => resetMutation.mutate()}
               disabled={anyMutating}
             >
-              <RotateCcw className="h-4 w-4" /> Reset
-            </Button>
+              <RotateCcw className="h-4 w-4" />{" " + pageText("reset_44c57a")}</Button>
           </div>
         </div>
 
@@ -336,7 +336,7 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1"><Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" /> pass</span>
             <span className="inline-flex items-center gap-1"><X className="h-3.5 w-3.5 text-destructive" /> fail</span>
-            <span className="inline-flex items-center gap-1"><Minus className="h-3.5 w-3.5 text-amber-500" /> skipped</span>
+            <span className="inline-flex items-center gap-1"><Minus className="h-3.5 w-3.5 text-amber-500" />{" " + pageText("skipped_413a93")}</span>
             <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/30" /> not run</span>
           </div>
         </div>
@@ -440,8 +440,7 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
             {activeRun && (
               <div className="flex flex-col">
                 <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-2.5">
-                  <span className="text-xs text-muted-foreground">
-                    Started {formatTime(activeRun.startedAt)} · finished {formatTime(activeRun.finishedAt)}
+                  <span className="text-xs text-muted-foreground">{pageText("started_faa9e7") + " "}{formatTime(activeRun.startedAt)} · finished {formatTime(activeRun.finishedAt)}
                   </span>
                   <StatusBadge status={activeRun.status} />
                 </div>

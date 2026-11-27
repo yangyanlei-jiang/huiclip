@@ -1,3 +1,5 @@
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { startTransition, useEffect, useMemo, useRef, useState } from "react";
@@ -320,6 +322,7 @@ function RoutineSectionHeader({
 }
 
 export function Routines() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -504,7 +507,7 @@ export function Routines() {
     },
     onError: (mutationError) => {
       pushToast({
-        title: "Failed to save folder",
+        title: interfaceMessage("interface:errorFailedToSaveFolder"),
         body: describeError(mutationError, { action: "save the folder" }).body,
         tone: "error",
       });
@@ -586,7 +589,7 @@ export function Routines() {
     },
     onError: (mutationError) => {
       pushToast({
-        title: "Failed to update routine",
+        title: interfaceMessage("interface:errorFailedToUpdateRoutine"),
         body: describeError(mutationError, { action: "update the routine" }).body,
         tone: "error",
       });
@@ -770,7 +773,7 @@ export function Routines() {
       pushToast({ title: "Routines moved", body: `${ids.length} routine${ids.length === 1 ? "" : "s"} filed.`, tone: "success" });
     } catch (moveError) {
       pushToast({
-        title: "Failed to move routines",
+        title: interfaceMessage("interface:errorFailedToMoveRoutines"),
         body: describeError(moveError, { action: "move the selected routines" }).body,
         tone: "error",
       });
@@ -817,17 +820,13 @@ export function Routines() {
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Routines
-          </h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{pageText("routines_a445e5")}</h1>
           <p className="text-sm text-muted-foreground">
             Recurring work definitions that materialize into auditable execution tasks.
           </p>
         </div>
         <Button onClick={openCreateRoutine}>
-          <Plus className="mr-2 h-4 w-4" />
-          Create routine
-        </Button>
+          <Plus className="mr-2 h-4 w-4" />{pageText("createRoutine_ff3a76")}</Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange}>
@@ -843,7 +842,7 @@ export function Routines() {
         <TabsContent value="routines" className="space-y-4">
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm text-muted-foreground">
-              {visibleRoutines.length} routine{visibleRoutines.length === 1 ? "" : "s"}
+              {visibleRoutines.length}{" " + pageText("routine_012da8")}{visibleRoutines.length === 1 ? "" : "s"}
             </p>
             <div className="flex items-center gap-1">
               <Popover>
@@ -889,9 +888,9 @@ export function Routines() {
               </Popover>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="ghost" size="sm" className="text-xs" title="Group">
+                  <Button variant="ghost" size="sm" className="text-xs" title={pageText("group_171a06")}>
                     <Layers className="h-3.5 w-3.5 sm:h-3 sm:w-3 sm:mr-1" />
-                    <span className="hidden sm:inline">Group</span>
+                    <span className="hidden sm:inline">{pageText("group_171a06")}</span>
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align="end" className="w-44 p-0">
@@ -920,13 +919,11 @@ export function Routines() {
               </Popover>
               {routineViewState.groupBy === "folder" && !hasRoutineFolders ? (
                 <Button variant="outline" size="sm" onClick={() => openCreateFolder()}>
-                  <Plus className="mr-2 h-3.5 w-3.5" />
-                  New folder
-                </Button>
+                  <Plus className="mr-2 h-3.5 w-3.5" />{pageText("newFolder_a71199")}</Button>
               ) : null}
               {showFolderRail ? (
                 <Button variant="ghost" size="sm" className="text-xs" onClick={() => setSelectMode((current) => !current)}>
-                  {selectMode ? "Done" : "Select"}
+                  {selectMode ? pageText("done_e9b450") : pageText("select_859822")}
                 </Button>
               ) : null}
             </div>
@@ -973,7 +970,7 @@ export function Routines() {
         >
           <div className="shrink-0 flex flex-wrap items-center justify-between gap-3 border-b border-border/60 px-5 py-3">
             <div>
-              <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">New routine</p>
+              <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">{pageText("newRoutine_32809d")}</p>
               <p className="text-sm text-muted-foreground">
                 Define the recurring work first. Default project and agent are optional for draft routines.
               </p>
@@ -1035,8 +1032,8 @@ export function Routines() {
                     recentOptionIds={recentAssigneeIds}
                     placeholder={translateUi("interfaceCopy.responsible")}
                     noneLabel="No responsible"
-                    searchPlaceholder="Search responsible..."
-                    emptyMessage="No responsible found."
+                    searchPlaceholder={pageText("searchResponsible_bc9f7f")}
+                    emptyMessage={pageText("noResponsibleFound_a275f8")}
                     onChange={(assigneeAgentId) => {
                       if (assigneeAgentId) trackRecentAssignee(assigneeAgentId);
                       setDraft((current) => ({ ...current, assigneeAgentId }));
@@ -1081,8 +1078,8 @@ export function Routines() {
                     recentOptionIds={recentProjectIds}
                     placeholder={translateUi("interfaceCopy.project")}
                     noneLabel="No project"
-                    searchPlaceholder="Search projects..."
-                    emptyMessage="No projects found."
+                    searchPlaceholder={pageText("searchProjects_469d78")}
+                    emptyMessage={pageText("noProjectsFound_ca7870")}
                     onChange={(projectId) => {
                       if (projectId) trackRecentProject(projectId);
                       setDraft((current) => ({ ...current, projectId }));
@@ -1144,7 +1141,7 @@ export function Routines() {
                 ref={descriptionEditorRef}
                 value={draft.description}
                 onChange={(description) => setDraft((current) => ({ ...current, description }))}
-                placeholder="Add instructions..."
+                placeholder={pageText("addInstructions_ef1a45")}
                 bordered={false}
                 contentClassName="min-h-(--sz-160px) text-sm text-muted-foreground"
                 mentions={mentionOptions}
@@ -1168,7 +1165,7 @@ export function Routines() {
                 <CollapsibleContent className="pt-3">
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
-                      <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">Concurrency</p>
+                      <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">{pageText("concurrency_2ec390")}</p>
                       <Select
                         value={draft.concurrencyPolicy}
                         onValueChange={(concurrencyPolicy) => setDraft((current) => ({ ...current, concurrencyPolicy }))}
@@ -1220,7 +1217,7 @@ export function Routines() {
                 }
               >
                 <Plus className="mr-2 h-4 w-4" />
-                {createRoutine.isPending ? "Creating..." : "Create routine"}
+                {createRoutine.isPending ? pageText("creating_28ea76") : pageText("createRoutine_ff3a76")}
               </Button>
               {createRoutine.isError ? ( // query-error-ok: mutation result, not a query
                 <p role="alert" className="text-sm text-destructive">
@@ -1266,8 +1263,8 @@ export function Routines() {
               {folderSelection === "all" ? <FolderIconHeader label="All routines" count={sortedRoutines.length} /> : (
                 <div className="flex min-w-0 items-center gap-2 text-sm">
                   <FolderSwatch color={activeFolder?.color} />
-                  <span className="truncate font-medium">{folderSelection === "unfiled" ? "Unfiled" : activeFolder?.name ?? "Folder"}</span>
-                  <span className="text-muted-foreground">{sortedRoutines.length} routine{sortedRoutines.length === 1 ? "" : "s"}</span>
+                  <span className="truncate font-medium">{folderSelection === "unfiled" ? pageText("unfiled_c1aca7") : activeFolder?.name ?? pageText("folder_30baa2")}</span>
+                  <span className="text-muted-foreground">{sortedRoutines.length}{" " + pageText("routine_012da8")}{sortedRoutines.length === 1 ? "" : "s"}</span>
                 </div>
               )}
             </div>
@@ -1452,11 +1449,12 @@ export function Routines() {
 }
 
 function FolderIconHeader({ label, count }: { label: string; count: number }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="flex min-w-0 items-center gap-2 text-sm">
       <Repeat className="h-3.5 w-3.5 text-muted-foreground" />
       <span className="truncate font-medium">{label}</span>
-      <span className="text-muted-foreground">{count} routine{count === 1 ? "" : "s"}</span>
+      <span className="text-muted-foreground">{count}{" " + pageText("routine_012da8")}{count === 1 ? "" : "s"}</span>
     </div>
   );
 }

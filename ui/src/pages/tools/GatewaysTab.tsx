@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { type FormEvent, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -116,6 +117,7 @@ function buildTokenExpiresAt(value: string) {
 }
 
 export function GatewaysTab({ companyId }: { companyId: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToast();
@@ -342,7 +344,7 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
           <div className="flex flex-wrap justify-end gap-2">
             <Button type="button" variant="ghost" size="sm" onClick={() => setCreating(false)}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button type="submit" size="sm" disabled={createDisabled || !createDraft.name.trim() || !createDraft.profileId}>
-              {createGatewayMutation.isPending ? "Creating..." : "Create gateway"}
+              {createGatewayMutation.isPending ? pageText("creating_28ea76") : "Create gateway"}
             </Button>
           </div>
         </form>
@@ -520,9 +522,7 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="font-medium text-foreground">New token for {createdToken.name}</div>
                       <Button type="button" variant="outline" size="sm" onClick={() => void copyText(createdToken.token, "Gateway bearer token")}>
-                        <Copy className="mr-1.5 h-3.5 w-3.5" />
-                        Copy token
-                      </Button>
+                        <Copy className="mr-1.5 h-3.5 w-3.5" />{pageText("copyToken_b3db22")}</Button>
                     </div>
                     <div className="break-all rounded bg-background px-3 py-2 font-mono text-xs text-muted-foreground">
                       {createdToken.token}
@@ -533,9 +533,7 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
                 <div className="grid gap-3 md:grid-cols-2">
                   <div>
                     <div className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                      <KeyRound className="h-3.5 w-3.5" />
-                      Tokens
-                    </div>
+                      <KeyRound className="h-3.5 w-3.5" />{pageText("tokens_c38c6c")}</div>
                     <div className="space-y-1 text-sm">
                       {gateway.tokens.length === 0 ? (
                         <p className="text-muted-foreground">No tokens issued.</p>
@@ -559,8 +557,7 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
                                         revoked <RelativeTime value={token.revokedAt} />
                                       </>
                                     ) : token.expiresAt ? (
-                                      <>
-                                        expires <RelativeTime value={token.expiresAt} />
+                                      <>{pageText("expires_ac3c39") + " "}<RelativeTime value={token.expiresAt} />
                                       </>
                                     ) : (
                                       "no expiry"
@@ -575,9 +572,7 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
                                       onClick={() => setConfirmingRevokeTokenId(token.id)}
                                       aria-label={`Revoke ${token.name}`}
                                     >
-                                      <RotateCcw className="mr-1 h-3.5 w-3.5" />
-                                      Revoke
-                                    </Button>
+                                      <RotateCcw className="mr-1 h-3.5 w-3.5" />{pageText("revoke_0be720")}</Button>
                                   ) : null}
                                 </div>
                               </div>
@@ -591,9 +586,7 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
                                     className="h-7 px-2"
                                     onClick={() => setConfirmingRevokeTokenId(null)}
                                   >
-                                    <X className="mr-1 h-3.5 w-3.5" />
-                                    Cancel
-                                  </Button>
+                                    <X className="mr-1 h-3.5 w-3.5" />{pageText("cancel_77dfd2")}</Button>
                                   <Button
                                     type="button"
                                     variant="destructive"
@@ -637,9 +630,7 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
                                   void copyText(formatSnippetConfig(snippet.config), `${snippet.label} snippet`);
                                 }}
                               >
-                                <Copy className="mr-1 h-3.5 w-3.5" />
-                                Copy
-                              </Button>
+                                <Copy className="mr-1 h-3.5 w-3.5" />{pageText("copy_af74f7")}</Button>
                             </summary>
                             <pre className="mt-2 max-h-56 overflow-auto whitespace-pre-wrap break-words rounded bg-background p-3 text-xs text-muted-foreground">
                               {formatSnippetConfig(snippet.config)}

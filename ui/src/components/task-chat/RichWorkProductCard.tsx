@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { TextAttachmentContext } from "@/context/TextAttachmentContext";
 import { isTextAttachment } from "@/lib/issue-attachments";
 import { getAttachmentArtifactWorkProductMetadata } from "@paperclipai/shared";
@@ -134,6 +135,7 @@ export interface RichWorkProductCardProps {
 }
 
 export function RichWorkProductCard({ workProduct, href, variant = "card" }: RichWorkProductCardProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const openIssueGallery = useContext(IssueGalleryContext);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
@@ -326,7 +328,7 @@ export function RichWorkProductCard({ workProduct, href, variant = "card" }: Ric
             aria-expanded={detailsOpen}
             className="inline-flex cursor-pointer items-center gap-1 text-xs font-medium text-foreground after:absolute after:inset-0 after:rounded-md focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-ring"
           >
-            <span>{detailsOpen ? "Hide details" : "Show details"}</span>
+            <span>{detailsOpen ? pageText("hideDetails_f8c248") : "Show details"}</span>
             <ChevronDown aria-hidden className={cn("h-4 w-4", detailsOpen && "rotate-180")} />
           </button>
         ) : null}

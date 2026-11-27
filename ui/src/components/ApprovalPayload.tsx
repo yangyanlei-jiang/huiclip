@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { UserPlus, Lightbulb, ShieldAlert, ShieldCheck } from "lucide-react";
 import { MarkdownBody } from "./MarkdownBody";
@@ -58,6 +59,7 @@ function PayloadField({ label, value }: { label: string; value: unknown }) {
 }
 
 function SkillList({ values }: { values: unknown }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (!Array.isArray(values)) return null;
   const items = values
     .filter((value): value is string => typeof value === "string")
@@ -67,7 +69,7 @@ function SkillList({ values }: { values: unknown }) {
 
   return (
     <div className="flex items-start gap-2">
-      <span className="text-muted-foreground w-20 sm:w-24 shrink-0 text-xs pt-0.5">Skills</span>
+      <span className="text-muted-foreground w-20 sm:w-24 shrink-0 text-xs pt-0.5">{pageText("skills_e09212")}</span>
       <div className="flex flex-wrap gap-1.5">
         {items.map((item) => (
           <span

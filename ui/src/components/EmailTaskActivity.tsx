@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { EmailMessageCard } from "./EmailMessageCard";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -82,6 +83,7 @@ function EmailDelivery({
   publication: EmailPublicationSummary;
   onResolved: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [messageId, setMessageId] = useState("");
   const resolve = useMutation({
     mutationFn: (outcome: "sent" | "failed") =>
@@ -102,8 +104,7 @@ function EmailDelivery({
           </div>
         </article>
       )}
-      <p>
-        Email {p.outcome}
+      <p>{pageText("email_84add5") + " "}{p.outcome}
         {p.error ? ` — ${p.error}` : ""}
       </p>
       {p.outcome === "uncertain" && (

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useMemo, useState } from "react";
 import { Clock, X } from "lucide-react";
 import type { Issue, IssueWorkProduct } from "@paperclipai/shared";
@@ -216,6 +217,7 @@ function CheckNowButton({
   checkingNow: boolean;
   reviewRequested?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <Button
       type="button"
@@ -225,7 +227,7 @@ function CheckNowButton({
       onClick={onCheckNow}
       disabled={checkingNow}
     >
-      {checkingNow ? "Checking…" : reviewRequested ? "Check status" : "Check now"}
+      {checkingNow ? pageText("checking_820d60") : reviewRequested ? "Check status" : "Check now"}
     </Button>
   );
 }

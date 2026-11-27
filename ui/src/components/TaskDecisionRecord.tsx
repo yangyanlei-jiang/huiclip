@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useQueryView } from "@/components/QueryView";
 import { useQuery } from "@tanstack/react-query";
@@ -13,6 +14,7 @@ import { Button } from "./ui/button";
 export function TaskDecisionRecord({ companyId, issueId, viewerId, agentMap }: {
   companyId: string; issueId: string; viewerId: string | null; agentMap?: Map<string, Agent>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { hash } = useLocation();
   const anchor = taskChatHashAnchor(hash);
@@ -27,7 +29,7 @@ export function TaskDecisionRecord({ companyId, issueId, viewerId, agentMap }: {
   const choice = decision?.options.find((option) => option.id === decision.chosenOptionId);
   return <section id={anchor!} aria-label="Decision record" className="space-y-3 rounded-xl border border-border bg-card p-4">
     <h2 className="text-sm font-medium">Decision record</h2>
-    {["loading", "reconnecting"].includes(recordView.kind) ? <p role="status" className="text-sm text-muted-foreground">Loading decision…</p> : (recordView.kind === "error") ? (
+    {["loading", "reconnecting"].includes(recordView.kind) ? <p role="status" className="text-sm text-muted-foreground">{pageText("loadingDecision_a7a5d4")}</p> : (recordView.kind === "error") ? (
       <div role="alert" className="text-sm"><p>Could not load this decision.</p><Button size="sm" variant="ghost" onClick={() => void record.refetch()}>{translateUi("interfaceCopy.retry")}</Button></div>
     ) : !matchesTask ? <p role="alert" className="text-sm text-muted-foreground">This decision is not available in this task.</p> : <>
       {decision.status !== "open" ? <dl className="space-y-2 text-sm">

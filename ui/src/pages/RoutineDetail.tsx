@@ -1,3 +1,5 @@
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Navigate, useNavigate, useParams, useSearchParams } from "@/lib/router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -124,6 +126,7 @@ function buildRoutineMutationPayload(input: RoutineEditDraft) {
 }
 
 export function RoutineDetail() {
+  const { t: pageText } = usePageTranslation("interface");
   const { routineId, section: sectionParam } = useParams<{ routineId: string; section?: string }>();
   const [searchParams] = useSearchParams();
   const triggerSetup = sectionParam === "triggers" && searchParams.has("triggerSetup");
@@ -397,7 +400,7 @@ export function RoutineDetail() {
         return;
       }
       pushToast({
-        title: "Failed to save routine",
+        title: interfaceMessage("interface:errorFailedToSaveRoutine"),
         body: describeError(mutationError, { action: "save the routine" }).body,
         tone: "error",
       });
@@ -454,7 +457,7 @@ export function RoutineDetail() {
     },
     onError: (statusError) => {
       pushToast({
-        title: "Failed to update routine",
+        title: interfaceMessage("interface:errorFailedToUpdateRoutine"),
         body: describeError(statusError, { action: "update the routine" }).body,
         tone: "error",
       });
@@ -493,7 +496,7 @@ export function RoutineDetail() {
     },
     onError: (triggerError) => {
       pushToast({
-        title: "Failed to add trigger",
+        title: interfaceMessage("interface:errorFailedToAddTrigger"),
         body: describeError(triggerError, { action: "create the trigger" }).body,
         tone: "error",
       });
@@ -512,7 +515,7 @@ export function RoutineDetail() {
     },
     onError: (triggerError) => {
       pushToast({
-        title: "Failed to update trigger",
+        title: interfaceMessage("interface:errorFailedToUpdateTrigger"),
         body: describeError(triggerError, { action: "update the trigger" }).body,
         tone: "error",
       });
@@ -531,7 +534,7 @@ export function RoutineDetail() {
     },
     onError: (triggerError) => {
       pushToast({
-        title: "Failed to delete trigger",
+        title: interfaceMessage("interface:errorFailedToDeleteTrigger"),
         body: describeError(triggerError, { action: "delete the trigger" }).body,
         tone: "error",
       });
@@ -552,7 +555,7 @@ export function RoutineDetail() {
     },
     onError: (triggerError) => {
       pushToast({
-        title: "Failed to rotate webhook secret",
+        title: interfaceMessage("interface:errorFailedToRotateWebhookSecret"),
         body: describeError(triggerError, { action: "rotate the webhook secret" }).body,
         tone: "error",
       });
@@ -868,9 +871,7 @@ export function RoutineDetail() {
                 size="sm"
                 onClick={() => navigate(routineDetailHref(routine.id, "history"))}
               >
-                <History className="h-3.5 w-3.5" />
-                History
-              </Button>
+                <History className="h-3.5 w-3.5" />{pageText("history_90ccd6")}</Button>
             )}
             {section === "overview" ? (
               overviewEditing ? (
@@ -887,9 +888,7 @@ export function RoutineDetail() {
                 </Button>
               ) : (
                 <Button variant="outline" size="sm" onClick={() => setOverviewEditing(true)}>
-                  <Pencil className="h-3.5 w-3.5" />
-                  Edit routine
-                </Button>
+                  <Pencil className="h-3.5 w-3.5" />{pageText("editRoutine_6e3689")}</Button>
               )
             ) : null}
             <RunButton onClick={() => setRunVariablesOpen(true)} disabled={runRoutine.isPending} />

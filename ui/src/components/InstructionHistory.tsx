@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from "react";
 import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 import type { AgentInstructionsFileDetail } from "@paperclipai/shared";
@@ -21,6 +22,7 @@ export function InstructionHistory({
   disabled: boolean;
   onRestored: (file: AgentInstructionsFileDetail) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const history = useInfiniteQuery({
@@ -68,9 +70,7 @@ export function InstructionHistory({
         variant="outline"
         aria-expanded={open}
         onClick={() => setOpen(!open)}
-      >
-        History
-      </Button>
+      >{pageText("history_90ccd6")}</Button>
       {open && (
         <div className="space-y-3">
           {historyView.kind === "error" && (
@@ -95,7 +95,7 @@ export function InstructionHistory({
             <p role="alert" className="text-sm text-destructive">{describeError(restore.error).body}</p>
           )}
           {(historyView.kind === "loading" || historyView.kind === "reconnecting") && (
-            <p role="status" className="text-sm text-muted-foreground">Loading revisions…</p>
+            <p role="status" className="text-sm text-muted-foreground">{pageText("loadingRevisions_23548e")}</p>
           )}
           {history.data?.pages
             .flatMap((page) => page.revisions)

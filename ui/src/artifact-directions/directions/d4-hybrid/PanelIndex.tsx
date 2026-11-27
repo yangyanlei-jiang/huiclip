@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import type { LabArtifact, LabKind } from "../../kit";
@@ -54,6 +55,7 @@ function frontKinds(kinds: KindTally[], filter: PanelFilter, open: boolean): Kin
 const Count = ({ value }: { value: number }) => <span className="font-mono text-(length:--text-micro) leading-none">{value}</span>;
 
 export function PanelIndex({ artifacts, filter, onFilter }: { artifacts: LabArtifact[]; filter: PanelFilter; onFilter: (filter: PanelFilter) => void }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [open, setOpen] = useState(false);
   const review = countReview(artifacts);
   const kinds = tallyKinds(artifacts);
@@ -62,14 +64,12 @@ export function PanelIndex({ artifacts, filter, onFilter }: { artifacts: LabArti
   const shown = frontKinds(kinds, filter, open);
   const behind = kinds.length - shown.length;
   return (
-    <div role="group" aria-label="Filter artifacts" data-index className="flex flex-wrap items-center gap-1">
-      <Chip pressed={filter === "all"} onPress={() => onFilter("all")} name={`All ${artifacts.length} artifacts`}>
-        All <Count value={artifacts.length} />
+    <div role="group" aria-label={pageText("filterArtifacts_d7daf1")} data-index className="flex flex-wrap items-center gap-1">
+      <Chip pressed={filter === "all"} onPress={() => onFilter("all")} name={`All ${artifacts.length} artifacts`}>{pageText("all_6a7208") + " "}<Count value={artifacts.length} />
       </Chip>
       {review > 0 ? (
         <Chip pressed={filter === "review"} onPress={() => toggle("review")} name={`Review ${review} waiting`}>
-          <StateDot review="needs_review" />
-          Review <Count value={review} />
+          <StateDot review="needs_review" />{pageText("review_e29a79") + " "}<Count value={review} />
         </Chip>
       ) : null}
       {shown.map(({ kind, count }) => {

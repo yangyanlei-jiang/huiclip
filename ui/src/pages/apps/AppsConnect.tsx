@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { describeError } from "@/api/errors";
 import { useQuery } from "@tanstack/react-query";
@@ -25,6 +26,7 @@ export function AppsConnect({ byoOnly = false, credentialSource = "paperclip_vau
   byoOnly?: boolean;
   credentialSource?: ToolConnectionCredentialSource;
 } = {}) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { selectedCompanyId } = useCompany();
   const navigate = useNavigate();
@@ -71,13 +73,13 @@ export function AppsConnect({ byoOnly = false, credentialSource = "paperclip_vau
     if (loginView.kind === "loading" || loginView.kind === "reconnecting") return <p role="status">Loading saved sign-in…</p>;
     if (!login.data) return <p role="alert">{login.error ? describeError(login.error).body : "This sign-in is unavailable."}</p>;
     const { intent, environmentId, connectionId, grantId } = login.data;
-    if (connectionId && grantId) return <div className="space-y-4"><p role="status">This account is connected.</p><Button onClick={() => navigate(`/apps/${connectionId}/permissions`)}>View connection</Button></div>;
+    if (connectionId && grantId) return <div className="space-y-4"><p role="status">This account is connected.</p><Button onClick={() => navigate(`/apps/${connectionId}/permissions`)}>{pageText("viewConnection_8ef81c")}</Button></div>;
     return <AiConnectionCredentialStep key={aiLoginId} companyId={selectedCompanyId} {...intent}
       agentIds={intent.agentIds ?? []} allAgents={intent.allAgents ?? false} initialMethod={intent.method} fixedMethod
       environmentId={environmentId} hideName onCancel={() => navigate("/apps")}
       onComplete={binding => navigate(`/apps/${binding.connectionId}/permissions`)} />;
   }
-  if (aiReconnectRequested && (aiAccountsView.kind === "loading" || aiAccountsView.kind === "reconnecting")) return <p role="status">Loading connection…</p>;
+  if (aiReconnectRequested && (aiAccountsView.kind === "loading" || aiAccountsView.kind === "reconnecting")) return <p role="status">{pageText("loadingConnection_f1e853")}</p>;
   if (aiReconnectRequested && aiAccountsView.kind === "error") return <p role="alert">Could not load this connection. Refresh to try again.</p>;
   if (aiReconnectRequested && !aiReconnect) return <p role="alert">This connection is unavailable. Return to Connectors to choose an account.</p>;
   if (selectedCompanyId && (preset || aiReconnect?.routing)) return (

@@ -1,3 +1,5 @@
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { describeError } from "../api/errors";
 import { useSelectedHeartbeatRun } from "../hooks/useSelectedHeartbeatRun";
@@ -353,6 +355,7 @@ function agentViewDescription(view: AgentDetailView, name: string): string | nul
 }
 
 export function AgentDetail() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { companyPrefix, agentId, tab: urlTab, runId: urlRunId } = useParams<{
     companyPrefix?: string;
@@ -489,7 +492,7 @@ export function AgentDetail() {
       builtInAgentsApi.reset(resolvedCompanyId!, builtInState!.definition.key, [kind]),
     onSuccess: invalidateBuiltIn,
     onError: (error) => {
-      setActionError(error instanceof Error ? error.message : "Failed to update bundle resource");
+      setActionError(error instanceof Error ? error.message : interfaceMessage("interface:errorFailedToUpdateBundleResource"));
     },
   });
   const runBuiltInRoutine = useMutation({
@@ -497,7 +500,7 @@ export function AgentDetail() {
       builtInAgentsApi.runRoutine(resolvedCompanyId!, builtInState!.definition.key, routineKey),
     onSuccess: invalidateBuiltIn,
     onError: (error) => {
-      setActionError(error instanceof Error ? error.message : "Failed to run built-in routine");
+      setActionError(error instanceof Error ? error.message : interfaceMessage("interface:errorFailedToRunBuiltInRoutine"));
     },
   });
   const enableBuiltInSchedule = useMutation({
@@ -505,7 +508,7 @@ export function AgentDetail() {
       builtInAgentsApi.enableRoutineSchedule(resolvedCompanyId!, builtInState!.definition.key, routineKey),
     onSuccess: invalidateBuiltIn,
     onError: (error) => {
-      setActionError(error instanceof Error ? error.message : "Failed to enable routine schedule");
+      setActionError(error instanceof Error ? error.message : interfaceMessage("interface:errorFailedToEnableRoutineSchedule"));
     },
   });
   const disableBuiltInSchedule = useMutation({
@@ -513,7 +516,7 @@ export function AgentDetail() {
       builtInAgentsApi.disableRoutineSchedule(resolvedCompanyId!, builtInState!.definition.key, routineKey),
     onSuccess: invalidateBuiltIn,
     onError: (error) => {
-      setActionError(error instanceof Error ? error.message : "Failed to disable routine schedule");
+      setActionError(error instanceof Error ? error.message : interfaceMessage("interface:errorFailedToDisableRoutineSchedule"));
     },
   });
   const builtInRoutineActionPending =
@@ -678,7 +681,7 @@ export function AgentDetail() {
       }
     },
     onError: (err) => {
-      setActionError(err instanceof Error ? err.message : "Failed to update permissions");
+      setActionError(err instanceof Error ? err.message : interfaceMessage("interface:errorFailedToUpdatePermissions"));
     },
   });
 
@@ -848,7 +851,7 @@ export function AgentDetail() {
           <button
             type="button"
             className="h-6 w-6 shrink-0 text-yellow-900/70 hover:text-yellow-900 dark:text-yellow-100/70 dark:hover:text-yellow-100"
-            aria-label="Dismiss agent membership notice"
+            aria-label={pageText("dismissAgentMembershipNotice_0880d1")}
             onClick={() => setDismissedLeftAgentIds((current) => new Set(current).add(agent.id))}
           >
             ×
@@ -868,7 +871,7 @@ export function AgentDetail() {
         <div className="flex items-start gap-3 border border-amber-300/35 bg-amber-300/10 px-3 py-2 text-sm text-amber-900 dark:text-amber-100">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
           <div className="min-w-0 space-y-1">
-            <p className="font-medium">Invalid reporting chain</p>
+            <p className="font-medium">{pageText("invalidReportingChain_720f9d")}</p>
             <p className="text-amber-900/90 dark:text-amber-100/90">
               {agent.name} cannot accept tasks or start runs until its reporting chain is repaired.
             </p>
@@ -978,7 +981,7 @@ export function AgentDetail() {
           <AlertDialogHeader>
             <AlertDialogTitle>Discard unsaved changes?</AlertDialogTitle>
             <AlertDialogDescription>
-              You have unsaved changes to {agent.name}&rsquo;s {activeView === "runtime" ? "harness settings" : activeView === "secrets" ? "secrets and variables" : activeView === "advanced" ? "configuration" : "instructions"}. If you continue, they&rsquo;ll be lost.
+              You have unsaved changes to {agent.name}&rsquo;s {activeView === "runtime" ? "harness settings" : activeView === "secrets" ? "secrets and variables" : activeView === "advanced" ? pageText("configuration_0652e4") : pageText("instructions_31a808")}. If you continue, they&rsquo;ll be lost.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="sm:justify-between">
@@ -997,9 +1000,7 @@ export function AgentDetail() {
                   leaveBypassRef.current = false;
                 }
               }}
-            >
-              Discard changes
-            </AlertDialogAction>
+            >{pageText("discardChanges_fa8fc0")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -1007,7 +1008,7 @@ export function AgentDetail() {
       {builtInState && (
         <InlineBanner
           tone="info"
-          title="Built-in agent"
+          title={pageText("builtInAgent_0941ba")}
           actions={
             <Button
               variant="outline"
@@ -1185,7 +1186,7 @@ export function AgentDetail() {
       )}
 
       {activeView === "advanced" && (
-        <Suspense fallback={<p role="status" className="text-sm text-muted-foreground">Loading configuration…</p>}>
+        <Suspense fallback={<p role="status" className="text-sm text-muted-foreground">{pageText("loadingConfiguration_b0f132")}</p>}>
           <AgentAdvancedTab key={agent.id} agent={agent} onDirtyChange={setConfigDirty} onSavingChange={setConfigSaving}
             onSaved={updated => {
               const nextRef = agentRouteRef(updated);
@@ -1220,11 +1221,11 @@ export function AgentDetail() {
           ) : configJustSaved ? (
             <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-(--agent-detail-dot-saved)" />
           ) : null}
-          {configSaving ? "Saving changes…" : configDirty ? "Unsaved changes" : configJustSaved ? "Changes saved" : "No unsaved changes"}
+          {configSaving ? "Saving changes…" : configDirty ? pageText("unsavedChanges_292672") : configJustSaved ? "Changes saved" : "No unsaved changes"}
         </p>
         <div className="flex gap-2">
-          <Button variant="ghost" disabled={!configDirty || configSaving} onClick={() => cancelConfigActionRef.current?.()}>Discard</Button>
-          <Button disabled={!configDirty || configSaving} onClick={() => {Promise.resolve(saveConfigActionRef.current?.()).catch(() => {});}}>{configSaving ? "Saving…" : "Save changes"}</Button>
+          <Button variant="ghost" disabled={!configDirty || configSaving} onClick={() => cancelConfigActionRef.current?.()}>{pageText("discard_36fff6")}</Button>
+          <Button disabled={!configDirty || configSaving} onClick={() => {Promise.resolve(saveConfigActionRef.current?.()).catch(() => {});}}>{configSaving ? pageText("saving_56a228") : pageText("saveChanges_179359")}</Button>
         </div>
       </footer>}
 
@@ -1441,6 +1442,7 @@ export function AgentOverview({
   skillNames: string[];
   agentRouteId: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const agentRef = agentRouteRef(agent);
   const hasHumanCreator = Boolean(humanAgentCreatorUserId(agent.createdByUserId));
@@ -1484,7 +1486,7 @@ export function AgentOverview({
         <AgentMetricTile
           icon={ReceiptText}
           value={formatCents(spent)}
-          label="Costs"
+          label={pageText("costs_799b3e")}
           description="Month to date"
           to={agentDetailHref(agentRef, "costs")}
         />
@@ -1495,7 +1497,7 @@ export function AgentOverview({
           description={budgetPercent === null ? "No monthly budget set" : `of ${formatCents(budget)} this month`}
           to={agentDetailHref(agentRef, "budgets")}
         />
-        <AgentPanel title="Profile" className="min-h-(--agent-detail-tile-min-h) sm:col-span-2" aria-label="Profile"
+        <AgentPanel title={pageText("profile_ff4fc0")} className="min-h-(--agent-detail-tile-min-h) sm:col-span-2" aria-label={pageText("profile_ff4fc0")}
           meta={<span className={creatorFailed ? "text-destructive" : undefined}>
             {creatorFailed ? "Could not load creator" : creatorLabel ? `Created by ${creatorLabel} · ${formatDate(agent.createdAt)}` : `Created ${formatDate(agent.createdAt)}`}
           </span>}>
@@ -1509,10 +1511,10 @@ export function AgentOverview({
           </div>
         </AgentPanel>
         <AgentPanel
-          title="Skills"
+          title={pageText("skills_e09212")}
           meta={<span>{skillNames.length} enabled</span>}
           className="min-h-(--agent-detail-tile-min-h) sm:col-span-2"
-          aria-label="Skills"
+          aria-label={pageText("skills_e09212")}
         >
           {skillNames.length > 0 ? (
             <div className="flex flex-wrap gap-1.5 px-(--agent-detail-module-inset) pt-1 pb-(--agent-detail-module-inset)">
@@ -1526,9 +1528,9 @@ export function AgentOverview({
         </AgentPanel>
       </div>
 
-      <section className="flex flex-col gap-3" aria-label="Recent tasks">
+      <section className="flex flex-col gap-3" aria-label={pageText("recentTasks_21bcad")}>
         <AgentSectionHeading
-          title="Recent tasks"
+          title={pageText("recentTasks_21bcad")}
           action={
             <Link to={`/issues?participantAgentId=${agent.id}`} className="text-xs text-muted-foreground no-underline transition-colors hover:text-foreground">
               See all tasks
@@ -1556,6 +1558,7 @@ export function AgentRevisionsTab({
   agent: AgentDetailRecord;
   companyId?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -1600,9 +1603,7 @@ export function AgentRevisionsTab({
                   variant="outline"
                   onClick={() => rollbackConfig.mutate(revision.id)}
                   disabled={rollbackConfig.isPending}
-                >
-                  Restore
-                </Button>
+                >{pageText("restore_3cbe6d")}</Button>
               </div>
               <p className="text-xs text-muted-foreground">
                 Changed: {revision.changedKeys.length > 0 ? revision.changedKeys.join(", ") : "no tracked changes"}
@@ -1876,6 +1877,7 @@ export function PromptsTab({
   onCancelActionChange: (cancel: (() => void) | null) => void;
   onSavingChange: (saving: boolean) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { selectedCompanyId } = useCompany();
@@ -2392,7 +2394,7 @@ export function PromptsTab({
                   type="button"
                   size="icon-xs"
                   variant="ghost"
-                  aria-label="Add agent file"
+                  aria-label={pageText("addAgentFile_328cab")}
                   onClick={() => setShowNewFileInput(true)}
                 >
                   <Plus className="size-4" />
@@ -2415,7 +2417,7 @@ export function PromptsTab({
             <div className="space-y-2">
               <div className="agent-markdown-name-field flex items-center rounded-md border border-input focus-within:ring-2 focus-within:ring-ring">
               <Input
-                aria-label="New Markdown file name"
+                aria-label={pageText("newMarkdownFileName_4dc06d")}
                 aria-describedby="markdown-file-name-hint"
                 aria-invalid={Boolean(newFilePath && !markdownFileName(newFilePath))}
                 value={newFilePath}
@@ -2555,7 +2557,7 @@ export function PromptsTab({
             <div className="flex items-center gap-2">
               <span role="status" aria-hidden={!copyVisible} className={cn("agent-file-copy-notice flex items-center gap-1.5 whitespace-nowrap text-xs text-muted-foreground", !copyVisible && "opacity-0", copyNotice === "error" && "text-destructive")}>
                 {copyNotice === "copied" && <CheckCircle2 className="size-3.5" aria-hidden />}
-                {copyNotice === "copied" ? "File copied" : copyNotice === "error" ? "Copy failed" : null}
+                {copyNotice === "copied" ? "File copied" : copyNotice === "error" ? pageText("copyFailed_bd5acb") : null}
               </span>
               <Button
                 type="button"
@@ -2564,7 +2566,7 @@ export function PromptsTab({
                 className={cn("size-8", instructionMode === "edit" && "bg-(--agent-detail-tile-chip) text-foreground")}
                 aria-pressed={instructionMode === "edit"}
                 aria-label={instructionMode === "edit" ? `Stop editing ${selectedOrEntryFile}` : `Edit ${selectedOrEntryFile}`}
-                title={instructionMode === "edit" ? "Stop editing" : "Edit"}
+                title={instructionMode === "edit" ? "Stop editing" : pageText("edit_530164")}
                 disabled={Boolean(selectedFileDetail?.binary)}
                 onClick={() => setInstructionMode(instructionMode === "edit" ? "raw" : "edit")}
               >
@@ -2572,7 +2574,7 @@ export function PromptsTab({
               </Button>
               {!fileLoading && (
                 <Button type="button" variant="ghost" size="icon-xs" className="size-8"
-                  aria-label="Copy instructions file as markdown" title="Copy as markdown"
+                  aria-label={pageText("copyInstructionsFileAsMarkdown_86a1e9")} title={pageText("copyAsMarkdown_87358c")}
                   onClick={async () => {
                     clearTimeout(copyTimer.current);
                     setCopyVisible(true);
@@ -2590,7 +2592,7 @@ export function PromptsTab({
                   variant="ghost"
                   className="size-8"
                   aria-label={`Delete ${selectedOrEntryFile}`}
-                  title="Delete file"
+                  title={pageText("deleteFile_b9ea4b")}
                   onClick={() => {
                     if (confirm(`Delete ${selectedOrEntryFile}?`)) {
                       deleteFile.mutate(selectedOrEntryFile, {
@@ -2671,7 +2673,7 @@ export function PromptsTab({
           {selectedFileDetail?.binary ? (
             <div className="space-y-3 px-(--agent-identity-panel-gap) py-5">
               <p className="text-sm text-muted-foreground">This file is preserved with the agent directory. Download it to view its contents.</p>
-              <a className="text-sm text-primary underline" href={agentsApi.downloadInstructionsFile(agent.id, selectedOrEntryFile, companyId)} download>Download {selectedOrEntryFile}</a>
+              <a className="text-sm text-primary underline" href={agentsApi.downloadInstructionsFile(agent.id, selectedOrEntryFile, companyId)} download>{pageText("download_a479c9") + " "}{selectedOrEntryFile}</a>
             </div>
           ) : selectedFileExists && fileLoading && !selectedFileDetail ? (
             <div className="px-(--agent-identity-panel-gap) py-5">
@@ -2836,6 +2838,7 @@ export function RunsTab({
   adapterType: string;
   adapterConfig: Record<string, unknown>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { isMobile } = useSidebar();
 
@@ -2849,13 +2852,13 @@ export function RunsTab({
   const selection = useSelectedHeartbeatRun(sorted, effectiveRunId, companyId, agentId);
   const selectedRun = selection.run;
   if (selectedRunId && !selectedRun) {
-    if (selection.loading) return <p className="text-sm text-muted-foreground">Loading run…</p>;
+    if (selection.loading) return <p className="text-sm text-muted-foreground">{pageText("loadingRun_f91e59")}</p>;
     return <div role="alert">
       <p className="text-sm text-destructive">{selection.error instanceof Error ? selection.error.message : "This run is unavailable for this agent."}</p>
       {selection.error && <Button variant="outline" onClick={() => { void selection.retry(); }}>{translateUi("interfaceCopy.tryAgain")}</Button>}
     </div>;
   }
-  if (runs.length === 0 && !selectedRun) return <p className="text-sm text-muted-foreground">No runs yet.</p>;
+  if (runs.length === 0 && !selectedRun) return <p className="text-sm text-muted-foreground">{pageText("noRunsYet_7a8b1c")}</p>;
 
   // Mobile: show either run list OR run detail with back button
   if (isMobile) {
@@ -2910,6 +2913,7 @@ export function RunsTab({
 /* ---- Run Detail (expanded) ---- */
 
 export function AgentFileRunNotice({ resultJson }: { resultJson: HeartbeatRun["resultJson"] }) {
+  const { t: pageText } = usePageTranslation("interface");
   const save = asRecord(resultJson?.instructionSave);
   const storageWarning = asNonEmptyString(save?.storageWarning);
   const error = asNonEmptyString(save?.errorMessage);
@@ -2918,8 +2922,8 @@ export function AgentFileRunNotice({ resultJson }: { resultJson: HeartbeatRun["r
   // I/O failure must stay visible even when storage was full at run start.
   const showSyncFailure = syncFailure && (!storageWarning || save?.errorCode !== "AGENT_FILES_LIMIT_EXCEEDED");
   return <>
-    {storageWarning && <InlineBanner tone="warning" title="Agent storage warning" compact>{storageWarning}</InlineBanner>}
-    {showSyncFailure && <InlineBanner tone="warning" title="Agent file sync failed for this run" compact>{error}</InlineBanner>}
+    {storageWarning && <InlineBanner tone="warning" title={pageText("agentStorageWarning_8d05c9")} compact>{storageWarning}</InlineBanner>}
+    {showSyncFailure && <InlineBanner tone="warning" title={pageText("agentFileSyncFailedForThisRun_8974bd")} compact>{error}</InlineBanner>}
   </>;
 }
 
@@ -2945,6 +2949,7 @@ export function RunAccountingMetrics({ run }: { run: HeartbeatRun }) {
 }
 
 function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }: { run: HeartbeatRun; agentRouteId: string; adapterType: string; adapterConfig: Record<string, unknown> }) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { data: hydratedRun } = useQuery({
@@ -3192,7 +3197,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                   disabled={resumeRun.isPending}
                 >
                   <RotateCcw className="h-3.5 w-3.5 mr-1" />
-                  {resumeRun.isPending ? "Resuming…" : "Resume"}
+                  {resumeRun.isPending ? pageText("resuming_ab0bec") : pageText("resume_b3bd0b")}
                 </Button>
               )}
               {canRetryRun && !canResumeLostRun && (
@@ -3204,7 +3209,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                   disabled={retryRun.isPending}
                 >
                   <RotateCcw className="h-3.5 w-3.5 mr-1" />
-                  {retryRun.isPending ? "Retrying…" : "Retry"}
+                  {retryRun.isPending ? pageText("retrying_231013") : pageText("retry_9f5cd8")}
                 </Button>
               )}
               <Button
@@ -3290,17 +3295,17 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
             )}
             {cancelRun.error && (
               <div className="text-xs text-destructive" role="alert">
-                {cancelRun.error instanceof Error ? cancelRun.error.message : "Failed to stop run"}
+                {cancelRun.error instanceof Error ? cancelRun.error.message : interfaceMessage("interface:errorFailedToStopRun")}
               </div>
             )}
             {resumeRun.isError && ( // query-error-ok: mutation result, not a query
               <div className="text-xs text-destructive">
-                {resumeRun.error instanceof Error ? resumeRun.error.message : "Failed to resume run"}
+                {resumeRun.error instanceof Error ? resumeRun.error.message : interfaceMessage("interface:errorFailedToResumeRun")}
               </div>
             )}
             {retryRun.isError && ( // query-error-ok: mutation result, not a query
               <div className="text-xs text-destructive">
-                {retryRun.error instanceof Error ? retryRun.error.message : "Failed to retry run"}
+                {retryRun.error instanceof Error ? retryRun.error.message : interfaceMessage("interface:errorFailedToRetryRun")}
               </div>
             )}
             {startTime && (
@@ -3345,7 +3350,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                   <p className="text-xs text-destructive">
                     {runClaudeLogin.error instanceof Error
                       ? runClaudeLogin.error.message
-                      : "Failed to run Claude login"}
+                      : interfaceMessage("interface:errorFailedToRunClaudeLogin")}
                   </p>
                 )}
                 {claudeLoginResult?.loginUrl && (
@@ -3402,9 +3407,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
               className="flex items-center gap-1.5 w-full px-4 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
               onClick={() => setSessionOpen((v) => !v)}
             >
-              <ChevronRight className={cn("h-3 w-3 transition-transform", sessionOpen && "rotate-90")} />
-              Session
-              {sessionChanged && <span className="text-yellow-400 ml-1">(changed)</span>}
+              <ChevronRight className={cn("h-3 w-3 transition-transform", sessionOpen && "rotate-90")} />{pageText("session_f7f199")}{sessionChanged && <span className="text-yellow-400 ml-1">(changed)</span>}
             </button>
             {sessionOpen && (
               <div className="px-4 pb-3 space-y-1 text-xs">
@@ -3443,7 +3446,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                       <p className="text-(length:--text-micro) text-destructive mt-1">
                         {clearSessionsForTouchedIssues.error instanceof Error
                           ? clearSessionsForTouchedIssues.error.message
-                          : "Failed to clear sessions"}
+                          : interfaceMessage("interface:errorFailedToClearSessions")}
                       </p>
                     )}
                   </div>
@@ -3520,6 +3523,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
 /* ---- Keys Tab ---- */
 
 export function KeysTab({ agentId, companyId }: { agentId: string; companyId?: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
@@ -3581,7 +3585,7 @@ export function KeysTab({ agentId, companyId }: { agentId: string; companyId?: s
               variant="ghost"
               size="icon-sm"
               onClick={() => setTokenVisible((v) => !v)}
-              title={tokenVisible ? "Hide" : "Show"}
+              title={tokenVisible ? "Hide" : pageText("show_d97d1e")}
             >
               {tokenVisible ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
             </Button>
@@ -3589,7 +3593,7 @@ export function KeysTab({ agentId, companyId }: { agentId: string; companyId?: s
               variant="ghost"
               size="icon-sm"
               onClick={copyToken}
-              title="Copy"
+              title={pageText("copy_af74f7")}
             >
               <Copy className="h-3.5 w-3.5" />
             </Button>
@@ -3600,9 +3604,7 @@ export function KeysTab({ agentId, companyId }: { agentId: string; companyId?: s
             size="sm"
             className="text-muted-foreground text-xs"
             onClick={() => setNewToken(null)}
-          >
-            Dismiss
-          </Button>
+          >{pageText("dismiss_70afe9")}</Button>
         </div>
       )}
 
@@ -3617,7 +3619,7 @@ export function KeysTab({ agentId, companyId }: { agentId: string; companyId?: s
         </p>
         <div className="flex items-center gap-2">
           <Input
-            placeholder="Key name (e.g. production)"
+            placeholder={pageText("keyNameEGProduction_235f39")}
             value={newKeyName}
             onChange={(e) => setNewKeyName(e.target.value)}
             className="h-8 text-sm"
@@ -3630,9 +3632,7 @@ export function KeysTab({ agentId, companyId }: { agentId: string; companyId?: s
             onClick={() => createKey.mutate()}
             disabled={createKey.isPending}
           >
-            <Plus className="h-3.5 w-3.5 mr-1" />
-            Create
-          </Button>
+            <Plus className="h-3.5 w-3.5 mr-1" />{pageText("create_6e157c")}</Button>
         </div>
       </div>
 
@@ -3653,8 +3653,7 @@ export function KeysTab({ agentId, companyId }: { agentId: string; companyId?: s
               <div key={key.id} className="flex items-center justify-between px-4 py-2.5">
                 <div>
                   <span className="text-sm font-medium">{key.name}</span>
-                  <span className="text-xs text-muted-foreground ml-3">
-                    Created {formatDate(key.createdAt)}
+                  <span className="text-xs text-muted-foreground ml-3">{pageText("created_accf40") + " "}{formatDate(key.createdAt)}
                   </span>
                 </div>
                 <Button
@@ -3663,9 +3662,7 @@ export function KeysTab({ agentId, companyId }: { agentId: string; companyId?: s
                   className="text-destructive hover:text-destructive text-xs"
                   onClick={() => revokeKey.mutate(key.id)}
                   disabled={revokeKey.isPending}
-                >
-                  Revoke
-                </Button>
+                >{pageText("revoke_0be720")}</Button>
               </div>
             ))}
           </div>

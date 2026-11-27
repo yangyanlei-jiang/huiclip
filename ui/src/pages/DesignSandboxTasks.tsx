@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect } from "react";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ListChecks, SearchX } from "lucide-react";
@@ -27,6 +28,7 @@ const pageSize = 200;
 /** Real API adapter for the Design proposals / Pages / Tasks composition.
  * All visual and collection behavior comes from the reviewed shared subjects. */
 export function DesignSandboxTasks() {
+  const { t: pageText } = usePageTranslation("interface");
   const { selectedCompanyId: companyId } = useCompany();
   const { userId } = useAccountIdentity();
   const { openNewIssue } = useDialogActions();
@@ -87,8 +89,8 @@ export function DesignSandboxTasks() {
   });
   const error = tasks.error ?? agents.error ?? projects.error ?? directory.error ?? labels.error ?? unread.error ?? update.error;
   const empty = collection.companyItems.length === 0
-    ? <EmptyState icon={ListChecks} message="No tasks in this organization" action="New Task" onAction={() => openNewIssue()} />
-    : <EmptyState icon={SearchX} message="No tasks match this view" action="Clear filters" hideActionIcon onAction={collection.clear} />;
+    ? <EmptyState icon={ListChecks} message={pageText("noTasksInThisOrganization_68f0f9")} action="New Task" onAction={() => openNewIssue()} />
+    : <EmptyState icon={SearchX} message={pageText("noTasksMatchThisView_1ce404")} action="Clear filters" hideActionIcon onAction={collection.clear} />;
 
   if (!companyId) return <EmptyState icon={ListChecks} message="Select an organization to view tasks." />;
   return <TruncatedTextMarqueeProvider><div className="task-row-design-preview flex flex-col gap-8" data-testid="design-sandbox-tasks">
@@ -97,12 +99,12 @@ export function DesignSandboxTasks() {
       onNewTask={() => openNewIssue()} filters={{ state: collection.filters, onChange: collection.updateFilters, activeFilterCount: collection.activeFilterCount,
         enableLiveRunsFilter: false,
         agents: agents.data ?? [], projects: projects.data ?? [], labels: labels.data ?? [], currentUserId: userId, creators: collection.creators }} />
-    {error ? <div role="alert" className="flex items-center gap-2 text-sm text-destructive"><span>{error instanceof Error ? error.message : "Could not load tasks"}</span><Button variant="outline" size="sm" onClick={() => { update.reset(); void client.invalidateQueries({ queryKey: queryKeys.issues.list(companyId) }); void agents.refetch(); void projects.refetch(); void directory.refetch(); void labels.refetch(); }}>Retry</Button></div> : null}
-    {tasks.isPending ? <p role="status" className="text-sm text-muted-foreground">Loading tasks…</p> : <>
+    {error ? <div role="alert" className="flex items-center gap-2 text-sm text-destructive"><span>{error instanceof Error ? error.message : "Could not load tasks"}</span><Button variant="outline" size="sm" onClick={() => { update.reset(); void client.invalidateQueries({ queryKey: queryKeys.issues.list(companyId) }); void agents.refetch(); void projects.refetch(); void directory.refetch(); void labels.refetch(); }}>{pageText("retry_9f5cd8")}</Button></div> : null}
+    {tasks.isPending ? <p role="status" className="text-sm text-muted-foreground">{pageText("loadingTasks_a3495d")}</p> : <>
       {collection.narrowed ? <p role="status" className="design-task-results">{collection.matchingItems.length} matching tasks{collection.layout === "list" && collection.visibleItems.length > collection.matchingItems.length ? " · Parent tasks included for context" : ""}</p> : null}
       <div hidden={collection.layout !== "list"} className="design-task-list-panel"><TaskList key={companyId} items={collection.visibleItems} allItems={collection.companyItems} collapsedIds={collection.collapsedIds} onCollapsedIdsChange={collection.setCollapsedIds} emptyState={empty} /></div>
       {collection.layout === "board" ? collection.matchingItems.length ? <KanbanBoard showOverflowFades issues={collection.matchingItems.map(item => item.issue)} agents={agents.data} onUpdateIssue={(id, data) => update.mutate({ id, data })} /> : empty : null}
-      {tasks.hasNextPage ? <div className="flex items-center gap-3 text-sm text-muted-foreground"><span>Search, views and filters cover the {items.length} loaded tasks.</span><Button variant="outline" size="sm" disabled={tasks.isFetchingNextPage} onClick={() => void tasks.fetchNextPage()}>{tasks.isFetchingNextPage ? "Loading…" : "Load more tasks"}</Button></div> : null}
+      {tasks.hasNextPage ? <div className="flex items-center gap-3 text-sm text-muted-foreground"><span>Search, views and filters cover the {items.length} loaded tasks.</span><Button variant="outline" size="sm" disabled={tasks.isFetchingNextPage} onClick={() => void tasks.fetchNextPage()}>{tasks.isFetchingNextPage ? pageText("loading_33ce41") : "Load more tasks"}</Button></div> : null}
     </>}
   </div></TruncatedTextMarqueeProvider>;
 }

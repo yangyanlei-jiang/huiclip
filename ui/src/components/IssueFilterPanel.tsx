@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useId, useState, type ComponentProps, type CSSProperties, type ReactNode } from "react";
 import { Bot, Search, User } from "lucide-react";
@@ -31,6 +32,7 @@ function FilterRow({ label, checked, onToggle, icon }: { label: string; checked:
 
 /** The collection retains ownership of filter state. */
 export function IssueFilterPanel({ state, onChange, activeFilterCount, agents = [], projects = [], labels = [], creators = [], currentUserId, onClear, enableRoutineTasksFilter, enableAgentCreatedVisibilityFilter, enableLiveRunsFilter = true }: PanelProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [queries, setQueries] = useState({ projects: "", creators: "", assignees: "", labels: "" });
   const search = (key: keyof typeof queries) => (value: string) => setQueries(current => ({ ...current, [key]: value }));
@@ -46,7 +48,7 @@ export function IssueFilterPanel({ state, onChange, activeFilterCount, agents = 
         <FilterGroup title={translateUi("interfaceCopy.status")} optionsKey="statuses">
           {issueStatusOrder.map(status => <FilterRow key={status} label={issueFilterLabel(status)} checked={state.statuses.includes(status)} onToggle={() => onChange({ statuses: toggleIssueFilterValue(state.statuses, status) })} icon={<StatusIcon status={status} />} />)}
         </FilterGroup>
-        {enableLiveRunsFilter || enableAgentCreatedVisibilityFilter || enableRoutineTasksFilter ? <FilterGroup title="Visibility" optionsKey="visibility">
+        {enableLiveRunsFilter || enableAgentCreatedVisibilityFilter || enableRoutineTasksFilter ? <FilterGroup title={pageText("visibility_7d9ff4")} optionsKey="visibility">
           {enableLiveRunsFilter ? <FilterRow label="Live runs only" checked={state.liveOnly === true} onToggle={() => onChange({ liveOnly: !state.liveOnly })} /> : null}
           {enableAgentCreatedVisibilityFilter ? <FilterRow label="Show agent-created tasks" checked={state.showAgentCreatedTasks} onToggle={() => onChange({ showAgentCreatedTasks: !state.showAgentCreatedTasks })} /> : null}
           {enableRoutineTasksFilter ? <FilterRow label="Routine tasks" checked={state.routineTasksOnly === true} onToggle={() => onChange({ routineTasksOnly: !state.routineTasksOnly })} /> : null}
@@ -60,11 +62,11 @@ export function IssueFilterPanel({ state, onChange, activeFilterCount, agents = 
         {visibleCreators.map(creator => <FilterRow key={creator.id} label={creator.label} checked={state.creators.includes(creator.id)} onToggle={() => onChange({ creators: toggleIssueFilterValue(state.creators, creator.id) })} icon={creator.kind === "agent" ? <Bot /> : <User />} />)}
         {!visibleCreators.length ? <p className="task-filter-empty">{queries.creators ? "No creators match." : "No creators available."}</p> : null}
       </FilterGroup>
-      <FilterGroup title="Assignee" optionsKey="responsible" searchLabel="assignees" query={queries.assignees} onQueryChange={search("assignees")}>
+      <FilterGroup title={pageText("assignee_049e3c")} optionsKey="responsible" searchLabel="assignees" query={queries.assignees} onQueryChange={search("assignees")}>
         {visibleAssignees.map(assignee => <FilterRow key={assignee.id} label={assignee.name} checked={state.assignees.includes(assignee.id)} onToggle={() => onChange({ assignees: toggleIssueFilterValue(state.assignees, assignee.id) })} icon={assignee.icon} />)}
         {!visibleAssignees.length ? <p className="task-filter-empty">No assignees match.</p> : null}
       </FilterGroup>
-      <FilterGroup title="Label" optionsKey="labels" searchLabel="labels" query={queries.labels} onQueryChange={search("labels")}>
+      <FilterGroup title={pageText("label_74341e")} optionsKey="labels" searchLabel="labels" query={queries.labels} onQueryChange={search("labels")}>
         {visibleLabels.map(label => <FilterRow key={label.id} label={label.name} checked={state.labels.includes(label.id)} onToggle={() => onChange({ labels: toggleIssueFilterValue(state.labels, label.id) })} icon={<span className="task-filter-label-dot" style={{ "--task-filter-label-color": label.color } as CSSProperties} />} />)}
         {!visibleLabels.length ? <p className="task-filter-empty">{queries.labels ? "No labels match." : "No labels available."}</p> : null}
       </FilterGroup>

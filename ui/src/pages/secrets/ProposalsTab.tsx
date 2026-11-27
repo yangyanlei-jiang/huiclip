@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -50,6 +51,7 @@ function ProposalRow({
   onReject: (p: SecretProposalView) => void;
   disabled: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const isSecret = proposal.kind === "secret";
   const expiry = expiryLabel(proposal.expiresAt);
   const secret = bindingSecretLabel(proposal);
@@ -74,7 +76,7 @@ function ProposalRow({
               {proposal.target ? (
                 <AgentRefChip agent={proposal.target} className="font-medium" />
               ) : (
-                <span className="text-muted-foreground">agent</span>
+                <span className="text-muted-foreground">{pageText("agent_0608c4")}</span>
               )}
               <DeliveryBadge configPath={proposal.configPath} />
               <code className="font-mono text-xs">{envKey || proposal.configPath}</code>

@@ -1,3 +1,5 @@
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -49,6 +51,7 @@ function isInviteHistoryRow(value: unknown): value is Awaited<ReturnType<typeof 
 
 /** The Invites tab of the Members page (extracted from the former standalone Invites page). */
 export function InvitesSection() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { selectedCompanyId } = useCompany();
   const { pushToast } = useToast();
@@ -132,7 +135,7 @@ export function InvitesSection() {
     },
     onError: (error) => {
       pushToast({
-        title: "Failed to create invite",
+        title: interfaceMessage("interface:errorFailedToCreateInvite"),
         body: describeError(error).body,
         tone: "error",
       });
@@ -147,7 +150,7 @@ export function InvitesSection() {
     },
     onError: (error) => {
       pushToast({
-        title: "Failed to revoke invite",
+        title: interfaceMessage("interface:errorFailedToRevokeInvite"),
         body: describeError(error).body,
         tone: "error",
       });
@@ -232,7 +235,7 @@ export function InvitesSection() {
 
         <div className="flex flex-wrap items-center gap-3">
           <Button onClick={() => createInviteMutation.mutate()} disabled={createInviteMutation.isPending}>
-            {createInviteMutation.isPending ? "Creating…" : "Create invite"}
+            {createInviteMutation.isPending ? pageText("creating_94d7d8") : "Create invite"}
           </Button>
           <span className="text-sm text-muted-foreground">Invite history below keeps the audit trail.</span>
         </div>
@@ -244,9 +247,7 @@ export function InvitesSection() {
                 <div className="text-sm font-medium">Latest invite link</div>
                 {latestInviteCopied ? (
                   <div className="inline-flex items-center gap-1 text-xs font-medium text-foreground">
-                    <Check className="h-3.5 w-3.5" />
-                    Copied
-                  </div>
+                    <Check className="h-3.5 w-3.5" />{pageText("copied_8e3df4")}</div>
                 ) : null}
               </div>
               <div className="text-sm text-muted-foreground">
@@ -275,9 +276,7 @@ export function InvitesSection() {
                   setLatestInviteCopied(copied);
                 }}
               >
-                <Copy className="h-4 w-4" />
-                Copy link
-              </Button>
+                <Copy className="h-4 w-4" />{pageText("copyLink_2f84ee")}</Button>
             </div>
           </div>
         ) : null}
@@ -348,9 +347,7 @@ export function InvitesSection() {
                             variant="outline"
                             onClick={() => revokeMutation.mutate(invite.id)}
                             disabled={revokeMutation.isPending}
-                          >
-                            Revoke
-                          </Button>
+                          >{pageText("revoke_0be720")}</Button>
                         ) : (
                           <span className="text-xs text-muted-foreground">{translateUi("interfaceCopy.inactive")}</span>
                         )}

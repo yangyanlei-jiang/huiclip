@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { useEffect, useRef, useState, useMemo, useCallback } from "react";
 import { Link, useNavigate } from "@/lib/router";
@@ -207,6 +208,7 @@ export interface OrgChartProps {
 }
 
 export function OrgChart({ orgTree: providedOrgTree, agents: providedAgents, embedded = false }: OrgChartProps = {}) {
+  const { t: pageText } = usePageTranslation("interface");
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const navigate = useNavigate();
@@ -504,9 +506,7 @@ export function OrgChart({ orgTree: providedOrgTree, agents: providedAgents, emb
         {showImport ? (
           <Link to="/company/import">
             <Button variant="outline" size="sm">
-              <Upload className="mr-1.5 h-3.5 w-3.5" />
-              Import organization
-            </Button>
+              <Upload className="mr-1.5 h-3.5 w-3.5" />{pageText("importOrganization_004c3f")}</Button>
           </Link>
         ) : null}
         {showExport ? (
@@ -551,8 +551,8 @@ export function OrgChart({ orgTree: providedOrgTree, agents: providedAgents, emb
                 });
               }
             }}
-            title="Zoom in"
-            aria-label="Zoom in"
+            title={pageText("zoomIn_4fc05f")}
+            aria-label={pageText("zoomIn_4fc05f")}
           >
             <Plus className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
           </button>
@@ -567,8 +567,8 @@ export function OrgChart({ orgTree: providedOrgTree, agents: providedAgents, emb
                 });
               }
             }}
-            title="Zoom out"
-            aria-label="Zoom out"
+            title={pageText("zoomOut_a4ae4b")}
+            aria-label={pageText("zoomOut_a4ae4b")}
           >
             <Minus className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
           </button>

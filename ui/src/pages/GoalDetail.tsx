@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect } from "react";
 import { useParams } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -31,6 +32,7 @@ export function GoalPropertiesToggleButton({
   panelVisible,
   onShowProperties,
 }: GoalPropertiesToggleButtonProps) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <Button
       variant="ghost"
@@ -40,7 +42,7 @@ export function GoalPropertiesToggleButton({
         panelVisible ? "opacity-0 pointer-events-none w-0 overflow-hidden" : "opacity-100",
       )}
       onClick={onShowProperties}
-      title="Show properties"
+      title={pageText("showProperties_5248c7")}
     >
       <SlidersHorizontal className="h-4 w-4" />
     </Button>
@@ -48,6 +50,7 @@ export function GoalPropertiesToggleButton({
 }
 
 export function GoalDetail() {
+  const { t: pageText } = usePageTranslation("interface");
   const { goalId } = useParams<{ goalId: string }>();
   const { selectedCompanyId, setSelectedCompanyId } = useCompany();
   const { openNewGoal } = useDialogActions();
@@ -168,7 +171,7 @@ export function GoalDetail() {
           onSave={(description) => updateGoal.mutate({ description })}
           as="p"
           className="text-sm text-muted-foreground"
-          placeholder="Add a description..."
+          placeholder={pageText("addADescription_8c1d83")}
           multiline
           imageUploadHandler={async (file) => {
             const asset = await uploadImage.mutateAsync(file);

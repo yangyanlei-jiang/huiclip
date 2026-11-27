@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { useMemo, useState } from "react";
@@ -97,6 +98,7 @@ export function OverviewSection({
 }: {
   defaultDescriptionAnnotationsOpen?: boolean;
 } = {}) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const ctx = useRoutineDetail();
   const {
@@ -148,8 +150,8 @@ export function OverviewSection({
             recentOptionIds={recentAssigneeIds}
             placeholder={translateUi("interfaceCopy.responsible")}
             noneLabel="No responsible"
-            searchPlaceholder="Search responsible..."
-            emptyMessage="No responsible found."
+            searchPlaceholder={pageText("searchResponsible_bc9f7f")}
+            emptyMessage={pageText("noResponsibleFound_a275f8")}
             onChange={(assigneeAgentId) =>
               setEditDraft((current) => ({ ...current, assigneeAgentId }))
             }
@@ -195,8 +197,8 @@ export function OverviewSection({
             recentOptionIds={recentProjectIds}
             placeholder={translateUi("interfaceCopy.project")}
             noneLabel="No project"
-            searchPlaceholder="Search projects..."
-            emptyMessage="No projects found."
+            searchPlaceholder={pageText("searchProjects_469d78")}
+            emptyMessage={pageText("noProjectsFound_ca7870")}
             onChange={(projectId) => setEditDraft((current) => ({ ...current, projectId }))}
             onConfirm={() => descriptionEditorRef.current?.focus()}
             renderTriggerValue={(option) =>
@@ -266,7 +268,7 @@ export function OverviewSection({
               ref={descriptionEditorRef}
               value={editDraft.description}
               onChange={(description) => setEditDraft((current) => ({ ...current, description }))}
-              placeholder="Add instructions..."
+              placeholder={pageText("addInstructions_ef1a45")}
               bordered={false}
               contentClassName="min-h-(--sz-120px) text-sm leading-7"
               mentions={mentionOptions}
@@ -282,7 +284,7 @@ export function OverviewSection({
             ref={descriptionEditorRef}
             value={editDraft.description}
             onChange={(description) => setEditDraft((current) => ({ ...current, description }))}
-            placeholder="Add instructions..."
+            placeholder={pageText("addInstructions_ef1a45")}
             bordered={false}
             contentClassName="min-h-(--sz-120px) text-sm leading-7"
             mentions={mentionOptions}
@@ -318,7 +320,7 @@ export function OverviewSection({
         />
         <SummaryCard
           icon={Play}
-          label="Last run"
+          label={pageText("lastRun_333c63")}
           value={lastRun ? lastRun.status.replaceAll("_", " ") : "No runs"}
           hint={lastRun ? timeAgo(lastRun.triggeredAt) : "Trigger a run"}
           to={() => navigateToSection("runs")}
@@ -395,6 +397,7 @@ function SummaryCard({
 export { RoutineTriggers as TriggersSection } from "../routine-triggers/RoutineTriggers";
 
 export function VariablesSection() {
+  const { t: pageText } = usePageTranslation("interface");
   const ctx = useRoutineDetail();
   const { editDraft, setEditDraft, navigateToSection } = ctx;
   const hasVariables = editDraft.variables.length > 0;
@@ -408,9 +411,7 @@ export function VariablesSection() {
           placeholder.
         </span>
         <Button variant="secondary" size="sm" onClick={() => navigateToSection("overview")}>
-          <Edit3 className="mr-1.5 h-3.5 w-3.5" />
-          Edit instructions
-        </Button>
+          <Edit3 className="mr-1.5 h-3.5 w-3.5" />{pageText("editInstructions_af6f86")}</Button>
       </div>
 
       {hasVariables ? (
@@ -471,6 +472,7 @@ export function SecretsSection() {
 }
 
 export function DeliverySection() {
+  const { t: pageText } = usePageTranslation("interface");
   const ctx = useRoutineDetail();
   const { editDraft, setEditDraft, routine } = ctx;
 
@@ -484,9 +486,7 @@ export function DeliverySection() {
   return (
     <div className="space-y-6">
       <div className="space-y-3">
-        <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
-          Concurrency
-        </p>
+        <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">{pageText("concurrency_2ec390")}</p>
         <RadioCardGroup
           ariaLabel="Concurrency policy"
           value={editDraft.concurrencyPolicy}
@@ -529,7 +529,7 @@ export function DeliverySection() {
           </p>
         ) : gateEnabled ? (
           <div className="space-y-2 rounded-lg border border-border p-3">
-            <Label className="text-xs font-medium">Activity scope</Label>
+            <Label className="text-xs font-medium">{pageText("activityScope_c06a04")}</Label>
             <RadioCardGroup
               ariaLabel="Activity gate scope"
               value={editDraft.activityGateScope}

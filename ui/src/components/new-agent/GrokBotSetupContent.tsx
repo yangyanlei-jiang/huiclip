@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useId } from "react";
 import { Check, Circle, Loader2 } from "lucide-react";
@@ -26,6 +27,7 @@ export interface GrokBotSetupContentProps {
 }
 const steps = ["Identify Bot", "Connect access", "Enable assignments", "Verify"];
 export function GrokBotSetupContent(p: GrokBotSetupContentProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const pairingCodeId = useId();
   const binding = p.connection?.binding;
@@ -66,7 +68,7 @@ export function GrokBotSetupContent(p: GrokBotSetupContentProps) {
             <label htmlFor={pairingCodeId}>One-use pairing code</label>
             <div className="flex items-center gap-2">
               <Input id={pairingCodeId} value={p.pairing.pairingCode} readOnly type="password" autoComplete="off" />
-              <CopyText text={p.pairing.pairingCode} ariaLabel="Copy pairing code" className={buttonVariants({ variant: "outline", size: "sm" })}>Copy code</CopyText>
+              <CopyText text={p.pairing.pairingCode} ariaLabel="Copy pairing code" className={buttonVariants({ variant: "outline", size: "sm" })}>{pageText("copyCode_6c1069")}</CopyText>
             </div>
             <p className="text-xs text-muted-foreground">Copy this code into Paperclip’s authorization page. Do not paste it into Bot chat. Expires {new Date(p.pairing.expiresAt).toLocaleTimeString()}.</p>
           </div>}
@@ -78,7 +80,7 @@ export function GrokBotSetupContent(p: GrokBotSetupContentProps) {
           {binding && <AgentSetupPrompt prompt={buildGrokRoutinePrompt(binding.id, p.details.botName)} label="Copy routine instructions" title="Enable assignments" description="Send this to the connected Bot. The routine wakes it when Paperclip work changes." />}
           <p className="text-xs text-muted-foreground">If clicking the routine does nothing, use the “Webhook URL” navigation link the Bot supplies.</p>
           {routine?.configured && !p.editingCredentials && !p.webhookUrl && !p.webhookKey ? <div className="space-y-2"><p role="status" className="text-muted-foreground">Routine credentials are stored. Continue to verify both directions.</p>{p.onEditCredentials && <Button variant="outline" onClick={p.onEditCredentials} disabled={p.busy}>Replace routine credentials</Button>}</div> : <>
-            <label className="block space-y-2"><span>Webhook URL</span><Input value={p.webhookUrl} onChange={e => p.onCredentials(e.target.value, p.webhookKey)} type="password" autoComplete="off" spellCheck={false} /></label>
+            <label className="block space-y-2"><span>{pageText("webhookURL_fa7517")}</span><Input value={p.webhookUrl} onChange={e => p.onCredentials(e.target.value, p.webhookKey)} type="password" autoComplete="off" spellCheck={false} /></label>
             <label className="block space-y-2"><span>Webhook key</span><Input value={p.webhookKey} onChange={e => p.onCredentials(p.webhookUrl, e.target.value)} type="password" autoComplete="off" spellCheck={false} /></label>
           </>}
           <p className="text-xs text-muted-foreground">Copy these fields directly from Grok into Paperclip. Credentials are stored securely and are never included in instructions.</p>
@@ -91,8 +93,8 @@ export function GrokBotSetupContent(p: GrokBotSetupContentProps) {
       </>}
     </div>
     <div className="flex items-center justify-between gap-3 border-t px-6 py-4 sm:px-8">
-      <div className="flex items-center gap-2"><Button variant="ghost" onClick={p.onBack} disabled={p.busy}>{translateUi("interfaceCopy.back")}</Button><Button variant="ghost" onClick={p.onExit} disabled={p.busy}>Save &amp; exit</Button></div>
-      {p.approvalHref ? <Button asChild><Link to={p.approvalHref} onClick={p.onExit}>Review approval</Link></Button> : <Button onClick={p.onNext} disabled={nextDisabled}>{p.busy ? "Saving…" : ready ? "Done" : p.step === 3 ? pending ? "Waiting for reply…" : replied ? "Finishing setup…" : "Verify connection" : "Continue"}</Button>}
+      <div className="flex items-center gap-2"><Button variant="ghost" onClick={p.onBack} disabled={p.busy}>{translateUi("interfaceCopy.back")}</Button><Button variant="ghost" onClick={p.onExit} disabled={p.busy}>{pageText("saveExit_fc5599")}</Button></div>
+      {p.approvalHref ? <Button asChild><Link to={p.approvalHref} onClick={p.onExit}>Review approval</Link></Button> : <Button onClick={p.onNext} disabled={nextDisabled}>{p.busy ? pageText("saving_56a228") : ready ? pageText("done_e9b450") : p.step === 3 ? pending ? "Waiting for reply…" : replied ? "Finishing setup…" : "Verify connection" : pageText("continue_2e0262")}</Button>}
     </div>
   </>;
 }

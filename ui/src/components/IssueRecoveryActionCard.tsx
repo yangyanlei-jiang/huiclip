@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { isNativeWorkspaceExportRepairCause } from "@paperclipai/shared";
 import { useWorkspaceIsolationControls } from "@/hooks/useWorkspaceIsolationControls";
@@ -527,6 +528,7 @@ function BreakGlassOverride({
   onConfirm: (reason: string) => void;
   pending: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [reason, setReason] = useState("");
   const trimmedReason = reason.trim();
   const canSubmit = trimmedReason.length > 0 && !pending;
@@ -593,8 +595,7 @@ function BreakGlassOverride({
           </div>
         </dl>
         <div className="space-y-1">
-          <Label htmlFor="recovery-breakglass-reason" className="text-(length:--text-micro) text-muted-foreground">
-            Reason <span className="text-red-600 dark:text-red-400">(required — recorded in the audit log)</span>
+          <Label htmlFor="recovery-breakglass-reason" className="text-(length:--text-micro) text-muted-foreground">{pageText("reason_f219cc") + " "}<span className="text-red-600 dark:text-red-400">(required — recorded in the audit log)</span>
           </Label>
           <Textarea
             id="recovery-breakglass-reason"
@@ -1002,6 +1003,7 @@ export function IssueRecoveryActionCard({
   variant = "full",
   className,
 }: IssueRecoveryActionCardProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { visible: workspaceIsolationControlsVisible } = useWorkspaceIsolationControls();
   const liveness = useMemo(() => ({ scheduledRetry }), [scheduledRetry]);
@@ -1202,11 +1204,11 @@ export function IssueRecoveryActionCard({
                   </>
                 ) : action.ownerType === "board" ? (
                   <>
-                    <span className="font-medium">Board</span>
+                    <span className="font-medium">{pageText("board_e879b0")}</span>
                     <span className="text-muted-foreground">decides the next step only</span>
                   </>
                 ) : action.ownerType === "user" && action.ownerUserId ? (
-                  <span className="font-medium">user {action.ownerUserId.slice(0, 6)}</span>
+                  <span className="font-medium">{pageText("user_12dea9") + " "}{action.ownerUserId.slice(0, 6)}</span>
                 ) : (
                   <span className="text-muted-foreground">unassigned — pick one to wake them</span>
                 )}
@@ -1274,9 +1276,9 @@ export function IssueRecoveryActionCard({
                 <AgentLink agentId={action.ownerAgentId} agentMap={agentMap} />
               </>
             ) : action.ownerType === "board" ? (
-              <span className="font-medium">Board</span>
+              <span className="font-medium">{pageText("board_e879b0")}</span>
             ) : action.ownerType === "user" && action.ownerUserId ? (
-              <span className="font-medium">user {action.ownerUserId.slice(0, 6)}</span>
+              <span className="font-medium">{pageText("user_12dea9") + " "}{action.ownerUserId.slice(0, 6)}</span>
             ) : action.ownerType === "system" ? (
               <span className="font-medium">System</span>
             ) : (
@@ -1315,12 +1317,11 @@ export function IssueRecoveryActionCard({
         <MetadataRow label="Next action">
           {action.nextAction ? <span>{action.nextAction}</span> : <MissingValue />}
         </MetadataRow>
-        <MetadataRow label="Follow-up">
+        <MetadataRow label={pageText("followUp_a931af")}>
           <span className="inline-flex flex-wrap items-center gap-1.5">
             {wakeSummary ? <span>{wakeSummary}</span> : <MissingValue />}
             {showAttempt ? (
-              <span className="rounded-md border border-border/50 bg-background/60 px-1.5 py-0.5 text-(length:--text-micro) text-muted-foreground">
-                attempt {action.attemptCount} of {action.maxAttempts}
+              <span className="rounded-md border border-border/50 bg-background/60 px-1.5 py-0.5 text-(length:--text-micro) text-muted-foreground">{pageText("attempt_38e4e4") + " "}{action.attemptCount} of {action.maxAttempts}
               </span>
             ) : null}
             {showTimeoutInline ? (
@@ -1449,7 +1450,7 @@ export function IssueRecoveryActionCard({
                 </div>
                 <dl className="space-y-1 rounded-md border border-border/70 bg-muted/30 px-2.5 py-2 text-(length:--text-micro)">
                   <div className="flex items-center justify-between gap-2">
-                    <dt className="text-muted-foreground">Base ref</dt>
+                    <dt className="text-muted-foreground">{pageText("baseRef_16e96d")}</dt>
                     <dd className="min-w-0 truncate font-mono text-foreground/90">{reissueBaseRef}</dd>
                   </div>
                   <div className="flex items-center justify-between gap-2">
@@ -1480,7 +1481,7 @@ export function IssueRecoveryActionCard({
                     })
                   }
                 >
-                  {reissuePending ? "Creating…" : "Create isolated re-issue"}
+                  {reissuePending ? pageText("creating_94d7d8") : "Create isolated re-issue"}
                 </Button>
               </PopoverContent>
             </Popover>

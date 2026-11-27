@@ -1,3 +1,5 @@
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { SkillsPageNavigation } from "@/components/skill-studio/SkillsNavigationTabs";
 import { interactionReadinessRefetchInterval } from "@/lib/issue-thread-interactions";
@@ -276,6 +278,7 @@ function useIsMobile() {
 // ---------------------------------------------------------------------------
 
 export function SkillStudio() {
+  const { t: pageText } = usePageTranslation("interface");
   const { skillId = "" } = useParams<{ skillId: string }>();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -366,7 +369,7 @@ export function SkillStudio() {
     );
   }
   if (detailQuery.isLoading || detailView.kind === "reconnecting") {
-    return <StudioMessage message="Loading skill…" />;
+    return <StudioMessage message={pageText("loadingSkill_2d9a92")} />;
   }
   // "Not found" only for a real 404; an outage never looks like a missing skill.
   if (detailView.kind === "error" && detailView.errorKind !== "not_found") {
@@ -458,6 +461,7 @@ function StudioNewSkillPanel({
   forkLoading: boolean;
   forkError: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -503,7 +507,7 @@ function StudioNewSkillPanel({
       toast?.pushToast({
         tone: "error",
         title: "Skill creation failed",
-        body: error instanceof Error ? error.message : "Failed to create skill.",
+        body: error instanceof Error ? error.message : interfaceMessage("interface:errorFailedToCreateSkillSentence"),
       });
     },
   });
@@ -680,7 +684,7 @@ function StudioNewSkillPanel({
                 draft.sharingScope === scope ? "border-foreground bg-accent/50" : "border-border",
               )}
             >
-              <span className="block font-medium">{scope === "company" ? "Organization" : "Private"}</span>
+              <span className="block font-medium">{scope === "company" ? pageText("organization_519255") : pageText("private_237dfa")}</span>
               <span className="mt-1 block text-xs text-muted-foreground">
                 {scope === "company" ? "Visible inside this organization." : "Only visible in your library."}
               </span>
@@ -710,7 +714,7 @@ function StudioNewSkillPanel({
         <Button variant="ghost" onClick={() => navigate("/skills/studio")} disabled={createSkill.isPending}>{translateUi("interfaceCopy.cancel")}</Button>
         <Button onClick={() => createSkill.mutate()} disabled={createSkill.isPending || !nameValid}>
           <FilePlus className="h-4 w-4" />
-          {createSkill.isPending ? "Creating..." : draft.forkedFromSkillId ? "Create fork" : "Create skill"}
+          {createSkill.isPending ? pageText("creating_28ea76") : draft.forkedFromSkillId ? "Create fork" : pageText("createSkill_f7fc4f")}
         </Button>
       </div>
     </div>
@@ -736,6 +740,7 @@ function StudioEmptyState({
   onSelectSkill: (skillId: string) => void;
   onCreateNew: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <TooltipProvider delayDuration={200}>
       <div className="flex h-full min-h-0 flex-col">
@@ -752,7 +757,7 @@ function StudioEmptyState({
         <div className="flex flex-1 items-center justify-center">
           <EmptyState
             icon={FileCode}
-            message={skillsLoading ? "Loading skills..." : "Select a skill to open Studio."}
+            message={skillsLoading ? pageText("loadingSkills_18f634") : "Select a skill to open Studio."}
             action="Create a new skill"
             onAction={onCreateNew}
           />
@@ -779,6 +784,7 @@ function StudioLanding({
   onSelectSkill: (skillId: string) => void;
   onCreateNew: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   // Recency-sorted list, enriched with the last human editor (PAP-13149) — the
   // source for both landing sections. Kept separate from the alphabetical
   // switcher list so each cache stays sorted the way its consumer expects.
@@ -822,9 +828,7 @@ function StudioLanding({
             emptyLabel="Select skill"
           />
           <Button variant="ghost" size="sm" className="ml-auto" onClick={onCreateNew}>
-            <Plus className="mr-1.5 h-3.5 w-3.5" />
-            New skill
-          </Button>
+            <Plus className="mr-1.5 h-3.5 w-3.5" />{pageText("newSkill_a7b490")}</Button>
         </header>
         <SkillsPageNavigation activeView="authored" />
         <div className="min-h-0 flex-1 overflow-auto">
@@ -883,6 +887,7 @@ function StudioLandingRow({
   skill: CompanySkillListItem;
   onSelect: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const editor = skillEditorAvatar(skill.lastEditor);
   return (
     <button
@@ -897,8 +902,7 @@ function StudioLandingRow({
           <span className="truncate text-xs text-muted-foreground">{skill.tagline}</span>
         ) : null}
       </span>
-      <span className="shrink-0 text-xs text-muted-foreground">
-        updated {relativeTime(skill.updatedAt)}
+      <span className="shrink-0 text-xs text-muted-foreground">{pageText("updated_13a189") + " "}{relativeTime(skill.updatedAt)}
       </span>
       {editor ? (
         <Tooltip>
@@ -1230,6 +1234,7 @@ function SkillSwitcher({
   onSelectSkill: (skillId: string) => void;
   emptyLabel?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const groups = useMemo<readonly SearchableSelectGroup<string, SkillSwitcherOption>[]>(() => {
     const options: SkillSwitcherOption[] = withCurrentSkill(skills, skill).map((item) => ({
       key: item.id,
@@ -1249,7 +1254,7 @@ function SkillSwitcher({
       loading={loading}
       loadingMessage="Loading skills..."
       placeholder={emptyLabel}
-      searchPlaceholder="Search skills..."
+      searchPlaceholder={pageText("searchSkills_d4e6fa")}
       emptyMessage="No matching skills."
       onValueChange={(value) => {
         if (value !== skill?.id) onSelectSkill(value);
@@ -1293,6 +1298,7 @@ function SkillPane({
   onDirtyChange: (dirty: boolean) => void;
   onEditACopy: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const skillId = skill.id;
   const queryClient = useQueryClient();
@@ -1559,9 +1565,7 @@ function SkillPane({
                 className="mt-2"
                 onClick={onEditACopy}
               >
-                <GitFork className="mr-1.5 h-3.5 w-3.5" />
-                Make a copy
-              </Button>
+                <GitFork className="mr-1.5 h-3.5 w-3.5" />{pageText("makeACopy_fdf343")}</Button>
             </div>
           </div>
         )}
@@ -1581,7 +1585,7 @@ function SkillPane({
                   disabled={!dirty || saveMutation.isPending}
                   onClick={() => saveMutation.mutate({ path: selectedFile, content: draft, versionId: baseVersionId })}
                 >
-                  {saveMutation.isPending ? "Saving…" : "Save"}
+                  {saveMutation.isPending ? pageText("saving_56a228") : pageText("save_efc007")}
                 </Button>
               </>
             )}
@@ -1720,6 +1724,7 @@ function SkillFileActions({
   onDeleteFile: () => void;
   onDeleteFolder: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const disabled = readOnly || pending;
   const deleteDisabled = disabled || !canDeleteFile;
@@ -1728,22 +1733,22 @@ function SkillFileActions({
       <Tooltip>
         <TooltipTrigger asChild>
           <span>
-            <Button variant="ghost" size="icon-sm" disabled={disabled} onClick={onAddFile} aria-label="Add file">
+            <Button variant="ghost" size="icon-sm" disabled={disabled} onClick={onAddFile} aria-label={pageText("addFile_4881d0")}>
               <FilePlus className="h-4 w-4" />
             </Button>
           </span>
         </TooltipTrigger>
-        <TooltipContent>Add file</TooltipContent>
+        <TooltipContent>{pageText("addFile_4881d0")}</TooltipContent>
       </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
           <span>
-            <Button variant="ghost" size="icon-sm" disabled={disabled} onClick={onAddFolder} aria-label="Add folder">
+            <Button variant="ghost" size="icon-sm" disabled={disabled} onClick={onAddFolder} aria-label={pageText("addFolder_03eb1a")}>
               <FolderPlus className="h-4 w-4" />
             </Button>
           </span>
         </TooltipTrigger>
-        <TooltipContent>Add folder</TooltipContent>
+        <TooltipContent>{pageText("addFolder_03eb1a")}</TooltipContent>
       </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
@@ -1757,13 +1762,13 @@ function SkillFileActions({
                   onDeleteFile();
                 }
               }}
-              aria-label="Delete file"
+              aria-label={pageText("deleteFile_b9ea4b")}
             >
               <Trash2 className="h-4 w-4" />
             </Button>
           </span>
         </TooltipTrigger>
-        <TooltipContent>{canDeleteFile ? "Delete file" : "SKILL.md cannot be deleted"}</TooltipContent>
+        <TooltipContent>{canDeleteFile ? pageText("deleteFile_b9ea4b") : "SKILL.md cannot be deleted"}</TooltipContent>
       </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
@@ -1970,6 +1975,7 @@ function InputPane({
   onSelectInput: (id: string) => void;
   onSelectAdHoc: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const onError = useMutationErrorToast();
@@ -2177,8 +2183,7 @@ function InputPane({
                               variant="destructive"
                               onClick={() => deleteMutation.mutate(id)}
                             >
-                              <Trash2 className="mr-2 h-4 w-4" /> Delete
-                            </DropdownMenuItem>
+                              <Trash2 className="mr-2 h-4 w-4" />{" " + pageText("delete_f6fdbe")}</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       );
@@ -2225,7 +2230,7 @@ function InputPane({
                   disabled={!canSaveSelectedInput || updateMutation.isPending}
                   onClick={() => updateMutation.mutate({ content: draft })}
                 >
-                  {updateMutation.isPending ? "Saving..." : "Save changes"}
+                  {updateMutation.isPending ? pageText("saving_ae7e88") : pageText("saveChanges_179359")}
                 </Button>
               </>
             ) : null}
@@ -2380,6 +2385,7 @@ function RunsPane({
   filterInput: CompanySkillTestInput | null;
   onClearFilter: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const skillId = skill.id;
   const queryClient = useQueryClient();
   const onError = useMutationErrorToast();
@@ -2584,8 +2590,7 @@ function RunsPane({
                   disabled={gate.disabled || Boolean(templateGateReason) || createRunMutation.isPending}
                   onClick={() => createRunMutation.mutate()}
                 >
-                  <Play className="mr-1.5 h-3.5 w-3.5" /> Run
-                </Button>
+                  <Play className="mr-1.5 h-3.5 w-3.5" />{" " + pageText("run_b1b392")}</Button>
               </span>
             </TooltipTrigger>
             {runDisabledReason && <TooltipContent side="bottom">{runDisabledReason}</TooltipContent>}
@@ -2634,7 +2639,7 @@ function RunsPane({
         )}
         <div className="min-h-0 flex-1 overflow-auto p-3">
           {runsQuery.isLoading ? (
-            <div className="text-xs text-muted-foreground">Loading runs…</div>
+            <div className="text-xs text-muted-foreground">{pageText("loadingRuns_9dd9a8")}</div>
           ) : runs.length === 0 ? (
             <EmptyState icon={FlaskConical} message="No test runs yet. Pick an agent and Run." />
           ) : (
@@ -2715,6 +2720,7 @@ function RunTemplateAdvancedPanel({
   deletingTemplateId: string | null;
   actionPending: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const templateGroups = useMemo<readonly SearchableSelectGroup<string, RunTemplateOption>[]>(() => {
     const noTemplateOption: RunTemplateOption = {
@@ -2775,8 +2781,8 @@ function RunTemplateAdvancedPanel({
                 loading={templatesLoading}
                 disabled={templatesLoading || templatesError}
                 loadingMessage="Loading templates..."
-                placeholder="Select template"
-                searchPlaceholder="Search templates..."
+                placeholder={pageText("selectTemplate_422dc6")}
+                searchPlaceholder={pageText("searchTemplates_2cc6fc")}
                 emptyMessage="No templates."
                 contentClassName="w-(--sz-320px)"
                 onValueChange={(value) => onSelectTemplate(runTemplateSelectionFromOption(value))}
@@ -2785,7 +2791,7 @@ function RunTemplateAdvancedPanel({
                   <span className="flex min-w-0 flex-col">
                     <span className={cn("truncate", selected && "font-medium")}>{option.label}</span>
                     <span className="truncate text-(length:--text-micro) text-muted-foreground">
-                      {option.description ?? (option.builtIn ? "Built in" : "Custom")}
+                      {option.description ?? (option.builtIn ? "Built in" : pageText("custom_081ae3"))}
                     </span>
                   </span>
                 )}
@@ -2878,7 +2884,7 @@ function RunTemplateAdvancedPanel({
               </pre>
             </div>
           ) : (
-            <p className="text-xs text-muted-foreground">Loading template...</p>
+            <p className="text-xs text-muted-foreground">{pageText("loadingTemplate_7043b2")}</p>
           )}
         </div>
       ) : null}
@@ -2897,6 +2903,7 @@ function RunTemplateDialog({
   onOpenChange: (open: boolean) => void;
   onSubmit: (payload: CompanySkillTestRunTemplateCreateRequest) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const source = state?.source ?? null;
   const [name, setName] = useState("");
@@ -2970,7 +2977,7 @@ function RunTemplateDialog({
               })
             }
           >
-            {pending ? "Saving..." : "Save template"}
+            {pending ? pageText("saving_ae7e88") : "Save template"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -3017,6 +3024,7 @@ function AgentPicker({
   selectedAgent: Agent | null;
   onSelect: (id: string) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [open, setOpen] = useState(false);
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -3031,7 +3039,7 @@ function AgentPicker({
       </PopoverTrigger>
       <PopoverContent align="end" className="w-64 p-0">
         <Command>
-          <CommandInput placeholder="Search agents…" />
+          <CommandInput placeholder={pageText("searchAgents_97ce8a")} />
           <CommandList>
             <CommandEmpty>No agents.</CommandEmpty>
             <CommandGroup>
@@ -3058,9 +3066,7 @@ function AgentPicker({
                     />
                     <AgentIdentity agent={agent} size="xs" />
                     {!selectable && (
-                      <Badge variant="secondary" className="ml-auto">
-                        Paused
-                      </Badge>
+                      <Badge variant="secondary" className="ml-auto">{pageText("paused_c7dfb6")}</Badge>
                     )}
                   </CommandItem>
                 );
@@ -3092,6 +3098,7 @@ function RunDetailView({
   onBack: () => void;
   onSelectRun: (id: string | null) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const skillId = skill.id;
   const queryClient = useQueryClient();
@@ -3159,7 +3166,7 @@ function RunDetailView({
   if (detailQuery.isLoading) {
     return (
       <PaneScaffold title={translateUi("interfaceCopy.run")} action={<BackButton onBack={onBack} />}>
-        <div className="p-3 text-xs text-muted-foreground">Loading run…</div>
+        <div className="p-3 text-xs text-muted-foreground">{pageText("loadingRun_f91e59")}</div>
       </PaneScaffold>
     );
   }
@@ -3197,7 +3204,7 @@ function RunDetailView({
         {/* snapshot property block */}
         <div className="rounded-md border border-border text-xs">
           <PropRow label={translateUi("interfaceCopy.input")} value={detail.inputId ? "saved input" : "ad-hoc paste"} />
-          <PropRow label="Template" value={detail.templateName ?? "No template"} />
+          <PropRow label={pageText("template_3ec1ae")} value={detail.templateName ?? "No template"} />
           <PropRow label="Skill version" value={`v${detail.skillVersion.revisionNumber}`} />
           <PropRow label={translateUi("interfaceCopy.created")} value={relativeTime(detail.createdAt)} />
         </div>
@@ -3303,8 +3310,7 @@ function RunDetailView({
               disabled={deleteMutation.isPending}
               onClick={() => deleteMutation.mutate()}
             >
-              <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Delete
-            </Button>
+              <Trash2 className="mr-1.5 h-3.5 w-3.5" />{" " + pageText("delete_f6fdbe")}</Button>
           )}
           {taskLink.enabled && detail.harnessIssue ? (
             <Button variant="link" size="sm" asChild>
@@ -3664,10 +3670,10 @@ function PropRow({ label, value }: { label: string; value: string }) {
 }
 
 function BackButton({ onBack }: { onBack: () => void }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <Button variant="ghost" size="sm" onClick={onBack}>
-      <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Back
-    </Button>
+      <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />{" " + pageText("back_b52b36")}</Button>
   );
 }
 
@@ -3680,11 +3686,12 @@ function MobileTabs({
   input: React.ReactNode;
   runs: React.ReactNode;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   return (
     <Tabs defaultValue="skill" className="flex flex-1 flex-col">
       <TabsList variant="line" className="px-3">
-        <TabsTrigger value="skill">Skill</TabsTrigger>
+        <TabsTrigger value="skill">{pageText("skill_ec9f63")}</TabsTrigger>
         <TabsTrigger value="input">{translateUi("interfaceCopy.input")}</TabsTrigger>
         <TabsTrigger value="runs">{translateUi("interfaceCopy.runs")}</TabsTrigger>
       </TabsList>

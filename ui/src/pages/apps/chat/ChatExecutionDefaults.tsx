@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useId, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -22,6 +23,7 @@ export function ChatExecutionDefaults({ companyId, value, resource = false, onSa
   resource?: boolean;
   onSave: (defaults: Defaults | null) => Promise<void>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const id = useId();
   const [draft, setDraft] = useState<Defaults | null>(null);
@@ -82,7 +84,7 @@ export function ChatExecutionDefaults({ companyId, value, resource = false, onSa
       </NativeSelect>
     </div>
     <div className="space-y-2">
-      <label htmlFor={`${id}-workspace`} className="text-sm font-medium">Workspace</label>
+      <label htmlFor={`${id}-workspace`} className="text-sm font-medium">{pageText("workspace_4ca0a7")}</label>
       <NativeSelect id={`${id}-workspace`} value={workspaceValue} disabled={pending || projects.isPending || workspaces.isPending} onChange={(event) => {
         const key = event.target.value;
         const { workspace: _previous, ...rest } = current;
@@ -108,7 +110,7 @@ export function ChatExecutionDefaults({ companyId, value, resource = false, onSa
     {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
     <div className="flex items-center justify-between gap-3">
       <div>{dirty ? <Button type="button" variant="ghost" disabled={pending} onClick={() => { setDraft(null); setError(null); }}>{translateUi("interfaceCopy.cancel")}</Button> : saved ? <span role="status" className="text-sm text-muted-foreground">Saved for new tasks.</span> : null}</div>
-      <Button type="submit" disabled={!dirty || pending}>{pending ? "Saving…" : "Save defaults"}</Button>
+      <Button type="submit" disabled={!dirty || pending}>{pending ? pageText("saving_56a228") : "Save defaults"}</Button>
     </div>
   </form>;
 }

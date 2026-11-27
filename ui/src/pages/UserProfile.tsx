@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -61,24 +62,25 @@ function HeroStat({ label, value, hint }: { label: string; value: string; hint?:
 }
 
 function WindowColumn({ stats }: { stats: UserProfileWindowStats }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const tokens = totalTokens(stats);
   return (
     <div className="flex min-w-0 flex-col gap-4 border-l border-border pl-5 first:border-l-0 first:pl-0">
       <div className="flex items-baseline justify-between gap-3">
         <h2 className="text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">{stats.label}</h2>
-        <span className="text-(length:--text-micro) text-muted-foreground tabular-nums">{completionRate(stats)} done</span>
+        <span className="text-(length:--text-micro) text-muted-foreground tabular-nums">{completionRate(stats)}{" " + pageText("done_e5fd9c")}</span>
       </div>
 
       <div className="grid grid-cols-2 gap-x-5 gap-y-3">
         <Metric value={formatNumber(stats.touchedIssues)} label="Touched" />
-        <Metric value={formatNumber(stats.completedIssues)} label="Completed" />
-        <Metric value={formatNumber(stats.commentCount)} label="Comments" />
-        <Metric value={formatNumber(stats.activityCount)} label="Actions" />
+        <Metric value={formatNumber(stats.completedIssues)} label={pageText("completed_1798b3")} />
+        <Metric value={formatNumber(stats.commentCount)} label={pageText("comments_fce06e")} />
+        <Metric value={formatNumber(stats.activityCount)} label={pageText("actions_c3cd63")} />
       </div>
 
       <div className="grid grid-cols-2 gap-x-5 gap-y-1.5 pt-3 text-xs tabular-nums text-muted-foreground">
-        <span>Tokens</span>
+        <span>{pageText("tokens_c38c6c")}</span>
         <span className="text-right text-foreground">{formatTokens(tokens)}</span>
         <span>Spend</span>
         <span className="text-right text-foreground">{formatCents(stats.costCents)}</span>
@@ -101,6 +103,7 @@ function Metric({ value, label }: { value: string; label: string }) {
 }
 
 function UsageChart({ points }: { points: UserProfileDailyPoint[] }) {
+  const { t: pageText } = usePageTranslation("interface");
   const totals = points.map((point) => totalTokens(point));
   const maxTokens = Math.max(1, ...totals);
   const maxCompleted = Math.max(1, ...points.map((point) => point.completedIssues));
@@ -109,7 +112,7 @@ function UsageChart({ points }: { points: UserProfileDailyPoint[] }) {
   return (
     <section>
       <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-3">
-        <h2 className="text-sm font-semibold">Last 14 days</h2>
+        <h2 className="text-sm font-semibold">{pageText("last14Days_73fccb")}</h2>
         <div className="flex items-baseline gap-4 text-xs text-muted-foreground">
           <span className="tabular-nums text-foreground">{formatTokens(totalTokensSum)}</span>
           <span>tokens total</span>
@@ -206,6 +209,7 @@ function UsageList({
 }
 
 export function UserProfile() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { userSlug = "" } = useParams<{ userSlug: string }>();
   const { selectedCompanyId } = useCompany();
@@ -315,7 +319,7 @@ export function UserProfile() {
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <HeroStat label="All-time tokens" value={formatTokens(allTimeTokens)} hint={formatCents(allTime?.costCents ?? 0) + " spent"} />
-          <HeroStat label="Completed" value={formatNumber(allTime?.completedIssues ?? 0)} hint={allTime ? `${completionRate(allTime)} rate` : undefined} />
+          <HeroStat label={pageText("completed_1798b3")} value={formatNumber(allTime?.completedIssues ?? 0)} hint={allTime ? `${completionRate(allTime)} rate` : undefined} />
           <HeroStat label="Open assigned" value={formatNumber(allTime?.assignedOpenIssues ?? 0)} hint={`${formatNumber(allTime?.createdIssues ?? 0)} created`} />
           <HeroStat label="7-day actions" value={formatNumber(last7?.activityCount ?? 0)} hint={`${formatNumber(last7?.commentCount ?? 0)} comments`} />
         </div>
@@ -330,7 +334,7 @@ export function UserProfile() {
       <div className="grid gap-10 pt-2 xl:grid-cols-2">
         <section>
           <div className="flex items-baseline justify-between gap-3 border-b border-border pb-3">
-            <h2 className="text-sm font-semibold">Recent tasks</h2>
+            <h2 className="text-sm font-semibold">{pageText("recentTasks_21bcad")}</h2>
             <span className="text-xs text-muted-foreground tabular-nums">{data.recentIssues.length}</span>
           </div>
           {data.recentIssues.length === 0 ? (

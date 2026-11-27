@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -23,6 +24,7 @@ export function NewProjectDialog() {
 }
 
 export function NewProjectForm({ companyId, onClose }: { companyId: string; onClose: () => void }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const client = useQueryClient();
   const [name, setName] = useState("");
@@ -51,7 +53,7 @@ export function NewProjectForm({ companyId, onClose }: { companyId: string; onCl
       </div> : <form className="flex min-h-0 flex-col overflow-hidden" onSubmit={(event) => { event.preventDefault(); if (name.trim() && !create.isPending) create.mutate(); }}>
         <div className="flex shrink-0 flex-col gap-4 px-5 pb-4 pt-5">
           <div className="flex items-center justify-between gap-3">
-            <DialogTitle className="text-lg font-semibold">Create project</DialogTitle>
+            <DialogTitle className="text-lg font-semibold">{pageText("createProject_a8d8ff")}</DialogTitle>
             <Button type="button" variant="ghost" size="icon-sm" disabled={create.isPending} aria-label="Close new project" onClick={onClose}><X className="size-4" /></Button>
           </div>
           <div className="flex items-center gap-3 rounded-lg border border-input px-3 focus-within:border-ring focus-within:ring-1 focus-within:ring-ring">
@@ -66,7 +68,7 @@ export function NewProjectForm({ companyId, onClose }: { companyId: string; onCl
         {create.status === "error" && <p role="alert" className="px-5 pt-3 text-sm text-destructive">{describeError(create.error).body}</p>}
         <div className="flex shrink-0 justify-end gap-2 px-5 py-5">
           <Button type="button" variant="ghost" disabled={create.isPending} onClick={onClose}>{translateUi("interfaceCopy.cancel")}</Button>
-          <Button type="submit" disabled={!name.trim() || create.isPending}>{create.isPending ? "Creating…" : "Create project"}</Button>
+          <Button type="submit" disabled={!name.trim() || create.isPending}>{create.isPending ? pageText("creating_94d7d8") : pageText("createProject_a8d8ff")}</Button>
         </div>
       </form>}
     </DialogContent>

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useQueryView } from "@/components/QueryView";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -16,6 +17,7 @@ export function CaseDocumentPreview({ caseIdentifier, document: documentRef }: {
   caseIdentifier: string;
   document: CaseDocumentRef | CaseTaskDocumentRef;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [open, setOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const taskRef = "sourceKind" in documentRef ? documentRef : null;
@@ -32,7 +34,7 @@ export function CaseDocumentPreview({ caseIdentifier, document: documentRef }: {
       <Button variant="ghost" aria-label={documentRef.document.title ?? documentRef.key} className="h-auto w-full justify-start gap-3 rounded-none px-0 py-3 text-left font-normal whitespace-normal">
         <FileText aria-hidden className="size-4 shrink-0 text-muted-foreground" />
         <span className="min-w-0 flex-1">{documentRef.document.title ?? documentRef.key}</span>
-        {taskRef && <span className="shrink-0 font-mono text-xs text-muted-foreground">{taskRef.taskIdentifier ?? "Task"}</span>}
+        {taskRef && <span className="shrink-0 font-mono text-xs text-muted-foreground">{taskRef.taskIdentifier ?? pageText("task_7bb0dd")}</span>}
       </Button>
     </DialogTrigger>
     <DialogContent className="max-h-(--pct-80) overflow-y-auto sm:max-w-3xl">

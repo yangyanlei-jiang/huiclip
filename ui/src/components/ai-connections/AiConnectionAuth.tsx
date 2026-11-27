@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,7 @@ function AuthAttempt({
   onCancel,
   onDone,
 }: AiConnectionAuthProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [value, setValue] = useState("");
   const info = AI_PROVIDERS[provider];
@@ -69,7 +71,7 @@ function AuthAttempt({
       className="flex flex-col gap-4"
     >
       <div className="flex flex-col gap-1">
-        <h3 className="text-sm font-semibold">Connect {info.name}</h3>
+        <h3 className="text-sm font-semibold">{pageText("connect_b65463") + " "}{info.name}</h3>
         <p className="text-xs text-muted-foreground">
           {aiMethodLabel(provider, method)}
         </p>
@@ -107,7 +109,7 @@ function AuthAttempt({
                   value={value}
                   onChange={setValue}
                   onSubmit={submit}
-                  placeholder="Enter API key here"
+                  placeholder={pageText("enterAPIKeyHere_4991fd")}
                   disabled={busy}
                   autoFocus
                 />
@@ -161,13 +163,11 @@ function AuthAttempt({
             {!unsupported &&
               (method === "api_key" ? (
                 <Button disabled={busy || !value.trim()} onClick={submit}>
-                  {busy ? "Connecting…" : "Connect"}
+                  {busy ? pageText("connecting_fd3e79") : pageText("connect_b65463")}
                 </Button>
               ) : state.phase === "waiting" ? (
                 provider === "anthropic" ? (
-                  <Button disabled={!value.trim()} onClick={submit}>
-                    Submit code
-                  </Button>
+                  <Button disabled={!value.trim()} onClick={submit}>{pageText("submitCode_32aefb")}</Button>
                 ) : (
                   <span role="status" className="text-sm text-muted-foreground">
                     Waiting for sign-in…
@@ -176,10 +176,10 @@ function AuthAttempt({
               ) : (
                 <Button disabled={busy} onClick={onStart}>
                   {busy
-                    ? "Preparing sign-in…"
+                    ? pageText("preparingSignIn_514845")
                     : state.phase === "idle"
-                      ? "Sign in"
-                      : "Try again"}
+                      ? pageText("signIn_ada2e9")
+                      : pageText("tryAgain_042c86")}
                 </Button>
               ))}
           </div>

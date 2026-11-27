@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState, type ReactNode } from "react";
 import { RefreshCw, Unplug } from "lucide-react";
 import type { ConnectionGrant } from "@paperclipai/shared";
@@ -23,6 +24,7 @@ export function AiConnectionAccountControls({
   onRevoke: () => void | Promise<void>;
   revocationDetails?: ReactNode;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [revoking, setRevoking] = useState(false);
   const [revokePending, setRevokePending] = useState(false);
   const [revokeError, setRevokeError] = useState<string>();
@@ -48,11 +50,11 @@ export function AiConnectionAccountControls({
       )}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0 text-sm">
-          <p className="break-words text-xs text-muted-foreground">{account.method === "subscription" ? "Subscription" : "API key"}{account.accountLabel ? ` · ${account.accountLabel}` : ""}</p>
+          <p className="break-words text-xs text-muted-foreground">{account.method === "subscription" ? pageText("subscription_8fde48") : pageText("apiKey_cf678c")}{account.accountLabel ? ` · ${account.accountLabel}` : ""}</p>
         </div>
         {!readOnly && grant.capabilities?.canRevoke && (
           <div className="flex flex-wrap items-center gap-2">
-            {<Button variant="outline" size="sm" onClick={onReconnect}><RefreshCw className="size-4" aria-hidden />Reconnect</Button>}
+            {<Button variant="outline" size="sm" onClick={onReconnect}><RefreshCw className="size-4" aria-hidden />{pageText("reconnect_6988b1")}</Button>}
             {account.status !== "revoked" && <Button variant="ghost" size="sm" className="text-destructive" onClick={() => setRevoking(true)}><Unplug className="size-4" aria-hidden />Revoke identity</Button>}
           </div>
         )}

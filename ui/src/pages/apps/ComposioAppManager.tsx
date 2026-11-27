@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -30,6 +31,7 @@ export function ComposioAppManager({ app, connections, initialConnectionId, onCl
 }
 
 function ComposioAccountObservations({ app, connection, onClose }: { app: AggregatorAppCatalogEntry; connection: ToolConnection; onClose: () => void }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const queries = useQueryClient();
   const key = queryKeys.tools.composioApps(connection.id);
@@ -53,7 +55,7 @@ function ComposioAccountObservations({ app, connection, onClose }: { app: Aggreg
   return <>
     {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
     {accountsView.kind === "error" ? <QueryErrorState error={accountsQuery.error} action="load Composio accounts" onRetry={accountsView.retry} retrying={accountsView.isFetching} /> : null}
-    {accountsQuery.isLoading || accountsView.kind === "reconnecting" ? <p role="status" className="text-sm text-muted-foreground">Loading accounts…</p> : accounts.length === 0 ? <p className="text-sm text-muted-foreground">No connected {app.name} accounts.</p> : <div className="divide-y divide-border">
+    {accountsQuery.isLoading || accountsView.kind === "reconnecting" ? <p role="status" className="text-sm text-muted-foreground">{pageText("loadingAccounts_cef47e")}</p> : accounts.length === 0 ? <p className="text-sm text-muted-foreground">No connected {app.name} accounts.</p> : <div className="divide-y divide-border">
       {accounts.map(({ account, snapshot }) => <div key={`${snapshot.toolkit}:${account.id}`} className="py-3">
         <p className="truncate text-sm font-medium">{account.alias || `${app.name} account`}</p>
         <p className="text-xs text-muted-foreground">{snapshot.errorAt || Date.now() - new Date(snapshot.checkedAt).getTime() > 5 * 60_000
@@ -65,7 +67,7 @@ function ComposioAccountObservations({ app, connection, onClose }: { app: Aggreg
       <p>Composio permissions apply to all apps on this connection.</p>
     </div>
     <DialogFooter className="sm:items-center sm:justify-between"><Button variant="ghost" onClick={onClose}>{translateUi("interfaceCopy.close")}</Button>
-      <div className="flex items-center gap-2"><Button variant="ghost" disabled={busy} onClick={() => void refresh()}>{busy ? "Checking…" : "Refresh"}</Button>
+      <div className="flex items-center gap-2"><Button variant="ghost" disabled={busy} onClick={() => void refresh()}>{busy ? pageText("checking_820d60") : pageText("refresh_56e3ba")}</Button>
         <Button asChild><a href={COMPOSIO_APP_MANAGEMENT_URL} target="_blank" rel="noopener noreferrer">Open in Composio<ExternalLink className="size-4" /></a></Button></div>
     </DialogFooter>
   </>;

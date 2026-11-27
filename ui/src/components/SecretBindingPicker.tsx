@@ -1,3 +1,5 @@
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { createContext, useContext, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -95,6 +97,7 @@ export function SecretBindingPicker({
   disabled,
   statusFilter = ["active"],
 }: SecretBindingPickerProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { selectedCompanyId } = useCompany();
@@ -150,7 +153,7 @@ export function SecretBindingPicker({
       setCreateError(null);
     },
     onError: (error) => {
-      setCreateError(error instanceof Error ? error.message : "Failed to create secret");
+      setCreateError(error instanceof Error ? error.message : interfaceMessage("interface:errorFailedToCreateSecret"));
     },
   });
 
@@ -171,8 +174,7 @@ export function SecretBindingPicker({
               onClick={() => onChange(null)}
               disabled={disabled}
             >
-              <X className="h-3 w-3" /> Clear
-            </button>
+              <X className="h-3 w-3" />{" " + pageText("clear_719ea3")}</button>
           ) : null}
         </div>
       ) : null}
@@ -245,7 +247,7 @@ export function SecretBindingPicker({
           size="sm"
           onClick={() => setCreateOpen(true)}
           disabled={disabled || !selectedCompanyId}
-          aria-label="Create secret"
+          aria-label={pageText("createSecret_f13847")}
         >
           <Plus className="h-3.5 w-3.5" />
         </Button>

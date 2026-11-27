@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ export function PhotonConnectStep({
     values?: Record<string, string>,
   ): void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [projectId, setProjectId] = useState(endpoint.providerAccountId ?? "");
   const [projectSecret, setProjectSecret] = useState("");
   const [lineId, setLineId] = useState("");
@@ -47,8 +49,7 @@ export function PhotonConnectStep({
     <div className="space-y-5">
       <div className="space-y-2">
         <h1 className="text-xl font-bold">Connect iMessage Photon</h1>
-        <p className="text-sm text-muted-foreground">
-          Connect {agentName} to Photon Cloud. Pro supports direct messages through
+        <p className="text-sm text-muted-foreground">{pageText("connect_b65463") + " "}{agentName} to Photon Cloud. Pro supports direct messages through
           a shared line. Dedicated numbers also support individually enabled groups.
         </p>
         <p className="text-sm">
@@ -181,7 +182,7 @@ export function PhotonConnectStep({
           }
         >
           {pending
-            ? "Connecting…"
+            ? pageText("connecting_fd3e79")
             : repairing
               ? "Reconnect Photon"
               : inspection.data?.allocation === "shared" ? "Connect shared DMs" : "Connect selected number"}

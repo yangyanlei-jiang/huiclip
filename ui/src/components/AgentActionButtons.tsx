@@ -1,3 +1,5 @@
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "@/lib/router";
@@ -84,11 +86,12 @@ export function PauseResumeButton({
   disabled?: boolean;
   size?: "sm" | "default";
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (isPaused) {
     return (
       <Button variant="outline" size={size} onClick={onResume} disabled={disabled}>
         <Play className="h-3.5 w-3.5 sm:mr-1" />
-        <span className="hidden sm:inline">Resume</span>
+        <span className="hidden sm:inline">{pageText("resume_b3bd0b")}</span>
       </Button>
     );
   }
@@ -96,7 +99,7 @@ export function PauseResumeButton({
   return (
     <Button variant="outline" size={size} onClick={onPause} disabled={disabled}>
       <Pause className="h-3.5 w-3.5 sm:mr-1" />
-      <span className="hidden sm:inline">Pause</span>
+      <span className="hidden sm:inline">{pageText("pause_781961")}</span>
     </Button>
   );
 }
@@ -223,6 +226,7 @@ export function AgentActionButtons({
   children?: React.ReactNode;
   className?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -337,7 +341,7 @@ export function AgentActionButtons({
       navigate(`/agents/${agentRouteRef(createdAgent)}/dashboard`);
     },
     onError: (err) => {
-      const message = err instanceof Error ? err.message : "Failed to duplicate agent";
+      const message = err instanceof Error ? err.message : interfaceMessage("interface:errorFailedToDuplicateAgent");
       onActionError?.(message);
       pushToast({ title: "Could not duplicate agent", body: message, tone: "error" });
     },
@@ -360,7 +364,7 @@ export function AgentActionButtons({
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.taskSessions(agent.id) });
     },
     onError: (err) => {
-      reportError(err instanceof Error ? err.message : "Failed to reset session");
+      reportError(err instanceof Error ? err.message : interfaceMessage("interface:errorFailedToResetSession"));
     },
   });
 
@@ -470,9 +474,7 @@ export function AgentActionButtons({
               </button>
             ) : isPaused ? (
               <button type="button" className={item} disabled={pauseResumeDisabled} onClick={select(() => agentAction.mutate("resume"))}>
-                <Play className={icon} />
-                Resume
-              </button>
+                <Play className={icon} />{pageText("resume_b3bd0b")}</button>
             ) : (
               <button
                 type="button"
@@ -480,9 +482,7 @@ export function AgentActionButtons({
                 disabled={pauseResumeDisabled}
                 onClick={select(() => (pauseConfirm ? setPauseConfirmOpen(true) : agentAction.mutate("pause")))}
               >
-                <Pause className={icon} />
-                Pause
-              </button>
+                <Pause className={icon} />{pageText("pause_781961")}</button>
             )}
             <div role="separator" className="-mx-1 my-1 h-px bg-border" />
             {menuItems.map(({ label, icon: Icon, onSelect, disabled: itemDisabled }) => (
@@ -529,15 +529,13 @@ export function AgentActionButtons({
             )}
           </PopoverContent>
         </Popover>
-        {showChat && <Button variant="outline" size="icon" aria-label={`Chat with ${agent.name}`} title="Chat with this agent"
+        {showChat && <Button variant="outline" size="icon" aria-label={`Chat with ${agent.name}`} title={pageText("chatWithThisAgent_a124f2")}
           disabled={disabled} onClick={() => { if (!onBeforeNavigate || onBeforeNavigate()) navigate(`/chats/${canonicalAgentRef}`); }}>
           <MessagesSquare className="size-4" />
         </Button>}
         {needsSetup ? (
           <Button size={size} disabled={disabled} onClick={finishSetup}>
-            <Play className="size-4" />
-            Finish setup
-          </Button>
+            <Play className="size-4" />{pageText("finishSetup_c516d2")}</Button>
         ) : (
           <Button
             size={size}
@@ -584,7 +582,7 @@ export function AgentActionButtons({
             ...(agent.adapterType === "paperclip_runner" ? { runner: "paperclip" } : ["codex_local", "claude_local", "opencode_local", "pi_local"].includes(agent.adapterType) ? { runner: "legacy" } : {}),
             ...pendingAgentSetupChoice(agent),
           })}`);
-        }}>Finish setup</Button>
+        }}>{pageText("finishSetup_c516d2")}</Button>
       ) : showRun && <RunButton
         onClick={() => {
           if (navigateToRunOnInvoke && !confirmNavigationStart(agentActionStartedDirtyRef)) return;

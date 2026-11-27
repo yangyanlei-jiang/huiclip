@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation } from "@/i18n";
 import { PrimaryAgentIndicator } from "@/components/primary-agent/PrimaryAgentPresentation";
 import { AgentBulkRoster } from "@/components/agents/AgentBulkRoster";
@@ -191,6 +192,7 @@ export function filterOrgTree(nodes: OrgNode[], tab: FilterTab, builtInAgentIds:
 export type AgentsView = "list" | "org";
 
 export function Agents({ initialView = "list" }: { initialView?: AgentsView } = {}) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t } = useTranslation();
   const agentChatPins = useAgentChatPins();
   const [query, setQuery] = useState("");
@@ -397,7 +399,7 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
         to={agentUrl(agent)}
         className="agent-roster-identity group py-3 group-hover/agent-pin:bg-accent/50 group-focus-within/agent-pin:bg-accent/50"
         leading={hasInvalidOrgChain ? (
-          <AlertTriangle className="h-3.5 w-3.5 text-amber-500" aria-label="Invalid reporting chain" />
+          <AlertTriangle className="h-3.5 w-3.5 text-amber-500" aria-label={pageText("invalidReportingChain_720f9d")} />
         ) : (
           <AgentAvatar agent={agent} size={32} />
         )}
@@ -465,9 +467,7 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
                     aria-label={`Chat with ${agent.name}`}
                     onClick={() => navigate(`/chats/${agentRouteRef(agent)}`)}
                   >
-                    <MessagesSquare className="size-3.5" aria-hidden />
-                    Chat
-                  </button>
+                    <MessagesSquare className="size-3.5" aria-hidden />{pageText("chat_2ced57")}</button>
                 </TooltipTrigger>
                 <TooltipContent>{t("agents.chat")}</TooltipContent>
               </Tooltip>
@@ -531,6 +531,7 @@ function OrgTreeNode({
   builtInByAgentId: Map<string, BuiltInAgentState>;
   onConfigureBuiltIn: (state: BuiltInAgentState) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t } = useTranslation();
   const agent = agentMap.get(node.id);
   const builtInState = builtInByAgentId.get(node.id);
@@ -544,7 +545,7 @@ function OrgTreeNode({
         className="group flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-accent/50 transition-colors w-full text-left no-underline text-inherit"
       >
         {hasInvalidOrgChain ? (
-          <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" aria-label="Invalid reporting chain" />
+          <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" aria-label={pageText("invalidReportingChain_720f9d")} />
         ) : (
           <AgentAvatar agent={agent ?? node} size={24} />
         )}
@@ -695,6 +696,7 @@ function LiveRunIndicator({
   runId: string;
   liveCount: number;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <Link
       to={`/agents/${agentRef}/runs/${runId}`}
@@ -705,8 +707,7 @@ function LiveRunIndicator({
         <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
         <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
       </span>
-      <span className="text-(length:--text-micro) font-medium text-blue-600 dark:text-blue-400">
-        Live{liveCount > 1 ? ` (${liveCount})` : ""}
+      <span className="text-(length:--text-micro) font-medium text-blue-600 dark:text-blue-400">{pageText("live_65c821")}{liveCount > 1 ? ` (${liveCount})` : ""}
       </span>
     </Link>
   );

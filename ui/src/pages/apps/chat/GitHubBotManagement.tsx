@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useRef, useState } from "react";
 import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -58,6 +59,7 @@ export function GitHubRepositoryAccess({
   onChange: (id: string, enabled: boolean) => void;
   onToggleAll: (enabled: boolean) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const client = useQueryClient();
   const [search, setSearch] = useState("");
@@ -87,13 +89,13 @@ export function GitHubRepositoryAccess({
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-base font-semibold">Repositories</h2>
+        <h2 className="text-base font-semibold">{pageText("repositories_c91e6e")}</h2>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
               size="icon"
-              aria-label="Manage repositories"
+              aria-label={pageText("manageRepositories_0568a5")}
             >
               <MoreHorizontal className="size-4" />
             </Button>
@@ -106,9 +108,7 @@ export function GitHubRepositoryAccess({
               </a>
             </DropdownMenuItem>
             <DropdownMenuItem disabled={pending} onClick={onRefresh}>
-              <RefreshCw className="size-4" />
-              Refresh repositories
-            </DropdownMenuItem>
+              <RefreshCw className="size-4" />{pageText("refreshRepositories_9c28c3")}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -119,7 +119,7 @@ export function GitHubRepositoryAccess({
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative min-w-0 flex-1 basis-48">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input aria-label="Search repositories" placeholder="Search repositories" className="pl-9"
+          <Input aria-label={pageText("searchRepositories_22ea13")} placeholder={pageText("searchRepositories_22ea13")} className="pl-9"
             value={search} maxLength={200} onChange={(event) => setSearch(event.target.value)} />
         </div>
         <Button variant="outline" size="sm" disabled={pending || list.isFetching || !summary || !summary.totalCount || (!disableAll && !summary.availableCount)}
@@ -134,7 +134,7 @@ export function GitHubRepositoryAccess({
       {listView.kind === "error" && (
         <QueryErrorState error={list.error} action="load repositories" onRetry={listView.retry} retrying={listView.isFetching} />
       )}
-      <div ref={scroller} role="region" aria-label="Repositories" tabIndex={0}
+      <div ref={scroller} role="region" aria-label={pageText("repositories_c91e6e")} tabIndex={0}
         className="max-h-96 overflow-y-auto overscroll-contain border-y border-border">
         <div className="divide-y divide-border">
         {rows.map((resource) => (
@@ -171,7 +171,7 @@ export function GitHubRepositoryAccess({
           </div>
         ))}
         </div>
-        {list.isPending || listView.kind === "reconnecting" ? <p role="status" className="py-4 text-sm text-muted-foreground">Loading repositories…</p> : (listView.kind === "ready" || listView.kind === "stale") && rows.length === 0 && (
+        {list.isPending || listView.kind === "reconnecting" ? <p role="status" className="py-4 text-sm text-muted-foreground">{pageText("loadingRepositories_a42923")}</p> : (listView.kind === "ready" || listView.kind === "stale") && rows.length === 0 && (
           <p className="py-4 text-sm text-muted-foreground">
             {search ? "No repositories match your search." : "No repositories available. Add repository access on GitHub, then refresh."}
           </p>
@@ -179,7 +179,7 @@ export function GitHubRepositoryAccess({
         {list.hasNextPage && <div ref={more} className="flex justify-center py-2">
           <Button variant="ghost" size="sm" disabled={pending || list.isFetching}
             onClick={() => void list.fetchNextPage({ cancelRefetch: false })}>
-            {list.isFetchingNextPage ? "Loading repositories…" : "Load more repositories"}
+            {list.isFetchingNextPage ? pageText("loadingRepositories_a42923") : "Load more repositories"}
           </Button>
         </div>}
       </div>
@@ -194,6 +194,7 @@ export function GitHubBotManagement({
   endpoint: ChatEndpoint;
   view: "settings" | "access";
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const client = useQueryClient();
   const query = useQuery({
     queryKey: ["github-bot-configuration", endpoint.id],
@@ -249,9 +250,7 @@ export function GitHubBotManagement({
     );
   if (!record)
     return (
-      <p role="status" className="text-sm text-muted-foreground">
-        Loading configuration…
-      </p>
+      <p role="status" className="text-sm text-muted-foreground">{pageText("loadingConfiguration_b0f132")}</p>
     );
   const config = record.configuration;
   return (
@@ -358,9 +357,7 @@ export function GitHubBotManagement({
               setEditorVersion((value) => value + 1);
               setError("");
             }}
-          >
-            Discard changes
-          </Button>
+          >{pageText("discardChanges_fa8fc0")}</Button>
           <Button
             disabled={pending || !scoreValid}
             onClick={() =>
@@ -381,7 +378,7 @@ export function GitHubBotManagement({
               })
             }
           >
-            {pending ? "Saving…" : "Save changes"}
+            {pending ? pageText("saving_56a228") : pageText("saveChanges_179359")}
           </Button>
         </div>
       )}

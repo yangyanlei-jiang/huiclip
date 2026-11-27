@@ -1,3 +1,5 @@
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { CsvPreview } from "./CsvPreview";
 import { createUnifiedDiffClassifier, isPatchFile } from "@/lib/patch";
@@ -512,6 +514,7 @@ export function FileViewerSheet({
   open: openProp,
   onOpenChange,
 }: FileViewerSheetProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const viewer = useRequiredFileViewer();
   const state = typeof stateProp !== "undefined" ? stateProp : viewer.state;
@@ -584,14 +587,14 @@ export function FileViewerSheet({
   useEffect(() => {
     if (resolveQuery.isError) {
       const normalized = normalizeError(resolveQuery.error);
-      setAnnouncement(normalized.message || "Unable to load file.");
+      setAnnouncement(normalized.message || interfaceMessage("interface:errorUnableToLoadFileSentence"));
     }
   }, [resolveQuery.isError, resolveQuery.error]);
 
   useEffect(() => {
     if (contentQuery.isError) {
       const normalized = normalizeError(contentQuery.error);
-      setAnnouncement(normalized.message || "Unable to load file content.");
+      setAnnouncement(normalized.message || interfaceMessage("interface:errorUnableToLoadFileContentSentence"));
     }
   }, [contentQuery.isError, contentQuery.error]);
 
@@ -812,8 +815,8 @@ export function FileViewerSheet({
                     <a
                       href={downloadUrl}
                       download={resolvedResource?.title ?? basename(state.path)}
-                      aria-label="Download file"
-                      title="Download file"
+                      aria-label={pageText("downloadFile_774025")}
+                      title={pageText("downloadFile_774025")}
                     >
                       <Download className="h-4 w-4" />
                     </a>
@@ -826,8 +829,8 @@ export function FileViewerSheet({
                   variant="ghost"
                   size="icon-sm"
                   onClick={handleCopyContent}
-                  aria-label={copiedField === "content" ? "Copied file contents" : "Copy file contents"}
-                  title={copiedField === "content" ? "Copied contents" : "Copy file contents"}
+                  aria-label={copiedField === "content" ? "Copied file contents" : pageText("copyFileContents_14b1ae")}
+                  title={copiedField === "content" ? "Copied contents" : pageText("copyFileContents_14b1ae")}
                   className="h-7 w-7"
                 >
                   {copyingField === "content" ? (
@@ -846,7 +849,7 @@ export function FileViewerSheet({
                   size="icon-sm"
                   onClick={handleCopyLink}
                   aria-label={copiedField === "link" ? "Copied file view link" : "Copy link to this file view"}
-                  title={copiedField === "link" ? "Copied link" : "Copy link"}
+                  title={copiedField === "link" ? "Copied link" : pageText("copyLink_2f84ee")}
                   className="h-7 w-7"
                 >
                   {copyingField === "link" ? (
@@ -985,6 +988,7 @@ export function FileViewerBody({
   previewMode,
   htmlMode,
 }: FileViewerBodyProps) {
+  const { t: pageText } = usePageTranslation("interface");
   // Loaded content stays on screen while a refetch fails; a quiet loading
   // view covers an outage before anything has loaded.
   const resolveKind = queryViewKind(resolveQuery);
@@ -1008,8 +1012,7 @@ export function FileViewerBody({
                 </Button>
               ) : null}
               <Button type="button" variant="ghost" size="sm" onClick={onRetry}>
-                <RefreshCcw aria-hidden="true" className="mr-1 h-3 w-3" /> Retry
-              </Button>
+                <RefreshCcw aria-hidden="true" className="mr-1 h-3 w-3" />{" " + pageText("retry_9f5cd8")}</Button>
             </>
           }
         />
@@ -1032,8 +1035,7 @@ export function FileViewerBody({
         body={denial.body}
         actions={
           <Button type="button" variant="ghost" size="sm" onClick={onRetry}>
-            <RefreshCcw aria-hidden="true" className="mr-1 h-3 w-3" /> Retry
-          </Button>
+            <RefreshCcw aria-hidden="true" className="mr-1 h-3 w-3" />{" " + pageText("retry_9f5cd8")}</Button>
         }
       />
     );
@@ -1072,8 +1074,7 @@ export function FileViewerBody({
         body={denial.body}
         actions={
           <Button type="button" variant="ghost" size="sm" onClick={onRetry}>
-            <RefreshCcw aria-hidden="true" className="mr-1 h-3 w-3" /> Retry
-          </Button>
+            <RefreshCcw aria-hidden="true" className="mr-1 h-3 w-3" />{" " + pageText("retry_9f5cd8")}</Button>
         }
       />
     );

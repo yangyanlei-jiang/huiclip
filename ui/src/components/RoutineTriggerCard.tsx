@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
 import { Clock3, RefreshCw, Save, Trash2, Webhook, Zap } from "lucide-react";
 import type { RoutineTrigger } from "@paperclipai/shared";
@@ -44,6 +45,7 @@ export function RoutineTriggerCard({
   onDelete: (id: string) => void;
   disabled?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [draft, setDraft] = useState({
     label: trigger.label ?? "",
     cronExpression: trigger.cronExpression ?? "",
@@ -104,7 +106,7 @@ export function RoutineTriggerCard({
 
       {trigger.kind === "webhook" && trigger.webhookUrl && (
         <div className="space-y-1.5">
-          <Label htmlFor={`webhook-url-${trigger.id}`} className="text-xs">Webhook URL</Label>
+          <Label htmlFor={`webhook-url-${trigger.id}`} className="text-xs">{pageText("webhookURL_fa7517")}</Label>
           <Input id={`webhook-url-${trigger.id}`} value={trigger.webhookUrl} readOnly onFocus={(event) => event.target.select()} />
           <p className="text-xs text-muted-foreground">
             Send a POST request with Content-Type: application/json. Keep this URL private when signing is disabled.
@@ -114,7 +116,7 @@ export function RoutineTriggerCard({
 
       <div className="grid gap-3 md:grid-cols-2">
         <div className="space-y-1.5">
-          <Label className="text-xs">Label</Label>
+          <Label className="text-xs">{pageText("label_74341e")}</Label>
           <Input
             value={draft.label}
             disabled={disabled}
@@ -123,7 +125,7 @@ export function RoutineTriggerCard({
         </div>
         {trigger.kind === "schedule" && (
           <div className="space-y-1.5 md:col-span-2">
-            <Label className="text-xs">Schedule</Label>
+            <Label className="text-xs">{pageText("schedule_0a8ada")}</Label>
             <ScheduleEditor
               value={draft.cronExpression}
               onChange={(cronExpression) =>
@@ -179,9 +181,7 @@ export function RoutineTriggerCard({
             className="mr-auto text-muted-foreground hover:text-destructive"
             onClick={() => onDelete(trigger.id)}
           >
-            <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-            Delete
-          </Button>
+            <Trash2 className="mr-1.5 h-3.5 w-3.5" />{pageText("delete_f6fdbe")}</Button>
           {trigger.kind === "webhook" && (
             <Button variant="outline" size="sm" onClick={() => onRotate(trigger.id)}>
               <RefreshCw className="mr-1.5 h-3.5 w-3.5" />

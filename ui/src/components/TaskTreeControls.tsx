@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { PauseCircle, PlayCircle, Repeat, XCircle } from "lucide-react";
@@ -35,6 +36,7 @@ export function TaskTreeControlMenuItems({
   onCancel: () => void;
   onRestore: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const itemClass =
     "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50 disabled:opacity-50 disabled:pointer-events-none";
   return (
@@ -48,7 +50,7 @@ export function TaskTreeControlMenuItems({
       {canResume ? (
         <button disabled={pending} className={itemClass} onClick={onResume}>
           <PlayCircle className="h-3 w-3" />
-          {scope === "leaf" ? "Resume work" : "Resume subtree"}
+          {scope === "leaf" ? "Resume work" : pageText("resumeSubtree_614751")}
         </button>
       ) : null}
       {canCancel ? (
@@ -104,6 +106,7 @@ export function TaskTreeControlDialog({
   onRetry: () => void;
   onApply: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const cancel = mode === "cancel";
   const tasks = `${affectedCount} task${affectedCount === 1 ? "" : "s"}`;
   const title = cancel
@@ -128,7 +131,7 @@ export function TaskTreeControlDialog({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
             {loading
-              ? "Loading…"
+              ? pageText("loading_33ce41")
               : cancel
                 ? `${tasks} will be cancelled.`
                 : mode === "restore"
@@ -146,9 +149,7 @@ export function TaskTreeControlDialog({
               variant="outline"
               disabled={pending}
               onClick={onRetry}
-            >
-              Retry preview
-            </Button>
+            >{pageText("retryPreview_6e5493")}</Button>
           </div>
         ) : null}
         {!cancel ? (
@@ -171,7 +172,7 @@ export function TaskTreeControlDialog({
             disabled={pending}
             onClick={() => onOpenChange(false)}
           >
-            {cancel ? "Keep tasks" : "Close"}
+            {cancel ? "Keep tasks" : pageText("close_bbfa77")}
           </Button>
           <Button
             variant={cancel ? "destructive" : "default"}
@@ -206,6 +207,7 @@ export function TaskPauseNotice({
   className?: string;
   resumeLink?: ReactNode;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div
       role="status"
@@ -225,7 +227,7 @@ export function TaskPauseNotice({
             disabled={pending}
             onClick={onResume}
           >
-            {scope === "subtree" ? "Resume subtree" : "Resume work"}
+            {scope === "subtree" ? pageText("resumeSubtree_614751") : "Resume work"}
           </Button>
         ) : null)}
     </div>

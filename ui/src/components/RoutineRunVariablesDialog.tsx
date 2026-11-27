@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useWorkspaceIsolationControls } from "@/hooks/useWorkspaceIsolationControls";
 import { AgentAvatar } from "@/components/AgentAvatar";
@@ -211,6 +212,7 @@ export function RoutineRunVariablesDialog({
   isPending: boolean;
   onSubmit: (data: RoutineRunDialogSubmitData) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [values, setValues] = useState<Record<string, unknown>>({});
   const [selection, setSelection] = useState(() => buildInitialRunSelection({
@@ -367,8 +369,8 @@ export function RoutineRunVariablesDialog({
                 recentOptionIds={recentAssigneeIds}
                 placeholder={translateUi("interfaceCopy.agent")}
                 noneLabel="Select an agent"
-                searchPlaceholder="Search agents..."
-                emptyMessage="No agents found."
+                searchPlaceholder={pageText("searchAgents_52c3f9")}
+                emptyMessage={pageText("noAgentsFound_6893bf")}
                 disablePortal
                 openOnFocus={false}
                 onChange={(assigneeAgentId) => {
@@ -409,8 +411,8 @@ export function RoutineRunVariablesDialog({
                 recentOptionIds={recentProjectIds}
                 placeholder={translateUi("interfaceCopy.project")}
                 noneLabel="No project"
-                searchPlaceholder="Search projects..."
-                emptyMessage="No projects found."
+                searchPlaceholder={pageText("searchProjects_469d78")}
+                emptyMessage={pageText("noProjectsFound_ca7870")}
                 disablePortal
                 openOnFocus={false}
                 onChange={(projectId) => {
@@ -435,7 +437,7 @@ export function RoutineRunVariablesDialog({
                       <span className="truncate">{option.label}</span>
                     </>
                   ) : (
-                    <span className="text-muted-foreground">No project</span>
+                    <span className="text-muted-foreground">{pageText("noProject_c326b7")}</span>
                   )
                 }
                 renderOption={(option) => {
@@ -588,7 +590,7 @@ export function RoutineRunVariablesDialog({
             }}
             disabled={isPending || !canSubmit}
           >
-            {isPending ? "Running..." : "Run routine"}
+            {isPending ? pageText("running_126eda") : "Run routine"}
           </Button>
         </DialogFooter>
       </DialogContent>

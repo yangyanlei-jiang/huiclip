@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect } from "react";
 import { ArrowLeft, RadioTower } from "lucide-react";
 import { Link } from "@/lib/router";
@@ -9,6 +10,7 @@ import { useCompany } from "../context/CompanyContext";
 const DASHBOARD_LIVE_RUN_LIMIT = 50;
 
 export function DashboardLive() {
+  const { t: pageText } = usePageTranslation("interface");
   const { selectedCompanyId, companies } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
 
@@ -36,9 +38,7 @@ export function DashboardLive() {
             to="/dashboard"
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Dashboard
-          </Link>
+            <ArrowLeft className="h-3.5 w-3.5" />{pageText("dashboard_d87f47")}</Link>
           <h1 className="mt-2 text-2xl font-semibold tracking-normal text-foreground">Live agent runs</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Active runs first, followed by the most recent completed runs.

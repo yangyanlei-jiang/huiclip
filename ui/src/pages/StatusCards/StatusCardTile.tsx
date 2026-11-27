@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo, type MouseEvent } from "react";
 import { Link } from "react-router-dom";
@@ -61,6 +62,7 @@ export function StatusCardTile({
   refreshPending,
   recompilePending,
 }: StatusCardTileProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const lifecycle = deriveStatusCardLifecycle(card);
   const presentation = STATUS_CARD_LIFECYCLE_PRESENTATION[lifecycle];
@@ -129,9 +131,7 @@ export function StatusCardTile({
                 Refresh now
               </DropdownMenuItem>
               {(lifecycle === "compiling" && !setupRunning) || lifecycle === "error" ? (
-                <DropdownMenuItem onSelect={onRecompile} disabled={recompilePending}>
-                  Run now
-                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={onRecompile} disabled={recompilePending}>{pageText("runNow_2af00e")}</DropdownMenuItem>
               ) : null}
               <DropdownMenuItem onSelect={onEditInterest}>Edit interest &amp; settings</DropdownMenuItem>
               <DropdownMenuItem onSelect={onOpenDebug}>Query debug</DropdownMenuItem>
@@ -178,7 +178,7 @@ export function StatusCardTile({
                 className="mt-2 inline-flex items-center gap-1.5 font-medium text-foreground underline-offset-2 hover:underline disabled:opacity-60"
               >
                 <Wand2 className={cn("h-3.5 w-3.5", recompilePending && "animate-pulse")} />
-                {recompilePending ? "Starting…" : "Run now"}
+                {recompilePending ? "Starting…" : pageText("runNow_2af00e")}
               </button>
             )}
           </div>

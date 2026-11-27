@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { Fragment } from "react";
 import {
   ISSUE_THREAD_INTERACTION_KINDS,
@@ -236,6 +237,7 @@ export function InteractionGovernancePanel({
   isPending?: boolean;
   errorMessage?: string | null;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="space-y-4" data-testid="company-settings-interaction-governance-section">
       <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
@@ -261,9 +263,7 @@ export function InteractionGovernancePanel({
          * its own inline label. At `sm`+ it restores the aligned 3-col grid.
          */}
         <div className="grid grid-cols-1 gap-y-4 sm:grid-cols-[1fr_auto_auto] sm:items-center sm:gap-x-4 sm:gap-y-2.5">
-          <div className="hidden text-xs font-medium text-muted-foreground uppercase tracking-wide sm:block">
-            Kind
-          </div>
+          <div className="hidden text-xs font-medium text-muted-foreground uppercase tracking-wide sm:block">{pageText("kind_e00ac2")}</div>
           <div className="hidden text-xs font-medium text-muted-foreground uppercase tracking-wide sm:block">
             Default policy
           </div>

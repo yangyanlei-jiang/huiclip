@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation } from "@/i18n";
 import { centsToUsd, usdToCents } from "@paperclipai/shared";
 import { useEffect, useId, useState } from "react";
@@ -47,6 +48,7 @@ export function BudgetPolicyCard({
   compact?: boolean;
   variant?: "card" | "plain";
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t } = useTranslation();
   const [draftBudget, setDraftBudget] = useState(centsInputValue(summary.amount));
 
@@ -104,7 +106,7 @@ export function BudgetPolicyCard({
       <div>
         <div className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">{t("costs.budget")}</div>
         <div className="mt-2 text-xl font-semibold tabular-nums">
-          {summary.amount > 0 ? formatCents(summary.amount) : "Disabled"}
+          {summary.amount > 0 ? formatCents(summary.amount) : pageText("disabled_f4f447")}
         </div>
         <div className="mt-1 text-xs text-muted-foreground">
           Soft alert at {summary.warnPercent}%{summary.paused && summary.pauseReason ? ` · ${summary.pauseReason} pause` : ""}
@@ -123,7 +125,7 @@ export function BudgetPolicyCard({
       <div className="rounded-xl border border-border/70 bg-black/[0.18] px-4 py-3">
         <div className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">{t("costs.budget")}</div>
         <div className="mt-2 text-xl font-semibold tabular-nums">
-          {summary.amount > 0 ? formatCents(summary.amount) : "Disabled"}
+          {summary.amount > 0 ? formatCents(summary.amount) : pageText("disabled_f4f447")}
         </div>
         <div className="mt-1 text-xs text-muted-foreground">
           Soft alert at {summary.warnPercent}%{summary.paused && summary.pauseReason ? ` · ${summary.pauseReason} pause` : ""}
@@ -194,7 +196,7 @@ export function BudgetPolicyCard({
         }}
         disabled={!canSave || isSaving || parsedDraft === null}
       >
-        {isSaving ? "Saving..." : summary.amount > 0 ? "Update budget" : "Set budget"}
+        {isSaving ? pageText("saving_ae7e88") : summary.amount > 0 ? pageText("updateBudget_5132a7") : "Set budget"}
       </Button>
     </div>
   ) : null;
@@ -221,7 +223,7 @@ export function BudgetPolicyCard({
             )}
           >
             <StatusIcon className="h-3.5 w-3.5" />
-            {summary.paused ? "Paused" : summary.status === "warning" ? "Warning" : summary.status === "hard_stop" ? "Hard stop" : "Healthy"}
+            {summary.paused ? pageText("paused_c7dfb6") : summary.status === "warning" ? pageText("warning_e9c455") : summary.status === "hard_stop" ? "Hard stop" : pageText("healthy_80ea15")}
           </div>
         </div>
 
@@ -250,7 +252,7 @@ export function BudgetPolicyCard({
           </div>
           <div className={cn("inline-flex items-center gap-2 rounded-full border px-3 py-1 text-(length:--text-micro) uppercase tracking-(--tracking-caps)", statusTone(summary.status))}>
             <StatusIcon className="h-3.5 w-3.5" />
-            {summary.paused ? "Paused" : summary.status === "warning" ? "Warning" : summary.status === "hard_stop" ? "Hard stop" : "Healthy"}
+            {summary.paused ? pageText("paused_c7dfb6") : summary.status === "warning" ? pageText("warning_e9c455") : summary.status === "hard_stop" ? "Hard stop" : pageText("healthy_80ea15")}
           </div>
         </div>
       </CardHeader>

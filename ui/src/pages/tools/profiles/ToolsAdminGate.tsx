@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ShieldAlert } from "lucide-react";
@@ -17,6 +18,7 @@ import { useCompany } from "@/context/CompanyContext";
  * denial card is only for a loaded answer (or a real 403).
  */
 export function ToolsAdminGate({ children }: { children: ReactNode }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { selectedCompanyId } = useCompany();
   const boardAccess = useQuery({
     queryKey: queryKeys.access.currentBoardAccess,
@@ -25,7 +27,7 @@ export function ToolsAdminGate({ children }: { children: ReactNode }) {
   const view = useQueryView(boardAccess);
 
   if (boardAccess.isLoading || view.kind === "reconnecting") {
-    return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">Loading…</div>;
+    return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">{pageText("loading_33ce41")}</div>;
   }
   if (view.kind === "error" && view.errorKind !== "forbidden") {
     return (

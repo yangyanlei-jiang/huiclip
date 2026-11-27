@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { describeError } from "@/api/errors";
 import { useState } from 'react';
@@ -16,6 +17,7 @@ export function SkillSourceConnectionRepair({ companyId, source, onClose, onSave
   companyId: string; source: SkillSource; onClose: () => void; onSaved: () => Promise<void>;
   onReturnFocus?: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [connectionId, setConnectionId] = useState(source.connectionId ?? '');
   const [chooseBranch, setChooseBranch] = useState(false);
@@ -41,7 +43,7 @@ export function SkillSourceConnectionRepair({ companyId, source, onClose, onSave
         <DialogDescription>Automatic updates will use your access to this connection. Installed skills and selections stay in place.</DialogDescription>
       </DialogHeader>
       <div className="min-h-0 overflow-y-auto space-y-4">
-      {query.isPending && <p role="status" className="text-sm text-muted-foreground">Loading connections…</p>}
+      {query.isPending && <p role="status" className="text-sm text-muted-foreground">{pageText("loadingConnections_e2e03e")}</p>}
       {query.error && <p role="alert" className="text-sm text-destructive">{describeError(query.error).body} <Button variant="ghost" size="sm" onClick={() => void query.refetch()}>{translateUi("interfaceCopy.tryAgain")}</Button></p>}
       <RadioCardGroup ariaLabel="GitHub connection" value={connectionId} onValueChange={setConnectionId} disabled={save.isPending}
         options={connections.map(connection => ({ value: connection.id, title: connection.name }))} />
@@ -53,7 +55,7 @@ export function SkillSourceConnectionRepair({ companyId, source, onClose, onSave
       </div>
       <footer className="flex shrink-0 items-center justify-between gap-3 border-t border-border pt-4">
         <Button variant="ghost" disabled={save.isPending} onClick={onClose}>{translateUi("interfaceCopy.cancel")}</Button>
-        <Button disabled={!canSave || save.isPending} onClick={() => save.mutate()}>{save.isPending ? 'Saving…' : 'Save connection'}</Button>
+        <Button disabled={!canSave || save.isPending} onClick={() => save.mutate()}>{save.isPending ? pageText("saving_56a228") : 'Save connection'}</Button>
       </footer>
     </DialogContent>
   </Dialog>;

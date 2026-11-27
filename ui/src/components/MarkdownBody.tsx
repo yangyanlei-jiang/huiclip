@@ -1,3 +1,5 @@
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { PatchLines } from "./PatchLines";
 import { MarkdownWordStreaming, rehypeStreamingWords } from "./MarkdownWordStreaming";
 import { isValidElement, memo, useContext, useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
@@ -597,6 +599,7 @@ function CodeBlock({
   children: ReactNode;
   preProps: React.HTMLAttributes<HTMLPreElement>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const code = Array.isArray(children) ? children.find(isValidElement) : children;
   const patchCode = isValidElement<{ className?: string; children?: ReactNode }>(code)
     && /\blanguage-(diff|patch)\b/i.test(code.props.className ?? "");
@@ -674,7 +677,7 @@ function CodeBlock({
         <button
           type="button"
           onClick={handleCopy}
-          aria-label="Copy code"
+          aria-label={pageText("copyCode_6c1069")}
           title={copyLabel}
           className="paperclip-markdown-codeblock-action paperclip-markdown-codeblock-copy"
           style={codeBlockActionStyle}
@@ -721,7 +724,7 @@ function MermaidDiagramBlock({ source, darkMode }: { source: string; darkMode: b
         const message =
           err instanceof Error && err.message
             ? err.message
-            : "Failed to render Mermaid diagram.";
+            : interfaceMessage("interface:errorFailedToRenderMermaidDiagramSentence");
         setError(message);
       });
 

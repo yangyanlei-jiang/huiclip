@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useMemo } from "react";
 import { parseCsv } from "@/lib/csv-preview";
 
@@ -5,6 +6,7 @@ const MAX_VISIBLE_ROWS = 500;
 const MAX_VISIBLE_COLUMNS = 100;
 
 export function CsvPreview({ text, title }: { text: string; title: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const parsed = useMemo(() => {
     try { return { rows: parseCsv(text), error: null }; }
     catch (error) { return { rows: [], error: (error as Error).message }; }
@@ -19,7 +21,7 @@ export function CsvPreview({ text, title }: { text: string; title: string }) {
       <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2 text-xs text-muted-foreground" role="status">
         <span className="font-medium text-foreground">CSV preview</span>
         <span>{rows.length.toLocaleString()} {rows.length === 1 ? "row" : "rows"}</span>
-        <span>{columnCount.toLocaleString()} {columnCount === 1 ? "column" : "columns"}</span>
+        <span>{columnCount.toLocaleString()} {columnCount === 1 ? "column" : pageText("columns_4f1b1d")}</span>
         {(rows.length > MAX_VISIBLE_ROWS || columnCount > MAX_VISIBLE_COLUMNS) && <span>Showing the first {Math.min(rows.length, MAX_VISIBLE_ROWS)} rows and {columns.length} columns. Download for the complete file.</span>}
       </div>
       <div className="min-h-0 flex-1 overflow-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset" role="region" aria-label={`${title} CSV table`} tabIndex={0}>

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useId } from "react";
 import { AGENT_ROLES, AGENT_ROLE_LABELS } from "@paperclipai/shared";
@@ -159,6 +160,7 @@ export function ExternalAgentInviteContent({
   onRetry: () => void;
   onNewPrompt: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const detailsId = useId();
   const muse = preset === "muse";
@@ -177,7 +179,7 @@ export function ExternalAgentInviteContent({
   return <>
     <div className="min-h-0 space-y-6 overflow-y-auto px-6 pb-6 pt-8 sm:px-8">
       <div className="space-y-3 pr-5">
-        {muse && <Button variant="ghost" size="sm" onClick={onBack}><ArrowLeft className="size-4" />Back</Button>}
+        {muse && <Button variant="ghost" size="sm" onClick={onBack}><ArrowLeft className="size-4" />{pageText("back_b52b36")}</Button>}
         {provider && <AdapterMark type={provider.adapter} className="size-10" />}
         <div className="space-y-2">
           <DialogTitle className="text-xl font-semibold tracking-tight">
@@ -222,7 +224,7 @@ export function ExternalAgentInviteContent({
         : muse && museConnection ? <>
           <MuseConnectionChecks state={museConnection} />
           {museConnection.problem === "no_recent_response" && <Button variant="outline" disabled={busy} onClick={onRetry}>Test background reply</Button>}
-          {museConnection.problem === "offline" && <Button variant="outline" disabled={busy} onClick={onRetry}>Refresh connection</Button>}
+          {museConnection.problem === "offline" && <Button variant="outline" disabled={busy} onClick={onRetry}>{pageText("refreshConnection_e26021")}</Button>}
           {!museConnection.paired && <a href="https://muse.ai" target="_blank" rel="noopener noreferrer" className="inline-flex text-sm text-foreground underline underline-offset-4">Open Muse</a>}
           <p className="text-xs text-muted-foreground">Receiver contact is persisted in batches and may lag. Setup never creates a task. Provider usage and cost are unavailable.</p>
         </>
@@ -236,28 +238,28 @@ export function ExternalAgentInviteContent({
     <div className="flex items-center justify-between gap-3 border-t px-6 py-4 sm:px-8">
       <div className="flex items-center gap-2">
         <Button variant="ghost" onClick={muse ? onClose : provider ? onBack : onClose}>
-          {provider && !muse && <ArrowLeft className="size-4" />}{muse ? ready ? "Close" : "Save & exit" : provider ? "Back" : "Cancel"}
+          {provider && !muse && <ArrowLeft className="size-4" />}{muse ? ready ? pageText("close_bbfa77") : pageText("saveExit_fc5599") : provider ? pageText("back_b52b36") : pageText("cancel_77dfd2")}
         </Button>
       </div>
       {provider && (approvalHref ? <Button asChild><Link to={approvalHref} onClick={onClose}>Review approval</Link></Button>
-        : museDetails ? <Button type="submit" form={detailsId} disabled={busy || !museDraft.name.trim()}>{busy ? "Preparing…" : "Continue"}</Button>
+        : museDetails ? <Button type="submit" form={detailsId} disabled={busy || !museDraft.name.trim()}>{busy ? pageText("preparing_0b1d6c") : pageText("continue_2e0262")}</Button>
         : ready ? <Button onClick={onClose}>{translateUi("interfaceCopy.done")}</Button>
         : museAwaitingInvitation ? <Button disabled={busy} onClick={onRetry}>{busy ? "Loading setup…" : "Refresh setup"}</Button>
         : muse ? museConnection?.problem === "disconnected" || museConnection?.problem === "connection_expired" ? <Button disabled={busy} onClick={onNewPrompt}>Reconnect Muse</Button>
           : museConnection?.problem === "prompt_unavailable" ? <Button disabled={busy} onClick={onNewPrompt}>Create a new prompt</Button>
-          : !museConnection?.paired && prompt ? <AgentSetupPrompt key={prompt} prompt={prompt} label="Copy setup prompt" title="Connect your Muse" agent={{ name: "Muse", icon: <Bot className="size-5" /> }} description="Send this whole prompt to your current Muse conversation." align="end" className="min-w-0 shrink" onCopied={onCopied} />
-          : busy ? <Button disabled>Preparing…</Button>
+          : !museConnection?.paired && prompt ? <AgentSetupPrompt key={prompt} prompt={prompt} label={pageText("copySetupPrompt_c42e18")} title="Connect your Muse" agent={{ name: "Muse", icon: <Bot className="size-5" /> }} description="Send this whole prompt to your current Muse conversation." align="end" className="min-w-0 shrink" onCopied={onCopied} />
+          : busy ? <Button disabled>{pageText("preparing_0b1d6c")}</Button>
           : <Button asChild><a href="https://muse.ai" target="_blank" rel="noopener noreferrer">Open Muse</a></Button>
         : connecting ? <Button disabled aria-live="polite">
           {!connection.problem && <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />}
           {progressLabel}
         </Button>
         : dot && connection.problem === "prompt_unavailable" ? <Button disabled={busy} onClick={onNewPrompt}>Create a new prompt</Button>
-        : !prompt || busy ? <Button disabled>{busy ? "Preparing…" : "Waiting for Dot…"}</Button>
+        : !prompt || busy ? <Button disabled>{busy ? pageText("preparing_0b1d6c") : "Waiting for Dot…"}</Button>
         : <AgentSetupPrompt
           key={preset}
           prompt={prompt}
-          label={dot ? "Copy setup prompt" : "Copy invitation prompt"}
+          label={dot ? pageText("copySetupPrompt_c42e18") : "Copy invitation prompt"}
           title={dot ? "Connect your Dot" : "Invite your agent"}
           description={dot ? "Send this whole prompt to your Dot in ChatGPT." : "Send this whole prompt to your agent."}
           agent={dot ? { name: "Dot", src: "/brands/adapters/openai-dot.svg" } : undefined}

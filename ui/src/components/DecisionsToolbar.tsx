@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { type ReactNode } from "react";
 import { ArrowUpDown, Check, Layers, ListFilter } from "lucide-react";
@@ -59,11 +60,12 @@ export function DecisionsToolbar({
   sortOrder,
   onSortOrderChange,
 }: DecisionsToolbarProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const activeFilterCount = countActiveAttentionFilters(filters);
   return (
     <div data-canonical-toolbar="decisions" role="toolbar" aria-label="Decisions controls" className="flex flex-wrap items-center gap-2">
-      <ToolbarSearch query={query} onQueryChange={onQueryChange} label="Search decisions" placeholder="Search decisions…" />
+      <ToolbarSearch query={query} onQueryChange={onQueryChange} label={pageText("searchDecisions_b5f1fd")} placeholder={pageText("searchDecisions_3dbb5b")} />
       {/* Filter */}
       <Popover>
         <PopoverTrigger asChild>
@@ -72,9 +74,9 @@ export function DecisionsToolbar({
             variant="outline"
             size="icon"
             className={cn("h-8 w-8 shrink-0", activeFilterCount > 0 && "bg-accent")}
-            title="Filter"
+            title={pageText("filter_d7decf")}
             data-active={activeFilterCount > 0}
-            aria-label="Filter"
+            aria-label={pageText("filter_d7decf")}
           >
             <ListFilter className="h-3.5 w-3.5" />
           </Button>
@@ -91,9 +93,9 @@ export function DecisionsToolbar({
             variant="outline"
             size="icon"
             className={cn("h-8 w-8 shrink-0", groupBy !== "none" && "bg-accent")}
-            title="Group"
+            title={pageText("group_171a06")}
             data-active={groupBy !== "none"}
-            aria-label="Group"
+            aria-label={pageText("group_171a06")}
           >
             <Layers className="h-3.5 w-3.5" />
           </Button>
@@ -150,7 +152,7 @@ export function DecisionsToolbar({
           </div>
         </PopoverContent>
       </Popover>
-      <span data-toolbar-count className="w-full text-xs text-muted-foreground" aria-live="polite">{visibleCount} {visibleCount === 1 ? "decision" : "decisions"}</span>
+      <span data-toolbar-count className="w-full text-xs text-muted-foreground" aria-live="polite">{visibleCount} {visibleCount === 1 ? pageText("decision_8501a3") : pageText("decisions_cce1b9")}</span>
     </div>
   );
 }
@@ -164,6 +166,7 @@ function FilterMenu({
   filters: AttentionFilterState;
   onChange: (next: AttentionFilterState) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const toggle = (key: keyof AttentionFilterState, value: string) => {
     const list = filters[key] as string[];
@@ -175,7 +178,7 @@ function FilterMenu({
   return (
     <div className="max-h-(--sz-70vh) overflow-y-auto">
       <div className="flex items-center justify-between px-3 py-2">
-        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Filter</span>
+        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{pageText("filter_d7decf")}</span>
         {hasActive && (
           <button
             type="button"
@@ -223,7 +226,7 @@ function FilterMenu({
           ))}
           {options.hasNoProject && (
             <FilterRow
-              label="No project"
+              label={pageText("noProject_c326b7")}
               checked={filters.projectIds.includes(NO_GROUP_SENTINEL)}
               onToggle={() => toggle("projectIds", NO_GROUP_SENTINEL)}
             />
@@ -232,7 +235,7 @@ function FilterMenu({
       )}
 
       {(options.workspaces.length > 0 || options.hasNoWorkspace) && (
-        <FilterSection title="Workspace">
+        <FilterSection title={pageText("workspace_4ca0a7")}>
           {options.workspaces.map((workspace) => (
             <FilterRow
               key={workspace.id}

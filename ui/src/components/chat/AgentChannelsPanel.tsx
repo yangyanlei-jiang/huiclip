@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { ExternalLink, MessageSquarePlus } from "lucide-react";
 import { chatEndpointsApi, type ChatProvider } from "@/api/chatEndpoints";
@@ -25,6 +26,7 @@ export function AgentChannelsPanel({
   companyId: string;
   agentId: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { enabled, githubEnabled } = useChatConnectorsEnabled();
   const query = useQuery({
     queryKey: queryKeys.chatEndpoints.list(companyId),
@@ -82,8 +84,7 @@ export function AgentChannelsPanel({
               </div>
               <Badge variant="outline">{endpoint.status.replace(/[_-]/g, " ")}</Badge>
               <Button asChild size="sm" variant="outline">
-                <Link to={`/apps/chat/${endpoint.id}/settings`}>
-                  Open connection <ExternalLink />
+                <Link to={`/apps/chat/${endpoint.id}/settings`}>{pageText("openConnection_b867eb") + " "}<ExternalLink />
                 </Link>
               </Button>
             </div>

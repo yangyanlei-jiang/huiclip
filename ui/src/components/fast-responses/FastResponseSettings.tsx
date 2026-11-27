@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useId, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -60,6 +61,7 @@ export function FastResponseSettingsView({
   onTest: () => void;
   onConnectionChange?: (id: string | null) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [draft, setDraft] = useState<UpdateFastResponse>(() =>
     editable(settings),
@@ -148,13 +150,9 @@ export function FastResponseSettingsView({
       )}
       <div className="flex items-center gap-3">
         {onAdd && (
-          <Button variant="outline" size="sm" onClick={onAdd}>
-            Add connection
-          </Button>
+          <Button variant="outline" size="sm" onClick={onAdd}>{pageText("addConnection_a9c253")}</Button>
         )}
-        <Link to="/apps" className="text-sm underline underline-offset-4">
-          Manage connections
-        </Link>
+        <Link to="/apps" className="text-sm underline underline-offset-4">{pageText("manageConnections_223fb7")}</Link>
       </div>
       {draft.connectionId && (
         <fieldset disabled={saving || testing} className="space-y-4">
@@ -238,11 +236,11 @@ export function FastResponseSettingsView({
             onClick={onTest}
             disabled={dirty || !settings.enabled || saving || testing}
           >
-            {testing ? "Testing…" : "Test response"}
+            {testing ? pageText("testing_95c456") : "Test response"}
           </Button>
           <p className="text-xs text-muted-foreground">
             {dirty
-              ? "Save changes before testing."
+              ? pageText("saveChangesBeforeTesting_041f38")
               : "Runs a small sample with an API charge."}
           </p>
         </div>
@@ -256,7 +254,7 @@ export function FastResponseSettingsView({
             }
             onClick={() => onSave(draft)}
           >
-            {saving ? "Saving…" : "Save fast response"}
+            {saving ? pageText("saving_56a228") : "Save fast response"}
           </Button>
         )}
       </div>

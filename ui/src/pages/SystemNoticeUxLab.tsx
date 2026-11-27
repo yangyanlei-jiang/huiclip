@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 // token-extraction: allowlisted — intentional one-off decoration (DECISION-SHEET.md B1
 // user ruling). The bg-[...gradient...] / shadow-[...] literals in this demo/UX-lab page
 // are deliberate one-off decoration, reverted from --gradient-extract-*/--shadow-extract-*
@@ -129,6 +130,7 @@ const checklist = [
 ];
 
 export function SystemNoticeUxLab() {
+  const { t: pageText } = usePageTranslation("interface");
   const fixtureById = new Map(systemNoticeFixtures.map((f) => [f.id, f] as const));
 
   const warningCollapsed = fixtureById.get("warning-collapsed")!;
@@ -298,7 +300,7 @@ export function SystemNoticeUxLab() {
                 <AvatarFallback>YO</AvatarFallback>
               </Avatar>
               <div className="flex min-w-0 max-w-(--pct-85) flex-col">
-                <div className="mb-1 px-1 text-sm font-medium text-foreground">You</div>
+                <div className="mb-1 px-1 text-sm font-medium text-foreground">{pageText("you_905cb3")}</div>
                 <div className="min-w-0 max-w-full rounded-2xl bg-muted px-4 py-2.5 text-sm leading-6 text-foreground">
                   <div className="rounded-md border border-red-500/35 bg-red-500/10 px-3 py-2.5 text-sm text-red-950 dark:text-red-100">
                     <div className="flex items-start gap-2">
@@ -321,7 +323,7 @@ export function SystemNoticeUxLab() {
               </div>
             </div>
             <p className="px-1 text-xs text-muted-foreground">
-              Author reads as <span className="font-medium text-foreground">You</span> even though the
+              Author reads as <span className="font-medium text-foreground">{pageText("you_905cb3")}</span> even though the
               author is the Paperclip system. Two containers stack the warning inside a user-style
               bubble, and operational evidence is always visible.
             </p>
@@ -338,7 +340,7 @@ export function SystemNoticeUxLab() {
             <SystemNotice {...dangerCollapsed} />
             <p className="px-1 text-xs text-muted-foreground">
               Same content. The visible body is one short system sentence; reviewers expand{" "}
-              <span className="font-medium text-foreground">Details</span> only when they need run
+              <span className="font-medium text-foreground">{pageText("details_dc3dec")}</span> only when they need run
               evidence. Tone is reinforced by the octagon icon and the &quot;System alert&quot; label,
               not just red.
             </p>

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { type ReactNode } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Sun } from "lucide-react";
@@ -70,6 +71,7 @@ export function AgingItemRow({
   onDismiss: (item: AttentionItem) => void;
   onSnooze: (item: AttentionItem, snoozedUntil: string) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const idleDays = attentionIdleDays(item, now);
@@ -90,8 +92,7 @@ export function AgingItemRow({
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between gap-2 px-1">
-        <span className="text-(length:--text-nano) text-muted-foreground">
-          Idle {idleDays} {idleDays === 1 ? "day" : "days"}
+        <span className="text-(length:--text-nano) text-muted-foreground">{pageText("idle_cc1ebd") + " "}{idleDays} {idleDays === 1 ? "day" : "days"}
         </span>
         <Button
           type="button"

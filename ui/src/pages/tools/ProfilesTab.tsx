@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo, useState } from "react";
 import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -474,6 +475,7 @@ function EntryFields({
 }
 
 export function EffectiveAgentPanel({ companyId, agentOptions }: { companyId: string; agentOptions: Array<{ id: string; name: string }> }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [agentId, setAgentId] = useState("");
   const effective = useQuery({
@@ -510,8 +512,7 @@ export function EffectiveAgentPanel({ companyId, agentOptions }: { companyId: st
             <div className="flex items-center justify-between gap-2">
               <h3 className="text-sm font-semibold text-foreground">Can use</h3>
               <span className="text-xs text-muted-foreground tabular-nums">
-                {(effective.data?.allowedToolNames ?? []).length} tools
-              </span>
+                {(effective.data?.allowedToolNames ?? []).length}{" " + pageText("tools_0284c6")}</span>
             </div>
             {(effective.data?.allowedToolNames ?? []).length === 0 ? (
               <div className="rounded-lg border border-dashed border-border px-4 py-5 text-sm text-muted-foreground">
@@ -526,7 +527,7 @@ export function EffectiveAgentPanel({ companyId, agentOptions }: { companyId: st
             )}
           </div>
           <div className="space-y-2">
-            <h3 className="text-sm font-semibold text-foreground">Access profiles</h3>
+            <h3 className="text-sm font-semibold text-foreground">{pageText("accessProfiles_e271a6")}</h3>
             {(effective.data?.profiles ?? []).length === 0 ? (
               <div className="rounded-lg border border-dashed border-border px-4 py-5 text-sm text-muted-foreground">
                 No active profile applies to this agent.
@@ -567,6 +568,7 @@ function SourceBadge({ source }: { source: AllowSource }) {
 }
 
 function AllowList({ rows, catalogLoading }: { rows: AllowListRow[]; catalogLoading: boolean }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const patternCount = rows.filter((r) => r.source.kind === "pattern").length;
   const explicitCount = rows.filter((r) => r.source.kind === "explicit").length;
@@ -577,7 +579,7 @@ function AllowList({ rows, catalogLoading }: { rows: AllowListRow[]; catalogLoad
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h4 className="text-sm font-semibold text-foreground">Allow list</h4>
         <p className="text-xs text-muted-foreground">
-          {rows.length} tool{rows.length === 1 ? "" : "s"}
+          {rows.length}{" " + pageText("tool_1937c4")}{rows.length === 1 ? "" : "s"}
           {explicitCount > 0 ? ` · ${explicitCount} explicit` : ""}
           {patternCount > 0 ? ` · ${patternCount} via pattern` : ""}
           {defaultCount > 0 ? ` · ${defaultCount} via default` : ""}
@@ -647,6 +649,7 @@ function AllowList({ rows, catalogLoading }: { rows: AllowListRow[]; catalogLoad
 }
 
 export function ProfilesTab({ companyId }: { companyId: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const qc = useQueryClient();
   const { pushToast } = useToast();
@@ -931,7 +934,7 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
   return (
     <div className="space-y-4">
       <ToolsPageHeader
-        title="Access profiles"
+        title={pageText("accessProfiles_e271a6")}
         description="Reusable bundles of allowed applications, connections, and tools, assignable to agents, projects, routines, or issues."
         actions={
           <Button size="sm" onClick={() => setCreateOpen(true)}>
@@ -984,7 +987,7 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
                           ) : null}
                         </span>
                         <span className="text-xs text-muted-foreground">
-                          {toolCount} tool{toolCount === 1 ? "" : "s"} · {bindingsSubtitle(profile.bindings)}
+                          {toolCount}{" " + pageText("tool_1937c4")}{toolCount === 1 ? "" : "s"} · {bindingsSubtitle(profile.bindings)}
                         </span>
                       </button>
                     </li>
@@ -1086,7 +1089,7 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
                   <SelectContent>
                     <SelectItem value="active">{translateUi("interfaceCopy.active")}</SelectItem>
                     <SelectItem value="disabled">{translateUi("interfaceCopy.disabled")}</SelectItem>
-                    <SelectItem value="archived">Archived</SelectItem>
+                    <SelectItem value="archived">{pageText("archived_eddc81")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1120,7 +1123,7 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
               resetEntryForm();
             }}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button disabled={!name.trim() || createProfile.isPending || updateProfile.isPending} onClick={saveProfile}>
-              {editProfile ? "Save" : createProfile.isPending ? "Creating..." : "Create"}
+              {editProfile ? pageText("save_efc007") : createProfile.isPending ? pageText("creating_28ea76") : pageText("create_6e157c")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1207,7 +1210,7 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
             ) : null}
             {targetType === "routine" ? (
               <div className="space-y-1.5">
-                <Label>Routine</Label>
+                <Label>{pageText("routine_482273")}</Label>
                 <Select value={targetRoutineId} onValueChange={setTargetRoutineId}>
                   <SelectTrigger><SelectValue placeholder="Select a routine" /></SelectTrigger>
                   <SelectContent>
@@ -1269,6 +1272,7 @@ function ProfileDetail({
   onDeleteEntry: (entryId: string) => void;
   onUnbind: (binding: ToolProfileBinding) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const rows = useMemo(
     () => resolveAllowList(profile, catalog, maps.applicationsById, maps.connectionsById),
     [profile, catalog, maps.applicationsById, maps.connectionsById],
@@ -1287,22 +1291,18 @@ function ProfileDetail({
               <span className="font-medium text-foreground">{profile.name}</span>
               <Badge variant="outline">{profile.profileKey}</Badge>
               <Badge variant={statusVariant(profile.status)}>{profile.status}</Badge>
-              <Badge variant={profile.defaultAction === "allow" ? "secondary" : "outline"}>
-                default {profile.defaultAction}
+              <Badge variant={profile.defaultAction === "allow" ? "secondary" : "outline"}>{pageText("default_7505d6") + " "}{profile.defaultAction}
               </Badge>
             </div>
             {profile.description ? (
               <p className="mt-1 text-sm text-muted-foreground">{profile.description}</p>
             ) : null}
-            <p className="mt-1 text-xs text-muted-foreground">
-              updated <RelativeTime value={profile.updatedAt} />
+            <p className="mt-1 text-xs text-muted-foreground">{pageText("updated_13a189") + " "}<RelativeTime value={profile.updatedAt} />
             </p>
           </div>
           <div className="flex shrink-0 flex-wrap gap-1.5">
             <Button size="sm" variant="outline" onClick={onEdit}>
-              <Pencil className="mr-1 h-3.5 w-3.5" />
-              Edit
-            </Button>
+              <Pencil className="mr-1 h-3.5 w-3.5" />{pageText("edit_530164")}</Button>
             <Button size="sm" variant="outline" onClick={onAddEntry}>
               <Plus className="mr-1 h-3.5 w-3.5" />
               Entry
@@ -1342,8 +1342,7 @@ function ProfileDetail({
         <div className="space-y-2">
           <h4 className="text-sm font-semibold text-foreground">Effective scope</h4>
           <div className="flex flex-wrap gap-2 text-xs">
-            <span className="rounded-md border border-border px-2 py-1 text-muted-foreground">
-              Default <span className="font-medium text-foreground">{profile.defaultAction}</span>
+            <span className="rounded-md border border-border px-2 py-1 text-muted-foreground">{pageText("default_808d7d") + " "}<span className="font-medium text-foreground">{profile.defaultAction}</span>
             </span>
             <span className="rounded-md border border-border px-2 py-1 text-muted-foreground">
               <span className="font-medium text-foreground">{rows.length}</span> tools allowed

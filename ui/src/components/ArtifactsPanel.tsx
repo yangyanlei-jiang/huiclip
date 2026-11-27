@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -86,6 +87,7 @@ function statusBadge(status: string) {
 }
 
 export function ArtifactsPanel({ taskId, isAgentWorking, openDocKey, openDocTitle, onClearOpenDoc, onApprove, onReject }: ArtifactsPanelProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const [filter, setFilter] = useState<FilterValue>("all");
   const [viewingDoc, setViewingDoc] = useState<{ key: string; title: string } | null>(null);
 
@@ -132,7 +134,7 @@ export function ArtifactsPanel({ taskId, isAgentWorking, openDocKey, openDocTitl
     <div className="flex flex-col h-full" data-artifacts-panel>
       <div className="px-4 py-3 border-b border-border flex items-center gap-2">
         <Package className="h-4 w-4 text-muted-foreground shrink-0" />
-        <h3 className="text-sm font-semibold">Artifacts</h3>
+        <h3 className="text-sm font-semibold">{pageText("artifacts_a5b79f")}</h3>
       </div>
 
       {/* Filter chips */}
@@ -157,9 +159,7 @@ export function ArtifactsPanel({ taskId, isAgentWorking, openDocKey, openDocTitl
       <div className="flex-1 overflow-y-auto scrollbar-auto-hide">
         {isLoading ? (
           <div className="flex items-center justify-center py-8 text-muted-foreground text-sm">
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            Loading...
-          </div>
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />{pageText("loading_b04ba4")}</div>
         ) : filtered.length === 0 ? (
           <div className="px-4 py-8 text-center">
             <Package className="h-8 w-8 mx-auto text-muted-foreground/40 mb-3" />
@@ -260,6 +260,7 @@ function DocumentViewer({
   onApprove?: () => void;
   onReject?: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { data: doc, isLoading, error } = useQuery({
     queryKey: queryKeys.issues.documents(taskId),
@@ -303,15 +304,11 @@ function DocumentViewer({
         <div className="border-t border-border px-4 py-3 bg-background shrink-0">
           <p className="text-(length:--text-micro) text-muted-foreground mb-2">This document needs your review.</p>
           <div className="flex items-center gap-3">
-            <Button size="lg" className="h-11 px-8 text-base font-semibold flex-1 rounded-lg bg-green-700 hover:bg-green-800 text-white border-0" onClick={onApprove}>
-              Approve
-            </Button>
+            <Button size="lg" className="h-11 px-8 text-base font-semibold flex-1 rounded-lg bg-green-700 hover:bg-green-800 text-white border-0" onClick={onApprove}>{pageText("approve_7b2c7f")}</Button>
             <Button size="lg" className="h-11 px-8 text-base font-semibold flex-1 rounded-lg bg-red-900 hover:bg-red-950 text-white border-0" onClick={() => {
               onReject?.();
               onBack();
-            }}>
-              Reject
-            </Button>
+            }}>{pageText("reject_2b03b5")}</Button>
           </div>
         </div>
       )}

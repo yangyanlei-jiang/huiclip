@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { ToolbarSearch } from "@/components/ToolbarSearch";
 import type { ReactNode } from "react";
@@ -46,6 +47,7 @@ export interface SkillsToolbarProps {
 
 /** Shared shipped Skills controls. Canonical proposal: Components / Toolbars / Skills. */
 export function SkillsToolbar({ viewTitle, viewDescription, searchLabel, search, onSearchChange, sort, onSortChange, availableSources, sourceBadgeFilter, setSourceBadgeFilter, onScan, scanPending, onCreate, onBrowseDiscover, onImport, onImportFromProject, folderControl, onCreateFolder, selectMode, onToggleSelectMode, navigation }: SkillsToolbarProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   return (
     <div data-canonical-toolbar="skills" role="toolbar" aria-label="Skills controls" className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-3">
@@ -79,8 +81,8 @@ export function SkillsToolbar({ viewTitle, viewDescription, searchLabel, search,
               <span className="text-muted-foreground">{translateUi("interfaceCopy.source")}</span>
               <span>
                 {sourceBadgeFilter === "all"
-                  ? "All"
-                  : availableSources.find((source) => source.value === sourceBadgeFilter)?.label ?? "All"}
+                  ? pageText("all_6a7208")
+                  : availableSources.find((source) => source.value === sourceBadgeFilter)?.label ?? pageText("all_6a7208")}
               </span>
               <ChevronDown className="ml-1 h-3.5 w-3.5" />
             </Button>
@@ -110,21 +112,17 @@ export function SkillsToolbar({ viewTitle, viewDescription, searchLabel, search,
       {folderControl}
       {onCreateFolder ? (
         <Button variant="outline" size="sm" onClick={onCreateFolder}>
-          <Plus className="mr-1 h-3.5 w-3.5" />
-          New folder
-        </Button>
+          <Plus className="mr-1 h-3.5 w-3.5" />{pageText("newFolder_a71199")}</Button>
       ) : null}
       {onToggleSelectMode ? (
         <Button variant="outline" size="sm" aria-pressed={selectMode} onClick={onToggleSelectMode}>
-          {selectMode ? "Done" : "Select"}
+          {selectMode ? pageText("done_e9b450") : pageText("select_859822")}
         </Button>
       ) : null}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button size="sm" variant="default" data-toolbar-primary>
-            <Plus className="mr-1 h-3.5 w-3.5" />
-            New
-            <ChevronDown className="ml-1 h-3.5 w-3.5" />
+            <Plus className="mr-1 h-3.5 w-3.5" />{pageText("new_6403f2")}<ChevronDown className="ml-1 h-3.5 w-3.5" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
@@ -136,7 +134,7 @@ export function SkillsToolbar({ viewTitle, viewDescription, searchLabel, search,
             <Compass className="mr-2 h-4 w-4" />
             Discover skills
           </DropdownMenuItem>
-          <DropdownMenuItem asChild><Link to="/skills/sources/new"><GithubIcon className="mr-2 h-4 w-4" />Import from GitHub</Link></DropdownMenuItem>
+          <DropdownMenuItem asChild><Link to="/skills/sources/new"><GithubIcon className="mr-2 h-4 w-4" />{pageText("importFromGitHub_937e1f")}</Link></DropdownMenuItem>
           <DropdownMenuItem asChild><Link to="/skills/sources">Manage sources</Link></DropdownMenuItem>
           <DropdownMenuItem onSelect={onImport}>
             <Globe className="mr-2 h-4 w-4" />

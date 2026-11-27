@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -88,6 +89,7 @@ export function EnvironmentVariableRow({
   focusRequest,
   onFocusConsumed,
 }: EnvironmentVariableRowProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const nameInputRef = useRef<HTMLInputElement | null>(null);
   const valueInputRef = useRef<HTMLInputElement | null>(null);
@@ -303,7 +305,7 @@ export function EnvironmentVariableRow({
                   <input
                     ref={valueInputRef}
                     className={valueTextInputClass}
-                    placeholder="value"
+                    placeholder={pageText("value_f32b67")}
                     value={row.textValue}
                     type={sensitive ? "password" : "text"}
                     spellCheck={false}
@@ -569,7 +571,7 @@ export function EnvironmentVariableRow({
             <DropdownMenuTrigger asChild disabled={disabled}>
               <button
                 type="button"
-                aria-label="More actions"
+                aria-label={pageText("moreActions_a1e34f")}
                 className="rounded p-1 text-muted-foreground opacity-100 hover:bg-accent hover:text-foreground @[40rem]/env:opacity-0 @[40rem]/env:group-hover/row:opacity-100 @[40rem]/env:group-focus-within/row:opacity-100"
               >
                 <MoreHorizontal className="size-4" />

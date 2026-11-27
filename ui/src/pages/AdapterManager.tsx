@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 /**
  * @fileoverview Adapter Manager page — install, view, and manage external adapters.
@@ -67,6 +68,7 @@ function AdapterRow({
   toggleTitleDisabled?: string;
   disabledBadgeLabel?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <li>
       <div className="flex items-center gap-4 px-4 py-3">
@@ -78,7 +80,7 @@ function AdapterRow({
                   external adapter ever provides one. */}
               {adapter.label && adapter.label !== adapter.type ? adapter.label : getAdapterLabel(adapter.type)}
             </span>
-            <Badge variant="outline">{adapter.source === "external" ? "External" : "Built-in"}</Badge>
+            <Badge variant="outline">{adapter.source === "external" ? pageText("external_8d10c6") : "Built-in"}</Badge>
             {adapter.source === "external" && (
               adapter.isLocalPath
                 ? <span title="Installed from local path"><FolderOpen className="h-4 w-4 text-amber-500" /></span>
@@ -110,8 +112,7 @@ function AdapterRow({
             {adapter.packageName && adapter.packageName !== adapter.type && (
               <> · {adapter.packageName}</>
             )}
-            {" · "}{adapter.modelsCount} models
-          </p>
+            {" · "}{adapter.modelsCount}{" " + pageText("models_5ba268")}</p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           {onReinstall && (
@@ -155,7 +156,7 @@ function AdapterRow({
               variant="outline"
               size="icon-sm"
               className="h-8 w-8 text-destructive hover:text-destructive"
-              title="Remove adapter"
+              title={pageText("removeAdapter_d0fe24")}
               onClick={() => onRemove(adapter.type)}
             >
               <Trash2 className="h-4 w-4" />
@@ -189,6 +190,7 @@ function ReinstallDialog({
   onConfirm: () => void;
   onCancel: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { data: latestVersion, isLoading: isFetchingVersion } = useQuery({
     queryKey: ["npm-latest-version", adapter?.packageName],
@@ -221,16 +223,16 @@ function ReinstallDialog({
             <span className="font-mono">{adapter?.packageName}</span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Current</span>
+            <span className="text-muted-foreground">{pageText("current_4fc0e2")}</span>
             <span className="font-mono">
-              {adapter?.version ? `v${adapter.version}` : "unknown"}
+              {adapter?.version ? `v${adapter.version}` : pageText("unknown_50d8b4")}
             </span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground">Latest on npm</span>
             <span className="font-mono">
               {isFetchingVersion
-                ? "checking..."
+                ? pageText("checking_25e3fd")
                 : latestVersion
                   ? `v${latestVersion}`
                   : "unavailable"}
@@ -255,6 +257,7 @@ function ReinstallDialog({
 }
 
 export function AdapterManager() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { selectedCompany } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -392,7 +395,7 @@ export function AdapterManager() {
       menuDisabled: !!a.disabled,
     }));
 
-  if (isLoading) return <div className="p-4 text-sm text-muted-foreground">Loading adapters...</div>;
+  if (isLoading) return <div className="p-4 text-sm text-muted-foreground">{pageText("loadingAdapters_6655e8")}</div>;
 
   const isMutating = installMutation.isPending || removeMutation.isPending || toggleMutation.isPending || overrideMutation.isPending || reloadMutation.isPending || reinstallMutation.isPending;
 
@@ -402,7 +405,7 @@ export function AdapterManager() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Cpu className="h-6 w-6 text-muted-foreground" />
-          <h1 className="text-xl font-semibold">Adapters</h1>
+          <h1 className="text-xl font-semibold">{pageText("adapters_e07a4a")}</h1>
           <Badge variant="outline" className="text-amber-600 border-amber-400">
             Alpha
           </Badge>
@@ -507,7 +510,7 @@ export function AdapterManager() {
                 }
                 disabled={!installPackage || installMutation.isPending}
               >
-                {installMutation.isPending ? "Installing..." : "Install"}
+                {installMutation.isPending ? "Installing..." : pageText("install_fd6c3e")}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -644,7 +647,7 @@ export function AdapterManager() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Remove Adapter</DialogTitle>
+            <DialogTitle>{pageText("removeAdapter_d7d84d")}</DialogTitle>
             <DialogDescription>
               Are you sure you want to remove the <strong>{removeType}</strong> adapter?
               It will be unregistered and removed from the adapter store.
@@ -667,7 +670,7 @@ export function AdapterManager() {
                 }
               }}
             >
-              {removeMutation.isPending ? "Removing..." : "Remove"}
+              {removeMutation.isPending ? pageText("removing_2a76d4") : pageText("remove_e96390")}
             </Button>
           </DialogFooter>
         </DialogContent>

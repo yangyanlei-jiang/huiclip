@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { RotateCcw } from "lucide-react";
@@ -77,6 +78,7 @@ export function AgentHistoryDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -151,9 +153,7 @@ export function AgentHistoryDialog({
                   }}
                   disabled={rollback.isPending}
                 >
-                  <RotateCcw />
-                  Restore
-                </Button>
+                  <RotateCcw />{pageText("restore_3cbe6d")}</Button>
               </div>
             ))}
           </div>

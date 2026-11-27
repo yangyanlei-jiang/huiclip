@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Agent, DocumentAnnotationThreadWithComments } from "@paperclipai/shared";
@@ -28,6 +29,7 @@ export interface DocumentAnnotationPopoverProps {
 }
 
 export function DocumentAnnotationPopover(props: DocumentAnnotationPopoverProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const copyAnnotationLink = useCopyAnnotationLink();
   const cardRef = useRef<HTMLDivElement | null>(null);
@@ -111,7 +113,7 @@ export function DocumentAnnotationPopover(props: DocumentAnnotationPopoverProps)
           <div className="mt-2 flex justify-end gap-2">
             <Button type="button" size="sm" variant="ghost" onClick={props.onClose}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button type="button" size="sm" disabled={!composer.trim() || createThread.isPending || props.newCommentDisabled || !props.baseRevisionId} onClick={submitComposer}>
-              {createThread.isPending ? "Posting…" : "Comment"}
+              {createThread.isPending ? pageText("posting_20c00d") : pageText("comment_153d7a")}
             </Button>
           </div>
         </div>

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { MessageSquare } from "lucide-react";
 import type { ChatConversation, ChatProvider } from "@/api/chatEndpoints";
 import { EmptyState } from "@/components/EmptyState";
@@ -34,6 +35,7 @@ export function ChatConversationList({
   rows: ChatConversation[];
   provider: ChatProvider;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (!rows.length)
     return (
       <EmptyState
@@ -99,7 +101,7 @@ export function ChatConversationList({
                   {formatDateTime(row.updatedAt)}
                 </time>
               )}
-              {row.state === "completed" && <span>Completed</span>}
+              {row.state === "completed" && <span>{pageText("completed_1798b3")}</span>}
             </div>
           </div>
           {row.state !== "active" && row.state !== "completed" && (

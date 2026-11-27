@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -95,6 +96,7 @@ export function AiProviderSetup({
     binding: Exclude<AiConnectionBinding, { mode: "responsible_user" }>,
   ) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [provider, setProvider] = useState<ProviderChoice | undefined>(
     reconnect
@@ -386,14 +388,12 @@ export function AiProviderSetup({
             </label>
           )}
           {provider !== "openrouter" && (
-            <label className="block space-y-2 text-xs text-muted-foreground">
-              Authentication
-              <Select
+            <label className="block space-y-2 text-xs text-muted-foreground">{pageText("authentication_ee1acf")}<Select
                 value={auth}
                 onValueChange={(v) => setAuth(v as typeof auth)}
                 disabled={Boolean(reconnect)}
               >
-                <SelectTrigger aria-label="Authentication" className="w-full">
+                <SelectTrigger aria-label={pageText("authentication_ee1acf")} className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -418,10 +418,8 @@ export function AiProviderSetup({
           )}
           {
             auth !== "none" && (
-              <label className="block space-y-2 text-xs text-muted-foreground">
-                API key
-                <Input
-                  aria-label="API key"
+              <label className="block space-y-2 text-xs text-muted-foreground">{pageText("apiKey_cf678c")}<Input
+                  aria-label={pageText("apiKey_cf678c")}
                   type="password"
                   autoComplete="new-password"
                   value={apiKey}
@@ -459,10 +457,10 @@ export function AiProviderSetup({
               }
             >
               {save.isPending
-                ? submitLabel ? "Saving…" : "Connecting…"
+                ? submitLabel ? pageText("saving_56a228") : pageText("connecting_fd3e79")
                 : reconnect
-                  ? "Reconnect"
-                  : submitLabel ?? "Connect"}
+                  ? pageText("reconnect_6988b1")
+                  : submitLabel ?? pageText("connect_b65463")}
             </Button>
           </div>
         </form>

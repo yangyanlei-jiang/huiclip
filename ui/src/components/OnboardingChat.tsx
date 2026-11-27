@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import type { IssueComment } from "@paperclipai/shared";
@@ -88,6 +89,7 @@ export function OnboardingChat({
   onPlanDetected,
   onReviewPlan,
 }: OnboardingChatProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
@@ -248,9 +250,7 @@ export function OnboardingChat({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8 text-muted-foreground text-sm">
-        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-        Loading conversation...
-      </div>
+        <Loader2 className="h-4 w-4 mr-2 animate-spin" />{pageText("loadingConversation_123892")}</div>
     );
   }
 
@@ -296,7 +296,7 @@ export function OnboardingChat({
                       : "text-foreground/70",
                   )}
                 >
-                  {isAgent ? agentName : "You"}
+                  {isAgent ? agentName : pageText("you_905cb3")}
                 </span>
                 {isPlan && (
                   <span className="inline-flex items-center gap-0.5 text-(length:--text-nano) text-green-600 dark:text-green-400 font-medium">

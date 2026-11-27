@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { FilterX, RotateCcw } from "lucide-react";
 import type { CompanySearchZeroResults } from "@paperclipai/shared";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ export function ZeroResultsRecovery({
   onChange: (next: SearchFilters) => void;
   onClearAll: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const activeCount = countActiveFilters(filters);
   const { unfilteredTotal } = zeroResults;
   // Rank suggestions by how many results each one recovers (highest impact first).
@@ -58,8 +60,7 @@ export function ZeroResultsRecovery({
               className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2 text-left text-sm hover:border-foreground/30 hover:bg-accent/40"
               onClick={() => onChange(clearFilterDimension(filters, suggestion.filter))}
             >
-              <span className="min-w-0 truncate">
-                Remove{" "}
+              <span className="min-w-0 truncate">{pageText("remove_e96390")}{" "}
                 <span className="font-medium">
                   {describeLoosenSuggestion(suggestion.filter, suggestion.values, lookups)}
                 </span>

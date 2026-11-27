@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation } from "@/i18n";
 import { AgentIdentity } from "../components/AgentIdentity";
 import { TaskSummaryList } from "../components/TaskSummaryList";
@@ -75,6 +76,7 @@ export function derivePausedAgentBanner(agents: Agent[] | undefined): PausedAgen
 }
 
 export function Dashboard() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t } = useTranslation();
   const designSandbox = useDesignSandbox();
   const { selectedCompanyId, companies } = useCompany();
@@ -358,7 +360,7 @@ export function Dashboard() {
               disabled={resumeImportedAgents.isPending}
               data-testid="dashboard-resume-imported-agents"
             >
-              {resumeImportedAgents.isPending ? "Resuming…" : "Resume all"}
+              {resumeImportedAgents.isPending ? pageText("resuming_ab0bec") : "Resume all"}
             </Button>
           }
         >
@@ -413,9 +415,7 @@ export function Dashboard() {
                   </p>
                 </div>
               </div>
-              <Link to="/costs" className="text-sm underline underline-offset-2 text-red-900 dark:text-red-100">
-                Open budgets
-              </Link>
+              <Link to="/costs" className="text-sm underline underline-offset-2 text-red-900 dark:text-red-100">{pageText("openBudgets_d6995f")}</Link>
             </div>
           ) : null}
 
@@ -428,8 +428,8 @@ export function Dashboard() {
               to="/agents"
               description={
                 <span>
-                  {data.agents.running} running{", "}
-                  {data.agents.paused} paused{", "}
+                  {data.agents.running}{" " + pageText("running_3c49d9")}{", "}
+                  {data.agents.paused}{" " + pageText("paused_11b1b5")}{", "}
                   {data.agents.error} errors
                 </span>
               }
@@ -442,9 +442,8 @@ export function Dashboard() {
               to="/issues"
               description={
                 <span>
-                  {data.tasks.open} open{", "}
-                  {data.tasks.blocked} blocked
-                </span>
+                  {data.tasks.open}{" " + pageText("open_5fc7e3")}{", "}
+                  {data.tasks.blocked}{" " + pageText("blocked_df88b8")}</span>
               }
             />
             <MetricCard
@@ -509,9 +508,7 @@ export function Dashboard() {
             {/* Recent Activity */}
             {recentActivity.length > 0 && (
               <div className="min-w-0">
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-                  Recent Activity
-                </h3>
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">{pageText("recentActivity_8aebf3")}</h3>
                 <Card className="@container block py-0 divide-y divide-border overflow-hidden">
                   {designSandbox ? <ActivityList events={recentActivity} agentMap={agentMap} userProfileMap={userProfileMap} entityNameMap={entityNameMap} entityTitleMap={entityTitleMap} rowClassName={event => animatedActivityIds.has(event.id) ? "activity-row-enter" : undefined} /> : recentActivity.map((event) => (
                     <ActivityRow
@@ -530,9 +527,7 @@ export function Dashboard() {
 
             {/* Recent Tasks */}
             <div className="min-w-0">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-                Recent Tasks
-              </h3>
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">{pageText("recentTasks_b91b93")}</h3>
               {recentIssues.length === 0 ? (
                 <Card className="block p-4">
                   <p className="text-sm text-muted-foreground">{t("nav.noTasks")}</p>

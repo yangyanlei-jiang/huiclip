@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { isCsvFile } from "@/lib/csv-preview";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -23,6 +24,7 @@ export function TaskWorkspaceFilePanel({
   payload: WorkspaceFilePayload;
   onFallbackToProject?: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [previewMode, setPreviewMode] = useState<"raw" | "rendered">("rendered");
   useEffect(() => setPreviewMode("rendered"), [payload.path, payload.workspace, payload.workspaceId, payload.projectId]);
   const [copied, setCopied] = useState(false);
@@ -65,8 +67,8 @@ export function TaskWorkspaceFilePanel({
               type="button"
               variant="ghost"
               size="icon-sm"
-              aria-label="Copy file contents"
-              title={copied ? "Copied" : "Copy file contents"}
+              aria-label={pageText("copyFileContents_14b1ae")}
+              title={copied ? pageText("copied_8e3df4") : pageText("copyFileContents_14b1ae")}
               onClick={() => {
                 void copyTextToClipboard(contentQuery.data!.content.data).then(() => {
                   setCopied(true);
@@ -80,7 +82,7 @@ export function TaskWorkspaceFilePanel({
           {renderedPreview && contentQuery.data ? <FilePreviewModeToggle mode={previewMode} onChange={setPreviewMode} label="File preview mode" /> : null}
           {downloadUrl ? (
             <Button asChild variant="ghost" size="icon-sm">
-              <a href={downloadUrl} download={resource?.title} aria-label="Download file" title="Download file">
+              <a href={downloadUrl} download={resource?.title} aria-label={pageText("downloadFile_774025")} title={pageText("downloadFile_774025")}>
                 <Download aria-hidden />
               </a>
             </Button>

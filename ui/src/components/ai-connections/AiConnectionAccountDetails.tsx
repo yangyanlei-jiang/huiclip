@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useQuery } from "@tanstack/react-query";
 import type { AiManagedConnectionSummary, ConnectionGrant } from "@paperclipai/shared";
@@ -12,6 +13,7 @@ export function AiConnectionAccountDetails({ account, grant }: {
   account: AiManagedConnectionSummary;
   grant: ConnectionGrant;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const canLookUp = account.provider === "anthropic" && account.method === "subscription" && account.status === "connected";
   const identity = useQuery({
@@ -28,7 +30,7 @@ export function AiConnectionAccountDetails({ account, grant }: {
     <section className="space-y-3" aria-label="Connected account">
       <h3 className="text-sm font-semibold">Connected account</h3>
       <dl className="grid grid-cols-2 gap-3 text-sm">
-        <dt className="text-muted-foreground">{AI_PROVIDERS[account.provider].name} account</dt>
+        <dt className="text-muted-foreground">{AI_PROVIDERS[account.provider].name}{" " + pageText("account_ca2072")}</dt>
         <dd className="break-words">{accountLabel ?? "Not available"}</dd>
         {identity.data?.organizationLabel && <>
           <dt className="text-muted-foreground">{translateUi("interfaceCopy.organization")}</dt>
@@ -36,7 +38,7 @@ export function AiConnectionAccountDetails({ account, grant }: {
         </>}
         <dt className="text-muted-foreground">Sign-in method</dt>
         <dd>{aiMethodLabel(account.provider, account.method)}</dd>
-        <dt className="text-muted-foreground">Access</dt>
+        <dt className="text-muted-foreground">{pageText("access_2f81a2")}</dt>
         <dd>{account.ownership === "shared" ? "Company shared" : `Personal · ${account.ownerName ?? "Account owner"}`}</dd>
       </dl>
       {canLookUp && identity.isPending && <p role="status" className="text-xs text-muted-foreground">Checking account details…</p>}

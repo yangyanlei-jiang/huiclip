@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useMemo } from "react";
 import { Link, Navigate, useParams } from "@/lib/router";
 import { useQuery } from "@tanstack/react-query";
@@ -23,6 +24,7 @@ import { NotFoundPage } from "./NotFound";
  * @see doc/plugins/PLUGIN_SPEC.md §24.4 — Company-Context Plugin Page
  */
 export function PluginPage() {
+  const { t: pageText } = usePageTranslation("interface");
   const params = useParams<{
     companyPrefix?: string;
     pluginId?: string;
@@ -136,7 +138,7 @@ export function PluginPage() {
   }
 
   if (!contributions) {
-    return <div className="text-sm text-muted-foreground">Loading…</div>;
+    return <div className="text-sm text-muted-foreground">{pageText("loading_33ce41")}</div>;
   }
 
   if (!pluginId && pluginRoutePath) {
@@ -169,9 +171,7 @@ export function PluginPage() {
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" asChild>
             <Link to={companyPrefix ? `/${companyPrefix}/dashboard` : "/dashboard"}>
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              Back
-            </Link>
+              <ArrowLeft className="h-4 w-4 mr-1" />{pageText("back_b52b36")}</Link>
           </Button>
         </div>
       )}

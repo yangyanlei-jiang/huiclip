@@ -1,3 +1,4 @@
+import { t as interfaceMessage } from "@/i18n";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Navigate, useNavigate, useParams } from "@/lib/router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -418,7 +419,7 @@ export function RoutineDetail() {
         return;
       }
       pushToast({
-        title: "Failed to save routine",
+        title: interfaceMessage("interface:errorFailedToSaveRoutine"),
         body: describeError(mutationError, { action: "save the routine" }).body,
         tone: "error",
       });
@@ -474,7 +475,7 @@ export function RoutineDetail() {
     },
     onError: (statusError) => {
       pushToast({
-        title: "Failed to update routine",
+        title: interfaceMessage("interface:errorFailedToUpdateRoutine"),
         body: describeError(statusError, { action: "update the routine" }).body,
         tone: "error",
       });
@@ -513,7 +514,7 @@ export function RoutineDetail() {
     },
     onError: (triggerError) => {
       pushToast({
-        title: "Failed to add trigger",
+        title: interfaceMessage("interface:errorFailedToAddTrigger"),
         body: describeError(triggerError, { action: "create the trigger" }).body,
         tone: "error",
       });
@@ -532,7 +533,7 @@ export function RoutineDetail() {
     },
     onError: (triggerError) => {
       pushToast({
-        title: "Failed to update trigger",
+        title: interfaceMessage("interface:errorFailedToUpdateTrigger"),
         body: describeError(triggerError, { action: "update the trigger" }).body,
         tone: "error",
       });
@@ -551,7 +552,7 @@ export function RoutineDetail() {
     },
     onError: (triggerError) => {
       pushToast({
-        title: "Failed to delete trigger",
+        title: interfaceMessage("interface:errorFailedToDeleteTrigger"),
         body: describeError(triggerError, { action: "delete the trigger" }).body,
         tone: "error",
       });
@@ -572,7 +573,7 @@ export function RoutineDetail() {
     },
     onError: (triggerError) => {
       pushToast({
-        title: "Failed to rotate webhook secret",
+        title: interfaceMessage("interface:errorFailedToRotateWebhookSecret"),
         body: describeError(triggerError, { action: "rotate the webhook secret" }).body,
         tone: "error",
       });

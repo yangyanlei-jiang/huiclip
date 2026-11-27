@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -146,6 +147,7 @@ function StatusBadge({
 }
 
 function RowResultBadge({ status }: { status: RemoteSecretImportRowResult["status"] }) {
+  const { t: pageText } = usePageTranslation("interface");
   switch (status) {
     case "imported":
       return (
@@ -153,8 +155,7 @@ function RowResultBadge({ status }: { status: RemoteSecretImportRowResult["statu
           variant="outline"
           className="gap-1 px-1.5 py-0 font-normal text-emerald-600 border-emerald-500/40 dark:text-emerald-400"
         >
-          <CheckCircle2 className="h-3 w-3" /> Created
-        </Badge>
+          <CheckCircle2 className="h-3 w-3" />{" " + pageText("created_accf40")}</Badge>
       );
     case "skipped":
       return (
@@ -162,8 +163,7 @@ function RowResultBadge({ status }: { status: RemoteSecretImportRowResult["statu
           variant="outline"
           className="gap-1 px-1.5 py-0 font-normal text-muted-foreground border-border/60"
         >
-          <Link2 className="h-3 w-3" /> Skipped
-        </Badge>
+          <Link2 className="h-3 w-3" />{" " + pageText("skipped_5a000a")}</Badge>
       );
     case "error":
     default:
@@ -172,8 +172,7 @@ function RowResultBadge({ status }: { status: RemoteSecretImportRowResult["statu
           variant="outline"
           className="gap-1 px-1.5 py-0 font-normal text-destructive border-destructive/40"
         >
-          <XCircle className="h-3 w-3" /> Failed
-        </Badge>
+          <XCircle className="h-3 w-3" />{" " + pageText("failed_09fef5")}</Badge>
       );
   }
 }
@@ -844,6 +843,7 @@ interface SelectStepProps {
 }
 
 function SelectStep(props: SelectStepProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const {
     awsVaults,
@@ -917,10 +917,10 @@ function SelectStep(props: SelectStepProps) {
                     <span className="flex items-center gap-2">
                       <span>{vault.displayName}</span>
                       {vault.isDefault && (
-                        <Badge variant="outline" className="px-1 py-0 text-(length:--text-nano)">default</Badge>
+                        <Badge variant="outline" className="px-1 py-0 text-(length:--text-nano)">{pageText("default_7505d6")}</Badge>
                       )}
                       {vault.status === "warning" && (
-                        <Badge variant="outline" className="px-1 py-0 text-(length:--text-nano) text-amber-500 border-amber-500/40">warning</Badge>
+                        <Badge variant="outline" className="px-1 py-0 text-(length:--text-nano) text-amber-500 border-amber-500/40">{pageText("warning_383fd7")}</Badge>
                       )}
                       {blocked && (
                         <Badge variant="outline" className="px-1 py-0 text-(length:--text-nano) text-muted-foreground">
@@ -1097,8 +1097,7 @@ function SelectStep(props: SelectStepProps) {
             >
               {pageLoading ? (
                 <>
-                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> Loading…
-                </>
+                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />{" " + pageText("loading_33ce41")}</>
               ) : (
                 `Load ${PAGE_SIZE} more`
               )}
@@ -1111,6 +1110,7 @@ function SelectStep(props: SelectStepProps) {
 }
 
 function PreviewErrorBanner({ error, onRetry }: { error: unknown; onRetry: () => void }) {
+  const { t: pageText } = usePageTranslation("interface");
   const isPermission = isPermissionError(error);
   const isThrottling = isThrottlingError(error);
   const message = readableErrorMessage(error);
@@ -1136,8 +1136,7 @@ function PreviewErrorBanner({ error, onRetry }: { error: unknown; onRetry: () =>
         </div>
         <div className="mt-2 flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={onRetry}>
-            <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> Retry
-          </Button>
+            <RefreshCw className="mr-1.5 h-3.5 w-3.5" />{" " + pageText("retry_9f5cd8")}</Button>
           {isPermission && (
             <a
               href="https://docs.aws.amazon.com/service-authorization/latest/reference/list_awssecretsmanager.html"
@@ -1190,6 +1189,7 @@ interface ReviewStepProps {
 }
 
 function ReviewStep({ drafts, reviewErrors, updateDraft, removeDraft, importing }: ReviewStepProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   if (drafts.length === 0) {
     return (
@@ -1271,7 +1271,7 @@ function ReviewStep({ drafts, reviewErrors, updateDraft, removeDraft, importing 
                       />
                     </label>
                     <label className="flex flex-col gap-1 text-xs">
-                      <span className="text-muted-foreground">Description (optional)</span>
+                      <span className="text-muted-foreground">{pageText("descriptionOptional_388de6")}</span>
                       <Input
                         value={draft.description}
                         onChange={(e) =>
@@ -1321,6 +1321,7 @@ interface ResultStepProps {
 }
 
 function ResultStep({ result, draftList }: ResultStepProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const grouped = useMemo(() => {
     const created: RemoteSecretImportRowResult[] = [];
@@ -1352,9 +1353,9 @@ function ResultStep({ result, draftList }: ResultStepProps) {
       <div className="border-b border-border/60 px-5 py-3" data-testid="result-summary">
         <h3 className="text-sm font-semibold">{heading}</h3>
         <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-          <span className="text-emerald-600 dark:text-emerald-400">✓ {result.importedCount} created</span>
-          <span>⊘ {result.skippedCount} skipped</span>
-          <span className="text-destructive">⨯ {result.errorCount} failed</span>
+          <span className="text-emerald-600 dark:text-emerald-400">✓ {result.importedCount}{" " + pageText("created_21c508")}</span>
+          <span>⊘ {result.skippedCount}{" " + pageText("skipped_413a93")}</span>
+          <span className="text-destructive">⨯ {result.errorCount}{" " + pageText("failed_5f5f87")}</span>
         </div>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
@@ -1362,10 +1363,10 @@ function ResultStep({ result, draftList }: ResultStepProps) {
           <ResultGroup label={translateUi("interfaceCopy.created")} rows={grouped.created} draftLookup={draftLookup} />
         )}
         {grouped.skipped.length > 0 && (
-          <ResultGroup label="Skipped" rows={grouped.skipped} draftLookup={draftLookup} />
+          <ResultGroup label={pageText("skipped_5a000a")} rows={grouped.skipped} draftLookup={draftLookup} />
         )}
         {grouped.failed.length > 0 && (
-          <ResultGroup label="Failed" rows={grouped.failed} draftLookup={draftLookup} />
+          <ResultGroup label={pageText("failed_09fef5")} rows={grouped.failed} draftLookup={draftLookup} />
         )}
       </div>
     </div>
@@ -1447,6 +1448,7 @@ function FooterStatus({
   blockedReviewCount,
   result,
 }: FooterStatusProps) {
+  const { t: pageText } = usePageTranslation("interface");
   if (step === "select") {
     return (
       <div className="text-xs text-muted-foreground">
@@ -1462,8 +1464,7 @@ function FooterStatus({
         {readyReviewCount} ready
         {blockedReviewCount > 0 && (
           <span className="ml-2 text-amber-600 dark:text-amber-400">
-            · {blockedReviewCount} blocked
-          </span>
+            · {blockedReviewCount}{" " + pageText("blocked_df88b8")}</span>
         )}
       </div>
     );
@@ -1471,9 +1472,9 @@ function FooterStatus({
   if (result) {
     return (
       <div className="flex items-center gap-3 text-xs text-muted-foreground">
-        <span>{result.importedCount} created</span>
-        <span>{result.skippedCount} skipped</span>
-        <span>{result.errorCount} failed</span>
+        <span>{result.importedCount}{" " + pageText("created_21c508")}</span>
+        <span>{result.skippedCount}{" " + pageText("skipped_413a93")}</span>
+        <span>{result.errorCount}{" " + pageText("failed_5f5f87")}</span>
       </div>
     );
   }

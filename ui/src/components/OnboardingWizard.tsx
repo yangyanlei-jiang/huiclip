@@ -1,3 +1,5 @@
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation } from "@/i18n";
 import { LanguageSelect } from "@/i18n/LanguageSelect";
 import type { AiConnectionLoginIntent } from "@paperclipai/shared";
@@ -441,6 +443,7 @@ function OnboardingWizardInner({
 }: {
   saved: Record<string, unknown> | null;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t } = useTranslation();
   const {
     onboardingOpen,
@@ -1966,7 +1969,7 @@ function OnboardingWizardInner({
       // dashboard) so they land on the conversation the agent will start in.
       navigate(prefix ? `/${prefix}/issues/${issueRef}` : `/issues/${issueRef}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to launch first task");
+      setError(err instanceof Error ? err.message : interfaceMessage("interface:errorFailedToLaunchFirstTask"));
     } finally {
       setLoading(false);
     }
@@ -2378,7 +2381,7 @@ function OnboardingWizardInner({
       setSelectedCompanyId(company.id);
       setStep(3);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create organization");
+      setError(err instanceof Error ? err.message : interfaceMessage("interface:errorFailedToCreateOrganization"));
     } finally {
       creatingCompanyRef.current = false;
       setLoading(false);
@@ -2428,7 +2431,7 @@ function OnboardingWizardInner({
           setError(
             adapterModelsError instanceof Error
               ? adapterModelsError.message
-              : "Failed to load OpenCode models."
+              : interfaceMessage("interface:errorFailedToLoadOpenCodeModelsSentence")
           );
           return;
         }
@@ -2654,7 +2657,7 @@ function OnboardingWizardInner({
       setStep(5);
     } catch (err) {
       if (!isCurrent()) return;
-      setError(err instanceof Error ? err.message : "Failed to create agent");
+      setError(err instanceof Error ? err.message : interfaceMessage("interface:errorFailedToCreateAgent"));
     } finally {
       if (hiringAgentRef.current === attempt) hiringAgentRef.current = null;
       if (activeClaudeQualification.current?.attempt === attempt) activeClaudeQualification.current = null;
@@ -3439,7 +3442,7 @@ function OnboardingWizardInner({
                             onClick={() => void handleUnsetAnthropicApiKey()}
                           >
                             {unsetAnthropicLoading
-                              ? "Retrying..."
+                              ? pageText("retrying_54aa30")
                               : "Unset ANTHROPIC_API_KEY"}
                           </Button>
                         </div>
@@ -3510,7 +3513,7 @@ function OnboardingWizardInner({
                       <label className="text-xs text-muted-foreground mb-1 block">
                         {adapterType === "openclaw_gateway"
                           ? "Gateway URL"
-                          : "Webhook URL"}
+                          : pageText("webhookURL_fa7517")}
                       </label>
                       <input
                         className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm font-mono outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50"

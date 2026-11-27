@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type { ReactNode } from "react";
 import type {
   ToolRiskLevel,
@@ -12,7 +13,8 @@ import { StatusBadge } from "@/components/StatusBadge";
 
 /** Risk classification badge for a catalog tool. */
 export function RiskBadge({ risk }: { risk: ToolRiskLevel | null | undefined }) {
-  if (!risk) return <Badge variant="outline">unknown</Badge>;
+  const { t: pageText } = usePageTranslation("interface");
+  if (!risk) return <Badge variant="outline">{pageText("unknown_50d8b4")}</Badge>;
   const variant =
     risk === "high" || risk === "critical"
       ? "destructive"
@@ -32,11 +34,12 @@ export function CapabilityBadges({
   isWrite?: boolean;
   isDestructive?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <span className="inline-flex flex-wrap gap-1">
-      {isReadOnly ? <Badge variant="outline">read-only</Badge> : null}
+      {isReadOnly ? <Badge variant="outline">{pageText("readOnly_1d8d39")}</Badge> : null}
       {isWrite ? <Badge variant="secondary">write</Badge> : null}
-      {isDestructive ? <Badge variant="destructive">destructive</Badge> : null}
+      {isDestructive ? <Badge variant="destructive">{pageText("destructive_10f096")}</Badge> : null}
     </span>
   );
 }

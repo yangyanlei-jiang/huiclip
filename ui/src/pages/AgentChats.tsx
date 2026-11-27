@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { usePrimaryAgentPresentation } from "@/components/primary-agent/PrimaryAgentPresentation";
 import { useEffect, useState } from "react";
 import { MessageCircle } from "lucide-react";
@@ -19,6 +20,7 @@ export function AgentChats() {
 }
 
 function AgentChatsContent({ companyId, userId, enabled, loaded, agents, chats, session }: Pick<ReturnType<typeof useAgentChatNavigation>, "companyId" | "userId" | "enabled" | "loaded" | "agents" | "chats" | "session">) {
+  const { t: pageText } = usePageTranslation("interface");
   const primary = usePrimaryAgentPresentation(companyId);
   const openChat = useOpenAgentChat(companyId, userId);
   const navigate = useNavigate();
@@ -70,7 +72,7 @@ function AgentChatsContent({ companyId, userId, enabled, loaded, agents, chats, 
       <p className="text-sm leading-relaxed text-muted-foreground">Ask a question, think through an idea, or plan the next step with your team.</p>
     </div>
     {error ? <QueryErrorState error={error} action="load your chats" onRetry={() => { agentsView.retry(); chatsView.retry(); sessionView.retry(); }} />
-      : agents.isPending || session.isPending ? <p role="status" className="text-sm text-muted-foreground">Loading agents…</p>
+      : agents.isPending || session.isPending ? <p role="status" className="text-sm text-muted-foreground">{pageText("loadingAgents_aa8e27")}</p>
       : <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {(agents.data ?? []).slice(0, 6).map(agent => <button key={agent.id} type="button" disabled={openingId !== null}
           onClick={async () => {

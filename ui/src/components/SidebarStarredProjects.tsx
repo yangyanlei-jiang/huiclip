@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useCallback, useMemo } from "react";
 import { NavLink, useLocation } from "@/lib/router";
 import { useQuery } from "@tanstack/react-query";
@@ -40,6 +41,7 @@ const STAR_ROW_REVEAL =
  * server-side, so a stale star never resurrects a hidden project.
  */
 export function SidebarStarredProjects() {
+  const { t: pageText } = usePageTranslation("interface");
   const { selectedCompanyId } = useCompany();
   const { isMobile, setSidebarOpen, collapsed, peeking } = useSidebar();
   const rail = collapsed && !peeking;
@@ -130,7 +132,7 @@ export function SidebarStarredProjects() {
           >
             <ProjectTile color={project.color ?? null} icon={project.icon ?? null} size="xs" />
             <span className={rail ? SIDEBAR_RAIL_HIDDEN_LABEL : "flex-1 truncate"}>{project.name}</span>
-            {!rail && project.visibility === "private" ? <Lock className="size-3.5 shrink-0 text-muted-foreground" aria-label="Private project" /> : null}
+            {!rail && project.visibility === "private" ? <Lock className="size-3.5 shrink-0 text-muted-foreground" aria-label={pageText("privateProject_505bbd")} /> : null}
             {!rail && project.pauseReason === "budget" ? (
               <BudgetSidebarMarker title="Project paused by budget" />
             ) : null}
@@ -191,7 +193,7 @@ export function SidebarStarredProjects() {
                     ) : (
                       <Star className="size-4 fill-amber-500 text-amber-500" />
                     )}
-                    <span>Remove from starred</span>
+                    <span>{pageText("removeFromStarred_93e94f")}</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem

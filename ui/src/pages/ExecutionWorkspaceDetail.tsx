@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useWorkspaceIsolationControls } from "@/hooks/useWorkspaceIsolationControls";
 import { useEffect, useMemo, useState } from "react";
@@ -604,6 +605,7 @@ function WorkspaceRoutineRow({
   runningRoutineId: string | null;
   onRunNow: (routine: RoutineListItem) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const isArchived = routine.status === "archived";
   const isRunning = runningRoutineId === routine.id;
 
@@ -620,7 +622,7 @@ function WorkspaceRoutineRow({
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
           <span>{routine.assigneeAgentId ? "Default agent set" : "Choose agent when running"}</span>
-          <span>Last run {formatOptionalDateTime(routine.lastRun?.triggeredAt ?? routine.lastTriggeredAt)}</span>
+          <span>{pageText("lastRun_333c63") + " "}{formatOptionalDateTime(routine.lastRun?.triggeredAt ?? routine.lastTriggeredAt)}</span>
           <span className="flex flex-wrap gap-1">
             {variableNames.map((name) => (
               <span key={name} className="rounded-sm bg-muted px-1.5 py-0.5 font-mono text-(length:--text-micro) text-muted-foreground">
@@ -638,7 +640,7 @@ function WorkspaceRoutineRow({
         onClick={() => onRunNow(routine)}
       >
         {isRunning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2 h-4 w-4" />}
-        {isRunning ? "Running..." : "Run now"}
+        {isRunning ? pageText("running_126eda") : pageText("runNow_2af00e")}
       </Button>
     </div>
   );
@@ -651,6 +653,7 @@ function ExecutionWorkspaceRoutinesList({
   workspace: ExecutionWorkspace;
   project: Project | null;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const [runDialogRoutine, setRunDialogRoutine] = useState<RoutineListItem | null>(null);
@@ -728,7 +731,7 @@ function ExecutionWorkspaceRoutinesList({
         </CardHeader>
         <CardContent>
           {routinesView.kind === "loading" || routinesView.kind === "reconnecting" ? (
-            <p className="text-sm text-muted-foreground">Loading routines...</p>
+            <p className="text-sm text-muted-foreground">{pageText("loadingRoutines_1f3200")}</p>
           ) : routinesView.kind === "error" ? (
             <QueryErrorState
               size="inline"
@@ -784,6 +787,7 @@ function ExecutionWorkspaceRoutinesList({
 }
 
 export function ExecutionWorkspaceDetail() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { visible: workspaceIsolationControlsVisible, loaded: workspaceVisibilityLoaded } = useWorkspaceIsolationControls();
   const { workspaceId } = useParams<{ workspaceId: string }>();
@@ -998,7 +1002,7 @@ export function ExecutionWorkspaceDetail() {
   });
 
   if (workspaceQuery.isLoading || workspaceView.kind === "reconnecting") {
-    return <p className="text-sm text-muted-foreground">Loading workspace…</p>;
+    return <p className="text-sm text-muted-foreground">{pageText("loadingWorkspace_89f0dd")}</p>;
   }
   if (workspaceView.kind === "error") {
     return (
@@ -1185,7 +1189,7 @@ export function ExecutionWorkspaceDetail() {
                       />
                     </Field>
 
-                    <Field label="Base ref">
+                    <Field label={pageText("baseRef_16e96d")}>
                       <Input
                         className="font-mono"
                         value={form.baseRef}
@@ -1420,9 +1424,7 @@ export function ExecutionWorkspaceDetail() {
 
               <div className="mt-6 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                 <Button className="w-full sm:w-auto" disabled={!isDirty || updateWorkspace.isPending} onClick={saveChanges}>
-                  {updateWorkspace.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                  Save changes
-                </Button>
+                  {updateWorkspace.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}{pageText("saveChanges_179359")}</Button>
                 <Button
                   variant="outline"
                   className="w-full sm:w-auto"
@@ -1433,9 +1435,7 @@ export function ExecutionWorkspaceDetail() {
                     setRuntimeActionErrorMessage(null);
                     setRuntimeActionMessage(null);
                   }}
-                >
-                  Reset
-                </Button>
+                >{pageText("reset_44c57a")}</Button>
                 {errorMessage ? <p className="text-sm text-destructive">{errorMessage}</p> : null}
                 {!errorMessage && !isDirty ? <p className="text-sm text-muted-foreground">No unsaved changes.</p> : null}
               </div>
@@ -1457,7 +1457,7 @@ export function ExecutionWorkspaceDetail() {
                 ) : workspace.projectWorkspaceId ? (
                   <MonoValue value={workspace.projectWorkspaceId} />
                 ) : (
-                  "None"
+                  pageText("none_6eef66")
                 )}
               </DetailRow>
               <DetailRow label="Source task">
@@ -1468,7 +1468,7 @@ export function ExecutionWorkspaceDetail() {
                 ) : workspace.sourceIssueId ? (
                   <MonoValue value={workspace.sourceIssueId} />
                 ) : (
-                  "None"
+                  pageText("none_6eef66")
                 )}
               </DetailRow>
               <DetailRow label="Derived from">
@@ -1479,7 +1479,7 @@ export function ExecutionWorkspaceDetail() {
                 ) : workspace.derivedFromExecutionWorkspaceId ? (
                   <MonoValue value={workspace.derivedFromExecutionWorkspaceId} />
                 ) : (
-                  "None"
+                  pageText("none_6eef66")
                 )}
               </DetailRow>
               <DetailRow label="Runtime provisioning">
@@ -1501,10 +1501,10 @@ export function ExecutionWorkspaceDetail() {
               </CardHeader>
               <CardContent>
               <DetailRow label="Working dir">
-                {workspace.cwd ? <MonoValue value={workspace.cwd} copy /> : "None"}
+                {workspace.cwd ? <MonoValue value={workspace.cwd} copy /> : pageText("none_6eef66")}
               </DetailRow>
               <DetailRow label="Provider ref">
-                {workspace.providerRef ? <MonoValue value={workspace.providerRef} copy /> : "None"}
+                {workspace.providerRef ? <MonoValue value={workspace.providerRef} copy /> : pageText("none_6eef66")}
               </DetailRow>
               <DetailRow label="Repo URL">
                 {workspace.repoUrl && isSafeExternalUrl(workspace.repoUrl) ? (
@@ -1520,14 +1520,14 @@ export function ExecutionWorkspaceDetail() {
                 ) : workspace.repoUrl ? (
                   <MonoValue value={workspace.repoUrl} copy />
                 ) : (
-                  "None"
+                  pageText("none_6eef66")
                 )}
               </DetailRow>
-              <DetailRow label="Base ref">
-                {workspace.baseRef ? <MonoValue value={workspace.baseRef} copy /> : "None"}
+              <DetailRow label={pageText("baseRef_16e96d")}>
+                {workspace.baseRef ? <MonoValue value={workspace.baseRef} copy /> : pageText("none_6eef66")}
               </DetailRow>
-              <DetailRow label="Branch">
-                {workspace.branchName ? <MonoValue value={workspace.branchName} copy /> : "None"}
+              <DetailRow label={pageText("branch_162751")}>
+                {workspace.branchName ? <MonoValue value={workspace.branchName} copy /> : pageText("none_6eef66")}
               </DetailRow>
               <DetailRow label="Opened">{formatDateTime(workspace.openedAt)}</DetailRow>
               <DetailRow label={translateUi("interfaceCopy.lastUsed")}>{formatDateTime(workspace.lastUsedAt)}</DetailRow>

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -198,6 +199,7 @@ function InstalledAppsSection({
   error: boolean;
   onChange: (connectionId: string, installed: boolean) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <section className="rounded-lg border border-border bg-card">
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-3 py-2.5">
@@ -240,7 +242,7 @@ function InstalledAppsSection({
                       <span className="flex flex-wrap items-center gap-2">
                         <span className="truncate text-sm font-medium text-foreground">{connection.name}</span>
                         <InstallBadge installed={checked} installedForAll={installedForAll} permitted={permitted} />
-                        {rowPending ? <span className="text-xs text-muted-foreground">Saving...</span> : null}
+                        {rowPending ? <span className="text-xs text-muted-foreground">{pageText("saving_ae7e88")}</span> : null}
                       </span>
                       <span className="mt-0.5 block text-xs text-muted-foreground">
                         {installedForAll
@@ -260,9 +262,7 @@ function InstalledAppsSection({
                         <Link
                           to={`/apps/${connection.id}/permissions`}
                           className="text-xs font-medium text-primary hover:underline"
-                        >
-                          Open permissions
-                        </Link>
+                        >{pageText("openPermissions_c5d7c4")}</Link>
                       )}
                     >
                       Permitted but not installed — tools will not appear in runs.
@@ -310,8 +310,9 @@ function InstallSaveStatusChip({
   unsaved: boolean;
   error: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
-  if (pending) return <span className="text-xs text-muted-foreground">Saving...</span>;
+  if (pending) return <span className="text-xs text-muted-foreground">{pageText("saving_ae7e88")}</span>;
   if (error) return <span className="text-xs text-destructive">Could not save</span>;
   if (unsaved) return <span className="text-xs text-muted-foreground">{translateUi("interfaceCopy.unsavedChanges")}</span>;
   return <span className="text-xs text-muted-foreground">{translateUi("interfaceCopy.saved")}</span>;
@@ -336,6 +337,7 @@ const DENIED_TOOLS_DISPLAY_LIMIT = 30;
  * which access profiles and rules shape the final list.
  */
 export function AgentToolsTab({ agent, companyId }: { agent: AgentDetailRecord; companyId: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const [installDraft, setInstallDraft] = useState<Record<string, boolean>>({});
@@ -616,7 +618,7 @@ export function AgentToolsTab({ agent, companyId }: { agent: AgentDetailRecord; 
             <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-2.5">
               <h3 className="text-sm font-semibold text-foreground">Allowed tools</h3>
               <span className="text-xs text-muted-foreground tabular-nums">
-                {allowedTools.length} {allowedTools.length === 1 ? "tool" : "tools"}
+                {allowedTools.length} {allowedTools.length === 1 ? pageText("tool_1937c4") : pageText("tools_0284c6")}
               </span>
             </div>
             {allowedTools.length === 0 ? (
@@ -674,9 +676,7 @@ export function AgentToolsTab({ agent, companyId }: { agent: AgentDetailRecord; 
             {/* Access profiles */}
             <div className="mt-3 space-y-1.5">
               <div className="flex items-center justify-between gap-2">
-                <div className="text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
-                  Access profiles
-                </div>
+                <div className="text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">{pageText("accessProfiles_e271a6")}</div>
                 <Link
                   to={`${profilesHref}?check=1`}
                   className="text-(length:--text-micro) font-medium text-primary hover:underline"
@@ -775,8 +775,7 @@ export function AgentToolsTab({ agent, companyId }: { agent: AgentDetailRecord; 
                   </div>
                   {deniedTools.length > DENIED_TOOLS_DISPLAY_LIMIT ? (
                     <p className="text-(length:--text-micro) text-muted-foreground">
-                      +{deniedTools.length - DENIED_TOOLS_DISPLAY_LIMIT} more
-                    </p>
+                      +{deniedTools.length - DENIED_TOOLS_DISPLAY_LIMIT}{" " + pageText("more_e7c95b")}</p>
                   ) : null}
                 </>
               )}

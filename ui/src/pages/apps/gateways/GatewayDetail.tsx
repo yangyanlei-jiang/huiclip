@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Send } from "lucide-react";
@@ -28,6 +29,7 @@ import { CopyableGatewayUrl } from "./CopyableGatewayUrl";
 import { describeError } from "@/api/errors";
 
 export function GatewayDetail() {
+  const { t: pageText } = usePageTranslation("interface");
   const { gatewayId = "", tab } = useParams<{ gatewayId: string; tab?: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -187,9 +189,7 @@ export function GatewayDetail() {
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => setEditing(true)}>
-            <Pencil className="mr-1.5 h-4 w-4" />
-            Edit
-          </Button>
+            <Pencil className="mr-1.5 h-4 w-4" />{pageText("edit_530164")}</Button>
           <Button onClick={() => setSnippetOpen(true)}>
             <Send className="mr-1.5 h-4 w-4" />
             Client snippets

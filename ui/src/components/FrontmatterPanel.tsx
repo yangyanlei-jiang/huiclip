@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useMemo, useState } from "react";
 import {
@@ -226,6 +227,7 @@ export function FrontmatterPanel({
   onChange,
   className,
 }: FrontmatterPanelProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const isSkillFile = isSkillMarkdown(fileName);
 
@@ -357,9 +359,7 @@ export function FrontmatterPanel({
             >
               <TabsList variant="line" className="h-7">
                 {canUseFields ? (
-                  <TabsTrigger value="fields" className="px-2 py-0.5 text-xs">
-                    Fields
-                  </TabsTrigger>
+                  <TabsTrigger value="fields" className="px-2 py-0.5 text-xs">{pageText("fields_e8b685")}</TabsTrigger>
                 ) : (
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -369,9 +369,7 @@ export function FrontmatterPanel({
                           disabled
                           aria-disabled="true"
                           className="px-2 py-0.5 text-xs opacity-50"
-                        >
-                          Fields
-                        </TabsTrigger>
+                        >{pageText("fields_e8b685")}</TabsTrigger>
                       </span>
                     </TooltipTrigger>
                     <TooltipContent className="max-w-60">
@@ -396,7 +394,7 @@ export function FrontmatterPanel({
           {present && effectiveMode === "fields" && warningCount > 0 ? (
             <Badge variant="outline" className="gap-1 text-amber-500" data-testid="frontmatter-warning-chip">
               <AlertTriangle className="h-3.5 w-3.5" />
-              {warningCount} {warningCount === 1 ? "issue" : "issues"}
+              {warningCount} {warningCount === 1 ? pageText("issue_00819c") : pageText("issues_890c54")}
             </Badge>
           ) : null}
         </div>
@@ -468,6 +466,7 @@ function FieldsForm({
   readOnly: boolean;
   onCommit: (form: FormModel) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const nameWarning = fieldWarning(validation, "name");
   const descriptionWarning = fieldWarning(validation, "description");
   const toolsWarning = fieldWarning(validation, "allowed-tools");
@@ -476,9 +475,7 @@ function FieldsForm({
     <div className="space-y-3 pt-1">
       {form.hasName ? (
         <div>
-          <Label htmlFor="fm-name" className="text-xs text-muted-foreground">
-            name
-          </Label>
+          <Label htmlFor="fm-name" className="text-xs text-muted-foreground">{pageText("name_6ae999")}</Label>
           <Input
             id="fm-name"
             value={form.name}
@@ -493,9 +490,7 @@ function FieldsForm({
 
       {form.hasDescription ? (
         <div>
-          <Label htmlFor="fm-description" className="text-xs text-muted-foreground">
-            description
-          </Label>
+          <Label htmlFor="fm-description" className="text-xs text-muted-foreground">{pageText("description_cb3291")}</Label>
           <Textarea
             id="fm-description"
             value={form.description}
@@ -579,6 +574,7 @@ function MetadataRows({
   readOnly: boolean;
   onChange: (rows: ScalarRow[]) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const update = (index: number, patch: Partial<ScalarRow>) => {
     const next = rows.slice();
     next[index] = { ...next[index]!, ...patch, edited: true };
@@ -602,7 +598,7 @@ function MetadataRows({
             aria-label={`Metadata key ${index + 1}`}
             value={row.key}
             readOnly={readOnly}
-            placeholder="key"
+            placeholder={pageText("key_a62f22")}
             onChange={(event) => update(index, { key: event.target.value })}
             className="h-8 flex-1 font-mono text-xs"
           />
@@ -610,7 +606,7 @@ function MetadataRows({
             aria-label={`Value for ${row.key || `field ${index + 1}`}`}
             value={row.text}
             readOnly={readOnly}
-            placeholder="value"
+            placeholder={pageText("value_f32b67")}
             onChange={(event) => update(index, { text: event.target.value })}
             className="h-8 flex-1 text-xs"
           />
@@ -648,6 +644,7 @@ function ChipInput({
   placeholder?: string;
   onChange: (values: string[]) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [draft, setDraft] = useState("");
 
   const commit = () => {
@@ -688,7 +685,7 @@ function ChipInput({
             }
           }}
           onBlur={commit}
-          aria-label="Add tool"
+          aria-label={pageText("addTool_d65969")}
           className="min-w-24 flex-1 bg-transparent text-xs outline-none"
         />
       ) : null}

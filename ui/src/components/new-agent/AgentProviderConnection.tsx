@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation } from "@/i18n";
 import { healthApi } from "@/api/health";
 import { aiConnectionsApi } from "@/api/ai-connections";
@@ -71,6 +72,7 @@ export function AgentProviderConnection({
     onComplete: (result: { connectionId: string; grantId: string; method: "subscription" | "api_key" }) => void;
   };
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const health = useQuery({ queryKey: queryKeys.health, queryFn: healthApi.get, enabled: localEnvironment });
   // Read health through the shared view: a transient failure keeps the saved
   // local-login path usable,anda no-data failure shows readable copy.
@@ -348,14 +350,14 @@ export function AgentProviderConnection({
                 />
                 {!selectedKey && (
                   <OnboardingCardField
-                    label="API key"
+                    label={pageText("apiKey_cf678c")}
                     masked
                     autoFocus
                     value={apiKey}
                     placeholder={
                       storedConnection
                         ? "Key entered. Retry the connection."
-                        : "Enter API key here"
+                        : pageText("enterAPIKeyHere_4991fd")
                     }
                     onChange={(value) => {
                       onDraftChanged?.();

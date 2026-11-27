@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import type { IssueDocument } from "@paperclipai/shared";
 import { FileText, Lightbulb, Maximize2 } from "lucide-react";
@@ -93,6 +94,7 @@ export function TaskChatPlanPreviewCard({
   testId = "task-chat-plan-preview",
   className,
 }: TaskChatPlanPreviewCardProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const coordinator = useCoordinatorPresentation();
   const shimmer = useTaskChatShimmer(source.kind === "live" ? source.activity.id : "saved-plan");
@@ -111,7 +113,7 @@ export function TaskChatPlanPreviewCard({
       : href;
     const compactClassName = cn("inline-flex max-w-full items-center gap-2 rounded-lg border border-border bg-muted/25 px-3 py-2.5 text-sm text-muted-foreground",
       targetHref && "transition-colors hover:bg-muted/40 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", className);
-    const compactBody = <><FileText className="size-4 shrink-0" aria-hidden /><span className="shrink-0">{live ? "Writing" : "Open"}</span>{" "}
+    const compactBody = <><FileText className="size-4 shrink-0" aria-hidden /><span className="shrink-0">{live ? "Writing" : pageText("open_cf9b77")}</span>{" "}
       <span className={cn("min-w-0 truncate text-foreground", targetHref && "underline underline-offset-4", live && shimmer && "shimmer-text shimmer-text-muted")}>{content.title}</span>
       {targetHref ? <span className="hidden shrink-0 sm:inline">{" "}in the sidebar</span> : null}</>;
     return targetHref ? <SidebarDocumentLink href={targetHref} testId={testId}
@@ -132,7 +134,7 @@ export function TaskChatPlanPreviewCard({
           className={cn("h-4 w-4 shrink-0", live && "text-(--status-agent-running)")}
         />
         <span className={cn("font-medium", live && shimmer && "shimmer-text shimmer-text-muted")} data-testid={live ? "task-chat-plan-streaming-status" : undefined}>
-          {live ? "Writing plan" : "Plan"}
+          {live ? "Writing plan" : pageText("plan_ae2f98")}
         </span>
         {headerDetail ? (
           <span

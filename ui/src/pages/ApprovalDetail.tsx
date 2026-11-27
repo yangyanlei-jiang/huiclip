@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation } from "@/i18n";
 import { describeError } from "../api/errors";
 import { AgentIdentity } from "@/components/AgentIdentity";
@@ -20,6 +21,7 @@ import type { ApprovalComment } from "@paperclipai/shared";
 import { MarkdownBody } from "../components/MarkdownBody";
 
 export function ApprovalDetail() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t } = useTranslation();
   const { approvalId } = useParams<{ approvalId: string }>();
   const { selectedCompanyId, setSelectedCompanyId } = useCompany();
@@ -296,9 +298,7 @@ export function ApprovalDetail() {
               variant="outline"
               onClick={() => revisionMutation.mutate()}
               disabled={revisionMutation.isPending}
-            >
-              Request revision
-            </Button>
+            >{pageText("requestRevision_19b61d")}</Button>
           )}
           {approval.status === "revision_requested" && (
             <Button
@@ -363,7 +363,7 @@ export function ApprovalDetail() {
             onClick={() => addCommentMutation.mutate()}
             disabled={!commentBody.trim() || addCommentMutation.isPending}
           >
-            {addCommentMutation.isPending ? "Posting…" : "Post comment"}
+            {addCommentMutation.isPending ? pageText("posting_20c00d") : "Post comment"}
           </Button>
         </div>
       </div>

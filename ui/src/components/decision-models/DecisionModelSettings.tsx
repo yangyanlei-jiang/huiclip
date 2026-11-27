@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { DECISION_MODELS, type DecisionConnectionChoice, type DecisionModelSettings, type DecisionProvider, type DecisionResult, type UpdateDecisionModel } from "@paperclipai/shared";
@@ -28,6 +29,7 @@ export function DecisionModelSettingsView({ settings, choices, saving, testing, 
   error?: string | null; result?: DecisionResult | null; newlyConnectedId?: string | null;
   onSave: (value: UpdateDecisionModel) => void; onTest: () => void; onAdd: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [draft, setDraft] = useState<Required<UpdateDecisionModel>>(settings);
   const appliedConnection = useRef<string | null>(null);
   useEffect(() => { setDraft(settings); }, [settings.companyId, settings.connectionId, settings.grantId, settings.enabled, settings.allowBackground]);
@@ -58,11 +60,11 @@ export function DecisionModelSettingsView({ settings, choices, saving, testing, 
     {choices.length === 0 && <p className="text-sm text-muted-foreground">Add a shared OpenAI or OpenRouter API connection to get started.</p>}
     {draft.connectionId && !selected && <p role="status" className="text-sm text-muted-foreground">The saved connection is unavailable to you. Disable decisions or choose another connection.</p>}
     <div className="flex flex-wrap items-center gap-3">
-      <Button variant="outline" size="sm" onClick={onAdd} disabled={saving || testing}>Add connection</Button>
-      {selected && <Link to={`/apps/${selected.id}/permissions`} className="text-sm underline underline-offset-4">{selected.status === "connected" ? "Manage connection" : "Reconnect connection"}</Link>}
+      <Button variant="outline" size="sm" onClick={onAdd} disabled={saving || testing}>{pageText("addConnection_a9c253")}</Button>
+      {selected && <Link to={`/apps/${selected.id}/permissions`} className="text-sm underline underline-offset-4">{selected.status === "connected" ? pageText("manageConnection_3ca479") : "Reconnect connection"}</Link>}
     </div>
     {draft.connectionId && <fieldset disabled={saving || testing} className="space-y-4">
-      <ToggleField label="Enable decisions" checked={draft.enabled} onChange={enabled => setDraft(value => ({ ...value, enabled }))} />
+      <ToggleField label={pageText("enableDecisions_65be0c")} checked={draft.enabled} onChange={enabled => setDraft(value => ({ ...value, enabled }))} />
       <div className="space-y-2">
         <ToggleField label="Allow company-sponsored background decisions" checked={draft.allowBackground} onChange={allowBackground => setDraft(value => ({ ...value, allowBackground }))} />
         <p className="text-xs text-muted-foreground">Background features can charge this connection without a responsible person. These requests appear as Paperclip services.</p>
@@ -81,9 +83,9 @@ export function DecisionModelSettingsView({ settings, choices, saving, testing, 
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div className="space-y-1">
         <Button variant="outline" size="sm" disabled={!settings.enabled || dirty || saving || testing || selected?.status !== "connected"} onClick={onTest}>{testing ? "Running test…" : "Run test"}</Button>
-        <p className="text-xs text-muted-foreground">{dirty ? "Save changes before testing." : "Runs a small sample with an API charge."}</p>
+        <p className="text-xs text-muted-foreground">{dirty ? pageText("saveChangesBeforeTesting_041f38") : "Runs a small sample with an API charge."}</p>
       </div>
-      {dirty && <Button onClick={() => onSave(draft)} disabled={saving || testing || (draft.enabled && selected?.status !== "connected")}>{saving ? "Saving…" : "Save decision model"}</Button>}
+      {dirty && <Button onClick={() => onSave(draft)} disabled={saving || testing || (draft.enabled && selected?.status !== "connected")}>{saving ? pageText("saving_56a228") : "Save decision model"}</Button>}
     </div>
   </section>;
 }

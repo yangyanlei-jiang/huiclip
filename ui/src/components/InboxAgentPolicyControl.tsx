@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -48,6 +49,7 @@ interface Draft {
  * "Archived by …" attribution live elsewhere (inbox rows / properties pane).
  */
 export function InboxAgentPolicyControl({ companyId }: { companyId: string | null | undefined }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState<Draft | null>(null);
@@ -191,7 +193,7 @@ export function InboxAgentPolicyControl({ companyId }: { companyId: string | nul
           onClick={() => draft && updateMutation.mutate(draft)}
         >
           {updateMutation.isPending ? <LoaderCircle className="size-4 animate-spin" /> : <Save className="size-4" />}
-          {updateMutation.isPending ? "Saving…" : "Save"}
+          {updateMutation.isPending ? pageText("saving_56a228") : pageText("save_efc007")}
         </Button>
       </div>
     </section>

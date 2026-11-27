@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { AgentIdentity } from "@/components/AgentIdentity";
 import { useQuery } from "@tanstack/react-query";
@@ -29,6 +30,7 @@ function PropertyRow({ label, children }: { label: string; children: React.React
 }
 
 export function AgentProperties({ agent, runtimeState }: AgentPropertiesProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { selectedCompanyId } = useCompany();
   const lastErrorIsActive = agent.status === "error";
@@ -71,7 +73,7 @@ export function AgentProperties({ agent, runtimeState }: AgentPropertiesProps) {
 
       <div className="space-y-1">
         {(runtimeState?.sessionDisplayId ?? runtimeState?.sessionId) && (
-          <PropertyRow label="Session">
+          <PropertyRow label={pageText("session_f7f199")}>
             <span className="text-xs font-mono">
               {String(runtimeState.sessionDisplayId ?? runtimeState.sessionId).slice(0, 12)}...
             </span>
@@ -91,7 +93,7 @@ export function AgentProperties({ agent, runtimeState }: AgentPropertiesProps) {
           </PropertyRow>
         )}
         {agent.lastHeartbeatAt && (
-          <PropertyRow label="Last Heartbeat">
+          <PropertyRow label={pageText("lastHeartbeat_1b5e51")}>
             <span className="text-sm">{formatDate(agent.lastHeartbeatAt)}</span>
           </PropertyRow>
         )}

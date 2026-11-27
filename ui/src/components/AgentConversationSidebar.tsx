@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { Plus, Search, Users, X } from "lucide-react";
@@ -35,6 +36,7 @@ export interface AgentConversationSidebarProps {
 
 /** Searchable navigation for one conversation per agent. */
 export function AgentConversationSidebar({ agents, existingChatAgentIds, availableAgents = agents, activeId, previews = {}, unreadAgentIds = [], unreadMessageCounts, loading = false, error, onRetry, initialSearch = "", onSelect, onBrowse, onAddChat, historyLoading, historyError, onRetryHistory, onCreateAgent, renderAgentAction }: AgentConversationSidebarProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const navigate = useNavigate();
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -60,7 +62,7 @@ export function AgentConversationSidebar({ agents, existingChatAgentIds, availab
       </div>
     </div>
     <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-3 pb-3 scrollbar-auto-hide">
-      <span role="status" className="sr-only">{loading ? "Loading agents" : `${visible.length} ${visible.length === 1 ? "agent" : "agents"}`}</span>
+      <span role="status" className="sr-only">{loading ? pageText("loadingAgents_e9d888") : `${visible.length} ${visible.length === 1 ? "agent" : "agents"}`}</span>
       {historyLoading && <p role="status" className="px-2 text-xs text-muted-foreground">Loading chat history…</p>}
       {historyError && <div role="alert" className="flex flex-col items-start gap-2 px-2 py-3">
         <p className="text-xs text-muted-foreground">Some chat history couldn’t load.</p>

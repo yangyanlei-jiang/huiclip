@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { CoordinatorRelativeTime } from "@/components/coordinator/CoordinatorRelativeTime";
 import { useAgentChatRead } from "@/hooks/useAgentChatRead";
 import { Link } from "@/lib/router";
@@ -162,6 +163,7 @@ function TaskChatBubbleContent({
   onTryAgainNoLiveExecutionPath,
   tryAgainNoLiveExecutionPathPending,
 }: TaskChatBubbleProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const readRef = useAgentChatRead(item.id, item.createdAtIso, item.author === "agent" && !item.optimistic);
   const streamlined = useStreamlinedTaskChatPresentation();
   const coordinator = useCoordinatorPresentation();
@@ -417,7 +419,7 @@ function TaskChatBubbleContent({
       {coordinator && recordedTimestamp && attachedTurn ? <span className="px-1 text-(length:--text-micro) text-muted-foreground"><CoordinatorRelativeTime value={recordedTimestamp!} /></span> : null}
       {item.optimistic ? (
         <span className="flex items-center gap-1 px-1 text-(length:--text-micro) text-muted-foreground">
-          <span>{item.optimistic === "queued" ? "Queued" : "Sending…"}</span>
+          <span>{item.optimistic === "queued" ? pageText("queued_6a5998") : pageText("sending_cf7655")}</span>
           {item.optimistic === "queued" ? queuedAction : null}
         </span>
       ) : attachedTurn ? (

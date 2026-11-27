@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useMemo } from "react";
 import { Link, Navigate } from "@/lib/router";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
@@ -78,6 +79,7 @@ function buildProjectWorkspaceGroups(items: WorkspaceOverviewItem[]): ProjectWor
 }
 
 export function Workspaces() {
+  const { t: pageText } = usePageTranslation("interface");
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const experimentalSettingsQuery = useQuery({
@@ -138,7 +140,7 @@ export function Workspaces() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold">Workspaces</h2>
+        <h2 className="text-xl font-bold">{pageText("workspaces_205b45")}</h2>
       </div>
 
       <SummarySlotCard
@@ -164,7 +166,7 @@ export function Workspaces() {
                   </Link> : <h3 className="text-base font-semibold">{group.projectName}</h3>}
                 </div>
                 <span className="text-xs text-muted-foreground">
-                  {group.summaries.length} workspace{group.summaries.length === 1 ? "" : "s"}
+                  {group.summaries.length}{" " + pageText("workspace_a279fe")}{group.summaries.length === 1 ? "" : "s"}
                 </span>
               </div>
               <ProjectWorkspacesContent
@@ -187,7 +189,7 @@ export function Workspaces() {
                 onClick={() => void overviewQuery.fetchNextPage()}
                 disabled={overviewQuery.isFetchingNextPage}
               >
-                {overviewQuery.isFetchingNextPage ? "Loading..." : "Load more"}
+                {overviewQuery.isFetchingNextPage ? pageText("loading_b04ba4") : pageText("loadMore_dfe60c")}
               </Button>
             </div>
           ) : null}

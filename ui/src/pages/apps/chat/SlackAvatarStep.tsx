@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useId, useState } from "react";
 import {
   Download,
@@ -19,6 +20,7 @@ export function SlackAvatarContent({
   avatarUrl,
   compact = false,
 }: SlackAvatarProps & { compact?: boolean }) {
+  const { t: pageText } = usePageTranslation("interface");
   const id = useId();
   const filename = `${appName.replace(/[^a-zA-Z0-9_-]+/g, "-") || "agent"}-avatar.png`;
   const [downloading, setDownloading] = useState(false);
@@ -87,9 +89,7 @@ export function SlackAvatarContent({
                 <Loader2 className="size-4 animate-spin" />
               ) : (
                 <Download className="size-4" />
-              )}
-              Download avatar
-            </a>
+              )}{pageText("downloadAvatar_31115e")}</a>
           </Button>
           {downloadError && (
             <p role="alert" className="text-sm text-destructive">
@@ -132,8 +132,7 @@ export function SlackAvatarContent({
               </a>{" "}
               and choose <strong>{appName}</strong>.
             </li>
-            <li>
-              Choose <strong>Basic Information</strong>, then scroll to{" "}
+            <li>{pageText("choose_78b7c9") + " "}<strong>Basic Information</strong>, then scroll to{" "}
               <strong>Display Information</strong>.
             </li>
             <li>
@@ -142,7 +141,7 @@ export function SlackAvatarContent({
               <span className="break-all font-mono text-xs">{filename}</span>.
             </li>
             <li>
-              Confirm the crop, then click <strong>Save Changes</strong> in
+              Confirm the crop, then click <strong>{pageText("saveChanges_fa2984")}</strong> in
               Slack.
             </li>
           </ol>

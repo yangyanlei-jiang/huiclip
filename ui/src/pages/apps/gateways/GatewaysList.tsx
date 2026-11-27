@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -32,6 +33,7 @@ import {
 import { describeError } from "@/api/errors";
 
 export function GatewaysList() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -223,9 +225,9 @@ export function GatewaysList() {
                         <th className="whitespace-nowrap px-4 py-2.5">Gateway</th>
                         <th className="whitespace-nowrap px-4 py-2.5">{translateUi("interfaceCopy.scope")}</th>
                         <th className="whitespace-nowrap px-4 py-2.5">{translateUi("interfaceCopy.apps")}</th>
-                        <th className="whitespace-nowrap px-4 py-2.5">Tokens</th>
+                        <th className="whitespace-nowrap px-4 py-2.5">{pageText("tokens_c38c6c")}</th>
                         <th className="whitespace-nowrap px-4 py-2.5">{translateUi("interfaceCopy.lastUsed")}</th>
-                        <th className="whitespace-nowrap px-4 py-2.5 text-right">On</th>
+                        <th className="whitespace-nowrap px-4 py-2.5 text-right">{pageText("on_e0049a")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -242,7 +244,7 @@ export function GatewaysList() {
                           <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">{scope}</td>
                           <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">{appsLabel}</td>
                           <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
-                            {active} active{expiring > 0 ? ` · ${expiring} expiring` : ""}
+                            {active}{" " + pageText("active_2bb6b9")}{expiring > 0 ? ` · ${expiring} expiring` : ""}
                           </td>
                           <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
                             {lastUsed ? <RelativeTime value={lastUsed} /> : "—"}
@@ -280,7 +282,7 @@ export function GatewaysList() {
                         <MobileField label={translateUi("interfaceCopy.scope")} value={scope} />
                         <MobileField label={translateUi("interfaceCopy.apps")} value={appsLabel} />
                         <MobileField
-                          label="Tokens"
+                          label={pageText("tokens_c38c6c")}
                           value={`${active} active${expiring > 0 ? ` · ${expiring} expiring` : ""}`}
                         />
                         <MobileField

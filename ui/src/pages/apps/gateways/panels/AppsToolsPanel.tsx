@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import type { ToolProfileWithDetails } from "@paperclipai/shared";
 import { Link } from "@/lib/router";
@@ -16,6 +17,7 @@ export function AppsToolsPanel({
   apps: GatewayAppRow[];
   profile: ToolProfileWithDetails | undefined;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   return (
     <div className="space-y-4">
@@ -35,7 +37,7 @@ export function AppsToolsPanel({
             <thead>
               <tr className="border-b border-border bg-muted/40 text-left text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
                 <th className="px-4 py-2.5">App</th>
-                <th className="px-4 py-2.5">Tools</th>
+                <th className="px-4 py-2.5">{pageText("tools_4fa8cc")}</th>
                 <th className="px-4 py-2.5">{translateUi("interfaceCopy.status")}</th>
                 <th className="px-4 py-2.5 text-right" />
               </tr>
@@ -56,7 +58,7 @@ export function AppsToolsPanel({
                       ) : null}
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
-                      {app.toolCount} {app.toolCount === 1 ? "tool" : "tools"}
+                      {app.toolCount} {app.toolCount === 1 ? pageText("tool_1937c4") : pageText("tools_0284c6")}
                     </td>
                     <td className="px-4 py-3">
                       <span
@@ -67,7 +69,7 @@ export function AppsToolsPanel({
                             : "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
                         )}
                       >
-                        {app.needsAttention ? "Needs attention" : "Healthy"}
+                        {app.needsAttention ? pageText("needsAttention_a12672") : pageText("healthy_80ea15")}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">

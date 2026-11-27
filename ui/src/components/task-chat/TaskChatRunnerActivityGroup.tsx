@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useId, useState, type ReactNode } from "react";
 import { completedActivitySummary } from "./completed-activity-summary";
 import {
@@ -407,6 +408,7 @@ function ActivityDetails({ item }: { item: Activity }) {
 }
 
 function ActivityDetailsBody({ item }: { item: Activity }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (item.kind === "thinking")
     return <TaskChatReasoningSummary text={item.lines.join("\n")} streaming={Boolean(item.streaming)} />;
   if (item.kind === "usage") return <TaskChatUsageReadout item={item} />;
@@ -434,7 +436,7 @@ function ActivityDetailsBody({ item }: { item: Activity }) {
           {item.detail}
         </pre>
       ) : null}
-      {item.decision ? <p>Permission {item.decision}</p> : null}
+      {item.decision ? <p>{pageText("permission_178571") + " "}{item.decision}</p> : null}
       {item.diff ? (
         <p className="break-all font-mono">
           {item.diff.path} · +{item.diff.added} −{item.diff.removed}
@@ -548,6 +550,7 @@ function readRunPreview(items: ToolActivity[]): string {
 }
 
 function ReadRunActivity({ items }: { items: ToolActivity[] }) {
+  const { t: pageText } = usePageTranslation("interface");
   const id = `runner-reads:${items[0]!.id}`;
   const [open, setOpen] = useTaskChatExpansion(id, false);
   const listId = useId();
@@ -565,7 +568,7 @@ function ReadRunActivity({ items }: { items: ToolActivity[] }) {
             <BookOpen className="size-3.5" aria-hidden="true" />
           </span>
           <span className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden whitespace-nowrap">
-            <span className="shrink-0 text-xs">Read {items.length} files</span>
+            <span className="shrink-0 text-xs">Read {items.length}{" " + pageText("files_a1f13b")}</span>
             <span className="truncate font-mono text-xs text-muted-foreground">{readRunPreview(items)}</span>
           </span>
         </span>

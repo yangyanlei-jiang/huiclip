@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { Star, SquarePen } from "lucide-react";
 import { SidebarNavItem } from "@/components/SidebarNavItem";
 import { AgentIcon } from "@/components/AgentIconPicker";
@@ -24,6 +25,7 @@ export function AgentChatSidebar({
   onToggleStar: (id: string) => void;
   onOpenChat: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { collapsed, peeking } = useSidebar();
   const rail = collapsed && !peeking;
   const ordered = orderChatAgents(agents, starredIds, recentIds);
@@ -71,8 +73,8 @@ export function AgentChatSidebar({
           type="button"
           variant="ghost"
           size="icon-xs"
-          aria-label="Chat with an agent"
-          title="Chat with an agent"
+          aria-label={pageText("chatWithAnAgent_b5e325")}
+          title={pageText("chatWithAnAgent_b5e325")}
           onClick={onOpenChat}
           className="absolute right-2 top-(--pct-50) -translate-y-(--pct-50) text-muted-foreground opacity-0 group-hover/chats:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100"
         >

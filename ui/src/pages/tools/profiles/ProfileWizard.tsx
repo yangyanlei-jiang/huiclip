@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -55,6 +56,7 @@ export function ProfileWizard({
   initialTemplate?: TemplateKey;
   initialStep?: WizardStep;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -289,9 +291,7 @@ export function ProfileWizard({
           <div className="flex items-center gap-3 text-sm text-muted-foreground">
             {step >= 2 ? (
               <span>
-                Allows <span className="font-medium text-foreground">{live.allowed}</span> of {live.total}{" "}
-                tools
-              </span>
+                Allows <span className="font-medium text-foreground">{live.allowed}</span> of {live.total}{" "}{pageText("tools_0284c6")}</span>
             ) : null}
             {draftId ? (
               <button
@@ -319,9 +319,7 @@ export function ProfileWizard({
                   saveDraft.mutate({ goToStep: 2, completedStep: 1, seed: seedSelections() })
                 }
               >
-                {busy ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : null}
-                Continue
-              </Button>
+                {busy ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : null}{pageText("continue_2e0262")}</Button>
             ) : null}
 
             {step === 2 ? (
@@ -329,9 +327,7 @@ export function ProfileWizard({
                 disabled={busy}
                 onClick={() => saveDraft.mutate({ goToStep: 3, completedStep: 2 })}
               >
-                {busy ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : null}
-                Continue
-              </Button>
+                {busy ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : null}{pageText("continue_2e0262")}</Button>
             ) : null}
 
             {step === 3 ? (
@@ -451,6 +447,7 @@ export function StepName({
   profileKey: string;
   onProfileKey: (v: string) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [advancedOpen, setAdvancedOpen] = useState(false);
   return (
@@ -514,7 +511,7 @@ export function StepName({
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="profile-description">Description (optional)</Label>
+          <Label htmlFor="profile-description">{pageText("descriptionOptional_388de6")}</Label>
           <Textarea
             id="profile-description"
             value={description}
@@ -527,9 +524,7 @@ export function StepName({
 
       <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
         <CollapsibleTrigger className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-          <ChevronDown className={cn("h-4 w-4 transition-transform", advancedOpen && "rotate-180")} />
-          Advanced
-        </CollapsibleTrigger>
+          <ChevronDown className={cn("h-4 w-4 transition-transform", advancedOpen && "rotate-180")} />{pageText("advanced_4d0647")}</CollapsibleTrigger>
         <CollapsibleContent className="pt-2">
           <div className="space-y-1.5">
             <Label htmlFor="profile-key">Identifier</Label>
@@ -581,6 +576,7 @@ export function StepAssign({
   companyDefault: boolean;
   onCompanyDefault: (v: boolean) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [moreOpen, setMoreOpen] = useState(false);
   // Per-agent overlap context from already-loaded bindings — no extra fetch.
@@ -658,7 +654,7 @@ export function StepAssign({
               onToggle={onToggleProject}
             />
             <TargetChecklist
-              label="Routines"
+              label={pageText("routines_a445e5")}
               options={routines}
               selected={selectedRoutineIds ?? new Set()}
               onToggle={onToggleRoutine}

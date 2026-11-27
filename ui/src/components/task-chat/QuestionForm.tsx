@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   Check,
@@ -254,6 +255,7 @@ function QuestionFormForRequest({
   onSubmit,
   onCancel,
 }: QuestionFormProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const takeoverActions = useTaskChatComposerTakeoverActions();
   // A provider default is an editable draft only. An existing response or
   // saved draft, including an explicitly cleared value, always wins. State
@@ -708,9 +710,7 @@ function QuestionFormForRequest({
             >
               {working === "cancel" ? (
                 <Loader2 aria-hidden className="h-4 w-4 animate-spin" />
-              ) : null}{" "}
-              Cancel
-            </Button>
+              ) : null}{" "}{pageText("cancel_77dfd2")}</Button>
           ) : null}
           {!question.required ? (
             <Button
@@ -732,7 +732,7 @@ function QuestionFormForRequest({
             {working === "submit" ? (
               <Loader2 aria-hidden className="h-4 w-4 animate-spin" />
             ) : null}
-            {isLastPage ? (questionSet.submitLabel ?? "Submit answers") : "Next"}
+            {isLastPage ? (questionSet.submitLabel ?? "Submit answers") : pageText("next_bc9819")}
           </Button>
         </div>
       </DecisionCardFooter>

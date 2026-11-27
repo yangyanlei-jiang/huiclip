@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo, useState, type ReactNode } from "react";
 import {
@@ -240,6 +241,7 @@ export function DecisionCard({
   onDismiss,
   className,
 }: DecisionCardProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [inputValues, setInputValues] = useState<Record<string, string>>({});
   const [confirmOptionId, setConfirmOptionId] = useState<string | null>(null);
@@ -335,8 +337,7 @@ export function DecisionCard({
         <div className="flex shrink-0 items-center gap-1.5">
           {open && hasCancelTree && (
             <span className={cn("inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-(length:--text-micro) font-semibold uppercase tracking-wide", BADGE.destructive)}>
-              <ShieldAlert className="h-3 w-3" aria-hidden /> Destructive
-            </span>
+              <ShieldAlert className="h-3 w-3" aria-hidden />{" " + pageText("destructive_f58c83")}</span>
           )}
           <span className={cn("inline-flex items-center rounded-full border px-2 py-0.5 text-(length:--text-micro) font-semibold uppercase tracking-wide", BADGE[tone])}>
             {badgeLabel}
@@ -375,7 +376,7 @@ export function DecisionCard({
         {runHref && (
           <>
             {" · "}
-            <a href={runHref} className="hover:underline">view run</a>
+            <a href={runHref} className="hover:underline">{pageText("viewRun_542400")}</a>
           </>
         )}
       </p>
@@ -522,8 +523,7 @@ export function DecisionCard({
                         This issue and every sub-issue beneath it will be cancelled.
                       </p>
                     )}
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      Type <span className="font-mono font-medium text-foreground">{confirmToken}</span> to confirm.
+                    <p className="mt-2 text-xs text-muted-foreground">{pageText("type_3deb74") + " "}<span className="font-mono font-medium text-foreground">{confirmToken}</span> to confirm.
                     </p>
                     <Input
                       value={confirmText}

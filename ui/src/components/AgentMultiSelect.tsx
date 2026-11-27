@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { AgentAvatar, type AvatarAgent } from "@/components/AgentAvatar";
 import { useEffect, useMemo, useState, type ComponentProps, type ReactNode } from "react";
@@ -35,6 +36,7 @@ export function AgentSelect({
   triggerClassName?: string;
   id?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState("");
@@ -77,7 +79,7 @@ export function AgentSelect({
           <Input
             value={filter}
             onChange={(event) => setFilter(event.target.value)}
-            placeholder="Filter agents"
+            placeholder={pageText("filterAgents_9b26f6")}
             className="h-8"
             autoFocus
           />
@@ -159,6 +161,7 @@ export function AgentMultiSelect({
   showSelectionPreview?: boolean;
   onOpenChange?: (open: boolean) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState("");
@@ -216,7 +219,7 @@ export function AgentMultiSelect({
               {triggerIcon}
               <span className="truncate">
                 {triggerLabel ?? (selectedCount === 0
-                  ? "Select agents"
+                  ? pageText("selectAgents_b52729")
                   : `${selectedCount} ${selectedCount === 1 ? "agent" : "agents"} selected`)}
               </span>
             </span>
@@ -228,7 +231,7 @@ export function AgentMultiSelect({
           <Input
             value={filter}
             onChange={(event) => setFilter(event.target.value)}
-            placeholder="Filter agents"
+            placeholder={pageText("filterAgents_9b26f6")}
             className="h-8"
             autoFocus
           />
@@ -298,7 +301,7 @@ export function AgentMultiSelect({
                 }}
                 disabled={pending}
               >
-                {staged ? (pending ? "Saving…" : "Save") : "Done"}
+                {staged ? (pending ? pageText("saving_56a228") : pageText("save_efc007")) : pageText("done_e9b450")}
               </Button>
             </div>
           </div>
@@ -313,7 +316,7 @@ export function AgentMultiSelect({
             </div>
           ))}
           {selectedAgents.length > 3 ? (
-            <p className="px-1.5 pt-0.5 text-xs text-muted-foreground">and {selectedAgents.length - 3} more</p>
+            <p className="px-1.5 pt-0.5 text-xs text-muted-foreground">and {selectedAgents.length - 3}{" " + pageText("more_e7c95b")}</p>
           ) : null}
         </div>
       ) : null}

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -53,6 +54,7 @@ export function McpDevicePage({ initialCode }: { initialCode?: string } = {}) {
 }
 
 function McpConnectRequest({ id, device = false, agentPairingOnly = false, onEditCode }: { id: string; device?: boolean; agentPairingOnly?: boolean; onEditCode?: () => void }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const requestPrefix = agentPairingOnly ? "/dot-mcp/requests" : "/mcp/requests";
   const [companyId, setCompanyId] = useState("");
@@ -101,7 +103,7 @@ function McpConnectRequest({ id, device = false, agentPairingOnly = false, onEdi
     <Card className="block space-y-4 p-6">
       <div className="flex items-center gap-3">
         <Paperclip className="size-8 shrink-0 text-foreground" role="img" aria-label="Paperclip" />
-        <h1 className="min-w-0 break-words text-xl font-semibold">Connect <bdi>{assistantName}</bdi> to Paperclip</h1>
+        <h1 className="min-w-0 break-words text-xl font-semibold">{pageText("connect_b65463") + " "}<bdi>{assistantName}</bdi> to Paperclip</h1>
       </div>
       {clientOrigin && <ClientOrigin key={clientOrigin} origin={clientOrigin} />}
       {!device && data?.redirectOrigin && data.redirectOrigin !== clientOrigin && <ClientOrigin key={data.redirectOrigin} origin={data.redirectOrigin} />}
@@ -117,18 +119,18 @@ function McpConnectRequest({ id, device = false, agentPairingOnly = false, onEdi
         {previewPending && <p role="status" className="text-sm text-muted-foreground">Checking pairing code…</p>}
         {pairingPreview?.providerKind === "grok_bot" && <p className="text-sm font-medium">Allow this connection to work as {pairingPreview.agent.name} in {pairingPreview.company.name}.</p>}
         {pairingPreview && <dl className="space-y-2 rounded-md border border-border p-3 text-sm">
-          <div><dt className="text-muted-foreground">Company</dt><dd>{pairingPreview.company.name} <span className="text-xs text-muted-foreground">({pairingPreview.company.id})</span></dd></div>
+          <div><dt className="text-muted-foreground">{pageText("company_7a1994")}</dt><dd>{pairingPreview.company.name} <span className="text-xs text-muted-foreground">({pairingPreview.company.id})</span></dd></div>
           <div><dt className="text-muted-foreground">{translateUi("interfaceCopy.agent")}</dt><dd>{pairingPreview.agent.name} <span className="text-xs text-muted-foreground">({pairingPreview.agent.id})</span></dd></div>
-          <div><dt className="text-muted-foreground">Permissions</dt><dd>{pairingPreview.permissions}</dd></div>
+          <div><dt className="text-muted-foreground">{pageText("permissions_d06d55")}</dt><dd>{pairingPreview.permissions}</dd></div>
           {pairingPreview.authorizingPerson && <div><dt className="text-muted-foreground">Authorized by</dt><dd>{pairingPreview.authorizingPerson}</dd></div>}
           <div><dt className="text-muted-foreground">Access duration</dt><dd>{pairingPreview.accessDuration}</dd></div>
         </dl>}
         {previewEnabled && preview.view.kind === "error" && <QueryErrorState size="inline" error={preview.error} action="check this pairing code" onRetry={preview.view.retry} retrying={preview.view.isFetching} />}
         {pairDot.error && <p role="alert" className="text-sm text-destructive">{describeError(pairDot.error, { action: "connect Dot" }).body}</p>}
-        <div className="flex justify-end"><Button type="submit" disabled={!pairingPreview || !PAIRING_CODE_PATTERN.test(trimmedPairingCode) || pairDot.isPending}>{pairDot.isPending ? "Connecting…" : "Allow agent connection"}</Button></div>
+        <div className="flex justify-end"><Button type="submit" disabled={!pairingPreview || !PAIRING_CODE_PATTERN.test(trimmedPairingCode) || pairDot.isPending}>{pairDot.isPending ? pageText("connecting_fd3e79") : "Allow agent connection"}</Button></div>
       </form>}
       {data && <>
-        {data.requiresSignIn ? <Button asChild><Link to={`/auth?next=${encodeURIComponent(returnPath)}`}>Sign in / Create account</Link></Button> : <>
+        {data.requiresSignIn ? <Button asChild><Link to={`/auth?next=${encodeURIComponent(returnPath)}`}>{pageText("signInCreateAccount_5d2b23")}</Link></Button> : <>
           {data.requestedCompanyId ? <div className="flex items-center gap-4 rounded-md border border-border p-4">
             {company && <CompanyPatternIcon companyName={company.name} logoUrl={company.logoUrl} className="size-14 shrink-0 rounded-lg text-xl" />}
             <div className="min-w-0 space-y-1">
@@ -155,7 +157,7 @@ function McpConnectRequest({ id, device = false, agentPairingOnly = false, onEdi
           {consent.error && <p role="alert" className="text-sm text-destructive">{describeError(consent.error).body}</p>}
           <div className="flex items-center justify-between gap-3">
             <Button variant="outline" disabled={consent.isPending} onClick={() => consent.mutate("deny")}>{translateUi("interfaceCopy.cancel")}</Button>
-            <Button className="h-auto min-h-10 min-w-0 shrink whitespace-normal" disabled={!company || (data.agentConnection && !company.canWrite) || consent.isPending} onClick={() => consent.mutate("approve")}>{consent.isPending ? "Connecting…" : data.agentConnection ? "Connect Dot agent" : "Connect organization"}</Button>
+            <Button className="h-auto min-h-10 min-w-0 shrink whitespace-normal" disabled={!company || (data.agentConnection && !company.canWrite) || consent.isPending} onClick={() => consent.mutate("approve")}>{consent.isPending ? pageText("connecting_fd3e79") : data.agentConnection ? "Connect Dot agent" : "Connect organization"}</Button>
           </div>
         </>}
       </>}
@@ -164,6 +166,7 @@ function McpConnectRequest({ id, device = false, agentPairingOnly = false, onEdi
 }
 
 export function AssistantConnectionsPage() {
+  const { t: pageText } = usePageTranslation("interface");
   const client = useQueryClient();
   const connections = useQuery({ queryKey: ["mcp-connections"], queryFn: () => api.get<McpConnection[]>("/mcp/connections") });
   const connectionsView = useQueryView(connections);
@@ -175,7 +178,7 @@ export function AssistantConnectionsPage() {
   return <div className="mx-auto max-w-xl space-y-4 py-10">
     <h1 className="text-xl font-semibold">Assistant connections</h1>
     <p className="text-sm text-muted-foreground">Revoking a connection stops its future tool calls. Work already delegated continues under your organization’s normal controls.</p>
-    {(connectionsView.kind === "loading" || connectionsView.kind === "reconnecting") && <p role="status" className="text-sm text-muted-foreground">Loading connections…</p>}
+    {(connectionsView.kind === "loading" || connectionsView.kind === "reconnecting") && <p role="status" className="text-sm text-muted-foreground">{pageText("loadingConnections_e2e03e")}</p>}
     {connectionsView.kind === "error" && <QueryErrorState error={connectionsView.error} action="load assistant connections" onRetry={connectionsView.retry} retrying={connectionsView.isFetching} />}
     {revoke.error && <p role="alert" className="text-sm text-destructive">{describeError(revoke.error, { action: "revoke the connection" }).body}</p>}
     {active?.length === 0 && <p className="text-sm">No assistant connections.</p>}
@@ -183,7 +186,7 @@ export function AssistantConnectionsPage() {
       <h2 className="font-medium"><Identity name={assistantConnectionDisplayName(connection)} avatarUrl={connection.user?.image} initials={deriveInitials(connection.user?.name ?? "You")} /></h2>
       <p className="text-sm text-muted-foreground">Organization: {connection.companyName}</p>
       {connection.agent && <p className="text-sm">Works as <Link className="underline" to={`/${connection.companyPrefix ?? connection.companyId}/agents/${connection.agent.id}/runtime`}>{connection.agent.name}</Link>{connection.user ? ` · Authorized by ${connection.user.name}` : ""}</p>}
-      <p className="text-sm">{connection.scopes.includes("paperclip:agent") ? "Agent connection" : connection.scopes.includes("paperclip:write") ? "Read and edit work" : "Read only"}</p>
+      <p className="text-sm">{connection.scopes.includes("paperclip:agent") ? "Agent connection" : connection.scopes.includes("paperclip:write") ? "Read and edit work" : pageText("readOnly_601dcc")}</p>
       {connection.scopes.includes("paperclip:configure") && <p className="text-sm">Configure agents, projects and skills</p>}
       <Button variant="outline" disabled={revoke.isPending} onClick={() => revoke.mutate(connection.id)}>Revoke connection</Button>
     </Card>)}

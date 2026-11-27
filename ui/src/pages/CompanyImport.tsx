@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
@@ -452,6 +453,7 @@ function ConflictResolutionList({
   onToggleSkip: (slug: string, filePath: string | null) => void;
   onToggleConfirm: (slug: string) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (conflicts.length === 0) return null;
 
   return (
@@ -462,7 +464,7 @@ function ConflictResolutionList({
             Renames
           </h3>
           <span className="text-xs text-muted-foreground">
-            {conflicts.length} item{conflicts.length === 1 ? "" : "s"}
+            {conflicts.length}{" " + pageText("item_3a7d97")}{conflicts.length === 1 ? "" : "s"}
           </span>
         </div>
         <div className="divide-y divide-border">
@@ -490,7 +492,7 @@ function ConflictResolutionList({
                   )}
                   onClick={() => onToggleSkip(item.slug, item.filePath)}
                 >
-                  {isSkipped ? "skipped" : "skip"}
+                  {isSkipped ? pageText("skipped_413a93") : "skip"}
                 </button>
 
                 <Badge variant="outline" className={cn(
@@ -662,15 +664,16 @@ function AdapterPickerList({
   onToggleExpand: (slug: string) => void;
   onChangeConfig: (slug: string, patch: Partial<CreateConfigValues>) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (agents.length === 0) return null;
 
   return (
     <div className="mx-5 mt-3">
       <div className="rounded-md border border-border">
         <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
-          <h3 className="text-sm font-medium">Adapters</h3>
+          <h3 className="text-sm font-medium">{pageText("adapters_e07a4a")}</h3>
           <span className="text-xs text-muted-foreground">
-            {agents.length} agent{agents.length === 1 ? "" : "s"}
+            {agents.length}{" " + pageText("agent_0608c4")}{agents.length === 1 ? "" : "s"}
           </span>
         </div>
         <div className="divide-y divide-border">
@@ -690,9 +693,7 @@ function AdapterPickerList({
                   <Badge variant="outline" className={cn(
                     "text-(length:--text-nano) uppercase tracking-wide",
                     "text-blue-500 border-blue-500/30",
-                  )}>
-                    agent
-                  </Badge>
+                  )}>{pageText("agent_0608c4")}</Badge>
                   <span className="shrink-0 font-mono text-xs text-muted-foreground">
                     {agent.name}
                   </span>
@@ -920,6 +921,7 @@ async function watchImportJob(
 // ── Main page ─────────────────────────────────────────────────────────
 
 export function CompanyImport() {
+  const { t: pageText } = usePageTranslation("interface");
   const {
     selectedCompanyId,
     selectedCompany,
@@ -1866,10 +1868,10 @@ export function CompanyImport() {
         <div>
           <h2 className="text-base font-semibold">Import complete</h2>
           <p className="text-xs text-muted-foreground mt-1">
-            {result.company.name}: {result.agents.length} agent{result.agents.length === 1 ? "" : "s"},{" "}
-            {skillResults.length} skill{skillResults.length === 1 ? "" : "s"},{" "}
-            {result.projects.length} project{result.projects.length === 1 ? "" : "s"}, and{" "}
-            {result.routines.length} routine{result.routines.length === 1 ? "" : "s"} processed.
+            {result.company.name}: {result.agents.length}{" " + pageText("agent_0608c4")}{result.agents.length === 1 ? "" : "s"},{" "}
+            {skillResults.length}{" " + pageText("skill_34b33e")}{skillResults.length === 1 ? "" : "s"},{" "}
+            {result.projects.length}{" " + pageText("project_98f541")}{result.projects.length === 1 ? "" : "s"}, and{" "}
+            {result.routines.length}{" " + pageText("routine_012da8")}{result.routines.length === 1 ? "" : "s"} processed.
           </p>
         </div>
 
@@ -1933,7 +1935,7 @@ export function CompanyImport() {
                     ) : failure ? (
                       <span className="shrink-0 text-xs text-destructive">failed: {failure}</span>
                     ) : (
-                      <span className="shrink-0 text-xs text-muted-foreground">paused</span>
+                      <span className="shrink-0 text-xs text-muted-foreground">{pageText("paused_11b1b5")}</span>
                     )}
                   </label>
                 );
@@ -2060,8 +2062,7 @@ export function CompanyImport() {
               {localPackage && (
                 <span className="text-xs text-muted-foreground">
                   {localPackage.name} with{" "}
-                  {Object.keys(localPackage.files).length} file
-                  {Object.keys(localPackage.files).length === 1 ? "" : "s"}
+                  {Object.keys(localPackage.files).length}{" " + pageText("file_971c41")}{Object.keys(localPackage.files).length === 1 ? "" : "s"}
                   {localCompressedBytes !== null ? ` (${formatMegabytes(localCompressedBytes)} zip)` : ""}
                 </span>
               )}
@@ -2198,12 +2199,9 @@ export function CompanyImport() {
           {/* Sticky import action bar */}
           <div className="sticky top-0 z-10 border-b border-border bg-background px-5 py-3">
             <div className="flex flex-wrap items-center gap-4 text-sm">
-              <span className="font-medium">
-                Import preview
-              </span>
+              <span className="font-medium">{pageText("importPreview_fabb5c")}</span>
               <span className="text-muted-foreground">
-                {selectedCount} / {totalFiles} file{totalFiles === 1 ? "" : "s"} selected
-              </span>
+                {selectedCount} / {totalFiles}{" " + pageText("file_971c41")}{totalFiles === 1 ? "" : "s"}{" " + pageText("selected_835f3b")}</span>
               {conflicts.length > 0 && (
                 <span className="text-amber-500">
                   {conflicts.length} conflict{conflicts.length === 1 ? "" : "s"}
@@ -2211,7 +2209,7 @@ export function CompanyImport() {
               )}
               {importPreview.errors.length > 0 && (
                 <span className="text-destructive">
-                  {importPreview.errors.length} error{importPreview.errors.length === 1 ? "" : "s"}
+                  {importPreview.errors.length}{" " + pageText("error_11f957")}{importPreview.errors.length === 1 ? "" : "s"}
                 </span>
               )}
             </div>

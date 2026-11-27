@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useCoordinatorWorkspaceEnabled } from "./hooks/useCoordinatorWorkspaceEnabled";
 import { AgentChats } from "./pages/AgentChats";
 import { lazy, Suspense, useEffect, type ReactNode } from "react";
@@ -568,6 +569,7 @@ function legacyToolsRedirectTarget(tab?: string) {
 }
 
 export function OnboardingRoutePage() {
+  const { t: pageText } = usePageTranslation("interface");
   const { companies } = useCompany();
   const { openOnboarding } = useDialogActions();
   const { t } = useTranslation();
@@ -634,7 +636,7 @@ export function OnboardingRoutePage() {
                     : openOnboarding()
               }
             >
-              {matchedCompany ? "Add Agent" : "Start Onboarding"}
+              {matchedCompany ? pageText("addAgent_732872") : pageText("startOnboarding_aa32fa")}
             </Button>
           )}
         </div>

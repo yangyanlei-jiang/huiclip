@@ -1,3 +1,4 @@
+import { t as interfaceMessage } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useLayoutEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -318,7 +319,7 @@ function RetainedFilesRecovery({ action, issueId, companyId, className, onRecove
           : "The recovery request could not be confirmed. Check its status before trying again; the saved request will be reused.");
       }
     } catch (error) {
-      setNotice(error instanceof Error ? error.message : "Unable to inspect file recovery.");
+      setNotice(error instanceof Error ? error.message : interfaceMessage("interface:errorUnableToInspectFileRecoverySentence"));
     } finally { busy.current = false; }
   } });
   const check = useMutation({ retry: false, mutationFn: async () => { // query-error-ok: operator checks run once; the source read uses the shared query retry policy.

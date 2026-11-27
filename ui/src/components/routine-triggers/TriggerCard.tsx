@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useId, type ReactNode } from "react";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,7 @@ export function RoutineTriggerCard({
   onRemove: () => void;
   children: ReactNode;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const editorId = useId();
   return (
     <section
@@ -43,7 +45,7 @@ export function RoutineTriggerCard({
             aria-controls={editorId}
             onClick={onEdit}
           >
-            {editLabel ?? (expanded ? "Close" : `Edit ${kind}`)}
+            {editLabel ?? (expanded ? pageText("close_bbfa77") : `Edit ${kind}`)}
           </Button>
           <Button
             variant="ghost"

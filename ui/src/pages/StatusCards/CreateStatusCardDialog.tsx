@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { defaultStatusCardRefreshPolicy } from "@paperclipai/shared";
@@ -34,6 +35,7 @@ export function CreateStatusCardDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const [prompt, setPrompt] = useState("");
   // "" → the built-in Summarizer; otherwise the id of the override agent.
@@ -113,7 +115,7 @@ export function CreateStatusCardDialog({
         </div>
 
         <div className="space-y-2">
-          <label className="block text-sm font-semibold">Agent</label>
+          <label className="block text-sm font-semibold">{pageText("agent_5ce2e6")}</label>
           <SummarizerAgentSelect companyId={companyId} value={agentId} onChange={setAgentId} enabled={open} />
           <p className="text-xs text-muted-foreground">
             Runs this card's setup and updates. Leave on the default unless another agent should own it.
@@ -122,9 +124,7 @@ export function CreateStatusCardDialog({
 
         <DialogFooter>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={close} disabled={createMutation.isPending}>
-              Cancel
-            </Button>
+            <Button variant="outline" onClick={close} disabled={createMutation.isPending}>{pageText("cancel_77dfd2")}</Button>
             <Button
               onClick={() => createMutation.mutate()}
               disabled={prompt.trim().length === 0 || createMutation.isPending}

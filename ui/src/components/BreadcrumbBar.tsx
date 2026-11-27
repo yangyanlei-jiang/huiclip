@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { Link } from "@/lib/router";
 import { Menu, PanelRightClose, PanelRightOpen } from "lucide-react";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
@@ -54,6 +55,7 @@ function GlobalToolbar({
 }
 
 export function BreadcrumbBar({ taskDetailLayout = false, showPropertiesToggle = taskDetailLayout }: { taskDetailLayout?: boolean; showPropertiesToggle?: boolean }) {
+  const { t: pageText } = usePageTranslation("interface");
   const coordinatorEnabled = useCoordinatorPresentation();
   const {
     breadcrumbs,
@@ -72,8 +74,8 @@ export function BreadcrumbBar({ taskDetailLayout = false, showPropertiesToggle =
       size="icon-sm"
       className="ml-5 size-9 shrink-0 text-muted-foreground"
       onClick={toggleTaskPanel}
-      aria-label={taskPanelOpen ? "Hide properties" : "Show properties"}
-      title={taskPanelOpen ? "Hide properties" : "Show properties"}
+      aria-label={taskPanelOpen ? "Hide properties" : pageText("showProperties_5248c7")}
+      title={taskPanelOpen ? "Hide properties" : pageText("showProperties_5248c7")}
     >
       {taskPanelOpen ? <PanelRightClose className="h-4 w-4" /> : <PanelRightOpen className="h-4 w-4" />}
     </Button>

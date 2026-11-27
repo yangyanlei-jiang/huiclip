@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Copy, ExternalLink, Loader2 } from "lucide-react";
@@ -16,6 +17,7 @@ export function SlackIdentityStep({ endpointId, command, testStartedAt, onConnec
   onConnected: () => void;
   onSaveExit: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const client = useQueryClient();
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState(false);
@@ -58,11 +60,11 @@ export function SlackIdentityStep({ endpointId, command, testStartedAt, onConnec
         <code className="text-sm">{connectCommand}</code>
         <Button variant="ghost" size="sm" onClick={() => {
           void copyTextToClipboard(connectCommand).then(() => { setCopied(true); setCopyError(false); }, () => setCopyError(true));
-        }}><Copy className="size-4" />{copied ? "Copied" : "Copy command"}</Button>
+        }}><Copy className="size-4" />{copied ? pageText("copied_8e3df4") : "Copy command"}</Button>
       </div>
       {copyError && <p role="alert" className="text-sm text-destructive">Couldn&apos;t copy the command. Select and copy it above.</p>}
       <p className="text-sm">
-        <a href="https://app.slack.com/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">Open Slack <ExternalLink className="inline size-3" /></a>, send the command in your workspace, then return here.
+        <a href="https://app.slack.com/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{pageText("openSlack_eec851") + " "}<ExternalLink className="inline size-3" /></a>, send the command in your workspace, then return here.
       </p>
       {identitiesView.kind === "error" ? (
         <p role="alert" className="text-sm text-destructive">Couldn&apos;t check for your Slack account. We&apos;ll keep trying.</p>
@@ -94,7 +96,7 @@ export function SlackIdentityStep({ endpointId, command, testStartedAt, onConnec
       {!userId && !session.isPending && !health.isPending && sessionView.kind !== "reconnecting" && healthView.kind !== "reconnecting" && <p role="alert" className="text-sm text-destructive">Sign in to Paperclip to link your Slack account. Refresh this page after signing in.</p>}
       {link.error ? <p role="alert" className="text-sm text-destructive">Couldn&apos;t link your account. Check that you are a member of this company and try again.</p> : null}
       <div className="flex items-center justify-between gap-3">
-        <Button variant="ghost" className="text-muted-foreground" onClick={onSaveExit}>Save &amp; exit</Button>
+        <Button variant="ghost" className="text-muted-foreground" onClick={onSaveExit}>{pageText("saveExit_fc5599")}</Button>
         {linkedToMe && <Button onClick={onConnected}>Continue to message test</Button>}
       </div>
     </div>

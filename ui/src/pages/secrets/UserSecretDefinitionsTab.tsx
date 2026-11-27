@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -66,6 +67,7 @@ const emptyForm: DefinitionForm = {
  * only — never values — per the UX terminology decisions.
  */
 export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
@@ -292,7 +294,7 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-foreground">
-                Usage guidance <span className="text-muted-foreground">(optional)</span>
+                Usage guidance <span className="text-muted-foreground">{pageText("optional_b16c7a")}</span>
               </label>
               <Textarea
                 value={form.usageGuidance}
@@ -318,7 +320,7 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
                   <SelectContent>
                     <SelectItem value="active">{translateUi("interfaceCopy.active")}</SelectItem>
                     <SelectItem value="disabled">{translateUi("interfaceCopy.disabled")}</SelectItem>
-                    <SelectItem value="archived">Archived</SelectItem>
+                    <SelectItem value="archived">{pageText("archived_eddc81")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -329,7 +331,7 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
           <DialogFooter>
             <Button variant="ghost" onClick={() => setDialogOpen(false)} disabled={save.isPending}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button onClick={() => save.mutate()} disabled={!canSave || save.isPending}>
-              {save.isPending ? "Saving…" : editing ? "Save changes" : "Create"}
+              {save.isPending ? pageText("saving_56a228") : editing ? pageText("saveChanges_179359") : pageText("create_6e157c")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -352,7 +354,7 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
               onClick={() => deleteTarget && remove.mutate(deleteTarget)}
               disabled={remove.isPending}
             >
-              {remove.isPending ? "Removing…" : "Remove"}
+              {remove.isPending ? pageText("removing_579d7e") : pageText("remove_e96390")}
             </Button>
           </DialogFooter>
         </DialogContent>

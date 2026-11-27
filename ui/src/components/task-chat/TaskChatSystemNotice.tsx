@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useWorkspaceBaseRefRecovery, useWorkspaceRetry } from "@/components/WorkspaceBaseRefRecovery";
 import { WorkspaceBaseRefRecoveryNotice } from "@/components/WorkspaceBaseRefRecoveryNotice";
 import { DispositionRecoveryNotice, useDispositionRecoverySnapshot } from "@/components/DispositionRecoveryNotice";
@@ -58,6 +59,7 @@ export function TaskChatSystemNotice({
   onTryAgainNoLiveExecutionPath?: () => Promise<void> | void;
   tryAgainNoLiveExecutionPathPending?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const recoverySnapshot = useDispositionRecoverySnapshot(item.metadata);
   const branchRecovery = useWorkspaceBaseRefRecovery(item.metadata);
   const workspaceRetry = useWorkspaceRetry(item.metadata);
@@ -133,7 +135,7 @@ export function TaskChatSystemNotice({
             disabled={tryAgainNoLiveExecutionPathPending}
             data-testid="task-chat-no-live-path-try-again"
           >
-            {tryAgainNoLiveExecutionPathPending ? "Trying again..." : "Try again"}
+            {tryAgainNoLiveExecutionPathPending ? pageText("tryingAgain_f42d99") : pageText("tryAgain_042c86")}
           </Button>
         ) : null}
       </div>
@@ -169,7 +171,7 @@ export function TaskChatSystemNotice({
                 disabled={tryAgainNoLiveExecutionPathPending}
                 data-testid="task-chat-no-live-path-try-again"
               >
-                {tryAgainNoLiveExecutionPathPending ? "Trying again..." : "Try again"}
+                {tryAgainNoLiveExecutionPathPending ? pageText("tryingAgain_f42d99") : pageText("tryAgain_042c86")}
               </Button>
             </div>
           ) : null}

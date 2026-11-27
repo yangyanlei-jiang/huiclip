@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import type { CSSProperties, KeyboardEvent, ReactNode } from "react";
 import { useMemo, useRef, useState } from "react";
@@ -295,6 +296,7 @@ export function FileTree({
   empty,
   ariaLabel = "Files",
 }: FileTreeProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const effectiveCheckedFiles = checkedFiles ?? new Set<string>();
   const visibleNodes = useMemo(
@@ -385,9 +387,7 @@ export function FileTree({
                 "px-2.5",
                 statusBadge.error ?? statusBadgeDefault,
               )}
-            >
-              error
-            </Badge>
+            >{pageText("error_11f957")}</Badge>
             <span className="min-w-0 text-destructive">{describeError(new Error(error.message)).body}</span>
           </div>
           {error.retry && (

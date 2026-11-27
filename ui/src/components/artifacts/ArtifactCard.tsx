@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { type SyntheticEvent, useEffect, useRef, useState } from "react";
 import { Download, ExternalLink, Paperclip, Play } from "lucide-react";
 import type { CompanyArtifact } from "@/api/artifacts";
@@ -151,6 +152,7 @@ function TextPreview({ artifact }: { artifact: PreviewArtifact }) {
 }
 
 export function ArtifactPreview({ artifact }: { artifact: PreviewArtifact }) {
+  const { t: pageText } = usePageTranslation("interface");
   switch (artifact.mediaKind) {
     case "image":
       return <ImagePreview key={artifact.contentPath} artifact={artifact} />;
@@ -160,7 +162,7 @@ export function ArtifactPreview({ artifact }: { artifact: PreviewArtifact }) {
     case "document":
       return <TextPreview artifact={artifact} />;
     case "file":
-      return <PlaceholderPreview label="File" />;
+      return <PlaceholderPreview label={pageText("file_2c3caf")} />;
     case "empty":
     default:
       return <PlaceholderPreview />;
@@ -193,6 +195,7 @@ function SecondaryAction({
 }
 
 export function ArtifactCard({ artifact }: ArtifactCardProps) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <Link
       // design-allow(card-pattern): navigation <Link> card; Card renders a div and would break anchor semantics (C5a Run 3)
@@ -219,7 +222,7 @@ export function ArtifactCard({ artifact }: ArtifactCardProps) {
               </SecondaryAction>
             ) : null}
             {artifact.downloadPath ? (
-              <SecondaryAction href={artifact.downloadPath} download title="Download file">
+              <SecondaryAction href={artifact.downloadPath} download title={pageText("downloadFile_774025")}>
                 <Download className="h-3.5 w-3.5" />
               </SecondaryAction>
             ) : null}

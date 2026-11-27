@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation } from "@/i18n";
 import { CoordinatorSidebar } from "./CoordinatorSidebar";
 import { useCoordinatorWorkspaceEnabled } from "@/hooks/useCoordinatorWorkspaceEnabled";
@@ -60,6 +61,7 @@ export function Sidebar({ children }: { children?: ReactNode }) {
 }
 
 function ClassicSidebar({ children }: { children?: ReactNode }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t } = useTranslation();
   const { openNewIssue } = useDialogActions();
   const { enabled: agentChatEnabled } = useAgentChatEnabled();
@@ -157,7 +159,7 @@ function ClassicSidebar({ children }: { children?: ReactNode }) {
               <button
                 onClick={() => openNewIssue()}
                 data-slot="icon-button"
-                aria-label={rail ? "New Task" : undefined}
+                aria-label={rail ? pageText("newTask_cc3dbd") : undefined}
                 className={cn(
                   "flex items-center gap-2.5 mx-2 rounded-lg px-2 py-1.5 pointer-coarse:py-1 text-(length:--text-compact) font-medium text-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                 )}

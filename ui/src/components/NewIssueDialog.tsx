@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useTranslation } from "@/i18n";
 import { usePrimaryAgentPresentation } from "./primary-agent/PrimaryAgentPresentation";
@@ -448,6 +449,7 @@ export function NewIssueDialog() {
 }
 
 function AccountNewIssueDialog({ ignoreDefaults }: { ignoreDefaults: boolean }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { t } = useTranslation();
   const { visible: workspaceIsolationControlsVisible } = useWorkspaceIsolationControls();
@@ -1634,7 +1636,7 @@ function AccountNewIssueDialog({ ignoreDefaults }: { ignoreDefaults: boolean }) 
                         <Flag className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-600 dark:text-amber-300" />
                         <span className="leading-snug">
                           Assigning implies executable intent - leave status as{" "}
-                          <span className="font-medium">Backlog</span> only to deliberately park this. The assignee will
+                          <span className="font-medium">{pageText("backlog_1fe3af")}</span> only to deliberately park this. The assignee will
                           not be woken until status moves to <span className="font-medium">Todo</span> or{" "}
                           <span className="font-medium">{translateUi("interfaceCopy.inProgress")}</span>.
                         </span>
@@ -1689,7 +1691,7 @@ function AccountNewIssueDialog({ ignoreDefaults }: { ignoreDefaults: boolean }) 
                       contentStyle={entityPickerViewportStyle}
                       noneLabel="No project"
                       noneAtTop
-                      searchPlaceholder="Search projects..."
+                      searchPlaceholder={pageText("searchProjects_469d78")}
                       emptyMessage={t("tasks.noProjects")}
                       onChange={handleProjectChange}
                       renderTriggerValue={(option) =>

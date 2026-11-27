@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Shield, ShieldCheck } from "lucide-react";
@@ -12,6 +13,7 @@ import { useToast } from "@/context/ToastContext";
 import { queryKeys } from "@/lib/queryKeys";
 
 export function InstanceAccess() {
+  const { t: pageText } = usePageTranslation("interface");
   const { userId: accountUserId, settled: accountSettled } = useAccountIdentity();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { pushToast } = useToast();
@@ -146,7 +148,7 @@ export function InstanceAccess() {
       <div className="grid gap-6 lg:grid-cols-(--gtc-34)">
         <Card className="block space-y-4 p-4">
           <label className="block space-y-2 text-sm">
-            <span className="font-medium">Search users</span>
+            <span className="font-medium">{pageText("searchUsers_1bd622")}</span>
             <input
               className="w-full rounded-md border border-border bg-background px-3 py-2"
               value={search}
@@ -251,7 +253,7 @@ export function InstanceAccess() {
                     onClick={() => updateCompanyAccessMutation.mutate()}
                     disabled={updateCompanyAccessMutation.isPending}
                   >
-                    {updateCompanyAccessMutation.isPending ? "Saving…" : "Save organization access"}
+                    {updateCompanyAccessMutation.isPending ? pageText("saving_56a228") : "Save organization access"}
                   </Button>
                 </div>
               </div>

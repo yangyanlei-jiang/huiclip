@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { Download, ExternalLink, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +26,7 @@ interface OutputPrimaryCardProps {
  * mobile and uses a single horizontal meta row on desktop.
  */
 export function OutputPrimaryCard({ item, creatorName, onMediaClick }: OutputPrimaryCardProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const meta = item.metadata;
   const filename = outputFilename(item);
   const contentType = meta?.contentType;
@@ -101,23 +103,17 @@ export function OutputPrimaryCard({ item, creatorName, onMediaClick }: OutputPri
                 className="max-md:flex-1"
                 onClick={() => onMediaClick(item)}
               >
-                <Maximize2 className="h-4 w-4" />
-                Browse
-              </Button>
+                <Maximize2 className="h-4 w-4" />{pageText("browse_2f3b5c")}</Button>
             ) : null}
             {!isMedia || !onMediaClick || isVideo ? (
               <Button asChild variant="outline" size="sm" className="max-md:flex-1">
                 <a href={meta.openPath} target="_blank" rel="noreferrer">
-                  <ExternalLink className="h-4 w-4" />
-                  Open
-                </a>
+                  <ExternalLink className="h-4 w-4" />{pageText("open_cf9b77")}</a>
               </Button>
             ) : null}
             <Button asChild size="sm" className="max-md:flex-1">
               <a href={meta.downloadPath} aria-label={`Download ${filename}`}>
-                <Download className="h-4 w-4" />
-                Download
-              </a>
+                <Download className="h-4 w-4" />{pageText("download_a479c9")}</a>
             </Button>
           </div>
         ) : null}

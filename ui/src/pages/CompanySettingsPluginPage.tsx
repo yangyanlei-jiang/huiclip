@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useMemo } from "react";
 import { useParams } from "@/lib/router";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
@@ -7,6 +8,7 @@ import { PluginSlotMount, usePluginSlots } from "@/plugins/slots";
 import { NotFoundPage } from "./NotFound";
 
 export function CompanySettingsPluginPage() {
+  const { t: pageText } = usePageTranslation("interface");
   const params = useParams<{
     companyPrefix?: string;
     settingsRoutePath?: string;
@@ -55,7 +57,7 @@ export function CompanySettingsPluginPage() {
   }
 
   if (!settingsRoutePath || isLoading) {
-    return <div className="text-sm text-muted-foreground">Loading...</div>;
+    return <div className="text-sm text-muted-foreground">{pageText("loading_b04ba4")}</div>;
   }
 
   // Only a real failure reaches here; an outage keeps `isLoading` true above.

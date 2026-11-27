@@ -1,8 +1,10 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useCallback } from "react";
 import { getWorktreeUiBranding } from "../lib/worktree-branding";
 import { useCopyAction } from "../lib/use-copy-action";
 
 export function WorktreeBanner() {
+  const { t: pageText } = usePageTranslation("interface");
   const branding = getWorktreeUiBranding();
   const { copied, failed, copy } = useCopyAction();
 
@@ -33,7 +35,7 @@ export function WorktreeBanner() {
           title="Click to copy worktree name"
           className="truncate font-semibold tracking-(--tracking-eyebrow) cursor-pointer hover:opacity-80 transition-opacity bg-transparent border-none p-0 text-current uppercase text-(length:--text-micro)"
         >
-          {copied ? "Copied!" : failed ? "Copy failed" : branding.name}
+          {copied ? pageText("copied_b7c3ca") : failed ? pageText("copyFailed_bd5acb") : branding.name}
         </button>
       </div>
     </div>

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type {
   IssueBlockerAttention,
   IssueRecoveryAction,
@@ -78,6 +79,7 @@ function SuccessfulRunRetryNowControl({
   issueId: string;
   scheduledRetry: IssueScheduledRetry;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const retryNow = useRetryNowMutation(issueId);
   const dueAtIso = scheduledRetry.scheduledRetryAt
     ? new Date(scheduledRetry.scheduledRetryAt).toISOString()
@@ -110,9 +112,7 @@ function SuccessfulRunRetryNowControl({
         >
           {retryNow.isPending ? (
             <span className="inline-flex items-center gap-1.5">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
-              Retrying...
-            </span>
+              <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />{pageText("retrying_54aa30")}</span>
           ) : success ? (
             <span className="inline-flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
@@ -120,9 +120,7 @@ function SuccessfulRunRetryNowControl({
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5">
-              <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
-              Retry now
-            </span>
+              <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />{pageText("retryNow_84ce86")}</span>
           )}
         </Button>
       </div>
@@ -151,6 +149,7 @@ function WaitingChipLink({
   blocker: IssueRelationIssueSummary;
   running?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const issuePathId = blocker.identifier ?? blocker.id;
   return (
     <IssueLinkQuicklook
@@ -168,9 +167,7 @@ function WaitingChipLink({
         {blocker.title}
       </span>
       {running ? (
-        <span className="ml-0.5 rounded-full bg-blue-500/15 px-1.5 py-0.5 text-(length:--text-nano) font-medium uppercase tracking-wide text-blue-700 dark:bg-blue-400/20 dark:text-blue-200">
-          running
-        </span>
+        <span className="ml-0.5 rounded-full bg-blue-500/15 px-1.5 py-0.5 text-(length:--text-nano) font-medium uppercase tracking-wide text-blue-700 dark:bg-blue-400/20 dark:text-blue-200">{pageText("running_3c49d9")}</span>
       ) : null}
     </IssueLinkQuicklook>
   );
@@ -205,6 +202,7 @@ function SuccessfulRunHandoffInFlightNotice({
   liveRunId?: string | null;
   assigneeAgentId?: string | null;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const shortRunId = liveRunId ? liveRunId.slice(0, 8) : null;
   return (
     <div
@@ -226,11 +224,10 @@ function SuccessfulRunHandoffInFlightNotice({
                 <Link
                   to={`/agents/${assigneeAgentId}/runs/${liveRunId}`}
                   className="font-mono underline underline-offset-2 hover:text-foreground"
-                >
-                  run {shortRunId}
+                >{pageText("run_df6ad1") + " "}{shortRunId}
                 </Link>
               ) : (
-                <span className="font-mono">run {shortRunId}</span>
+                <span className="font-mono">{pageText("run_df6ad1") + " "}{shortRunId}</span>
               )}
             </>
           ) : null}
@@ -260,6 +257,7 @@ function WaitingOnLiveWorkNotice({
   parkedBlockers: IssueRelationIssueSummary[];
   renderParkedChip: (blocker: IssueRelationIssueSummary) => ReactNode;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const steps = orderWaitingBlockers(chainBlockers, liveIds);
   const total = steps.length;
   const doneCount = steps.filter((step) => step.status === "done").length;
@@ -302,8 +300,7 @@ function WaitingOnLiveWorkNotice({
 
           <div className="space-y-1" data-testid="issue-blocked-notice-progress">
             <div className="text-xs font-medium text-blue-800 dark:text-blue-200">
-              {doneCount} of {total} done
-              {runningCount > 0 ? ` · ${runningCount} running` : null}
+              {doneCount} of {total}{" " + pageText("done_e5fd9c")}{runningCount > 0 ? ` · ${runningCount} running` : null}
             </div>
             <div
               role="progressbar"
@@ -426,6 +423,7 @@ export function IssueBlockedNotice({
   scheduledRetry?: IssueScheduledRetry | null;
   agentName?: string | null;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (issueStatus === "done" || issueStatus === "cancelled") return null;
   // A live run on this issue means an agent is already handling it — the
   // missing-disposition complaint only applies when the issue is stuck.
@@ -638,12 +636,10 @@ export function IssueBlockedNotice({
                   <Link
                     to={`/agents/${successfulRunHandoff.assigneeAgentId}/runs/${successfulRunHandoff.sourceRunId}`}
                     className="rounded-md border border-amber-300/70 bg-background/80 px-2 py-1 font-mono text-amber-950 hover:border-amber-500 hover:bg-amber-100 hover:underline dark:border-amber-500/40 dark:bg-background/40 dark:text-amber-100 dark:hover:bg-amber-500/15"
-                  >
-                    run {successfulRunHandoff.sourceRunId.slice(0, 8)}
+                  >{pageText("run_df6ad1") + " "}{successfulRunHandoff.sourceRunId.slice(0, 8)}
                   </Link>
                 ) : successfulRunHandoff.sourceRunId ? (
-                  <span className="rounded-md border border-amber-300/70 bg-background/80 px-2 py-1 font-mono text-amber-950 dark:border-amber-500/40 dark:bg-background/40 dark:text-amber-100">
-                    run {successfulRunHandoff.sourceRunId.slice(0, 8)}
+                  <span className="rounded-md border border-amber-300/70 bg-background/80 px-2 py-1 font-mono text-amber-950 dark:border-amber-500/40 dark:bg-background/40 dark:text-amber-100">{pageText("run_df6ad1") + " "}{successfulRunHandoff.sourceRunId.slice(0, 8)}
                   </span>
                 ) : null}
                 <span className="rounded-md border border-amber-300/70 bg-background/80 px-2 py-1 text-amber-900 dark:border-amber-500/40 dark:bg-background/40 dark:text-amber-100">

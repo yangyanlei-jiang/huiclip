@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useRef } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { IssueContextCompaction, IssueContextUsage } from "@paperclipai/shared";
@@ -61,6 +62,7 @@ export function IssueContextUsageRow({
   issueStatus?: string;
   hasActiveRun: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const query = useQuery({
     queryKey: queryKeys.issues.contextUsage(issueId, assigneeAgentId),
     queryFn: () => issuesApi.getContextUsage(issueId),
@@ -104,7 +106,7 @@ export function IssueContextUsageRow({
 
   if (view.data) {
     return (
-      <PropertyRow label="Context">
+      <PropertyRow label={pageText("context_cc11b3")}>
         <ContextUsageMeter
           usage={contextUsageFromIssue(view.data)}
           compact={contextCompactState(view.data.compaction, compact.isPending, () => compact.mutate())}
@@ -114,7 +116,7 @@ export function IssueContextUsageRow({
   }
   if (view.kind !== "error") return null;
   return (
-    <PropertyRow label="Context">
+    <PropertyRow label={pageText("context_cc11b3")}>
       <QueryErrorState
         error={view.error}
         size="inline"

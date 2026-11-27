@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { Agent } from "@paperclipai/shared";
@@ -22,12 +23,13 @@ export interface AgentChatPickerProps {
 }
 
 export function AgentChatPicker({ open, onOpenChange, trigger, ...props }: AgentChatPickerProps) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent aria-describedby={undefined} className="gap-0 overflow-hidden p-0 sm:max-w-md">
         <div className="px-4 pt-4 pb-3">
-          <DialogTitle>Chat with an agent</DialogTitle>
+          <DialogTitle>{pageText("chatWithAnAgent_b5e325")}</DialogTitle>
           {props.existingChatAgentIds && <p className="mt-2 text-sm text-muted-foreground">One conversation per agent. Pick up where you left off.</p>}
         </div>
         {/* The dialog unmounts its content on close, so each search starts empty. */}
@@ -38,6 +40,7 @@ export function AgentChatPicker({ open, onOpenChange, trigger, ...props }: Agent
 }
 
 function AgentChatPickerResults({ agents, onSelect, onComplete, loading, error, onRetry, existingChatAgentIds, unreadMessageCounts, renderAgentIcon }: Omit<AgentChatPickerProps, "open" | "onOpenChange"> & { onComplete: () => void }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const existingIds = useMemo(() => new Set(existingChatAgentIds), [existingChatAgentIds]);
   const mounted = useRef(false);
@@ -80,12 +83,12 @@ function AgentChatPickerResults({ agents, onSelect, onComplete, loading, error, 
           {onRetry && <Button variant="outline" size="sm" onClick={onRetry}>{translateUi("interfaceCopy.retry")}</Button>}
         </div>
       ) : loading ? (
-        <p role="status" className="p-4 text-sm text-muted-foreground">Loading agents…</p>
+        <p role="status" className="p-4 text-sm text-muted-foreground">{pageText("loadingAgents_aa8e27")}</p>
       ) : (
         <CommandList>
           <CommandEmpty>
             <div className="flex flex-col items-center gap-2 px-4">
-              <span>{agents.length ? `No agents match “${search}”` : "No agents yet."}</span>
+              <span>{agents.length ? `No agents match “${search}”` : pageText("noAgentsYet_62561f")}</span>
               {agents.length ? <>
                 <span className="text-xs text-muted-foreground">Try another name or role.</span>
                 <Button variant="ghost" size="sm" onClick={() => setSearch("")}>{translateUi("interfaceCopy.clearSearch")}</Button>
@@ -111,7 +114,7 @@ function AgentChatPickerResults({ agents, onSelect, onComplete, loading, error, 
                   </span>
                   {unreadCount > 0 && <Badge variant="ghost" aria-label={`${unreadCount} unread ${unreadCount === 1 ? "message" : "messages"} from ${agent.name}`} className="shrink-0 bg-primary font-mono tabular-nums text-primary-foreground">{unreadCount}</Badge>}
                   {existingChatAgentIds && <span className="shrink-0 text-xs text-muted-foreground">{existingIds.has(agent.id) ? "Open chat" : "New chat"}</span>}
-                  {agent.status === "paused" && <span className="text-xs text-(--status-agent-paused)">Paused</span>}
+                  {agent.status === "paused" && <span className="text-xs text-(--status-agent-paused)">{pageText("paused_c7dfb6")}</span>}
                   {agent.status === "terminated" && <span className="text-xs text-muted-foreground">Terminated</span>}
                   {agent.status === "pending_approval" && <span className="text-xs text-muted-foreground">Awaiting approval</span>}
                 </CommandItem>

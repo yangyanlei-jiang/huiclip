@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -9,6 +10,7 @@ export function AgentConfigSaveBar({ dirty, saving, savedVersion = 0, onDiscard,
   onDiscard: () => void;
   onSave: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const anchor = useRef<HTMLDivElement>(null);
   const [bounds, setBounds] = useState<{ left: number; width: number } | null>(null);
   const lastSave = useRef(savedVersion);
@@ -61,7 +63,7 @@ export function AgentConfigSaveBar({ dirty, saving, savedVersion = 0, onDiscard,
       <p role="status" className="agent-save-status text-xs text-muted-foreground">
         <span aria-hidden={showSuccess} className={showSuccess ? "agent-save-status-out flex items-center gap-2" : "flex items-center gap-2"}>
           <span aria-hidden className="size-2 shrink-0 rounded-full bg-(--agent-save-dot-unsaved)" />
-          {saving ? "Saving changes…" : "Unsaved changes"}
+          {saving ? "Saving changes…" : pageText("unsavedChanges_292672")}
         </span>
         {showSuccess && <span key={savedVersion} className="agent-save-status-in flex items-center gap-2"
           onAnimationEnd={(event) => { if (event.target === event.currentTarget) setSuccess("holding"); }}>
@@ -70,8 +72,8 @@ export function AgentConfigSaveBar({ dirty, saving, savedVersion = 0, onDiscard,
         </span>}
       </p>
       <div className="flex gap-2">
-        <Button variant="ghost" disabled={!dirty || saving} onClick={onDiscard}>Discard</Button>
-        <Button disabled={!dirty || saving} onClick={onSave}>{saving ? "Saving…" : "Save changes"}</Button>
+        <Button variant="ghost" disabled={!dirty || saving} onClick={onDiscard}>{pageText("discard_36fff6")}</Button>
+        <Button disabled={!dirty || saving} onClick={onSave}>{saving ? pageText("saving_56a228") : pageText("saveChanges_179359")}</Button>
       </div>
     </footer>
   </div>;

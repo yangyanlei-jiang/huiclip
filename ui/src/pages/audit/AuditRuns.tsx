@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -140,6 +141,7 @@ export function AuditRuns({
   lockedAgentId?: string;
   hideHeader?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const agentId = lockedAgentId ?? searchParams.get("agentId") ?? ALL;
@@ -258,16 +260,12 @@ export function AuditRuns({
           </Select>
         </label>
         {(!lockedAgentId && agentId !== ALL) || status !== ALL ? (
-          <Button variant="ghost" size="sm" onClick={clearFilters}>
-            Clear filters
-          </Button>
+          <Button variant="ghost" size="sm" onClick={clearFilters}>{pageText("clearFilters_412226")}</Button>
         ) : null}
       </div>
 
       {runsView.kind === "loading" || runsView.kind === "reconnecting" ? (
-        <div className="border-y border-border py-14 text-center text-sm text-muted-foreground">
-          Loading runs…
-        </div>
+        <div className="border-y border-border py-14 text-center text-sm text-muted-foreground">{pageText("loadingRuns_9dd9a8")}</div>
       ) : runsView.kind === "error" ? (
         <QueryErrorState
           error={runsView.error}
@@ -278,7 +276,7 @@ export function AuditRuns({
       ) : visibleRuns.length === 0 ? (
         <EmptyState
           icon={agentId !== ALL || status !== ALL ? CircleDotDashed : Activity}
-          message={agentId !== ALL || status !== ALL ? "No runs match these filters." : "No runs yet."}
+          message={agentId !== ALL || status !== ALL ? "No runs match these filters." : pageText("noRunsYet_7a8b1c")}
         />
       ) : (
         <ul className="divide-y divide-border border-y border-border" aria-label="Recent runs">

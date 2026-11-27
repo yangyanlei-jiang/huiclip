@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import type { ReactNode } from "react";
 
@@ -112,6 +113,7 @@ function ResourceActionButton({
   onConfirm: () => void;
   pending: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const copy = resourceActionCopy(resource, label);
   if (!copy) return null;
@@ -119,7 +121,7 @@ function ResourceActionButton({
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button variant="outline" size="sm" disabled={pending}>
-          {pending ? "Working…" : copy.triggerLabel}
+          {pending ? pageText("working_13b7bf") : copy.triggerLabel}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -151,12 +153,13 @@ function ConfirmActionButton({
   pending: boolean;
   onConfirm: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button variant="outline" size="sm" disabled={pending}>
-          {pending ? "Working…" : triggerLabel}
+          {pending ? pageText("working_13b7bf") : triggerLabel}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
@@ -254,6 +257,7 @@ export function BuiltInBundlePanel({
   routineActionPending = null,
   className,
 }: BuiltInBundlePanelProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { status, definition, resources } = state;
   const bundle = definition.bundle;
@@ -306,7 +310,7 @@ export function BuiltInBundlePanel({
         actions={
           <>
             <Button asChild variant="link" size="sm">
-              <Link to={viewHref}>View</Link>
+              <Link to={viewHref}>{pageText("view_69bd4e")}</Link>
             </Button>
             <ResourceActionButton
               resource={resource}
@@ -357,7 +361,7 @@ export function BuiltInBundlePanel({
 
         {/* Routine — zero-token-by-default; the weekly schedule ships off. */}
         <BundleRow
-          label="Routine"
+          label={pageText("routine_482273")}
           secondary={bundle.routine.title}
           chips={
             <>
@@ -394,7 +398,7 @@ export function BuiltInBundlePanel({
                       title="Disable the weekly schedule?"
                       body="Paperclip will stop future scheduled Reflection Coach runs. Manual Run once remains available."
                       triggerLabel="Disable schedule"
-                      confirmLabel="Disable schedule"
+                      confirmLabel={pageText("disableSchedule_40899d")}
                       pending={routineActionPending === "disable"}
                       onConfirm={() => onDisableSchedule(routineKey)}
                     />
@@ -412,7 +416,7 @@ export function BuiltInBundlePanel({
                 {driftVariant(routine) && (
                   <ResourceActionButton
                     resource={routine}
-                    label="routine"
+                    label={pageText("routine_012da8")}
                     onConfirm={() => onResetResource("routine")}
                     pending={resettingResource === "routine"}
                   />

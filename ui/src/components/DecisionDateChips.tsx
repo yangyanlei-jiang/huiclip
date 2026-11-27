@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { cloneElement, isValidElement, useState } from "react";
 import { CalendarRange } from "lucide-react";
@@ -27,6 +28,7 @@ interface DecisionDateChipsProps {
  * filter on the client. "Custom" opens a from/to range picker.
  */
 export function DecisionDateChips({ value, custom, onChange }: DecisionDateChipsProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
 
@@ -44,7 +46,7 @@ export function DecisionDateChips({ value, custom, onChange }: DecisionDateChips
               <CalendarRange className="h-3.5 w-3.5" />
               {value === "custom" && (custom.from || custom.to)
                 ? `${custom.from ?? "…"} → ${custom.to ?? "…"}`
-                : "Custom"}
+                : pageText("custom_081ae3")}
             </button>
           </ChipButton>
         </PopoverTrigger>

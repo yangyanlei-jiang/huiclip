@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
@@ -434,6 +435,7 @@ export function ProviderSubscriptionCard({
   loading?: boolean;
   children: ReactNode;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <OnboardingLoginCard
       loading={loading}
@@ -462,7 +464,7 @@ export function ProviderSubscriptionCard({
       {failure && (
         <div className="flex flex-col items-start gap-3 px-2">
           <p role="alert" className="text-sm text-muted-foreground">Retry sign-in to get a fresh code. Your setup is saved.</p>
-          {onRetry && <Button type="button" variant="outline" onClick={onRetry}>Retry sign-in</Button>}
+          {onRetry && <Button type="button" variant="outline" onClick={onRetry}>{pageText("retrySignIn_b5ab68")}</Button>}
         </div>
       )}
       {children}
@@ -491,6 +493,7 @@ export function LocalProviderLoginInstructions({ adapterType, login }: {
   adapterType: string;
   login?: { isolated?: boolean; command?: string; authorizationUrl?: string | null; code?: string | null; accountLabel?: string | null; submitCode?: (code: string) => Promise<void>; preparing: boolean; status?: "ready" | "sign_in_required" | "expired" | null; error: string | null; retry: () => void };
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t } = useUiTranslation();
   const [showCommand, setShowCommand] = useState(false);
   const [browserCode, setBrowserCode] = useState("");
@@ -531,7 +534,7 @@ export function LocalProviderLoginInstructions({ adapterType, login }: {
           onSubmit={() => void submitBrowserCode()}
           disabled={submitting}
         />
-        <Button type="button" disabled={!browserCode.trim() || submitting} onClick={() => void submitBrowserCode()}>Submit code</Button>
+        <Button type="button" disabled={!browserCode.trim() || submitting} onClick={() => void submitBrowserCode()}>{pageText("submitCode_32aefb")}</Button>
       </div> : adapterType === "antigravity_runtime" ? <p>Finish signing in in the Google browser window, then return here.</p> : <OnboardingLoginCodeRow code={login.code ?? ""} />}
     </ProviderSubscriptionCard>}
     {!browserLogin && (!ready || showCommand) && !login?.error && <>

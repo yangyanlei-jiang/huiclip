@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -24,6 +25,7 @@ export function agentModelCostRows(rows: readonly CostByAgentModel[] | undefined
 }
 
 export function AgentCostsPanel({ agentId, agentName, companyId }: { agentId: string; agentName: string; companyId: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { preset, setPreset, customFrom, setCustomFrom, customTo, setCustomTo, from, to, customReady } = useDateRange();
   const reportFrom = ["custom", "mtd", "ytd"].includes(preset) ? from || undefined : undefined;
@@ -64,7 +66,7 @@ export function AgentCostsPanel({ agentId, agentName, companyId }: { agentId: st
         </div>
       ) : null}
       {!customReady ? (
-        <p className="text-sm text-muted-foreground">Select a start and end date to load data.</p>
+        <p className="text-sm text-muted-foreground">{pageText("selectAStartAndEndDateToLoad_3f16ac")}</p>
       ) : spend.isLoading ? (
         <PageSkeleton variant="costs" />
       ) : spend.error && !spend.data ? (
@@ -75,7 +77,7 @@ export function AgentCostsPanel({ agentId, agentName, companyId }: { agentId: st
         <>
           <div className="grid gap-3 sm:grid-cols-3">
             <MetricCard appearance="card" icon={ReceiptText} value={formatCents(row.costCents)} label="Spend" description={`${row.eventCount} ledger events`} />
-            <MetricCard appearance="card" icon={Coins} value={formatTokens(totalTokens)} label="Tokens" description={`in ${formatTokens(row.inputTokens + row.cachedInputTokens)} (${formatTokens(row.cachedInputTokens)} cached) · out ${formatTokens(row.outputTokens)}`} />
+            <MetricCard appearance="card" icon={Coins} value={formatTokens(totalTokens)} label={pageText("tokens_c38c6c")} description={`in ${formatTokens(row.inputTokens + row.cachedInputTokens)} (${formatTokens(row.cachedInputTokens)} cached) · out ${formatTokens(row.outputTokens)}`} />
             <MetricCard appearance="card" icon={PlayCircle} value={row.apiRunCount + row.subscriptionRunCount} label={translateUi("interfaceCopy.runs")} description={`${row.apiRunCount} api · ${row.subscriptionRunCount} subscription`} />
           </div>
           <section className="space-y-3" aria-labelledby="agent-cost-models-heading">

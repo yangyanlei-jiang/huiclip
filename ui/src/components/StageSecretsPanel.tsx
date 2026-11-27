@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { KeyRound, Save } from "lucide-react";
 import type { CompanySecret, RoutineEnvConfig } from "@paperclipai/shared";
@@ -48,6 +49,7 @@ export function StageSecretsPanel({
   saving,
   dirty,
 }: StageSecretsPanelProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   // No backing automation/assignee → nothing can receive secrets at runtime.
   // Point the user at Automation instead of creating a hidden routine just
@@ -82,7 +84,7 @@ export function StageSecretsPanel({
       </div>
 
       {secretsLoading ? (
-        <p className="text-sm text-muted-foreground">Loading secrets…</p>
+        <p className="text-sm text-muted-foreground">{pageText("loadingSecrets_78bdda")}</p>
       ) : (
         <EnvironmentVariablesEditor
           value={value}
@@ -95,7 +97,7 @@ export function StageSecretsPanel({
       <div className="flex items-center gap-3">
         <Button type="button" onClick={onSave} disabled={!dirty || saving}>
           <Save className="h-4 w-4 mr-1.5" />
-          {saving ? "Saving…" : "Save secrets"}
+          {saving ? pageText("saving_56a228") : "Save secrets"}
         </Button>
         {dirty && !saving ? <span className="text-xs text-muted-foreground">{translateUi("interfaceCopy.unsavedChanges")}</span> : null}
       </div>

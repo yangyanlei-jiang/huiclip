@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -40,6 +41,7 @@ export function SetMyUserSecretDialog({
   onOpenChange: (open: boolean) => void;
   onSaved?: (secret: CompanySecret) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
@@ -161,7 +163,7 @@ export function SetMyUserSecretDialog({
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={save.isPending}>{translateUi("interfaceCopy.cancel")}</Button>
           <Button onClick={() => save.mutate()} disabled={!canSave || save.isPending}>
-            {save.isPending ? "Saving…" : existingSecret ? "Update value" : "Save value"}
+            {save.isPending ? pageText("saving_56a228") : existingSecret ? "Update value" : "Save value"}
           </Button>
         </DialogFooter>
       </DialogContent>

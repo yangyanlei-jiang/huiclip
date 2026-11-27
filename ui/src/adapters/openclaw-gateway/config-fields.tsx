@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { configFieldsForSection } from "../config-sections";
 import { useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
@@ -110,6 +111,7 @@ export function OpenClawGatewayConfigFields({
   eff,
   mark,
 }: AdapterConfigFieldsProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const configuredHeaders =
     config.headers && typeof config.headers === "object" && !Array.isArray(config.headers)
       ? (config.headers as Record<string, unknown>)
@@ -259,7 +261,7 @@ export function OpenClawGatewayConfigFields({
         placeholder="Gateway shared password"
       />
 
-      <Field label="Role">
+      <Field label={pageText("role_c3f104")}>
         <DraftInput
           value={
             isCreate

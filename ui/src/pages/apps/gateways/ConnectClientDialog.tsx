@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { type ComponentType, useEffect, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -74,6 +75,7 @@ export function ConnectClientDialog({
   createdTokens: ToolMcpGatewayTokenCreated[];
   onTokenCreated: (token: ToolMcpGatewayTokenCreated) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const { pushToast } = useToast();
   const snippets = useMemo(() => orderedSnippets(gateway.clientSnippets ?? []), [gateway.clientSnippets]);
@@ -207,7 +209,7 @@ export function ConnectClientDialog({
               groups={tokenGroups}
               onValueChange={setSelectedTokenId}
               placeholder="Issue a token"
-              searchPlaceholder="Search tokens…"
+              searchPlaceholder={pageText("searchTokens_db6be2")}
               emptyMessage="No copyable tokens."
               contentWidth="auto"
               triggerClassName="h-8 w-auto max-w-xs rounded-full px-3"
@@ -304,9 +306,7 @@ export function ConnectClientDialog({
                       {endpoint}
                     </code>
                     <Button variant="outline" size="sm" onClick={() => void copyText(endpoint, "Endpoint URL")}>
-                      <Copy className="mr-1 h-3.5 w-3.5" />
-                      Copy
-                    </Button>
+                      <Copy className="mr-1 h-3.5 w-3.5" />{pageText("copy_af74f7")}</Button>
                   </div>
                 </div>
                 <div className="space-y-1.5">
@@ -326,9 +326,7 @@ export function ConnectClientDialog({
                     disabled={!copyConfigText}
                     onClick={() => copyConfigText && void copyText(copyConfigText, `${activeSnippet.label} config`)}
                   >
-                    <Copy className="mr-1 h-3.5 w-3.5" />
-                    Copy
-                  </Button>
+                    <Copy className="mr-1 h-3.5 w-3.5" />{pageText("copy_af74f7")}</Button>
                 </div>
                 <pre className="max-h-64 overflow-auto whitespace-pre-wrap break-words rounded-md bg-muted p-3 font-mono text-xs text-muted-foreground">
                   {displayConfigText}
@@ -352,9 +350,7 @@ export function ConnectClientDialog({
 
         <DialogFooter>
           <Button onClick={() => onOpenChange(false)}>
-            <Check className="mr-1.5 h-4 w-4" />
-            Done
-          </Button>
+            <Check className="mr-1.5 h-4 w-4" />{pageText("done_e9b450")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

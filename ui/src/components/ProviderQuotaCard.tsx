@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { AccountQuotaPanels } from "./AccountQuotaPanels";
 import { quotaUnavailableMessage } from "@/lib/quota-refresh";
 import { useMemo } from "react";
@@ -58,6 +59,7 @@ export function ProviderQuotaCard({
   quotaSource = null,
   quotaLoading = false,
 }: ProviderQuotaCardProps) {
+  const { t: pageText } = usePageTranslation("interface");
   // single-pass aggregation over rows — memoized so the 8 derived values are not
   // recomputed on every parent render tick (providers tab polls every 30s, and each
   // card is mounted twice: once in the "all" tab grid and once in its per-provider tab).
@@ -157,7 +159,7 @@ export function ProviderQuotaCard({
                   {totalApiRuns > 0 && `~${totalApiRuns} api`}
                   {totalApiRuns > 0 && totalSubRuns > 0 && " / "}
                   {totalSubRuns > 0 && `~${totalSubRuns} sub`}
-                  {" runs"}
+                  {" " + pageText("runs_71b3f0")}
                 </span>
               )}
             </CardDescription>
@@ -233,12 +235,9 @@ export function ProviderQuotaCard({
           <>
             <div className="border-t border-border" />
             <div className="space-y-2">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                Subscription
-              </p>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{pageText("subscription_8fde48")}</p>
               <p className="text-xs text-muted-foreground">
-                <span className="font-mono text-foreground">{totalSubRuns}</span> runs
-                {" · "}
+                <span className="font-mono text-foreground">{totalSubRuns}</span>{" " + pageText("runs_71b3f0")}{" · "}
                 {totalSubTokens > 0 && (
                   <>
                     <span className="font-mono text-foreground">{formatTokens(totalSubTokens)}</span> total

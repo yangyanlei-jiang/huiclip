@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { Button } from "@/components/ui/button";
 import {
   RoutineListRow,
@@ -89,6 +90,7 @@ export function ManagedRoutinesList({
   onReconcile,
   onReset,
 }: ManagedRoutinesListProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const agentById = new Map<string, RoutineListAgentSummary>(
     agents.map((agent) => [agent.id, agent]),
   );
@@ -132,7 +134,7 @@ export function ManagedRoutinesList({
               secondaryDetails={
                 <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
                   {routine.resourceKey ? <span>{routine.resourceKey}</span> : null}
-                  {routine.cronExpression ? <span>Schedule {routine.cronExpression}</span> : null}
+                  {routine.cronExpression ? <span>{pageText("schedule_0a8ada") + " "}{routine.cronExpression}</span> : null}
                 </span>
               }
               onRunNow={() => onRunNow?.(routine)}
@@ -169,7 +171,7 @@ export function ManagedRoutinesList({
                       disabled={resettingRoutineKey === routine.key}
                       onClick={() => onReset(routine)}
                     >
-                      {resettingRoutineKey === routine.key ? "Resetting..." : "Reset"}
+                      {resettingRoutineKey === routine.key ? "Resetting..." : pageText("reset_44c57a")}
                     </Button>
                   ) : null}
                 </span>

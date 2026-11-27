@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { AGGREGATOR_NAMES, aggregatorManagementUrl, isAppAggregator, type AggregatorAppSnapshot, type AggregatorAppsResponse } from "@paperclipai/shared/aggregator-apps";
 import type { CatalogSource } from "./CatalogSourceFilters";
@@ -382,6 +383,7 @@ function accountActionHref(
  * account; unconnected providers retain the same catalog setup flows.
  */
 export function Browse({ renderAccountDetails = (connection) => connection.connectionPurpose === "ai" && !aiConnectionRouterPluginKey(connection) ? <ManagedAiConnectionRow connection={connection} /> : null }: { renderAccountDetails?: (connection: ToolConnection) => ReactNode } = {}) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const navigate = useNavigate();
   const preselectedChatAgentId =
@@ -1076,7 +1078,7 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
       {accountLoadErrors.length ? <p role="alert" className="text-sm text-destructive">Couldn’t load {Array.from(new Set(accountLoadErrors)).join(" or ")} accounts. Use Refresh in the connection’s menu to try again.</p> : null}
 
       {!loading && catalogRows.length > 0 ? <nav aria-label="Connector catalog pages" className="flex flex-wrap items-center justify-between gap-3 text-sm">
-        <p className="text-muted-foreground" role="status">{pageStart + 1}–{Math.min(pageStart + CATALOG_PAGE_SIZE, catalogRows.length)} of {catalogRows.length.toLocaleString()} connectors</p>
+        <p className="text-muted-foreground" role="status">{pageStart + 1}–{Math.min(pageStart + CATALOG_PAGE_SIZE, catalogRows.length)} of {catalogRows.length.toLocaleString()}{" " + pageText("connectors_d84289")}</p>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => { setPage(currentPage - 1); catalogTop.current?.scrollIntoView?.({ block: "start" }); }}>{translateUi("interfaceCopy.previous")}</Button>
           <span className="text-xs text-muted-foreground">Page {currentPage} of {pageCount}</span>
@@ -1101,8 +1103,7 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              Remove {connectionToRemove?.accountName ?? "this"} connection?
+            <AlertDialogTitle>{pageText("remove_e96390") + " "}{connectionToRemove?.accountName ?? "this"} connection?
             </AlertDialogTitle>
             <AlertDialogDescription>
               {connectionToRemove?.pool ? "The connections in this pool are kept." : connectionToRemove && Object.values(AGGREGATOR_NAMES).includes(connectionToRemove.providerName as "Composio")
@@ -1134,7 +1135,7 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
               ) : (
                 <Trash2 />
               )}
-              {removeConnection.isPending ? "Removing…" : "Remove connection"}
+              {removeConnection.isPending ? pageText("removing_579d7e") : pageText("removeConnection_7312a3")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1193,6 +1194,7 @@ export function ConnectorCard({
   defaultExpanded?: boolean;
   searchQuery?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   // The user's toggle only applies while the default it overrode still holds, so a new search reopens the list.
   const [expandedOverride, setExpandedOverride] = useState<{ open: boolean; defaultExpanded: boolean } | null>(null);
   useEffect(() => {
@@ -1289,7 +1291,7 @@ export function ConnectorCard({
         {collapsible ? (
           <CollapsibleTrigger className="flex w-full items-center gap-2 border-t border-border px-4 py-3 text-left text-sm text-muted-foreground hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring">
             <ChevronRight className={`h-4 w-4 shrink-0 transition-transform${expanded ? " rotate-90" : ""}`} aria-hidden="true" />
-            <span className="font-medium text-foreground">{connectionCount} connections</span>
+            <span className="font-medium text-foreground">{connectionCount}{" " + pageText("connections_c0e3ce")}</span>
             {attentionCount > 0 ? <span className="text-destructive">· {attentionCount} {attentionCount === 1 ? "needs" : "need"} attention</span> : null}
           </CollapsibleTrigger>
         ) : null}
@@ -1372,7 +1374,7 @@ export function ConnectorCard({
                           onNavigate(`/apps/chat/${endpoint.id}/settings`)
                         }
                       >
-                        {endpoint.assignedAgentName} · {endpoint.provider === "agentmail" ? "Email" : endpoint.provider === "github" ? "Code review bot" : "Chat"}
+                        {endpoint.assignedAgentName} · {endpoint.provider === "agentmail" ? pageText("email_84add5") : endpoint.provider === "github" ? "Code review bot" : pageText("chat_2ced57")}
                       </button>
                       <p className="truncate text-xs text-muted-foreground">
                         {endpoint.providerAccountLabel ??
@@ -1386,16 +1388,14 @@ export function ConnectorCard({
                       { createdByUserId: (endpoint.connectionId ? connectionById?.get(endpoint.connectionId)?.createdByUserId : null) ?? endpoint.sponsorUserId ?? null }, userProfileById,
                     )} />
                     {["paused", "attention", "revoked"].includes(endpoint.status) && <span className="text-xs text-muted-foreground">
-                      {endpoint.status === "attention" ? "Needs attention" : endpoint.status === "revoked" ? "Access revoked" : "Paused"}
+                      {endpoint.status === "attention" ? pageText("needsAttention_a12672") : endpoint.status === "revoked" ? "Access revoked" : pageText("paused_c7dfb6")}
                     </span>}
                     {chatEndpointNeedsSetup(endpoint) ? (
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => onNavigate(`/apps/chat/connect?provider=${endpoint.provider}&purpose=chat&resume=${endpoint.id}`)}
-                      >
-                        Finish setup
-                      </Button>
+                      >{pageText("finishSetup_c516d2")}</Button>
                     ) : null}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -1424,9 +1424,7 @@ export function ConnectorCard({
                             remainingConnectionCount: 0,
                           })}
                         >
-                          <Trash2 />
-                          Remove connection
-                        </DropdownMenuItem>
+                          <Trash2 />{pageText("removeConnection_7312a3")}</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </div>
@@ -1469,6 +1467,7 @@ function ConnectionAccountRow({
   onConfigureExecutor?: () => void;
   setupEnabled?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const state = connectionState(connection);
   const actionHref = accountActionHref(row, connection);
   const accountName = connectionDisplayNameForOwner(
@@ -1493,8 +1492,8 @@ function ConnectionAccountRow({
             {state.kind === "attention"
               ? connection.requiresReauthorization === false
                 ? "Retry access"
-                : "Reconnect"
-              : "Finish setup"}
+                : pageText("reconnect_6988b1")
+              : pageText("finishSetup_c516d2")}
           </Button>
         ) : null}
         <DropdownMenu>
@@ -1513,20 +1512,15 @@ function ConnectionAccountRow({
               pending={aiDefaults.pending(account.provider)} onSelect={() => aiDefaults.choose(account)} />}
             <DropdownMenuItem
               onSelect={() => onNavigate(`/apps/${connection.id}/permissions`)}
-            >
-              Permissions
-            </DropdownMenuItem>
+            >{pageText("permissions_d06d55")}</DropdownMenuItem>
             {onRefreshComposio ? <DropdownMenuItem disabled={refreshingComposio} onSelect={onRefreshComposio}>
-              {refreshingComposio ? <Loader2 className="animate-spin" /> : null}
-              Refresh {isAppAggregator(row.slug) ? AGGREGATOR_NAMES[row.slug] : "Composio"}
+              {refreshingComposio ? <Loader2 className="animate-spin" /> : null}{pageText("refresh_56e3ba") + " "}{isAppAggregator(row.slug) ? AGGREGATOR_NAMES[row.slug] : "Composio"}
             </DropdownMenuItem> : null}
             {row.slug === "arcade" && onConfigureArcade ? <DropdownMenuItem onSelect={onConfigureArcade}>{discovery?.discovery.availability === "setup_required" ? "Set up account sync" : "Account sync settings"}</DropdownMenuItem> : null}
             {row.slug === "executor" && onConfigureExecutor ? <DropdownMenuItem onSelect={onConfigureExecutor}>Console URL</DropdownMenuItem> : null}
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive" onSelect={onRemove}>
-              <Trash2 />
-              Remove connection
-            </DropdownMenuItem>
+              <Trash2 />{pageText("removeConnection_7312a3")}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
     </ConnectionAccountRowLayout>
@@ -1621,6 +1615,7 @@ function CustomConnectorCard({
 }: {
   onNavigate: (href: string) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -1649,7 +1644,7 @@ function CustomConnectorCard({
           aria-controls="custom-connector-options"
           onClick={() => setExpanded((open) => !open)}
         >
-          {expanded ? "Close" : "Connect"}
+          {expanded ? pageText("close_bbfa77") : pageText("connect_b65463")}
         </Button>
       </div>
 

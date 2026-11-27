@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { Clock, RotateCcw, AlertCircle, Loader2, CheckCircle2 } from "lucide-react";
 import { Link } from "@/lib/router";
@@ -29,6 +30,7 @@ export function IssueScheduledRetryCard({
   issueId,
   scheduledRetry,
 }: IssueScheduledRetryCardProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const retryNow = useRetryNowMutation(issueId);
 
   if (!scheduledRetry || !issueId) return null;
@@ -86,7 +88,7 @@ export function IssueScheduledRetryCard({
               {badgeLabel}
             </Badge>
             {attempt !== null ? (
-              <span className="text-muted-foreground">Attempt {attempt}</span>
+              <span className="text-muted-foreground">{pageText("attempt_43d44f") + " "}{attempt}</span>
             ) : null}
             {reason ? (
               <span className="text-muted-foreground">{reason}</span>
@@ -138,9 +140,7 @@ export function IssueScheduledRetryCard({
           >
             {retryNow.isPending ? (
               <span className="inline-flex items-center gap-1.5">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
-                Retrying…
-              </span>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />{pageText("retrying_231013")}</span>
             ) : isSuccessTransient ? (
               <span className="inline-flex items-center gap-1.5">
                 <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
@@ -148,9 +148,7 @@ export function IssueScheduledRetryCard({
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5">
-                <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
-                Retry now
-              </span>
+                <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />{pageText("retryNow_84ce86")}</span>
             )}
           </Button>
           <span className="text-right text-xs text-muted-foreground sm:max-w-(--sz-12rem)">

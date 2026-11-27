@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Ban, Check, FlaskConical, Loader2, RefreshCw, Search, ShieldQuestion } from "lucide-react";
@@ -114,6 +115,7 @@ function AgentAccessSection({
   disabled: boolean;
   onSave: (next: AccessDraft) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const liveAgents = agents.filter((agent) => agent.status !== "terminated");
   const canManage = capabilities?.canConfigure ?? false;
   const editableAgentIds = capabilities?.editableAgentIds;
@@ -127,7 +129,7 @@ function AgentAccessSection({
     <section className="space-y-4 border-t border-border pt-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-sm font-semibold text-foreground">Which agents can use this connection?</h2>
-        {disabled ? <span className="text-xs text-muted-foreground">Saving…</span> : null}
+        {disabled ? <span className="text-xs text-muted-foreground">{pageText("saving_56a228")}</span> : null}
       </div>
 
       {canManage ? (
@@ -230,6 +232,7 @@ export function ActionsSection({
   onReviewQuarantined: (enabledIds: string[]) => void;
   onRefreshActions: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [query, setQuery] = useState("");
   const [kindFilter, setKindFilter] = useState<ActionKindFilter>("all");
   const [showPermissionChangeWarning, setShowPermissionChangeWarning] = useState(false);
@@ -250,10 +253,10 @@ export function ActionsSection({
   return (
     <section className="space-y-6 border-t border-border pt-8">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-lg font-semibold text-foreground">Actions</h2>
+        <h2 className="text-lg font-semibold text-foreground">{pageText("actions_c3cd63")}</h2>
         {canConfigure ? (
           <div className="flex items-center gap-2">
-            {disabled ? <span className="text-xs text-muted-foreground">Saving…</span> : null}
+            {disabled ? <span className="text-xs text-muted-foreground">{pageText("saving_56a228")}</span> : null}
             <Button
               variant="outline"
               size="sm"

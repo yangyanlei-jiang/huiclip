@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { Clock3 } from "lucide-react";
 import type { CaseDetail, CaseHandoffView } from "@/api/cases";
@@ -15,6 +16,7 @@ export function CaseWorkSummary({ caseData, pendingHandoff, agents }: {
   pendingHandoff?: CaseHandoffView | null;
   agents?: CaseAgentMap;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const task = caseData.workIssue;
   const pending = pendingHandoff === undefined ? caseData.pendingHandoff : pendingHandoff;
@@ -30,19 +32,19 @@ export function CaseWorkSummary({ caseData, pendingHandoff, agents }: {
       : destination?.status === "paused" ? `${to} is paused.` : `Waiting for ${to} to start.`);
 
   return <section className="space-y-3" aria-label="Case work">
-    <h2 className="text-sm font-semibold">Work</h2>
+    <h2 className="text-sm font-semibold">{pageText("work_00040b")}</h2>
     {caseData.workIssueId ? <div className="space-y-3">
       {task ? <div>
-        <PropertyRow label="Task"><IssueReferencePill issue={task} className="min-h-11 md:min-h-0" /></PropertyRow>
-        <PropertyRow label="Workflow"><span className="text-sm">{caseData.workflow?.name ?? "Case instructions"}</span></PropertyRow>
+        <PropertyRow label={pageText("task_7bb0dd")}><IssueReferencePill issue={task} className="min-h-11 md:min-h-0" /></PropertyRow>
+        <PropertyRow label="Workflow"><span className="text-sm">{caseData.workflow?.name ?? pageText("caseInstructions_0df6da")}</span></PropertyRow>
         {caseData.phase && <PropertyRow label="Phase"><span className="text-sm">{caseData.phase}</span></PropertyRow>}
         <PropertyRow label={translateUi("interfaceCopy.agent")}>{assignee ? <AgentIdentity agent={assignee} size="xs" /> : <span className="text-sm text-muted-foreground">{translateUi("interfaceCopy.unassigned")}</span>}</PropertyRow>
-        <PropertyRow label="Task status"><IssueStatusBadge {...taskStatusIconProps(task)} /></PropertyRow>
+        <PropertyRow label={pageText("taskStatus_7dbc57")}><IssueStatusBadge {...taskStatusIconProps(task)} /></PropertyRow>
       </div> : <p className="text-sm text-muted-foreground">The primary task is unavailable.</p>}
       {pending && pending.state !== "delivered" && pending.state !== "completed" && pending.state !== "cancelled" && <div className="flex items-start gap-2 text-sm">
         <Clock3 aria-hidden className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
         <div className="min-w-0 space-y-1">
-          {pending.state === "awaiting_release" && <p>Next: {pending.workflowTransition?.to.name ?? "Case instructions"} · {pending.phase}</p>}
+          {pending.state === "awaiting_release" && <p>Next: {pending.workflowTransition?.to.name ?? pageText("caseInstructions_0df6da")} · {pending.phase}</p>}
           <p className="text-xs leading-relaxed text-muted-foreground">{waiting}</p>
         </div>
       </div>}

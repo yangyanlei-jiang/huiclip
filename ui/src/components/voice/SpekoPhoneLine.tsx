@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { VoicePhoneConfiguration } from "@paperclipai/shared";
@@ -6,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 export interface SpekoPhoneLineFormProps { configuration?: VoicePhoneConfiguration; loading?: boolean; saving?: boolean; saved?: boolean; error?: string; onRefresh(): void; onSave(input: {numberId: string; enabled: boolean; guestIntake?: boolean; lowTrustEnvironmentId?: string | null}): void }
 export function SpekoPhoneLineForm({configuration, loading, saving, saved, error, onRefresh, onSave}: SpekoPhoneLineFormProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const [numberId, setNumberId] = useState(configuration?.number?.id ?? ""), [enabled, setEnabled] = useState(configuration?.number?.enabled ?? false), [guestIntake, setGuestIntake] = useState(configuration?.number?.guestIntake ?? false), [invalid, setInvalid] = useState(false), [environmentId, setEnvironmentId] = useState(configuration?.number?.lowTrustEnvironmentId ?? "");
   useEffect(() => {setNumberId(configuration?.number?.id ?? ""); setEnabled(configuration?.number?.enabled ?? false); setGuestIntake(configuration?.number?.guestIntake ?? false); setEnvironmentId(configuration?.number?.lowTrustEnvironmentId ?? "");}, [configuration]);
   const selected = configuration?.inventory.find(n => n.id === numberId);
@@ -23,7 +25,7 @@ export function SpekoPhoneLineForm({configuration, loading, saving, saved, error
       {guestIntake && <label className="grid min-w-0 gap-2 text-sm font-medium">Execution sandbox<select aria-label="Execution sandbox" disabled={loading || saving} className="min-w-0 w-full rounded-md border border-input bg-background p-2 text-sm" value={environmentId} onChange={event => setEnvironmentId(event.target.value)}><option value="">Use this agent's sandbox</option>{configuration?.sandboxEnvironments?.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}</select><span className="text-sm font-normal text-muted-foreground">Only new incoming tasks use this setting. Low-trust work requires an active sandbox and isolated workspaces.</span></label>}
       {invalid && <p role="alert" className="text-sm text-destructive">Choose an available company phone number.</p>}
       {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
-      <div className="flex items-center justify-between gap-3"><p role="status" className="text-sm text-muted-foreground">{saved ? "Incoming call setting saved" : ""}</p><Button type="submit" disabled={loading || saving}>{saving ? "Saving…" : "Save incoming call setting"}</Button></div>
+      <div className="flex items-center justify-between gap-3"><p role="status" className="text-sm text-muted-foreground">{saved ? "Incoming call setting saved" : ""}</p><Button type="submit" disabled={loading || saving}>{saving ? pageText("saving_56a228") : "Save incoming call setting"}</Button></div>
     </form>
   </section>;
 }

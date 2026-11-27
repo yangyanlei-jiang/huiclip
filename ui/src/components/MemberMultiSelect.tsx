@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState, type ComponentProps, type ReactNode } from "react";
 import { ChevronRight } from "lucide-react";
@@ -69,6 +70,7 @@ export function MemberMultiSelect({
   filterPlaceholder?: string;
   onOpenChange?: (open: boolean) => void;
 }): ReactNode {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState("");
@@ -201,7 +203,7 @@ export function MemberMultiSelect({
                 }}
                 disabled={pending}
               >
-                {staged ? (pending ? "Saving…" : "Save") : "Done"}
+                {staged ? (pending ? pageText("saving_56a228") : pageText("save_efc007")) : pageText("done_e9b450")}
               </Button>
             </div>
           </div>
@@ -216,8 +218,7 @@ export function MemberMultiSelect({
           ))}
           {selectedMembers.length > 3 ? (
             <p className="px-1.5 pt-0.5 text-xs text-muted-foreground">
-              and {selectedMembers.length - 3} more
-            </p>
+              and {selectedMembers.length - 3}{" " + pageText("more_e7c95b")}</p>
           ) : null}
         </div>
       ) : null}

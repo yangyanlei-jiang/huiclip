@@ -1,3 +1,5 @@
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 /**
  * @fileoverview Plugin Manager page — admin UI for discovering,
@@ -60,13 +62,12 @@ function isExperimentalPluginIdentity(input: {
 }
 
 function ExperimentalBadge() {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <Badge
       variant="outline"
       className="border-amber-500/30 bg-amber-500/10 text-amber-700 hover:bg-amber-500/10 dark:text-amber-200"
-    >
-      Experimental
-    </Badge>
+    >{pageText("experimental_b718f8")}</Badge>
   );
 }
 
@@ -88,6 +89,7 @@ function ExperimentalBadge() {
  * @see doc/plugins/PLUGIN_SPEC.md §3 — Plugin Lifecycle for status semantics.
  */
 export function PluginManager() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { selectedCompany } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -137,7 +139,7 @@ export function PluginManager() {
       pushToast({ title: "Plugin installed successfully", tone: "success" });
     },
     onError: (err: Error) => {
-      pushToast({ title: "Failed to install plugin", body: err.message, tone: "error" });
+      pushToast({ title: interfaceMessage("interface:errorFailedToInstallPlugin"), body: err.message, tone: "error" });
     },
   });
 
@@ -148,7 +150,7 @@ export function PluginManager() {
       pushToast({ title: "Plugin uninstalled successfully", tone: "success" });
     },
     onError: (err: Error) => {
-      pushToast({ title: "Failed to uninstall plugin", body: err.message, tone: "error" });
+      pushToast({ title: interfaceMessage("interface:errorFailedToUninstallPlugin"), body: err.message, tone: "error" });
     },
   });
 
@@ -159,7 +161,7 @@ export function PluginManager() {
       pushToast({ title: "Plugin enabled", tone: "success" });
     },
     onError: (err: Error) => {
-      pushToast({ title: "Failed to enable plugin", body: err.message, tone: "error" });
+      pushToast({ title: interfaceMessage("interface:errorFailedToEnablePlugin"), body: err.message, tone: "error" });
     },
   });
 
@@ -170,7 +172,7 @@ export function PluginManager() {
       pushToast({ title: "Plugin disabled", tone: "info" });
     },
     onError: (err: Error) => {
-      pushToast({ title: "Failed to disable plugin", body: err.message, tone: "error" });
+      pushToast({ title: interfaceMessage("interface:errorFailedToDisablePlugin"), body: err.message, tone: "error" });
     },
   });
 
@@ -192,7 +194,7 @@ export function PluginManager() {
   );
 
   if (isLoading || pluginsView.kind === "reconnecting") {
-    return <div className="p-4 text-sm text-muted-foreground">Loading plugins...</div>;
+    return <div className="p-4 text-sm text-muted-foreground">{pageText("loadingPlugins_cc1d9e")}</div>;
   }
   if (pluginsView.kind === "error") {
     return (
@@ -245,7 +247,7 @@ export function PluginManager() {
                 onClick={() => installMutation.mutate({ packageName: installPackage })}
                 disabled={!installPackage || installMutation.isPending}
               >
-                {installMutation.isPending ? "Installing..." : "Install"}
+                {installMutation.isPending ? "Installing..." : pageText("install_fd6c3e")}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -340,13 +342,11 @@ export function PluginManager() {
                               size="sm"
                               disabled={enableMutation.isPending}
                               onClick={() => enableMutation.mutate(installedPlugin.id)}
-                            >
-                              Enable
-                            </Button>
+                            >{pageText("enable_20063a")}</Button>
                           )}
                           <Button variant="outline" size="sm" asChild>
                             <Link to={`/company/settings/instance/plugins/${installedPlugin.id}`}>
-                              {installedPlugin.status === "ready" ? "Open Settings" : "Review"}
+                              {installedPlugin.status === "ready" ? "Open Settings" : pageText("review_e29a79")}
                             </Link>
                           </Button>
                         </>
@@ -361,7 +361,7 @@ export function PluginManager() {
                             })
                           }
                         >
-                          {installPending ? "Installing..." : "Install"}
+                          {installPending ? "Installing..." : pageText("install_fd6c3e")}
                         </Button>
                       )}
                     </div>
@@ -476,7 +476,7 @@ export function PluginManager() {
                           variant="outline"
                           size="icon-sm"
                           className="h-8 w-8"
-                          title={plugin.status === "ready" ? "Disable" : "Enable"}
+                          title={plugin.status === "ready" ? pageText("disable_9a7d4e") : pageText("enable_20063a")}
                           onClick={() => {
                             if (plugin.status === "ready") {
                               disableMutation.mutate(plugin.id);
@@ -556,7 +556,7 @@ export function PluginManager() {
           <DialogHeader>
             <DialogTitle>Error Details</DialogTitle>
             <DialogDescription>
-              {errorDetailsPlugin?.manifestJson.displayName ?? errorDetailsPlugin?.packageName ?? "Plugin"} hit an error state.
+              {errorDetailsPlugin?.manifestJson.displayName ?? errorDetailsPlugin?.packageName ?? pageText("plugin_8dc208")} hit an error state.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">

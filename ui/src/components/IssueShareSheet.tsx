@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { AgentAvatar } from "./AgentAvatar";
 import { Identity } from "./Identity";
@@ -182,6 +183,7 @@ export function IssueShareSheet({
   /** Pre-selected add subject (`type:id`), used by stories/tests to show the caution. */
   initialAddSelection?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
@@ -389,7 +391,7 @@ export function IssueShareSheet({
                             className="text-muted-foreground hover:text-destructive"
                             onClick={() => setRevokeTarget(grant)}
                           >
-                            {implicitPrincipal ? "Remove saved grant" : "Revoke"}
+                            {implicitPrincipal ? "Remove saved grant" : pageText("revoke_0be720")}
                           </Button>
                         ) : grant.source === "project" ? (
                           <span className="text-(length:--text-nano) text-muted-foreground">
@@ -459,7 +461,7 @@ export function IssueShareSheet({
                 }}
               >{translateUi("interfaceCopy.back")}</Button>
               <Button size="sm" onClick={submitAdd} disabled={!addSelection || addMutation.isPending}>
-                {addMutation.isPending ? "Adding…" : "Add"}
+                {addMutation.isPending ? "Adding…" : pageText("add_61cc55")}
               </Button>
             </div>
           </div>
@@ -474,8 +476,7 @@ export function IssueShareSheet({
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              Remove {revokeTarget?.subjectDisplayName ?? "this subject"}'s saved grant?
+            <AlertDialogTitle>{pageText("remove_e96390") + " "}{revokeTarget?.subjectDisplayName ?? "this subject"}'s saved grant?
             </AlertDialogTitle>
             <AlertDialogDescription>
               This removes this grant and the access it supplies to this task's descendants.
@@ -494,7 +495,7 @@ export function IssueShareSheet({
               }}
               disabled={revokeMutation.isPending}
             >
-              {revokeMutation.isPending ? "Removing…" : "Remove grant"}
+              {revokeMutation.isPending ? pageText("removing_579d7e") : "Remove grant"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -22,6 +23,7 @@ export function SummarizerAgentSelect({
   onChange: (agentId: string) => void;
   enabled?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const agentsQuery = useQuery({
     queryKey: companyId ? queryKeys.agents.list(companyId) : ["agents", "none"],
     queryFn: () => agentsApi.list(companyId!),
@@ -60,8 +62,8 @@ export function SummarizerAgentSelect({
       options={agentOptions}
       placeholder="Summarizer (default)"
       noneLabel="Summarizer (default)"
-      searchPlaceholder="Search agents..."
-      emptyMessage="No agents found."
+      searchPlaceholder={pageText("searchAgents_52c3f9")}
+      emptyMessage={pageText("noAgentsFound_6893bf")}
       onChange={(next) => onChange(next.startsWith("agent:") ? next.slice("agent:".length) : "")}
       className="h-8 text-sm"
       renderTriggerValue={renderAgent}

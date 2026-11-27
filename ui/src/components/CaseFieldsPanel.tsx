@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { Fragment, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -79,6 +80,7 @@ function CopyableCompactValue({
   children: ReactNode;
   className?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const text = stringifyCopyValue(value);
   const [copied, setCopied] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
@@ -109,9 +111,7 @@ function CopyableCompactValue({
           aria-live="polite"
           className="pointer-events-none absolute bottom-full left-1/2 mb-1.5 inline-flex -translate-x-1/2 items-center gap-1 rounded-md bg-foreground px-2 py-1 text-xs whitespace-nowrap text-background"
         >
-          <Check className="h-3 w-3 shrink-0" />
-          Copied
-        </span>
+          <Check className="h-3 w-3 shrink-0" />{pageText("copied_8e3df4")}</span>
       ) : null}
     </span>
   );
@@ -348,12 +348,13 @@ export function CaseFieldsTable({ fields }: { fields: Record<string, unknown> })
 }
 
 export function CaseFieldsPanel({ fields }: { fields: Record<string, unknown> }) {
+  const { t: pageText } = usePageTranslation("interface");
   const entries = Object.entries(fields ?? {});
 
   return (
     <section className="space-y-2">
       <div className="flex items-baseline gap-2">
-        <h2 className="text-sm font-semibold">Fields</h2>
+        <h2 className="text-sm font-semibold">{pageText("fields_e8b685")}</h2>
         <span className="text-xs text-muted-foreground">from the skill&apos;s schema — rendered generically</span>
       </div>
       <Card className="gap-0 py-0">

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ export function RemoteMcpManagement({ providerName, connected = true, canReconne
   onManage: () => void;
   onDisconnect: () => void | Promise<unknown>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [confirming, setConfirming] = useState(false);
   return <section className="space-y-4">
@@ -22,10 +24,10 @@ export function RemoteMcpManagement({ providerName, connected = true, canReconne
       <Button variant="outline" disabled={!canReconnect || busy} onClick={onReconnect}>{translateUi("interfaceCopy.reconnect")}</Button>
       <Button variant="outline" onClick={onManage}>Manage in {providerName}</Button>
       {connected && canDisconnect && <AlertDialog open={confirming} onOpenChange={(open) => { if (!busy) setConfirming(open); }}>
-        <AlertDialogTrigger asChild><Button variant="ghost" className="text-destructive">Disconnect</Button></AlertDialogTrigger>
+        <AlertDialogTrigger asChild><Button variant="ghost" className="text-destructive">{pageText("disconnect_ed28e0")}</Button></AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Disconnect {providerName}?</AlertDialogTitle>
+            <AlertDialogTitle>{pageText("disconnect_ed28e0") + " "}{providerName}?</AlertDialogTitle>
             <AlertDialogDescription>Delete this connection’s saved credentials and stop further calls through Paperclip. Other connections are unaffected. Actions already sent to the provider may still complete. Connecting again requires a new sign-in or key.</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -12,6 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import type { ToolConnection } from "@paperclipai/shared";
 
 export function ArcadeDiscoverySetup({ connection, onClose }: { connection: ToolConnection; onClose: () => void }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [apiKey, setApiKey] = useState("");
   const [userId, setUserId] = useState("");
@@ -38,7 +40,7 @@ export function ArcadeDiscoverySetup({ connection, onClose }: { connection: Tool
       </div>
       {save.error ? <p role="alert" className="text-sm text-destructive">{describeError(save.error).body}</p> : null}
       <DialogFooter className="sm:justify-between"><Button type="button" variant="ghost" disabled={save.isPending} onClick={onClose}>{translateUi("interfaceCopy.cancel")}</Button>
-        <Button type="submit" disabled={!settled || save.isPending || !apiKey.trim() || !userId.trim()}>{save.isPending ? "Saving…" : "Save and sync"}</Button>
+        <Button type="submit" disabled={!settled || save.isPending || !apiKey.trim() || !userId.trim()}>{save.isPending ? pageText("saving_56a228") : "Save and sync"}</Button>
       </DialogFooter>
     </form>
   </DialogContent></Dialog>;

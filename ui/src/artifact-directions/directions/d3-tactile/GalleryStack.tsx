@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type { LabGroup } from "../../kit";
 import { countLabel, daysOf, reviewCountOf } from "./gallery-model";
 import { GalleryItem } from "./GalleryItem";
@@ -21,6 +22,7 @@ import { StateFlag } from "./StateFlag";
  */
 
 function Summary({ group }: { group: LabGroup }) {
+  const { t: pageText } = usePageTranslation("interface");
   const review = reviewCountOf(group.artifacts);
   return (
     <header className="flex items-end gap-5">
@@ -41,8 +43,7 @@ function Summary({ group }: { group: LabGroup }) {
           <span className="font-medium text-foreground">
             <span className="font-mono text-(length:--tac-mono-scale)">{group.count}</span> {countLabel(group.count)}
           </span>
-          <span>
-            Updated <span className="font-mono text-(length:--tac-mono-scale)">{group.updatedLabel}</span>
+          <span>{pageText("updated_f2f857") + " "}<span className="font-mono text-(length:--tac-mono-scale)">{group.updatedLabel}</span>
           </span>
           {review > 0 ? <span className="sr-only">{review} to review</span> : null}
         </p>

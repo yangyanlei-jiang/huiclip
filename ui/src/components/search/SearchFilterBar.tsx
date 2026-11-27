@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo } from "react";
 import { User, UserX } from "lucide-react";
@@ -149,6 +150,7 @@ export function SearchFilterBar({
   onSortChange: (next: CompanySearchSort) => void;
   data: SearchFilterDataProps;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const options = useMemo(() => buildSearchFilterOptions(data), [data]);
 
@@ -174,7 +176,7 @@ export function SearchFilterBar({
         presets={[{ label: "Open items", values: OPEN_STATUS_PRESET }]}
       />
       <SearchFilterMenu
-        label="Assignee"
+        label={pageText("assignee_049e3c")}
         options={options.assignee}
         selected={selectedAssignee ? [selectedAssignee] : []}
         onSelect={(value) => onChange(applyAssigneeToken(filters, value, data.currentUserId))}
@@ -188,16 +190,16 @@ export function SearchFilterBar({
         selected={filters.projectId ? [filters.projectId] : []}
         onSelect={(value) => onChange({ ...filters, projectId: value })}
         searchable
-        searchPlaceholder="Search projects…"
+        searchPlaceholder={pageText("searchProjects_16f8bb")}
         emptyMessage="No projects"
       />
       <SearchFilterMenu
-        label="Label"
+        label={pageText("label_74341e")}
         options={options.label}
         selected={filters.labelId ? [filters.labelId] : []}
         onSelect={(value) => onChange({ ...filters, labelId: value })}
         searchable
-        searchPlaceholder="Search labels…"
+        searchPlaceholder={pageText("searchLabels_f1984e")}
         emptyMessage="No labels"
       />
       {/* PAP-411: Priority filter menu hidden behind SHOW_TASK_PRIORITY_UI (search DSL stays intact). */}

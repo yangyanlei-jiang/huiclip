@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { TranscriptEntry } from "../../adapters";
@@ -910,6 +911,7 @@ function TranscriptMessageBlock({
   density: TranscriptDensity;
   externalReferences?: MarkdownExternalReferenceMap;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const isAssistant = block.role === "assistant";
   const compact = density === "compact";
 
@@ -918,7 +920,7 @@ function TranscriptMessageBlock({
       {!isAssistant && (
         <div className="mb-1.5 flex items-center gap-2 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
           <User className={compact ? "h-3.5 w-3.5" : "h-4 w-4"} />
-          <span>User</span>
+          <span>{pageText("user_9f8a23")}</span>
         </div>
       )}
       <MarkdownBody
@@ -994,6 +996,7 @@ function ToolDecisionInlineDetail({ decision }: { decision: ToolRunDecision | nu
 }
 
 function ToolDecisionDetails({ decision, compact }: { decision: ToolRunDecision | null; compact: boolean }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (!decision) return null;
   const actionRequest = decision.actionRequest;
   return (
@@ -1002,7 +1005,7 @@ function ToolDecisionDetails({ decision, compact }: { decision: ToolRunDecision 
       compact ? "text-(length:--text-micro)" : "text-xs",
     )}>
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <span className="font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">Decision</span>
+        <span className="font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{pageText("decision_7f59a1")}</span>
         <ToolDecisionBadge decision={decision} />
         {decision.reasonCode && <span className="font-mono text-muted-foreground">{decision.reasonCode}</span>}
       </div>
@@ -1013,8 +1016,8 @@ function ToolDecisionDetails({ decision, compact }: { decision: ToolRunDecision 
       )}
       <div className="mt-2 grid gap-1 font-mono text-muted-foreground sm:grid-cols-2">
         <span>invocation {decision.invocation.id.slice(0, 8)}</span>
-        <span>audit {decision.auditEvents.length}</span>
-        {actionRequest && <span>action {actionRequest.status} {actionRequest.id.slice(0, 8)}</span>}
+        <span>{pageText("audit_787615") + " "}{decision.auditEvents.length}</span>
+        {actionRequest && <span>{pageText("action_34eb4c") + " "}{actionRequest.status} {actionRequest.id.slice(0, 8)}</span>}
         {actionRequest?.interactionId && <span>card {actionRequest.interactionId.slice(0, 8)}</span>}
       </div>
       {decision.pendingAction?.previewMarkdown && (
@@ -1287,6 +1290,7 @@ function TranscriptToolGroup({
   density: TranscriptDensity;
   toolDecisionMaps: ToolDecisionMaps;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
   const compact = density === "compact";
@@ -1397,7 +1401,7 @@ function TranscriptToolGroup({
                   : item.status === "error" ? "text-red-700 dark:text-red-300"
                   : "text-emerald-700 dark:text-emerald-300"
                 )}>
-                  {item.status === "running" ? "Running" : item.status === "error" ? "Errored" : "Completed"}
+                  {item.status === "running" ? pageText("running_73989d") : item.status === "error" ? "Errored" : pageText("completed_1798b3")}
                 </span>
                 <ToolDecisionBadge decision={findToolDecision(toolDecisionMaps, item)} />
               </div>
@@ -1658,6 +1662,7 @@ function TranscriptSystemGroup({
   block: Extract<TranscriptBlock, { type: "system_group" }>;
   density: TranscriptDensity;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [open, setOpen] = useState(false);
   return (
     <div className="rounded-xl border border-blue-500/20 bg-blue-500/[0.04] p-2 text-blue-700 dark:text-blue-300">
@@ -1670,7 +1675,7 @@ function TranscriptSystemGroup({
       >
         <TerminalSquare className="h-3.5 w-3.5 shrink-0" />
         <span className="text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-eyebrow)">
-          {block.lines.length} system {block.lines.length === 1 ? "message" : "messages"}
+          {block.lines.length} system {block.lines.length === 1 ? pageText("message_6f9b9a") : pageText("messages_17f346")}
         </span>
         {open ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
       </div>

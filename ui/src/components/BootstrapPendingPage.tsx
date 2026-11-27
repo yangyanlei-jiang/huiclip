@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type { ReactNode } from "react";
 import { Loader2, ShieldCheck, Terminal, TriangleAlert } from "lucide-react";
 import { Link } from "@/lib/router";
@@ -73,6 +74,7 @@ export function BootstrapPendingPage({
   claimError,
   onClaim,
 }: BootstrapPendingPageProps) {
+  const { t: pageText } = usePageTranslation("interface");
   if (!claimAvailable) {
     return (
       <StateChrome>
@@ -120,14 +122,14 @@ export function BootstrapPendingPage({
   if (!session) {
     return (
       <StateChrome>
-        <h1 className="text-xl font-semibold">Finish setting up this Paperclip</h1>
+        <h1 className="text-xl font-semibold">{pageText("finishSettingUpThisPaperclip_1f613d")}</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           No admin has claimed this instance yet. Sign in or create your Paperclip account to become the first
           admin from this browser.
         </p>
         <div className="mt-5">
           <Button asChild>
-            <Link to="/auth?next=/">Sign in / Create account</Link>
+            <Link to="/auth?next=/">{pageText("signInCreateAccount_5d2b23")}</Link>
           </Button>
         </div>
         <CliFallback hasActiveInvite={hasActiveInvite} />
@@ -139,17 +141,16 @@ export function BootstrapPendingPage({
   const isClaiming = claimState === "claiming";
   return (
     <StateChrome>
-      <h1 className="text-xl font-semibold">Finish setting up this Paperclip</h1>
+      <h1 className="text-xl font-semibold">{pageText("finishSettingUpThisPaperclip_1f613d")}</h1>
       <p className="mt-2 text-sm text-muted-foreground">
         No admin has claimed this instance yet. Claim it now to become the first admin and start onboarding.
       </p>
       <div className="mt-5 flex flex-wrap items-center gap-3">
         <Button onClick={onClaim} disabled={isClaiming}>
           {isClaiming && <Loader2 className="mr-2 size-4 animate-spin" aria-hidden />}
-          {isClaiming ? "Claiming..." : "Claim this instance"}
+          {isClaiming ? "Claiming..." : pageText("claimThisInstance_57cb3d")}
         </Button>
-        <span className="text-sm text-muted-foreground">
-          Signed in as <span className="font-medium text-foreground">{displayIdentity(session)}</span>
+        <span className="text-sm text-muted-foreground">{pageText("signedInAs_a02107") + " "}<span className="font-medium text-foreground">{displayIdentity(session)}</span>
         </span>
       </div>
       <p className="mt-3 text-xs text-muted-foreground">

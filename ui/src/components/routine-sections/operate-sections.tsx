@@ -1,3 +1,4 @@
+import { t as interfaceMessage } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -34,7 +35,7 @@ export function RunsSection() {
       void queryClient.invalidateQueries({ queryKey: queryKeys.routines.detail(routine.id) });
       void queryClient.invalidateQueries({ queryKey: queryKeys.routines.runs(routine.id) });
     },
-    onError: (updateError) => pushToast({ title: "Failed to update task", body: describeError(updateError).body, tone: "error" }),
+    onError: (updateError) => pushToast({ title: interfaceMessage("interface:errorFailedToUpdateTask"), body: describeError(updateError).body, tone: "error" }),
   });
 
   return (

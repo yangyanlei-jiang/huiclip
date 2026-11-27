@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useAuthorizationWindow } from "@/hooks/useAuthorizationWindow";
 import { isRetiredComposioConnection, RETIRED_COMPOSIO_MESSAGE } from "@paperclipai/shared";
@@ -115,6 +116,7 @@ const STATUS_CLASS: Record<AppStatus["tone"], string> = {
 };
 
 export function Connections() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -415,7 +417,7 @@ export function Connections() {
                   <th className="px-4 py-2.5">{translateUi("interfaceCopy.type")}</th>
                   <th className="px-4 py-2.5">Connected by</th>
                   <th className="px-4 py-2.5">{translateUi("interfaceCopy.status")}</th>
-                  <th className="px-4 py-2.5">Actions</th>
+                  <th className="px-4 py-2.5">{pageText("actions_c3cd63")}</th>
                   <th className="px-4 py-2.5">{translateUi("interfaceCopy.lastUsed")}</th>
                   <th className="px-4 py-2.5" />
                 </tr>
@@ -494,7 +496,7 @@ export function Connections() {
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="text-xs text-muted-foreground">{row.actionCount} on</span>
+                        <span className="text-xs text-muted-foreground">{row.actionCount}{" " + pageText("on_db3d40")}</span>
                       </td>
                       <td className="px-4 py-3">
                         <span className="text-xs text-muted-foreground">
@@ -557,8 +559,7 @@ export function Connections() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              Delete {connectionToDelete?.appName ?? "this"} connection?
+            <AlertDialogTitle>{pageText("delete_f6fdbe") + " "}{connectionToDelete?.appName ?? "this"} connection?
             </AlertDialogTitle>
             <AlertDialogDescription>
               {connectionToDelete && connectionToDelete.remainingConnectionCount > 0
@@ -577,7 +578,7 @@ export function Connections() {
               }}
             >
               {deleteConnection.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-              {deleteConnection.isPending ? "Deleting..." : "Delete connection"}
+              {deleteConnection.isPending ? pageText("deleting_e16cac") : pageText("deleteConnection_dfa71a")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -597,6 +598,7 @@ function CloudConnectorEnrollmentBanner({
   busy: boolean;
   onEnable: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (status?.configured) {
     return (
       <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card px-4 py-3">
@@ -631,7 +633,7 @@ function CloudConnectorEnrollmentBanner({
       </div>
       <Button variant="outline" size="sm" disabled={busy} onClick={onEnable}>
         {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-        {status?.status === "pending" ? "Continue enrollment" : "Enable"}
+        {status?.status === "pending" ? "Continue enrollment" : pageText("enable_20063a")}
       </Button>
     </div>
   );
@@ -685,6 +687,7 @@ function floatSummary(rows: AppRow[]): string {
 }
 
 function EmptyConnections({ onBrowse }: { onBrowse: () => void }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   return (
     <div className="space-y-6">
@@ -699,7 +702,7 @@ function EmptyConnections({ onBrowse }: { onBrowse: () => void }) {
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
           <AppWindow className="h-6 w-6 text-muted-foreground" />
         </div>
-        <p className="mt-4 text-sm font-medium text-foreground">No connections yet.</p>
+        <p className="mt-4 text-sm font-medium text-foreground">{pageText("noConnectionsYet_ae3484")}</p>
         <p className="mt-1 text-sm text-muted-foreground">
           Add one from <span className="font-medium text-foreground">{translateUi("interfaceCopy.apps")}</span> to give your agents
           the tools they need.

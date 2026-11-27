@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, FlaskConical, Lock, Play } from "lucide-react";
@@ -123,6 +124,7 @@ function ExperimentalToggleCard({
 }
 
 export function InstanceExperimentalSettings() {
+  const { t: pageText } = usePageTranslation("interface");
   const { setBreadcrumbs } = useBreadcrumbs();
   const queryClient = useQueryClient();
   const { hidden: hiddenSettings } = useHiddenSettings();
@@ -267,7 +269,7 @@ export function InstanceExperimentalSettings() {
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <FlaskConical className="h-5 w-5 text-muted-foreground" />
-          <h1 className="text-lg font-semibold">Experimental</h1>
+          <h1 className="text-lg font-semibold">{pageText("experimental_b718f8")}</h1>
         </div>
         <p className="text-sm text-muted-foreground">
           Opt into features that are still being evaluated before they become default behavior.
@@ -343,7 +345,7 @@ export function InstanceExperimentalSettings() {
         />
 
         <ExperimentalToggleCard
-          title="Cases"
+          title={pageText("cases_eccd8c")}
           description="Durable work products (blog posts, tweet storms…) that tasks create and iterate on. Adds the Cases tab and the agent case API."
           footnote="Turning Cases off hides the tab and blocks the case API; existing case data is kept."
           checked={enableCases}
@@ -404,7 +406,7 @@ export function InstanceExperimentalSettings() {
         />
 
         <ExperimentalToggleCard
-          title="Decisions"
+          title={pageText("decisions_af2f32")}
           description="Show the Decisions item in the main sidebar — the attention home that surfaces the tasks awaiting your input — while the surface is still being evaluated."
           checked={enableDecisions}
           onCheckedChange={(checked) => toggleMutation.mutate({ enableDecisions: checked })}
@@ -415,7 +417,7 @@ export function InstanceExperimentalSettings() {
         />
 
         <ExperimentalToggleCard
-          title="Enable Environments"
+          title={pageText("enableEnvironments_edcab8")}
           description="Show environment management in company settings and allow project and agent environment assignment controls."
           checked={enableEnvironments}
           onCheckedChange={(checked) => toggleMutation.mutate({ enableEnvironments: checked })}

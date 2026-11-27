@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { AgentAvatar, type AvatarAgent } from "./AgentAvatar";
 import type { ReactNode } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
@@ -80,6 +81,7 @@ export function DocumentFrameHeader({
   titleSlot,
   actionsSlot,
 }: DocumentFrameHeaderProps) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="flex items-start justify-between gap-3">
       <div className="min-w-0">
@@ -124,7 +126,7 @@ export function DocumentFrameHeader({
               <DropdownMenuContent align="start" className="w-72">
                 <DropdownMenuLabel>Revision history</DropdownMenuLabel>
                 {revisionMenu.loading && revisionMenu.revisions.length === 0 ? (
-                  <DropdownMenuItem disabled>Loading revisions...</DropdownMenuItem>
+                  <DropdownMenuItem disabled>{pageText("loadingRevisions_496692")}</DropdownMenuItem>
                 ) : revisionMenu.revisions.length > 0 ? (
                   <DropdownMenuRadioGroup value={revisionMenu.selectedRevisionId ?? revisionMenu.currentRevisionId ?? ""}>
                     {revisionMenu.revisions.map((revision) => {
@@ -140,9 +142,7 @@ export function DocumentFrameHeader({
                             <div className="flex items-center gap-2">
                               <span className="font-medium">rev {revision.revisionNumber}</span>
                               {isCurrentRevision ? (
-                                <Badge variant="outline" className="border-border px-1.5 text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-                                  Current
-                                </Badge>
+                                <Badge variant="outline" className="border-border px-1.5 text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{pageText("current_4fc0e2")}</Badge>
                               ) : null}
                             </div>
                             <div className="mt-1 flex min-w-0 items-center gap-1.5 text-(length:--text-micro) text-muted-foreground">
@@ -166,8 +166,7 @@ export function DocumentFrameHeader({
             <a
               href={updatedHref ?? `#document-${encodeURIComponent(documentKey)}`}
               className="truncate text-(length:--text-micro) text-muted-foreground transition-colors hover:text-foreground hover:underline"
-            >
-              updated {relativeTime(updatedAt)}
+            >{pageText("updated_13a189") + " "}{relativeTime(updatedAt)}
             </a>
           ) : null}
           {annotationSlot}

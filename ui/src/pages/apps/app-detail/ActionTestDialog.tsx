@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -90,6 +91,7 @@ export function ActionTestDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const testAgentsQuery = useQuery({
     queryKey: queryKeys.tools.testAgents(connectionId),
     queryFn: () => toolsApi.listTestAgents(connectionId),
@@ -141,9 +143,7 @@ export function ActionTestDialog({
 
         {testAgentsQuery.isLoading || testAgentsView.kind === "reconnecting" ? (
           <div className="flex items-center gap-2 py-6 text-sm text-muted-foreground" role="status">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Loading agents…
-          </div>
+            <Loader2 className="h-4 w-4 animate-spin" />{pageText("loadingAgents_aa8e27")}</div>
         ) : testAgentsView.kind === "error" ? (
           <QueryErrorState
             className="my-6"
@@ -245,6 +245,7 @@ function AgentPicker({
   connectionId: string;
   appName: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
@@ -269,8 +270,8 @@ function AgentPicker({
           <div className="relative">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
-              aria-label="Search agents"
-              placeholder="Search agents…"
+              aria-label={pageText("searchAgents_f1ff54")}
+              placeholder={pageText("searchAgents_97ce8a")}
               className="h-8 pl-8 text-sm"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
@@ -320,13 +321,11 @@ function AgentPicker({
         <div className="border-t border-border p-3">
           <p className="text-xs font-semibold text-foreground">What the badges mean</p>
           <ul className="mt-1.5 space-y-1 text-xs text-muted-foreground">
-            <li><span className="font-medium text-foreground">Allowed</span> — runs immediately when you press Run.</li>
+            <li><span className="font-medium text-foreground">{pageText("allowed_77c7b4")}</span> — runs immediately when you press Run.</li>
             <li><span className="font-medium text-foreground">Ask first</span> — Run is parked in Review for your OK.</li>
             <li>
-              <span className="font-medium text-foreground">Off</span> — won't run. Change it in{" "}
-              <Link className="text-primary hover:underline" to={appTabHref(connectionId, "permissions")}>
-                Permissions
-              </Link>.
+              <span className="font-medium text-foreground">{pageText("off_e3de5a")}</span> — won't run. Change it in{" "}
+              <Link className="text-primary hover:underline" to={appTabHref(connectionId, "permissions")}>{pageText("permissions_d06d55")}</Link>.
             </li>
           </ul>
           <p className="mt-2 text-(length:--text-micro) text-muted-foreground">
@@ -428,6 +427,7 @@ function ActionTester({
   allAgents: ToolConnectionTestAgent[];
   onSelectAgent: (agentId: string) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const { selectedCompanyId } = useCompany();
   const rawSchema = (entry.inputSchema ?? { type: "object", properties: {} }) as JsonSchemaNode;
@@ -548,17 +548,14 @@ function ActionTester({
         <Button onClick={onRun} disabled={running || !!outcome?.result.upstreamPending?.resumeTool || outcome?.result.decision === "ask_first"} size="sm">
           {running ? (
             <>
-              <Loader2 className="h-3.5 w-3.5 animate-spin" /> Running…
-            </>
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />{" " + pageText("running_7ef25a")}</>
           ) : (
             <>
-              <Play className="h-3.5 w-3.5" /> {outcome ? "Run again" : "Run"}
+              <Play className="h-3.5 w-3.5" /> {outcome ? "Run again" : pageText("run_b1b392")}
             </>
           )}
         </Button>
-        <Button onClick={onReset} disabled={running} size="sm" variant="ghost">
-          Reset
-        </Button>
+        <Button onClick={onReset} disabled={running} size="sm" variant="ghost">{pageText("reset_44c57a")}</Button>
       </div>
 
       {(outcome?.result.decision === "ask_first" || outcome?.result.upstreamPending?.resumeTool) && <p className="text-xs text-muted-foreground">Finish the existing request below. Use Reset only when you intend to start a new call.</p>}
@@ -597,21 +594,20 @@ function RunningCard({
   elapsedMs: number;
   onCancel: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const verb = entry.isReadOnly ? "Reading from" : entry.isWrite ? "Writing to" : "Calling";
   return (
     <div className="rounded-md border border-border bg-muted/30 p-4">
       <div className="flex items-center gap-2">
         <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-        <span className="text-sm font-medium text-foreground">Running…</span>
+        <span className="text-sm font-medium text-foreground">{pageText("running_7ef25a")}</span>
       </div>
       <p className="mt-1 text-xs text-muted-foreground">
         {verb} {appName} as {agentName}.
       </p>
       <div className="mt-3 flex items-center justify-between">
-        <span className="text-xs text-muted-foreground">Started {seconds(elapsedMs)} ago · Press cancel to stop</span>
-        <Button onClick={onCancel} size="sm" variant="outline">
-          Cancel
-        </Button>
+        <span className="text-xs text-muted-foreground">{pageText("started_faa9e7") + " "}{seconds(elapsedMs)} ago · Press cancel to stop</span>
+        <Button onClick={onCancel} size="sm" variant="outline">{pageText("cancel_77dfd2")}</Button>
       </div>
     </div>
   );
@@ -696,6 +692,7 @@ function ProviderResumeControls({ pending, connectionId, agent, onResult }: {
   pending: ToolUpstreamPending; connectionId: string; agent: TestAgentWithAccess;
   onResult: (result: { outcome: RunOutcome; entry: ToolCatalogEntry; action: "accept" | "decline" | "cancel" }) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const catalog = useQuery({ queryKey: queryKeys.tools.catalog(connectionId), queryFn: () => toolsApi.listCatalog(connectionId) });
   const catalogView = useQueryView(catalog);
   const entry = catalog.data?.catalog.find((item) => item.toolName === pending.resumeTool && item.status === "active");
@@ -719,11 +716,11 @@ function ProviderResumeControls({ pending, connectionId, agent, onResult }: {
   };
   return <div className="space-y-3">
     <p className="text-muted-foreground">Review the provider's request, then resume this execution as {agent.name}. The original action will not be started again.</p>
-    <div className="flex items-center gap-2"><span>Resume permission</span><DecisionBadge decision={permission} /></div>
+    <div className="flex items-center gap-2"><span>{pageText("resumePermission_4fbbd0")}</span><DecisionBadge decision={permission} /></div>
     {Object.keys(schema.properties ?? {}).length > 0 && <JsonSchemaForm schema={schema} values={content} onChange={setContent} errors={errors} disabled={resume.isPending} />}
     <div className="flex flex-wrap gap-2">
-      <Button disabled={!entry || expired || permission === "off" || resume.isPending} onClick={() => submit("accept")}>{resume.isPending ? "Resuming…" : "Approve and resume"}</Button>
-      <Button variant="outline" disabled={!entry || expired || permission === "off" || resume.isPending} onClick={() => submit("decline")}>Decline</Button>
+      <Button disabled={!entry || expired || permission === "off" || resume.isPending} onClick={() => submit("accept")}>{resume.isPending ? pageText("resuming_ab0bec") : "Approve and resume"}</Button>
+      <Button variant="outline" disabled={!entry || expired || permission === "off" || resume.isPending} onClick={() => submit("decline")}>{pageText("decline_b59cf9")}</Button>
       <Button variant="ghost" disabled={!entry || expired || permission === "off" || resume.isPending} onClick={() => submit("cancel")}>Cancel request</Button>
     </div>
     {expired && <p>This provider approval expired. Check the provider before starting a new action.</p>}
@@ -859,6 +856,7 @@ function AllowedResult({
   appName: string;
   connectionId: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const value = outcome.result.result;
   const preview = resultPreview(value);
   return (
@@ -874,7 +872,7 @@ function AllowedResult({
 
       {preview.items.some((item) => !isEmptyResult(item.value)) && (
         <div className="mt-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Preview</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{pageText("preview_f1fbb2")}</p>
           <div className="mt-1.5">
             <div className="space-y-2">
               {preview.items.map((item, index) => (
@@ -970,6 +968,7 @@ function PrettyPreview({ value }: { value: unknown }) {
 }
 
 function PreviewRowCard({ row, index }: { row: Record<string, unknown>; index: number }) {
+  const { t: pageText } = usePageTranslation("interface");
   const titleKey = ["title", "name", "label"].find((key) => typeof row[key] === "string" && row[key] !== "");
   const summaryKey = ["highlight", "description", "summary"].find((key) => typeof row[key] === "string" && row[key] !== "");
   const url = typeof row.url === "string" && /^https?:\/\//i.test(row.url) ? row.url : null;
@@ -1000,7 +999,7 @@ function PreviewRowCard({ row, index }: { row: Record<string, unknown>; index: n
           ))}
         </dl>
       )}
-      {details.length > 3 && <p className="mt-2 text-muted-foreground">{details.length - 3} more {details.length === 4 ? "field" : "fields"} in the raw response</p>}
+      {details.length > 3 && <p className="mt-2 text-muted-foreground">{details.length - 3}{" " + pageText("more_e7c95b") + " "}{details.length === 4 ? "field" : pageText("fields_70f132")} in the raw response</p>}
     </div>
   );
 }
@@ -1134,6 +1133,7 @@ function AskFirstResult({
   connectionId: string;
   agent?: TestAgentWithAccess;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { selectedCompanyId } = useCompany();
   const queryClient = useQueryClient();
   const actionRequestId = outcome.result.actionRequestId;
@@ -1211,7 +1211,7 @@ function AskFirstResult({
 
       <dl className="mt-3 space-y-1.5 text-sm">
         <div className="flex gap-3">
-          <dt className="w-16 shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Action</dt>
+          <dt className="w-16 shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{pageText("action_97c89a")}</dt>
           <dd className="text-foreground">{entry.title ?? entry.toolName}</dd>
         </div>
         {where && (
@@ -1221,7 +1221,7 @@ function AskFirstResult({
           </div>
         )}
         <div className="flex gap-3">
-          <dt className="w-16 shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Status</dt>
+          <dt className="w-16 shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{pageText("status_bae7d5")}</dt>
           <dd className={cn("flex items-center gap-1.5 text-foreground", settled && "text-muted-foreground")}>
             {phase === "running" && <Loader2 className="h-3 w-3 animate-spin" />}
             {statusLabel}
@@ -1269,6 +1269,7 @@ function OffExplanation({
   allAgents: ToolConnectionTestAgent[];
   onSelectAgent: (agentId: string) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const title = entry.title ?? entry.toolName;
   const permHref = `${appTabHref(connectionId, "permissions")}?focus=${encodeURIComponent(entry.id)}`;
 
@@ -1300,9 +1301,7 @@ function OffExplanation({
             <p className="mt-0.5">It won't run here, and it won't run from a task either.</p>
             <p className="mt-2">
               Want to test it? Turn it on for {agent.name} in{" "}
-              <Link className="font-medium text-primary hover:underline" to={appTabHref(connectionId, "permissions")}>
-                Permissions
-              </Link>{" "}
+              <Link className="font-medium text-primary hover:underline" to={appTabHref(connectionId, "permissions")}>{pageText("permissions_d06d55")}</Link>{" "}
               — set it to Allowed or Ask first.
             </p>
           </div>

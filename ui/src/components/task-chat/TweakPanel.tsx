@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useCopyAction } from "@/lib/use-copy-action";
@@ -44,6 +45,7 @@ function saveSession(key: string, value: unknown) {
  * one file, one dev guard, trivial to strip out later.
  */
 export function TweakPanel() {
+  const { t: pageText } = usePageTranslation("interface");
   const [pos, setPos] = useState<{ x: number; y: number }>(() =>
     loadSession(POS_KEY, { x: 24, y: 24 }),
   );
@@ -229,7 +231,7 @@ export function TweakPanel() {
               {/* Focusing the box copies it silently; say so, or the click looks inert. */}
               <p className="mt-1 text-(length:--text-nano) text-muted-foreground" aria-live="polite">
                 {exportCopy.copied
-                  ? "Copied to clipboard"
+                  ? pageText("copiedToClipboard_0e7383")
                   : exportCopy.failed
                     ? "Copy failed — select the text and copy it manually"
                     : "Click the box to copy"}

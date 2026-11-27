@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { AlertCircle, Check, FileText, LoaderCircle } from 'lucide-react';
 import type { SkillSourceCandidate, SkillSourceScanProgress } from '@paperclipai/shared';
 import { formatBytes } from '@/lib/issue-output';
@@ -11,6 +12,7 @@ export function SkillImportProgress({ repository, progress, found = [], importin
   importing?: boolean;
   count?: number;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const phase = progress?.phase ?? 'connecting';
   const step = phase === 'connecting' || phase === 'downloading' ? 0 : phase === 'listing' ? 1 : 2;
   const download = phase === 'downloading' ? progress?.download : undefined;
@@ -57,7 +59,7 @@ export function SkillImportProgress({ repository, progress, found = [], importin
           {skill.error ? <AlertCircle className="size-4 shrink-0 text-destructive" aria-label="Validation issue" />
             : importing ? <FileText className="size-4 shrink-0 text-muted-foreground" aria-hidden /> : <Check className="size-4 shrink-0 text-muted-foreground" aria-hidden />}
           <div className="min-w-0 flex-1">
-            <div className="flex min-w-0 items-baseline gap-2"><span className="truncate text-sm font-medium">{skill.name}</span><span className="shrink-0 text-xs text-muted-foreground">{skill.fileCount} {skill.fileCount === 1 ? 'file' : 'files'}</span></div>
+            <div className="flex min-w-0 items-baseline gap-2"><span className="truncate text-sm font-medium">{skill.name}</span><span className="shrink-0 text-xs text-muted-foreground">{skill.fileCount} {skill.fileCount === 1 ? pageText("file_971c41") : pageText("files_a1f13b")}</span></div>
             <p className={`truncate text-xs ${skill.error ? 'text-destructive' : 'text-muted-foreground'}`} title={skill.error ?? skill.path}>{skill.error ?? skill.path}</p>
           </div>
         </li>)}
@@ -67,7 +69,7 @@ export function SkillImportProgress({ repository, progress, found = [], importin
       <div className="flex min-w-0 items-center gap-2 border-t border-border px-3 py-2 text-xs text-muted-foreground">
         <LoaderCircle className="size-3 shrink-0 motion-safe:animate-spin" aria-hidden />
         <span className="min-w-0 flex-1 truncate" title={progress?.currentPath ?? undefined}>{importing ? 'Saving complete packages, including scripts and references' : progress?.currentPath ?? 'Waiting for repository contents…'}</span>
-        {checking && progress?.totalFiles != null && <span className="shrink-0 tabular-nums">{progress.checkedFiles}/{progress.totalFiles} files</span>}
+        {checking && progress?.totalFiles != null && <span className="shrink-0 tabular-nums">{progress.checkedFiles}/{progress.totalFiles}{" " + pageText("files_a1f13b")}</span>}
       </div>
     </div>
     <p className="text-xs text-muted-foreground">{importing ? 'This may take a moment for larger packages.' : 'You’ll choose what to import after every package has been checked.'}</p>

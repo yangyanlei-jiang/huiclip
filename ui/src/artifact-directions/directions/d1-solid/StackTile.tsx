@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { LabGroup } from "../../kit";
@@ -91,6 +92,7 @@ function Mosaic({ group }: { group: LabGroup }) {
 }
 
 export function StackTile({ group }: { group: LabGroup }) {
+  const { t: pageText } = usePageTranslation("interface");
   const depth = pileDepth(group.count);
   const count = plural(group.count, "artifact");
   return (
@@ -109,7 +111,7 @@ export function StackTile({ group }: { group: LabGroup }) {
             {/* Always two lines — what is in it, then when — so the feet of a row line up; a long count wraps inside its own line. */}
             <p className={cn(META_TEXT, "flex min-w-0 flex-1 flex-col text-(--solid-meta)")}>
               <Counts lead={count} of={group.artifacts} />
-              <span className="truncate">Updated {group.updatedLabel}</span>
+              <span className="truncate">{pageText("updated_f2f857") + " "}{group.updatedLabel}</span>
             </p>
             <a
               data-primary

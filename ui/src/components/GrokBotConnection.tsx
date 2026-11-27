@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { describeError } from "@/api/errors";
 import { useEffect, useId, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -12,6 +13,7 @@ import { queryKeys } from "@/lib/queryKeys";
 
 /** Configuration writes update the authoritative binding, never an unsaved agent form. */
 export function GrokBotConnection({ companyId, agentId }: { companyId?: string; agentId?: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const pairingCodeId = useId();
   const cache = useQueryClient();
   const key = ["grok-binding", companyId, agentId];
@@ -56,18 +58,18 @@ export function GrokBotConnection({ companyId, agentId }: { companyId?: string; 
   const pending = exchange && ["prepared", "sending", "accepted"].includes(exchange.status) && Date.parse(exchange.expiresAt) > Date.now();
   return <section aria-label="Grok Bot connection" className="space-y-4 text-sm">
     <p className="text-muted-foreground">Runs in Grok Bot. The Bot retains its apps and persistent context. Paperclip supplies task coordination and first-party tools. Usage and spending are not reported.</p>
-    {state.isPending && <p role="status">Loading connection…</p>}
+    {state.isPending && <p role="status">{pageText("loadingConnection_f1e853")}</p>}
     {error && <p role="alert" className="text-destructive">{describeError(error).body}</p>}
     {state.data && !state.data.enabled && <p className="text-muted-foreground">Enable Grok Bot, Assistant connections (MCP), and Paperclip Runner on an authenticated public HTTPS instance.</p>}
     {binding?.connected ? <>
       <p>Agent access connected. {routine?.verified && !recovering ? "Routine round trip verified." : "Assignments require a verified routine round trip."}</p>
-      <dl className="space-y-2 text-muted-foreground"><div><dt>Bot</dt><dd>{routine?.botName ?? "Not configured"}</dd></div><div><dt>Last verified exchange</dt><dd>{routine?.verifiedAt ? new Date(routine.verifiedAt).toLocaleString() : "Not yet verified"}</dd></div><div><dt>Last authenticated contact</dt><dd>{routine?.lastContactAt ? new Date(routine.lastContactAt).toLocaleString() : "Not yet observed"}</dd></div></dl>
-      {exchange && <p>Assignment delivered: {["accepted", "acknowledged"].includes(exchange.status) ? "Yes" : "Unconfirmed"}. Reply received: {exchange.acknowledgedAt ? "Yes" : "No"}.</p>}
+      <dl className="space-y-2 text-muted-foreground"><div><dt>Bot</dt><dd>{routine?.botName ?? pageText("notConfigured_811931")}</dd></div><div><dt>Last verified exchange</dt><dd>{routine?.verifiedAt ? new Date(routine.verifiedAt).toLocaleString() : "Not yet verified"}</dd></div><div><dt>Last authenticated contact</dt><dd>{routine?.lastContactAt ? new Date(routine.lastContactAt).toLocaleString() : "Not yet observed"}</dd></div></dl>
+      {exchange && <p>Assignment delivered: {["accepted", "acknowledged"].includes(exchange.status) ? pageText("yes_5397e0") : "Unconfirmed"}. Reply received: {exchange.acknowledgedAt ? pageText("yes_5397e0") : pageText("no_816c52")}.</p>}
       {exchange?.status === "rejected" && <div className="space-y-2"><p>The routine rejected this delivery. Check the routine in Grok before retrying.</p><Button variant="outline" disabled={busy || recovering} onClick={() => retryDelivery.mutate(exchange.id)}>Retry rejected delivery</Button></div>}
       {!routine?.configured || replace ? <div className="space-y-3">
         <label className="block space-y-2"><span>Bot name in Grok</span><Input value={botName} onChange={e => setBotName(e.target.value)} maxLength={100} /></label>
         <AgentSetupPrompt prompt={buildGrokRoutinePrompt(binding.id, botName || "your Bot")} label="Copy routine instructions" title="Enable assignments" description="Ask the Bot for a Webhook URL navigation link if clicking its routine does nothing." />
-        <label className="block space-y-2"><span>Webhook URL</span><Input type="password" autoComplete="off" value={webhookUrl} onChange={e => setWebhookUrl(e.target.value)} /></label>
+        <label className="block space-y-2"><span>{pageText("webhookURL_fa7517")}</span><Input type="password" autoComplete="off" value={webhookUrl} onChange={e => setWebhookUrl(e.target.value)} /></label>
         <label className="block space-y-2"><span>Webhook key</span><Input type="password" autoComplete="off" value={webhookKey} onChange={e => setWebhookKey(e.target.value)} /></label>
         <Button disabled={busy || recovering || !botName.trim() || !webhookUrl || !webhookKey} onClick={() => configure.mutate()}>Save routine</Button>
       </div> : <div className="flex flex-wrap gap-2">
@@ -82,7 +84,7 @@ export function GrokBotConnection({ companyId, agentId }: { companyId?: string; 
           <label htmlFor={pairingCodeId}>One-use pairing code</label>
           <div className="flex items-center gap-2">
             <Input id={pairingCodeId} type="password" autoComplete="off" readOnly value={pairing.pairingCode} onFocus={e => e.target.select()} />
-            <CopyText text={pairing.pairingCode} ariaLabel="Copy pairing code" className={buttonVariants({ variant: "outline", size: "sm" })}>Copy code</CopyText>
+            <CopyText text={pairing.pairingCode} ariaLabel="Copy pairing code" className={buttonVariants({ variant: "outline", size: "sm" })}>{pageText("copyCode_6c1069")}</CopyText>
           </div>
           <p className="text-xs text-muted-foreground">Copy this code into Paperclip’s authorization page. Keep it out of Bot chat.</p>
         </div>

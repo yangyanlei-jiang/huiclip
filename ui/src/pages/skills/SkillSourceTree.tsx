@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useMemo, useState } from 'react';
 import type { SkillSourceCandidate } from '@paperclipai/shared';
 import { FileTree, buildFileTree, collectAllPaths, type FileTreeNode } from '@/components/FileTree';
@@ -58,6 +59,7 @@ export function SkillSourceTree({ candidates, selected, excludedFolders, onChang
   onPreview?: (skill: SkillTreeCandidate, filePath?: string) => void; disabled?: boolean;
   packageMode?: 'skills' | 'repository';
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [search, setSearch] = useState('');
   const [expansion, setExpansion] = useState(new Map<string, boolean>());
   const { nodes, included } = useMemo(() => buildSkillPackageTree(candidates), [candidates]);
@@ -106,7 +108,7 @@ export function SkillSourceTree({ candidates, selected, excludedFolders, onChang
           checked={candidates.length > 0 && selectedCount === candidates.length}
           ref={element => { if (element) element.indeterminate = selectedCount > 0 && selectedCount < candidates.length; }}
           disabled={disabled || candidates.length === 0} onChange={() => toggleCheck('')} />
-        <span>{selectedCount} of {candidates.length} selected</span>
+        <span>{selectedCount} of {candidates.length}{" " + pageText("selected_835f3b")}</span>
       </label>
       <Button type="button" variant="ghost" size="xs" className="font-normal text-muted-foreground" disabled={disabled || Boolean(search) || allDirs.size === 0} onClick={() => setExpansion(new Map([...allDirs].map(path => [path, allCollapsed])))}>{allCollapsed ? 'Expand all' : 'Collapse all'}</Button>
     </div>
@@ -142,7 +144,7 @@ export function SkillSourceTree({ candidates, selected, excludedFolders, onChang
           const count = skill.inspection?.files.length ?? skill.fileCount;
           return <>
             {label && <Badge variant="outline" className="hidden font-normal text-muted-foreground sm:inline-flex" title={skill.error ?? skill.note}>{label}</Badge>}
-            {count !== undefined && <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{count} {count === 1 ? 'file' : 'files'}</span>}
+            {count !== undefined && <span className="shrink-0 text-xs tabular-nums text-muted-foreground">{count} {count === 1 ? pageText("file_971c41") : pageText("files_a1f13b")}</span>}
             {onPreview && <Button type="button" size="icon-xs" variant="ghost" disabled={disabled} aria-label={`Inspect ${skill.name}`} onKeyDown={event => event.stopPropagation()} onClick={event => { event.stopPropagation(); onPreview(skill); }}>{skill.inspection?.references.length ? <AlertTriangle className="size-3.5" /> : <Info className="size-3.5" />}</Button>}
           </>;
         }}

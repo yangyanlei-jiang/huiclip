@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -64,6 +65,7 @@ import { QueryErrorState, QueryPlaceholder, useQueryView } from "@/components/Qu
  * @see doc/plugins/PLUGIN_SPEC.md §19.8 — Plugin Settings UI.
  */
 export function PluginSettings() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { selectedCompany, selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -220,7 +222,7 @@ export function PluginSettings() {
         <TabsContent value="configuration" className="space-y-6">
           <div className="space-y-8">
             <section className="space-y-5">
-              <h2 className="text-base font-semibold">About</h2>
+              <h2 className="text-base font-semibold">{pageText("about_6b21fb")}</h2>
               <div className="grid gap-8 lg:grid-cols-(--gtc-52)">
                 <div className="space-y-2">
                   <h3 className="text-sm font-medium text-muted-foreground">{translateUi("interfaceCopy.description")}</h3>
@@ -295,7 +297,7 @@ export function PluginSettings() {
                   </p>
                   <div className="mt-3">
                     <Link to="/company/settings/instance/environments">
-                      <Button variant="outline" size="sm">Open Environments</Button>
+                      <Button variant="outline" size="sm">{pageText("openEnvironments_e5ecb9")}</Button>
                     </Link>
                   </div>
                 </div>
@@ -578,9 +580,7 @@ export function PluginSettings() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-1.5">
-                    <ShieldAlert className="h-4 w-4" />
-                    Permissions
-                  </CardTitle>
+                    <ShieldAlert className="h-4 w-4" />{pageText("permissions_d06d55")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {pluginCapabilities.length > 0 ? (
@@ -677,6 +677,7 @@ interface PluginLocalFolderRowProps {
 }
 
 function PluginLocalFolderRow({ pluginId, companyId, declaration, status }: PluginLocalFolderRowProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const serverPath = status?.path ?? "";
   const [pathValue, setPathValue] = useState(serverPath);
@@ -736,7 +737,7 @@ function PluginLocalFolderRow({ pluginId, companyId, declaration, status }: Plug
               {declaration.folderKey}
             </Badge>
             <Badge variant={status?.healthy ? "default" : "secondary"}>
-              {status?.healthy ? "Healthy" : "Needs attention"}
+              {status?.healthy ? pageText("healthy_80ea15") : pageText("needsAttention_a12672")}
             </Badge>
           </div>
           {declaration.description ? (
@@ -746,7 +747,7 @@ function PluginLocalFolderRow({ pluginId, companyId, declaration, status }: Plug
           ) : null}
         </div>
         <Badge variant={access === "readWrite" ? "default" : "outline"}>
-          {access === "readWrite" ? "Read/write" : "Read only"}
+          {access === "readWrite" ? "Read/write" : pageText("readOnly_601dcc")}
         </Badge>
       </div>
 
@@ -794,9 +795,7 @@ function PluginLocalFolderRow({ pluginId, companyId, declaration, status }: Plug
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
             ) : (
               <Save className="h-3.5 w-3.5" />
-            )}
-            Save
-          </Button>
+            )}{pageText("save_efc007")}</Button>
         </div>
       </div>
 
@@ -975,6 +974,7 @@ interface PluginConfigFormProps {
  * re-renders on field changes, not the entire page.
  */
 function PluginConfigForm({ pluginId, companyId, schema, initialValues, isLoading, pluginStatus, supportsConfigTest }: PluginConfigFormProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
 
   // Form values: start with saved values, fall back to schema defaults
@@ -1083,9 +1083,7 @@ function PluginConfigForm({ pluginId, companyId, schema, initialValues, isLoadin
   if (isLoading) {
     return (
       <div className="flex items-center gap-2 text-sm text-muted-foreground py-4">
-        <Loader2 className="h-4 w-4 animate-spin" />
-        Loading configuration...
-      </div>
+        <Loader2 className="h-4 w-4 animate-spin" />{pageText("loadingConfiguration_16a13f")}</div>
     );
   }
 
@@ -1133,9 +1131,7 @@ function PluginConfigForm({ pluginId, companyId, schema, initialValues, isLoadin
         >
           {saveMutation.isPending ? (
             <>
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              Saving...
-            </>
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />{pageText("saving_ae7e88")}</>
           ) : (
             "Save Configuration"
           )}

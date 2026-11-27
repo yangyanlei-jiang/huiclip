@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useId, useState, type ReactNode } from "react";
 import {
@@ -72,6 +73,7 @@ function sourceHostname(href: string): string {
 }
 
 function ResearchDetails({ item }: { item: TaskChatProviderActivityItem }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [showAllResults, setShowAllResults] = useState(false);
   const query = item.details.find((detail) => detail.label.toLowerCase() === "query");
   const additionalDetails = item.details.filter((detail) => !["action", "query", "status"].includes(detail.label.toLowerCase()));
@@ -110,8 +112,7 @@ function ResearchDetails({ item }: { item: TaskChatProviderActivityItem }) {
               type="button"
               className="mt-1.5 text-muted-foreground hover:text-foreground"
               onClick={() => setShowAllResults(true)}
-            >
-              Show {hiddenResultCount} more {hiddenResultCount === 1 ? "result" : "results"}
+            >{pageText("show_d97d1e") + " "}{hiddenResultCount}{" " + pageText("more_e7c95b") + " "}{hiddenResultCount === 1 ? "result" : "results"}
             </button>
           ) : showAllResults && item.links.length > COMPACT_RESEARCH_RESULT_LIMIT ? (
             <button
@@ -185,6 +186,7 @@ function ProviderDetails({ item, neutral = false }: { item: TaskChatProviderActi
 }
 
 function WorkspaceChangeDetails({ item }: { item: TaskChatWorkspaceChangeItem }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (item.files.length === 0) return <p className="text-muted-foreground">No changed-file details were reported.</p>;
   const visibleFiles = item.files.slice(0, COMPACT_WORKSPACE_FILE_LIMIT);
   const hiddenFileCount = item.files.length - visibleFiles.length;
@@ -205,7 +207,7 @@ function WorkspaceChangeDetails({ item }: { item: TaskChatWorkspaceChangeItem })
           </li>
         ))}
       </ul>
-      {hiddenFileCount > 0 ? <p className="mt-1.5 text-muted-foreground">{hiddenFileCount} more {hiddenFileCount === 1 ? "file" : "files"} not shown</p> : null}
+      {hiddenFileCount > 0 ? <p className="mt-1.5 text-muted-foreground">{hiddenFileCount}{" " + pageText("more_e7c95b") + " "}{hiddenFileCount === 1 ? pageText("file_971c41") : pageText("files_a1f13b")} not shown</p> : null}
     </div>
   );
 }
@@ -300,6 +302,7 @@ export function TaskChatProtocolActivityDetails({ item, neutral = false }: { ite
 
 /** Source domains under a finished web search, so results are visible without expanding. */
 export function ResearchSourceStrip({ item }: { item: TaskChatProviderActivityItem }) {
+  const { t: pageText } = usePageTranslation("interface");
   const seen = new Set<string>();
   const sources = item.links.flatMap((link) => {
     const host = sourceHostname(link.href);
@@ -324,7 +327,7 @@ export function ResearchSourceStrip({ item }: { item: TaskChatProviderActivityIt
           <span className="truncate">{source.host}</span>
         </a>
       ))}
-      {hidden > 0 ? <span className="text-(length:--text-nano) text-muted-foreground">+{hidden} more</span> : null}
+      {hidden > 0 ? <span className="text-(length:--text-nano) text-muted-foreground">+{hidden}{" " + pageText("more_e7c95b")}</span> : null}
     </div>
   );
 }
@@ -353,6 +356,7 @@ function itemStatus(item: TaskChatProtocolItem): "running" | "completed" | "fail
 }
 
 export function TaskChatProtocolActivityRow({ item }: { item: TaskChatProtocolItem }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const shimmer = useTaskChatShimmer(item.id);
   const [open, setOpen] = useState(false);
@@ -369,7 +373,7 @@ export function TaskChatProtocolActivityRow({ item }: { item: TaskChatProtocolIt
       <div className="flex min-w-0 flex-col gap-1.5 py-1 text-xs" data-testid="task-chat-protocol-activity-row" data-activity-family="provider_notice">
         <div className="flex items-center gap-2 text-muted-foreground">
           <NoticeIcon className="size-(--sz-protocol-notice-icon) shrink-0" aria-hidden data-testid="task-chat-protocol-activity-icon" />
-          <span className="font-medium">{severity === "error" ? "Error" : severity === "info" ? "Provider update" : "Warning"}</span>
+          <span className="font-medium">{severity === "error" ? pageText("error_7f2f6a") : severity === "info" ? "Provider update" : pageText("warning_e9c455")}</span>
         </div>
         <p className="min-w-0 whitespace-pre-wrap break-words text-foreground">{summary}</p>
         {item.details.some(detail => detail.label !== "Summary") ? (

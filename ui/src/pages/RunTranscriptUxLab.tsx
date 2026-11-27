@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 // token-extraction: allowlisted — intentional one-off decoration (DECISION-SHEET.md B1
 // user ruling). The bg-[...gradient...] / shadow-[...] literals in this demo/UX-lab page
 // are deliberate one-off decoration, reverted from --gradient-extract-*/--shadow-extract-*
@@ -100,6 +101,7 @@ function LiveWidgetPreview({
   mode: TranscriptMode;
   density: TranscriptDensity;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="overflow-hidden rounded-xl border border-cyan-500/25 bg-background/85 shadow-[0_20px_50px_rgba(6,182,212,0.10)]">
       <div className="border-b border-border/60 bg-cyan-500/[0.05] px-5 py-4">
@@ -122,9 +124,7 @@ function LiveWidgetPreview({
               <span>{formatDateTime(runTranscriptFixtureMeta.startedAt)}</span>
             </div>
           </div>
-          <Badge variant="outline" className="border-border/70 bg-background/70 px-2.5 py-1 text-(length:--text-micro) text-muted-foreground">
-            Open run
-            <ExternalLink className="h-3 w-3" />
+          <Badge variant="outline" className="border-border/70 bg-background/70 px-2.5 py-1 text-(length:--text-micro) text-muted-foreground">{pageText("openRun_1da8f1")}<ExternalLink className="h-3 w-3" />
           </Badge>
         </div>
         <div className="max-h-(--sz-460px) overflow-y-auto pr-1">

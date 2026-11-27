@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -58,6 +59,7 @@ function CaseDocumentDiffModal({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [leftRevisionId, setLeftRevisionId] = useState<string | null>(null);
   const [rightRevisionId, setRightRevisionId] = useState<string | null>(null);
@@ -96,7 +98,7 @@ function CaseDocumentDiffModal({
               <span className="shrink-0 rounded-full border border-red-500/30 bg-red-500/10 px-2 py-0.5 text-(length:--text-nano) font-medium uppercase tracking-(--tracking-caps) text-red-400">{translateUi("interfaceCopy.old")}</span>
               <Select value={effectiveLeftId ?? ""} onValueChange={setLeftRevisionId}>
                 <SelectTrigger aria-label="Old revision" className="min-w-0 w-full border-border/60 data-[size=default]:h-11 md:w-60 md:text-xs md:data-[size=default]:h-9">
-                  <SelectValue className="min-w-0 truncate" placeholder="Select revision" />
+                  <SelectValue className="min-w-0 truncate" placeholder={pageText("selectRevision_0a6ee4")} />
                 </SelectTrigger>
                 <SelectContent>
                   {revisions.map((revision) => (
@@ -110,8 +112,8 @@ function CaseDocumentDiffModal({
             <div className="flex min-w-0 items-center gap-2">
               <span className="shrink-0 rounded-full border border-green-500/30 bg-green-500/10 px-2 py-0.5 text-(length:--text-nano) font-medium uppercase tracking-(--tracking-caps) text-green-400">{translateUi("interfaceCopy.new")}</span>
               <Select value={effectiveRightId ?? ""} onValueChange={setRightRevisionId}>
-                <SelectTrigger aria-label="New revision" className="min-w-0 w-full border-border/60 data-[size=default]:h-11 md:w-60 md:text-xs md:data-[size=default]:h-9">
-                  <SelectValue className="min-w-0 truncate" placeholder="Select revision" />
+                <SelectTrigger aria-label={pageText("newRevision_90cadf")} className="min-w-0 w-full border-border/60 data-[size=default]:h-11 md:w-60 md:text-xs md:data-[size=default]:h-9">
+                  <SelectValue className="min-w-0 truncate" placeholder={pageText("selectRevision_0a6ee4")} />
                 </SelectTrigger>
                 <SelectContent>
                   {revisions.map((revision) => (
@@ -179,6 +181,7 @@ export function CaseRevisionRail({
   documentKey?: string;
   taskId?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const revisionsQuery = useQuery<CaseDocumentRevisions | DocumentRevision[]>({
     queryKey: taskId ? queryKeys.issues.documentRevisions(taskId, documentKey) : queryKeys.cases.revisions(caseIdentifier, documentKey),
     queryFn: () => taskId ? issuesApi.listDocumentRevisions(taskId, documentKey) : casesApi.listRevisions(caseIdentifier, documentKey),
@@ -202,7 +205,7 @@ export function CaseRevisionRail({
   }, [revisions, selectedId]);
 
   if (revisionsQuery.isLoading || revisionsView.kind === "reconnecting") {
-    return <p className="py-6 text-center text-sm text-muted-foreground">Loading revisions…</p>;
+    return <p className="py-6 text-center text-sm text-muted-foreground">{pageText("loadingRevisions_23548e")}</p>;
   }
   if (revisionsView.kind === "error") {
     return (
@@ -218,7 +221,7 @@ export function CaseRevisionRail({
     );
   }
   if (revisions.length === 0) {
-    return <p className="py-6 text-center text-sm text-muted-foreground">No revisions yet.</p>;
+    return <p className="py-6 text-center text-sm text-muted-foreground">{pageText("noRevisionsYet_1bdff6")}</p>;
   }
 
   const selected = revisions.find((r) => r.id === selectedId) ?? revisions[0]!;
@@ -228,9 +231,7 @@ export function CaseRevisionRail({
     <div className="grid gap-4 md:grid-cols-(--gtc-case-revisions)">
       <aside className="min-w-0 space-y-1">
         <div className="flex items-center justify-between gap-2 px-1">
-          <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Revisions
-          </h3>
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{pageText("revisions_2dba79")}</h3>
           {revisions.length > 1 ? (
             <Button
               type="button"

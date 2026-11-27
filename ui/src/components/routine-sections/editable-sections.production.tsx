@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { useEffect, useMemo, useState } from "react";
@@ -113,6 +114,7 @@ export function OverviewSection({
 }: {
   defaultDescriptionAnnotationsOpen?: boolean;
 } = {}) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const ctx = useRoutineDetail();
   const {
@@ -165,8 +167,8 @@ export function OverviewSection({
             recentOptionIds={recentAssigneeIds}
             placeholder={translateUi("interfaceCopy.responsible")}
             noneLabel="No responsible"
-            searchPlaceholder="Search responsible..."
-            emptyMessage="No responsible found."
+            searchPlaceholder={pageText("searchResponsible_bc9f7f")}
+            emptyMessage={pageText("noResponsibleFound_a275f8")}
             onChange={(assigneeAgentId) =>
               setEditDraft((current) => ({ ...current, assigneeAgentId }))
             }
@@ -212,8 +214,8 @@ export function OverviewSection({
             recentOptionIds={recentProjectIds}
             placeholder={translateUi("interfaceCopy.project")}
             noneLabel="No project"
-            searchPlaceholder="Search projects..."
-            emptyMessage="No projects found."
+            searchPlaceholder={pageText("searchProjects_469d78")}
+            emptyMessage={pageText("noProjectsFound_ca7870")}
             onChange={(projectId) => setEditDraft((current) => ({ ...current, projectId }))}
             onConfirm={() => descriptionEditorRef.current?.focus()}
             renderTriggerValue={(option) =>
@@ -283,7 +285,7 @@ export function OverviewSection({
               ref={descriptionEditorRef}
               value={editDraft.description}
               onChange={(description) => setEditDraft((current) => ({ ...current, description }))}
-              placeholder="Add instructions..."
+              placeholder={pageText("addInstructions_ef1a45")}
               bordered={false}
               contentClassName="min-h-(--sz-120px) text-sm leading-7"
               mentions={mentionOptions}
@@ -299,7 +301,7 @@ export function OverviewSection({
             ref={descriptionEditorRef}
             value={editDraft.description}
             onChange={(description) => setEditDraft((current) => ({ ...current, description }))}
-            placeholder="Add instructions..."
+            placeholder={pageText("addInstructions_ef1a45")}
             bordered={false}
             contentClassName="min-h-(--sz-120px) text-sm leading-7"
             mentions={mentionOptions}
@@ -335,7 +337,7 @@ export function OverviewSection({
         />
         <SummaryCard
           icon={KeyRound}
-          label="Secrets"
+          label={pageText("secrets_1e3732")}
           value={boundSecrets === 0 ? "None" : `${boundSecrets} bound`}
           hint="Manage bound secrets"
           to={() => navigateToSection("secrets")}
@@ -343,7 +345,7 @@ export function OverviewSection({
         />
         <SummaryCard
           icon={Play}
-          label="Last run"
+          label={pageText("lastRun_333c63")}
           value={lastRun ? lastRun.status.replaceAll("_", " ") : "No runs"}
           hint={lastRun ? timeAgo(lastRun.triggeredAt) : "Trigger a run"}
           to={() => navigateToSection("runs")}
@@ -418,6 +420,7 @@ function SummaryCard({
 }
 
 export function TriggersSection() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const ctx = useRoutineDetail();
   const { routine, newTrigger, setNewTrigger, createTrigger, updateTrigger, deleteTrigger, rotateTrigger, secretMessage, copySecretValue, setSecretMessage } = ctx;
@@ -452,9 +455,7 @@ export function TriggersSection() {
         >
           {addOpen ? (
             <>
-              <X className="mr-1.5 h-3.5 w-3.5" />
-              Cancel
-            </>
+              <X className="mr-1.5 h-3.5 w-3.5" />{pageText("cancel_77dfd2")}</>
           ) : (
             <>
               <Plus className="mr-1.5 h-3.5 w-3.5" />
@@ -470,7 +471,7 @@ export function TriggersSection() {
         <p className="text-sm font-medium">Add trigger</p>
         <div className="grid gap-3 md:grid-cols-2">
           <div className="space-y-1.5">
-            <Label className="text-xs">Kind</Label>
+            <Label className="text-xs">{pageText("kind_e00ac2")}</Label>
             <Select
               value={newTrigger.kind}
               onValueChange={(kind) => setNewTrigger((current) => ({ ...current, kind }))}
@@ -489,7 +490,7 @@ export function TriggersSection() {
           </div>
           {newTrigger.kind === "schedule" && (
             <div className="space-y-1.5 md:col-span-2">
-              <Label className="text-xs">Schedule</Label>
+              <Label className="text-xs">{pageText("schedule_0a8ada")}</Label>
               <ScheduleEditor
                 value={newTrigger.cronExpression}
                 onChange={(cronExpression) =>
@@ -612,6 +613,7 @@ export function TriggersSection() {
 }
 
 export function VariablesSection() {
+  const { t: pageText } = usePageTranslation("interface");
   const ctx = useRoutineDetail();
   const { editDraft, setEditDraft, navigateToSection } = ctx;
   const hasVariables = editDraft.variables.length > 0;
@@ -625,9 +627,7 @@ export function VariablesSection() {
           placeholder.
         </span>
         <Button variant="secondary" size="sm" onClick={() => navigateToSection("overview")}>
-          <Edit3 className="mr-1.5 h-3.5 w-3.5" />
-          Edit instructions
-        </Button>
+          <Edit3 className="mr-1.5 h-3.5 w-3.5" />{pageText("editInstructions_af6f86")}</Button>
       </div>
 
       {hasVariables ? (
@@ -688,6 +688,7 @@ export function SecretsSection() {
 }
 
 export function DeliverySection() {
+  const { t: pageText } = usePageTranslation("interface");
   const ctx = useRoutineDetail();
   const { editDraft, setEditDraft, routine } = ctx;
 
@@ -701,9 +702,7 @@ export function DeliverySection() {
   return (
     <div className="space-y-6">
       <div className="space-y-3">
-        <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
-          Concurrency
-        </p>
+        <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">{pageText("concurrency_2ec390")}</p>
         <RadioCardGroup
           ariaLabel="Concurrency policy"
           value={editDraft.concurrencyPolicy}
@@ -746,7 +745,7 @@ export function DeliverySection() {
           </p>
         ) : gateEnabled ? (
           <div className="space-y-2 rounded-lg border border-border p-3">
-            <Label className="text-xs font-medium">Activity scope</Label>
+            <Label className="text-xs font-medium">{pageText("activityScope_c06a04")}</Label>
             <RadioCardGroup
               ariaLabel="Activity gate scope"
               value={editDraft.activityGateScope}

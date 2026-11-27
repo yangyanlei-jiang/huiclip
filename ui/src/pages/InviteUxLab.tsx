@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 // token-extraction: allowlisted — intentional one-off decoration (DECISION-SHEET.md B1
 // user ruling). The bg-[...gradient...] / shadow-[...] literals in this demo/UX-lab page
 // are deliberate one-off decoration, reverted from --gradient-extract-*/--shadow-extract-*
@@ -194,6 +195,7 @@ function InviteSummaryPanel({
   requestedAccess: string;
   signedInLabel?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <>
       <div className="flex items-start gap-4">
@@ -210,8 +212,8 @@ function InviteSummaryPanel({
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <MetaCard label="Organization" value="Acme Robotics" />
-        <MetaCard label="Invited by" value="Board User" />
+        <MetaCard label={pageText("organization_519255")} value="Acme Robotics" />
+        <MetaCard label={pageText("invitedBy_2902cf")} value="Board User" />
         <MetaCard label="Requested access" value={requestedAccess} />
         <MetaCard label="Invite expires" value="Mar 7, 2027" />
       </div>
@@ -224,8 +226,7 @@ function InviteSummaryPanel({
       ) : null}
 
       {signedInLabel ? (
-        <div className="border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-50">
-          Signed in as <span className="font-medium">{signedInLabel}</span>.
+        <div className="border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-50">{pageText("signedInAs_a02107") + " "}<span className="font-medium">{signedInLabel}</span>.
         </div>
       ) : null}
     </>
@@ -250,6 +251,7 @@ function InlineAuthPreview({
   feedback?: { tone: "info" | "error"; text: string };
   working?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="space-y-5">
       <div>
@@ -272,9 +274,7 @@ function InlineAuthPreview({
               ? "border-zinc-100 bg-zinc-100 text-zinc-950"
               : "border-zinc-800 text-zinc-300 hover:border-zinc-600",
           )}
-        >
-          Create account
-        </button>
+        >{pageText("createAccount_aaf374")}</button>
         <button
           type="button"
           className={cn(
@@ -291,16 +291,16 @@ function InlineAuthPreview({
       <form className="space-y-4">
         {mode === "sign_up" ? (
           <label className="block text-sm">
-            <span className="mb-1 block text-zinc-400">Name</span>
+            <span className="mb-1 block text-zinc-400">{pageText("name_709a23")}</span>
             <input name="name" className={fieldClassName} defaultValue="Jane Example" readOnly />
           </label>
         ) : null}
         <label className="block text-sm">
-          <span className="mb-1 block text-zinc-400">Email</span>
+          <span className="mb-1 block text-zinc-400">{pageText("email_84add5")}</span>
           <input name="email" type="email" className={fieldClassName} defaultValue="jane@example.com" readOnly />
         </label>
         <label className="block text-sm">
-          <span className="mb-1 block text-zinc-400">Password</span>
+          <span className="mb-1 block text-zinc-400">{pageText("password_8be3c9")}</span>
           <input name="password" type="password" className={fieldClassName} defaultValue="supersecret" readOnly />
         </label>
         {feedback ? (
@@ -309,7 +309,7 @@ function InlineAuthPreview({
           </p>
         ) : null}
         <Button type="button" className="w-full rounded-none" disabled={working}>
-          {working ? "Working..." : mode === "sign_in" ? "Sign in and continue" : "Create account and continue"}
+          {working ? pageText("working_049ac8") : mode === "sign_in" ? "Sign in and continue" : "Create account and continue"}
         </Button>
       </form>
 
@@ -323,6 +323,7 @@ function InlineAuthPreview({
 }
 
 function AgentRequestPreview() {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="space-y-4">
       <div>
@@ -332,7 +333,7 @@ function AgentRequestPreview() {
         </p>
       </div>
       <label className="block text-sm">
-        <span className="mb-1 block text-zinc-400">Agent name</span>
+        <span className="mb-1 block text-zinc-400">{pageText("agentName_fc9242")}</span>
         <input className={fieldClassName} defaultValue="Acme Ops Agent" readOnly />
       </label>
       <label className="block text-sm">
@@ -344,7 +345,7 @@ function AgentRequestPreview() {
         </select>
       </label>
       <label className="block text-sm">
-        <span className="mb-1 block text-zinc-400">Capabilities</span>
+        <span className="mb-1 block text-zinc-400">{pageText("capabilities_ca09c5")}</span>
         <textarea
           className={fieldClassName}
           rows={4}
@@ -405,6 +406,7 @@ function InviteResultPreview({
   onboardingTextUrl?: string;
   joinedNow?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="mx-auto max-w-md border border-zinc-800 bg-zinc-950 p-6 text-zinc-100">
       <div className="flex items-center gap-3">
@@ -418,9 +420,7 @@ function InviteResultPreview({
       <div className="mt-4 space-y-3">
         <p className="text-sm text-zinc-400">{description}</p>
         {joinedNow ? (
-          <Button type="button" className="w-full rounded-none">
-            Open board
-          </Button>
+          <Button type="button" className="w-full rounded-none">{pageText("openBoard_34ad5e")}</Button>
         ) : (
           <>
             <div className="border border-zinc-800 p-3">
@@ -452,6 +452,7 @@ function InviteResultPreview({
 }
 
 function AuthScreenPreview({ mode, error }: { mode: "sign_in" | "sign_up"; error?: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="overflow-hidden rounded-(--rad-28) border border-border/70 bg-background shadow-[0_24px_60px_rgba(15,23,42,0.08)]">
       <div className="grid gap-px bg-border/60 md:grid-cols-2">
@@ -466,13 +467,13 @@ function AuthScreenPreview({ mode, error }: { mode: "sign_in" | "sign_up"; error
             </h3>
             <p className="mt-1 text-sm text-muted-foreground">
               {mode === "sign_in"
-                ? "Use your email and password to access this instance."
-                : "Create an account for this instance. Email confirmation is not required in v1."}
+                ? pageText("useYourEmailAndPasswordToAccessThis_c5cdb6")
+                : pageText("createAnAccountForThisInstanceEmailConfirmation_419625")}
             </p>
             <div className="mt-6 space-y-4">
               {mode === "sign_up" ? (
                 <label className="block">
-                  <span className="mb-1 block text-xs text-muted-foreground">Name</span>
+                  <span className="mb-1 block text-xs text-muted-foreground">{pageText("name_709a23")}</span>
                   <input
                     className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm"
                     defaultValue="Jane Example"
@@ -481,7 +482,7 @@ function AuthScreenPreview({ mode, error }: { mode: "sign_in" | "sign_up"; error
                 </label>
               ) : null}
               <label className="block">
-                <span className="mb-1 block text-xs text-muted-foreground">Email</span>
+                <span className="mb-1 block text-xs text-muted-foreground">{pageText("email_84add5")}</span>
                 <input
                   className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm"
                   defaultValue="jane@example.com"
@@ -489,7 +490,7 @@ function AuthScreenPreview({ mode, error }: { mode: "sign_in" | "sign_up"; error
                 />
               </label>
               <label className="block">
-                <span className="mb-1 block text-xs text-muted-foreground">Password</span>
+                <span className="mb-1 block text-xs text-muted-foreground">{pageText("password_8be3c9")}</span>
                 <input
                   className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm"
                   defaultValue="supersecret"
@@ -498,13 +499,13 @@ function AuthScreenPreview({ mode, error }: { mode: "sign_in" | "sign_up"; error
               </label>
               {error ? <p className="text-xs text-destructive">{error}</p> : null}
               <Button type="button" className="w-full">
-                {mode === "sign_in" ? "Sign In" : "Create Account"}
+                {mode === "sign_in" ? pageText("signIn_f8492c") : pageText("createAccount_eff4fd")}
               </Button>
             </div>
             <div className="mt-5 text-sm text-muted-foreground">
-              {mode === "sign_in" ? "Need an account?" : "Already have an account?"}{" "}
+              {mode === "sign_in" ? pageText("needAnAccount_111976") : pageText("alreadyHaveAnAccount_855903")}{" "}
               <span className="font-medium text-foreground underline underline-offset-2">
-                {mode === "sign_in" ? "Create one" : "Sign in"}
+                {mode === "sign_in" ? pageText("createOne_7dbf3d") : pageText("signIn_ada2e9")}
               </span>
             </div>
           </div>
@@ -526,6 +527,7 @@ function AuthScreenPreview({ mode, error }: { mode: "sign_in" | "sign_up"; error
 }
 
 function CompanyInvitesPreview() {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="grid gap-5 xl:grid-cols-(--gtc-38)">
       <Card className="rounded-(--rad-28) shadow-none">
@@ -560,9 +562,7 @@ function CompanyInvitesPreview() {
                     <span className="flex flex-wrap items-center gap-2">
                       <span className="text-sm font-medium">{option.label}</span>
                       {option.value === "operator" ? (
-                        <Badge variant="outline" className="border-border text-muted-foreground">
-                          Default
-                        </Badge>
+                        <Badge variant="outline" className="border-border text-muted-foreground">{pageText("default_808d7d")}</Badge>
                       ) : null}
                     </span>
                     <span className="block max-w-2xl text-sm text-muted-foreground">{option.description}</span>
@@ -591,9 +591,7 @@ function CompanyInvitesPreview() {
                 </div>
               </div>
               <div className="inline-flex items-center gap-1 text-xs font-medium text-foreground">
-                <Check className="h-3.5 w-3.5" />
-                Copied
-              </div>
+                <Check className="h-3.5 w-3.5" />{pageText("copied_8e3df4")}</div>
             </div>
             <button
               type="button"
@@ -630,12 +628,12 @@ function CompanyInvitesPreview() {
             <table className="min-w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="px-5 py-3 font-medium text-muted-foreground">State</th>
-                  <th className="px-5 py-3 font-medium text-muted-foreground">Role</th>
-                  <th className="px-5 py-3 font-medium text-muted-foreground">Invited by</th>
-                  <th className="px-5 py-3 font-medium text-muted-foreground">Created</th>
+                  <th className="px-5 py-3 font-medium text-muted-foreground">{pageText("state_a72502")}</th>
+                  <th className="px-5 py-3 font-medium text-muted-foreground">{pageText("role_c3f104")}</th>
+                  <th className="px-5 py-3 font-medium text-muted-foreground">{pageText("invitedBy_2902cf")}</th>
+                  <th className="px-5 py-3 font-medium text-muted-foreground">{pageText("created_accf40")}</th>
                   <th className="px-5 py-3 font-medium text-muted-foreground">Join request</th>
-                  <th className="px-5 py-3 text-right font-medium text-muted-foreground">Action</th>
+                  <th className="px-5 py-3 text-right font-medium text-muted-foreground">{pageText("action_97c89a")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -663,11 +661,9 @@ function CompanyInvitesPreview() {
                     </td>
                     <td className="px-5 py-3 text-right align-top">
                       {invite.action === "Revoke" ? (
-                        <Button type="button" size="sm" variant="outline">
-                          Revoke
-                        </Button>
+                        <Button type="button" size="sm" variant="outline">{pageText("revoke_0be720")}</Button>
                       ) : (
-                        <span className="text-xs text-muted-foreground">Inactive</span>
+                        <span className="text-xs text-muted-foreground">{pageText("inactive_09af57")}</span>
                       )}
                     </td>
                   </tr>

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -137,6 +138,7 @@ export function IssueFiltersPopover({
   presentation?: "legacy" | "streamlined" | "refreshed";
   inboxScopeFilters?: InboxScopeFilters;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const streamlined = presentation === "streamlined";
   const refreshed = presentation === "refreshed";
@@ -193,9 +195,9 @@ export function IssueFiltersPopover({
   const popover = (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant={buttonVariant} size={iconOnly ? "icon" : "sm"} className={`text-xs ${iconOnly ? "relative h-8 w-8 shrink-0" : ""} ${activeFilterCount > 0 ? "text-blue-600 dark:text-blue-400" : ""}`} title={iconOnly ? (activeFilterCount > 0 ? `Filters: ${activeFilterCount}` : "Filter") : undefined}>
+        <Button variant={buttonVariant} size={iconOnly ? "icon" : "sm"} className={`text-xs ${iconOnly ? "relative h-8 w-8 shrink-0" : ""} ${activeFilterCount > 0 ? "text-blue-600 dark:text-blue-400" : ""}`} title={iconOnly ? (activeFilterCount > 0 ? `Filters: ${activeFilterCount}` : pageText("filter_d7decf")) : undefined}>
           <Filter className={iconOnly ? "h-3.5 w-3.5" : "h-3.5 w-3.5 sm:h-3 sm:w-3 sm:mr-1"} />
-          {!iconOnly && <span className="hidden sm:inline">{activeFilterCount > 0 ? `Filters: ${activeFilterCount}` : "Filter"}</span>}
+          {!iconOnly && <span className="hidden sm:inline">{activeFilterCount > 0 ? `Filters: ${activeFilterCount}` : pageText("filter_d7decf")}</span>}
           {!iconOnly && activeFilterCount > 0 ? <span className="ml-0.5 text-(length:--text-nano) font-medium sm:hidden">{activeFilterCount}</span> : null}
           {iconOnly && activeFilterCount > 0 ? <span className="absolute -right-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-blue-600 text-(length:--text-nano) font-bold text-white">{activeFilterCount}</span> : null}
           {!iconOnly && activeFilterCount > 0 ? (
@@ -467,9 +469,9 @@ export function IssueFiltersPopover({
             <div className="min-w-0 space-y-3">
               {labels && labels.length > 0 ? (
                 <div className="space-y-1">
-                  <span className="text-xs text-muted-foreground">Labels</span>
+                  <span className="text-xs text-muted-foreground">{pageText("labels_222898")}</span>
                   {streamlined && labels.length > SEARCHABLE_FILTER_THRESHOLD ? (
-                    <FilterOptionSearch value={labelSearch} onChange={setLabelSearch} label="Labels" />
+                    <FilterOptionSearch value={labelSearch} onChange={setLabelSearch} label={pageText("labels_222898")} />
                   ) : null}
                   <div data-filter-options="labels" className={streamlined ? "space-y-0.5" : "max-h-32 space-y-0.5 overflow-y-auto"}>
                     {(streamlined ? visibleLabels : labels).map((label) => (
@@ -521,7 +523,7 @@ export function IssueFiltersPopover({
               ) : null}
 
               {enableLiveRunsFilter || enableAgentCreatedVisibilityFilter || enableRoutineTasksFilter ? <div className="space-y-1" data-filter-options="visibility">
-                <span className="text-xs text-muted-foreground">Visibility</span>
+                <span className="text-xs text-muted-foreground">{pageText("visibility_7d9ff4")}</span>
                 {enableLiveRunsFilter ? <label className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1 hover:bg-accent/50">
                   <Checkbox
                     checked={state.liveOnly}

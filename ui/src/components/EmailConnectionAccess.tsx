@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Agent } from "@paperclipai/shared";
 import { describeError } from "@/api/errors";
@@ -16,6 +17,7 @@ export function EmailConnectionAccess({
   connectionId: string;
   agents: Agent[];
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const cache = useQueryClient();
   const grants = useQuery({
     queryKey: queryKeys.tools.connectionGrants(connectionId),
@@ -48,7 +50,7 @@ export function EmailConnectionAccess({
       />
     );
   if (grants.isLoading || installs.isLoading || grantsView.kind === "reconnecting" || installsView.kind === "reconnecting")
-    return <p className="text-sm text-muted-foreground">Loading access…</p>;
+    return <p className="text-sm text-muted-foreground">{pageText("loadingAccess_d4fbca")}</p>;
   const active = grants.data?.grants.filter((g) => g.status === "active") ?? [];
   const everyone = active.some((g) => g.kind === "organization");
   const personal = active.find((g) => g.kind === "user");

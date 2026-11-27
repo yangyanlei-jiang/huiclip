@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -22,6 +23,7 @@ import { StatusCardDetailDrawer } from "./StatusCardDetailDrawer";
 import type { StatusCardView } from "./types";
 
 export function StatusCards() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -123,9 +125,7 @@ export function StatusCards() {
         <div className="flex items-center gap-3">
           <h1 className="text-xl font-bold">{translateUi("interfaceCopy.status")}</h1>
           <Badge variant="secondary" className="gap-1">
-            <FlaskConical className="h-3 w-3" />
-            Experimental
-          </Badge>
+            <FlaskConical className="h-3 w-3" />{pageText("experimental_b718f8")}</Badge>
         </div>
         <div className="flex items-center gap-4">
           {showCostMeter ? (

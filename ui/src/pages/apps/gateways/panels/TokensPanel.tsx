@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { type FormEvent, type ReactNode, useEffect, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -68,12 +69,13 @@ function TokenField({ label, value }: { label: string; value: ReactNode }) {
 }
 
 function ExpiryValue({ token }: { token: ToolMcpGatewayToken }) {
+  const { t: pageText } = usePageTranslation("interface");
   const expiresAt = toDate(token.expiresAt);
   if (!expiresAt) return <>No expiry</>;
   if (expiresAt.getTime() <= Date.now()) {
     return <><span className="font-medium text-foreground">Expired</span> <RelativeTime value={token.expiresAt} /></>;
   }
-  return <>Expires <RelativeTime value={token.expiresAt} /></>;
+  return <>{pageText("expires_a99be3") + " "}<RelativeTime value={token.expiresAt} /></>;
 }
 
 export function TokensPanel({
@@ -85,6 +87,7 @@ export function TokensPanel({
   gateway: ToolMcpGatewayWithTokens;
   onTokenCreated?: (token: ToolMcpGatewayTokenCreated) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToast();
@@ -246,9 +249,7 @@ export function TokensPanel({
                 It is now available in Client snippets for a copy-ready configuration.
               </div>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => setCreated(null)} aria-label="Dismiss new token">
-              Dismiss
-            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setCreated(null)} aria-label="Dismiss new token">{pageText("dismiss_70afe9")}</Button>
           </div>
           <div className="flex items-center gap-2">
             <code className="min-w-0 flex-1 truncate rounded bg-muted px-3 py-2 font-mono text-xs text-foreground">
@@ -256,11 +257,9 @@ export function TokensPanel({
             </code>
             {revealed ? (
               <Button variant="outline" size="sm" onClick={() => void copyToken(created.token)}>
-                <Copy className="mr-1 h-3.5 w-3.5" />
-                Copy
-              </Button>
+                <Copy className="mr-1 h-3.5 w-3.5" />{pageText("copy_af74f7")}</Button>
             ) : (
-              <Button variant="outline" size="sm" onClick={() => setRevealed(true)}>Show</Button>
+              <Button variant="outline" size="sm" onClick={() => setRevealed(true)}>{pageText("show_d97d1e")}</Button>
             )}
           </div>
         </div>
@@ -318,9 +317,7 @@ export function TokensPanel({
                                 size="sm"
                                 className="h-7 px-2 text-xs text-destructive hover:text-destructive"
                                 onClick={() => startRevoke(token)}
-                              >
-                                Revoke
-                              </Button>
+                              >{pageText("revoke_0be720")}</Button>
                             ) : null}
                           </td>
                         </tr>
@@ -354,9 +351,7 @@ export function TokensPanel({
                           size="sm"
                           className="mt-3 w-full text-xs text-destructive hover:text-destructive"
                           onClick={() => startRevoke(token)}
-                        >
-                          Revoke
-                        </Button>
+                        >{pageText("revoke_0be720")}</Button>
                       ) : null}
                     </div>
                   );
@@ -366,8 +361,7 @@ export function TokensPanel({
               {pageCount > 1 ? (
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-xs text-muted-foreground">
-                    Page {historyPage} of {pageCount} · {tokens.length} tokens
-                  </p>
+                    Page {historyPage} of {pageCount} · {tokens.length}{" " + pageText("tokens_339143")}</p>
                   <div className="flex items-center gap-1">
                     <Button
                       variant="ghost"

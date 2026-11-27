@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useLocation } from "@/lib/router";
 import { ChatDetailSidebar } from "./chat/ChatDetailSidebar";
@@ -17,6 +18,7 @@ import { contextualSidebarStyles } from "./contextual-sidebar-styles";
  * developer surfaces remain hidden unless one is explicitly enabled.
  */
 export function AppsSidebar() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { pathname } = useLocation();
   const reviewCount = useReviewCount();
@@ -35,12 +37,12 @@ export function AppsSidebar() {
   return (
     <aside className="w-full h-full min-h-0 border-r border-border bg-background flex flex-col">
       <nav
-        aria-label="Connectors"
+        aria-label={pageText("connectors_4b1e95")}
         data-slot="contextual-sidebar-nav"
         className={contextualSidebarStyles.nav}
       >
         <div data-slot="contextual-sidebar-group" className={contextualSidebarStyles.group}>
-          <SidebarNavItem to="/apps" label="Browse" icon={Store} end />
+          <SidebarNavItem to="/apps" label={pageText("browse_2f3b5c")} icon={Store} end />
           <SidebarNavItem
             to="/apps/review"
             label={translateUi("interfaceCopy.review")}

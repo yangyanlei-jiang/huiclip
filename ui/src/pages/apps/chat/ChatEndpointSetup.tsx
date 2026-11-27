@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { SpekoProviderSetup } from "@/components/voice/SpekoProviderSetup";
 import { NativeVoiceConversation } from "@/components/voice/NativeVoiceConversation";
@@ -119,6 +120,7 @@ export function ChatConnectionPurpose({ provider, onChat, onTools, slackLabels }
   onTools: () => void;
   slackLabels?: string[];
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { setBreadcrumbs } = useBreadcrumbs();
   useEffect(() => {
     setBreadcrumbs([{ label: "Connectors", href: "/apps" }, { label: "Choose connection" }]);
@@ -141,9 +143,7 @@ export function ChatConnectionPurpose({ provider, onChat, onTools, slackLabels }
           >
             <AgentAvatar size={48} />
             <span>
-              <span className="block text-sm font-semibold">
-                Chat with an agent
-              </span>
+              <span className="block text-sm font-semibold">{pageText("chatWithAnAgent_b5e325")}</span>
               <span className="mt-1 block text-sm text-muted-foreground">
                 People in {providerNames[provider]} can start and continue
                 Paperclip tasks.
@@ -180,6 +180,7 @@ export function ChatEndpointSetup() {
 }
 
 function ChatSdkEndpointSetup() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { userId, settled: identitySettled } = useAccountIdentity();
   const [params, setParams] = useSearchParams();
@@ -593,9 +594,7 @@ function ChatSdkEndpointSetup() {
               >
                 {createEndpoint.isPending && (
                   <Loader2 className="h-4 w-4 animate-spin" />
-                )}
-                Continue
-              </Button>
+                )}{pageText("continue_2e0262")}</Button>
             </SetupWizardFooter>
           </>
         ) : null}
@@ -679,11 +678,10 @@ function ChatSdkEndpointSetup() {
                 <span>You can now talk to {selectedAgent?.name ?? endpoint.assignedAgentName} in Slack</span>
                 <img src="/brands/apps/slack.svg" alt="" aria-hidden="true" className="size-6" />
               </p>
-              <Button asChild variant="link"><a href={slackConversationUrl(endpoint, identitySettled ? userId : null)} target="_blank" rel="noopener noreferrer">Open Slack <ExternalLink className="size-4" /></a></Button>
+              <Button asChild variant="link"><a href={slackConversationUrl(endpoint, identitySettled ? userId : null)} target="_blank" rel="noopener noreferrer">{pageText("openSlack_eec851") + " "}<ExternalLink className="size-4" /></a></Button>
             </div>
             <Button disabled={testConnection.isPending} onClick={finishSetup}>
-              {testConnection.isPending && <Loader2 className="size-4 animate-spin" />}Done
-            </Button>
+              {testConnection.isPending && <Loader2 className="size-4 animate-spin" />}{pageText("done_e9b450")}</Button>
           </div> : <TryStep
             endpointId={endpoint.id}
             provider={provider}
@@ -710,9 +708,7 @@ function ChatSdkEndpointSetup() {
           />
         )}
         {step !== 0 && !isSlack && provider !== "speko" && <div className="flex justify-start">
-          <Button className="text-muted-foreground" variant="ghost" onClick={() => navigate("/apps")}>
-            Save &amp; exit
-          </Button>
+          <Button className="text-muted-foreground" variant="ghost" onClick={() => navigate("/apps")}>{pageText("saveExit_fc5599")}</Button>
         </div>}
       </div>
     </div>
@@ -763,6 +759,7 @@ function ProviderConnectStep({
     values?: Record<string, string>,
   ) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { userId, settled: identitySettled } = useAccountIdentity();
   const { pushToast } = useToast();
@@ -950,7 +947,7 @@ function ProviderConnectStep({
     return (
       <div className="space-y-5">
         <div>
-          <h1 className="text-xl font-bold">Connect {agentName} to Discord</h1>
+          <h1 className="text-xl font-bold">{pageText("connect_b65463") + " "}{agentName} to Discord</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {repairing
               ? "Reconnect verifies this same Discord application and server installation. It does not add or remove the bot from the server. Leave fields blank to reuse saved credentials."
@@ -1021,7 +1018,7 @@ function ProviderConnectStep({
     return (
       <div className="space-y-5">
         <div>
-          <h1 className="text-xl font-bold">Create {agentName} in Telegram</h1>
+          <h1 className="text-xl font-bold">{pageText("create_6e157c") + " "}{agentName} in Telegram</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {repairing
               ? "Reconnect verifies this same BotFather bot and automatically refreshes its Paperclip webhook and command menu. It does not recreate the bot or change its chat memberships. Leave the token blank to reuse the saved credential."
@@ -1076,8 +1073,7 @@ function ProviderConnectStep({
     return (
       <div className="space-y-5">
         <div>
-          <h1 className="text-xl font-bold">
-            Connect {agentName} to Microsoft Teams
+          <h1 className="text-xl font-bold">{pageText("connect_b65463") + " "}{agentName} to Microsoft Teams
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {repairing
@@ -1191,7 +1187,7 @@ function ProviderConnectStep({
               <strong>New app</strong>. Under{" "}
               <strong>Configure · App features · Bot</strong>, add an existing
               bot using the same Application ID; enable{" "}
-              <strong>Personal</strong>, <strong>Team</strong>, and{" "}
+              <strong>Personal</strong>, <strong>{pageText("team_218887")}</strong>, and{" "}
               <strong>Group chat</strong> scopes plus file support. Under{" "}
               <strong>Configure · Permissions</strong>, add the two RSC{" "}
               <strong>{translateUi("interfaceCopy.application")}</strong> permissions shown below. Complete the
@@ -1318,7 +1314,7 @@ function ProviderConnectStep({
               keep <strong>Enable SSL verification</strong> selected.
             </li>
             <li>
-              Under Repository permissions, set <strong>Issues</strong> and{" "}
+              Under Repository permissions, set <strong>{pageText("issues_30ce4c")}</strong> and{" "}
               <strong>Pull requests</strong> to{" "}
               <strong>Read &amp; write</strong>. Leave every other permission at
               its default; Metadata remains read-only.
@@ -1332,8 +1328,7 @@ function ProviderConnectStep({
               <code>installation_repositories</code> to every GitHub App
               automatically; they are not selectable here.
             </li>
-            <li>
-              Choose <strong>Only on this account</strong>, create the App, copy
+            <li>{pageText("choose_78b7c9") + " "}<strong>Only on this account</strong>, create the App, copy
               its App ID, generate one private key, then install it on the
               selected repositories.
             </li>
@@ -1542,7 +1537,7 @@ function ProviderConnectStep({
     );
   const slackRequestUrlInstructions = <ol className="list-decimal space-y-2 pl-5 text-sm">
       <li><a className="underline underline-offset-4" href={endpoint.setup?.slackRegistration?.appId ? `https://api.slack.com/apps/${encodeURIComponent(endpoint.setup.slackRegistration.appId)}/event-subscriptions` : "https://api.slack.com/apps"} target="_blank" rel="noopener noreferrer">Open Slack app Settings <ExternalLink className="inline size-3" /></a> and choose <strong>{slackApp.appName}</strong>.</li>
-      <li>Choose <strong>Event Subscriptions</strong>.</li>
+      <li>{pageText("choose_78b7c9") + " "}<strong>Event Subscriptions</strong>.</li>
       <li>Beside the prefilled <strong>Request URL</strong>, click <strong>{translateUi("interfaceCopy.retry")}</strong> if it isn&apos;t verified. Save changes if Slack asks.</li>
     </ol>;
   if (slackStage === "finish")
@@ -1552,7 +1547,7 @@ function ProviderConnectStep({
           <h1 className="text-xl font-bold">{automaticSlack ? "Send a message to your agent" : "Verify Slack connection"}</h1>
           {!automaticSlack && <p className="mt-1 text-sm text-muted-foreground">Slack needs to confirm that it can reach your Paperclip instance.</p>}
         </div>
-        {automaticSlack ? <Button asChild variant="outline"><a href={slackConversationUrl(endpoint, identitySettled ? userId : null)} target="_blank" rel="noopener noreferrer">Open Slack <ExternalLink className="size-4" /></a></Button> : slackRequestUrlInstructions}
+        {automaticSlack ? <Button asChild variant="outline"><a href={slackConversationUrl(endpoint, identitySettled ? userId : null)} target="_blank" rel="noopener noreferrer">{pageText("openSlack_eec851") + " "}<ExternalLink className="size-4" /></a></Button> : slackRequestUrlInstructions}
         {endpoint.setup?.webhookVerifiedAt ? (
           <p role="status" className="flex items-center gap-2 text-sm">
             <CheckCircle2 className="size-4 text-(--status-task-done)" />
@@ -1571,13 +1566,11 @@ function ProviderConnectStep({
           {endpointValue("Paperclip webhook URL", endpoint.setup?.webhookUrl)}
         </SlackSetupAdvanced>
         <div className="flex items-center justify-between gap-3">
-          <Button variant="ghost" className="text-muted-foreground" onClick={() => navigate("/apps")}>Save &amp; exit</Button>
+          <Button variant="ghost" className="text-muted-foreground" onClick={() => navigate("/apps")}>{pageText("saveExit_fc5599")}</Button>
           {(!automaticSlack || endpoint.setup?.webhookVerifiedAt) && <Button disabled={pending || !endpoint.setup?.webhookVerifiedAt} onClick={() =>
             endpoint.setup?.step === "provider_setup" ? onAction("verify") : onSlackVerificationContinue()
           }>
-            {pending && <Loader2 className="size-4 animate-spin" />}
-            Continue
-          </Button>}
+            {pending && <Loader2 className="size-4 animate-spin" />}{pageText("continue_2e0262")}</Button>}
         </div>
       </div>
     );
@@ -1653,9 +1646,7 @@ function ProviderConnectStep({
           </div>
         </div>
         {!automaticSlack && <div className="flex flex-wrap items-center justify-between gap-3 pt-3">
-          <Button variant="ghost" className="text-muted-foreground" onClick={() => void saveSlackAndExit()}>
-            Save &amp; exit
-          </Button>
+          <Button variant="ghost" className="text-muted-foreground" onClick={() => void saveSlackAndExit()}>{pageText("saveExit_fc5599")}</Button>
           <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
             <Button variant="outline" disabled={openingSlackApp || !endpoint.setup?.webhookUrl || !slackValidation.success} onClick={onSlackAppCreated}>
               I already created the app
@@ -1708,7 +1699,7 @@ function ProviderConnectStep({
                 Open Slack app Settings <ExternalLink className="inline size-3" />
               </a> and choose <strong>{slackApp.appName}</strong>.
             </li>
-            <li>Choose <strong>OAuth &amp; Permissions</strong></li>
+            <li>{pageText("choose_78b7c9") + " "}<strong>OAuth &amp; Permissions</strong></li>
             <li>Copy and paste your <strong>Bot OAuth Token</strong></li>
           </ul>
           <Input
@@ -1734,7 +1725,7 @@ function ProviderConnectStep({
                 Open Slack app Settings <ExternalLink className="inline size-3" />
               </a> and choose <strong>{slackApp.appName}</strong>.
             </li>
-            <li>Choose <strong>Basic Information</strong></li>
+            <li>{pageText("choose_78b7c9") + " "}<strong>Basic Information</strong></li>
             <li>Copy and paste your <strong>Signing Secret</strong></li>
           </ul>
           <Input
@@ -1753,9 +1744,7 @@ function ProviderConnectStep({
           )}
         </section>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <Button variant="ghost" className="text-muted-foreground" onClick={() => navigate("/apps")}>
-            Save &amp; exit
-          </Button>
+          <Button variant="ghost" className="text-muted-foreground" onClick={() => navigate("/apps")}>{pageText("saveExit_fc5599")}</Button>
           <Button
             className="ml-auto"
             disabled={
@@ -1768,7 +1757,7 @@ function ProviderConnectStep({
               : onAction(repairing || slackCredentialsSaved ? "reconnect" : "configure", credentials)}
           >
             {pending && <Loader2 className="h-4 w-4 animate-spin" />}
-            {continueWithSavedSlackCredentials ? "Continue" : repairing || slackCredentialsSaved ? "Reconnect Slack app" : "Connect Slack app"}
+            {continueWithSavedSlackCredentials ? pageText("continue_2e0262") : repairing || slackCredentialsSaved ? "Reconnect Slack app" : "Connect Slack app"}
           </Button>
         </div>
       </div>}
@@ -1805,6 +1794,7 @@ function TryStep({
   onTest: () => void;
   onSaveExit: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [commandCopied, setCommandCopied] = useState(false);
   const [commandCopyError, setCommandCopyError] = useState(false);
   const principalsQuery = useQuery({
@@ -1956,13 +1946,13 @@ function TryStep({
       {provider === "slack" ? (
         <>
           <ol className="list-decimal space-y-4 pl-5 text-sm">
-            <li>{slackAccount?.status === "linked" ? <Button asChild variant="outline"><a href={providerUrl ?? "https://app.slack.com"} target="_blank" rel="noopener noreferrer">{slackAccount.dmChannelId ? "Open your Slack DM" : "Open Slack"}<ExternalLink /></a></Button> : <>Open a channel and invite {botMention} if needed.</>}</li>
+            <li>{slackAccount?.status === "linked" ? <Button asChild variant="outline"><a href={providerUrl ?? "https://app.slack.com"} target="_blank" rel="noopener noreferrer">{slackAccount.dmChannelId ? "Open your Slack DM" : pageText("openSlack_eec851")}<ExternalLink /></a></Button> : <>Open a channel and invite {botMention} if needed.</>}</li>
             <li>
               <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-3">
                 <code>{slackTestMessage}</code>
                 <Button size="sm" variant="ghost" onClick={() => {
                   void copyTextToClipboard(slackTestMessage).then(() => { setCommandCopied(true); setCommandCopyError(false); }, () => setCommandCopyError(true));
-                }}><Copy className="size-4" />{commandCopied ? "Copied" : "Copy message"}</Button>
+                }}><Copy className="size-4" />{commandCopied ? pageText("copied_8e3df4") : pageText("copyMessage_26902e")}</Button>
               </div>
               {slackAccount?.status !== "linked" && <p className="mt-2 text-muted-foreground">Select the bot from Slack’s @mention suggestions.</p>}
             </li>
@@ -1970,7 +1960,7 @@ function TryStep({
           </ol>
           {commandCopyError && <p role="alert" className="text-sm text-destructive">Couldn&apos;t copy. Select and copy the command above.</p>}
           <SetupWizardFooter onSaveExit={onSaveExit} disabled={pending}>
-            <Button disabled={pending} onClick={onTest}>{pending && <Loader2 className="size-4 animate-spin" />}Done</Button>
+            <Button disabled={pending} onClick={onTest}>{pending && <Loader2 className="size-4 animate-spin" />}{pageText("done_e9b450")}</Button>
           </SetupWizardFooter>
         </>
       ) : <>
@@ -1980,8 +1970,7 @@ function TryStep({
       <div className="flex flex-wrap gap-2">
         {providerUrl && (
           <Button asChild variant="outline">
-            <a href={providerUrl} target="_blank" rel="noopener noreferrer">
-              Open {providerNames[provider]} <ExternalLink />
+            <a href={providerUrl} target="_blank" rel="noopener noreferrer">{pageText("open_cf9b77") + " "}{providerNames[provider]} <ExternalLink />
             </a>
           </Button>
         )}

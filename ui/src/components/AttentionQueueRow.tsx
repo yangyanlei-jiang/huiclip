@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { memo, useState, type KeyboardEvent, type ReactNode } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -612,6 +613,7 @@ function ThumbnailStack({ images }: { images: AttentionDetailImage[] }) {
  * links through to the issue where the full set lives.
  */
 function ExpandedImages({ images, issueHref }: { images: AttentionDetailImage[]; issueHref: string | null }) {
+  const { t: pageText } = usePageTranslation("interface");
   const visible = images.slice(0, 3);
   const extra = images.length - visible.length;
   return (
@@ -656,16 +658,13 @@ function ExpandedImages({ images, issueHref }: { images: AttentionDetailImage[];
           onClick={(e) => e.stopPropagation()}
           className="flex h-32 w-24 flex-col items-center justify-center rounded-md border border-dashed border-border bg-muted/40 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-ring focus-visible:ring-(length:--rad-3) focus-visible:outline-none"
         >
-          <span className="text-base font-semibold">{extra} more</span>
-          <span className="mt-0.5 inline-flex items-center gap-1 text-(length:--text-nano)">
-            View issue
-            <ExternalLink className="h-3 w-3" />
+          <span className="text-base font-semibold">{extra}{" " + pageText("more_e7c95b")}</span>
+          <span className="mt-0.5 inline-flex items-center gap-1 text-(length:--text-nano)">{pageText("viewIssue_c9104e")}<ExternalLink className="h-3 w-3" />
           </span>
         </Link>
       ) : (
         <span className="flex h-32 w-24 items-center justify-center rounded-md border border-dashed border-border bg-muted/40 text-sm font-semibold text-muted-foreground">
-          {extra} more
-        </span>
+          {extra}{" " + pageText("more_e7c95b")}</span>
       ))}
     </div>
   );
@@ -673,6 +672,7 @@ function ExpandedImages({ images, issueHref }: { images: AttentionDetailImage[];
 
 /** Snooze submenu: presets + a custom date-time (plan §6). */
 function SnoozeSubmenu({ onSnooze }: { onSnooze: (snoozedUntil: string) => void }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [customValue, setCustomValue] = useState("");
   const applyCustom = () => {
     if (!customValue) return;
@@ -700,9 +700,7 @@ function SnoozeSubmenu({ onSnooze }: { onSnooze: (snoozedUntil: string) => void 
           onKeyDown={(e) => e.stopPropagation()}
           onClick={(e) => e.stopPropagation()}
         >
-          <span className="text-(length:--text-nano) font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-            Custom
-          </span>
+          <span className="text-(length:--text-nano) font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{pageText("custom_081ae3")}</span>
           <input
             type="datetime-local"
             value={customValue}
@@ -829,6 +827,7 @@ function ResolverFooter({ toggle, children }: { toggle: ReactNode; children: Rea
 }
 
 function ApprovalResolver({ item, companyId, toggle }: { item: AttentionItem; companyId: string; toggle: ReactNode }) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const [note, setNote] = useState("");
   const invalidate = () => {
@@ -861,23 +860,18 @@ function ApprovalResolver({ item, companyId, toggle }: { item: AttentionItem; co
       />
       <ResolverFooter toggle={toggle}>
         <Button size="sm" variant="outline" onClick={() => revise.mutate()} disabled={pending}>
-          {revise.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-          Request revision
-        </Button>
+          {revise.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}{pageText("requestRevision_19b61d")}</Button>
         <Button size="sm" variant="destructive" onClick={() => reject.mutate()} disabled={pending}>
-          {reject.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-          Reject
-        </Button>
+          {reject.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}{pageText("reject_2b03b5")}</Button>
         <Button size="sm" onClick={() => approve.mutate()} disabled={pending}>
-          {approve.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-          Approve
-        </Button>
+          {approve.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}{pageText("approve_7b2c7f")}</Button>
       </ResolverFooter>
     </>
   );
 }
 
 function JoinRequestResolver({ item, companyId, toggle }: { item: AttentionItem; companyId: string; toggle: ReactNode }) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: queryKeys.attention(companyId) });
@@ -896,13 +890,9 @@ function JoinRequestResolver({ item, companyId, toggle }: { item: AttentionItem;
   return (
     <ResolverFooter toggle={toggle}>
       <Button size="sm" variant="destructive" onClick={() => reject.mutate()} disabled={pending}>
-        {reject.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-        Reject
-      </Button>
+        {reject.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}{pageText("reject_2b03b5")}</Button>
       <Button size="sm" onClick={() => approve.mutate()} disabled={pending}>
-        {approve.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-        Approve
-      </Button>
+        {approve.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}{pageText("approve_7b2c7f")}</Button>
     </ResolverFooter>
   );
 }

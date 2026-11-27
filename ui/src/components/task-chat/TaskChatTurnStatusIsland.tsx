@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useId, useState } from "react";
 import {
   CheckCircle2,
@@ -221,6 +222,7 @@ const ISLAND_CLASS_NAME = "mx-auto flex min-h-10 max-w-(--sz-turn-status-island)
 const ROW_BUTTON_CLASS_NAME = "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm text-muted-foreground hover:bg-accent/50 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 function PlanRow({ row, onShowAll }: { row: TaskChatTurnPlanRow; onShowAll: () => void }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (row.kind === "earlier") {
     return (
       <li>
@@ -228,7 +230,7 @@ function PlanRow({ row, onShowAll }: { row: TaskChatTurnPlanRow; onShowAll: () =
           {row.allCompleted
             ? <CheckCircle2 className="size-4 shrink-0 text-(--status-task-icon-done)" aria-hidden />
             : <Circle className="size-4 shrink-0" aria-hidden />}
-          <span>{row.count} earlier {row.count === 1 ? "step" : "steps"}{row.allCompleted ? " done" : ""}</span>
+          <span>{row.count}{" " + pageText("earlier_f12e99") + " "}{row.count === 1 ? "step" : "steps"}{row.allCompleted ? " " + pageText("done_e5fd9c") : ""}</span>
         </button>
       </li>
     );
@@ -238,7 +240,7 @@ function PlanRow({ row, onShowAll }: { row: TaskChatTurnPlanRow; onShowAll: () =
       <li>
         <button type="button" className={ROW_BUTTON_CLASS_NAME} onClick={onShowAll} data-testid="task-chat-turn-plan-more">
           <Circle className="size-4 shrink-0 opacity-0" aria-hidden />
-          <span>+{row.count} more {row.count === 1 ? "step" : "steps"}</span>
+          <span>+{row.count}{" " + pageText("more_e7c95b") + " "}{row.count === 1 ? "step" : "steps"}</span>
         </button>
       </li>
     );

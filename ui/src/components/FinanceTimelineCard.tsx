@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type { FinanceEvent } from "@paperclipai/shared";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,6 +19,7 @@ export function FinanceTimelineCard({
   rows,
   emptyMessage = "No financial events recorded in this period. Events appear when reported through the API, CLI, or a supported integration.",
 }: FinanceTimelineCardProps) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <Card>
       <CardHeader className="px-4 pt-4 pb-1">
@@ -59,7 +61,7 @@ export function FinanceTimelineCard({
                 <div className="text-right tabular-nums">
                   <div className="text-sm font-semibold">{formatCents(row.amountCents, row.currency)}</div>
                   <div className="text-xs text-muted-foreground">{row.currency}</div>
-                  {row.estimated ? <div className="text-(length:--text-micro) uppercase tracking-(--tracking-eyebrow) text-amber-600">estimated</div> : null}
+                  {row.estimated ? <div className="text-(length:--text-micro) uppercase tracking-(--tracking-eyebrow) text-amber-600">{pageText("estimated_781012")}</div> : null}
                 </div>
               </div>
             </div>

@@ -1,3 +1,5 @@
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import {
   useCallback,
@@ -475,6 +477,7 @@ function EnvironmentCustomImageBrowserTerminal({
   autoConnect?: boolean;
   sessionId: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [connectionState, setConnectionState] = useState<CustomImageTerminalConnectionState>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const terminalElementRef = useRef<HTMLDivElement | null>(null);
@@ -746,9 +749,7 @@ function EnvironmentCustomImageBrowserTerminal({
         </div>
         <div className="flex items-center gap-2">
           {terminalInteractive ? (
-            <Button size="sm" variant="ghost" onClick={disconnectTerminal}>
-              Disconnect
-            </Button>
+            <Button size="sm" variant="ghost" onClick={disconnectTerminal}>{pageText("disconnect_ed28e0")}</Button>
           ) : (
             <Button
               size="sm"
@@ -757,7 +758,7 @@ function EnvironmentCustomImageBrowserTerminal({
               disabled={connectionState === "connecting"}
             >
               <Terminal className="mr-1.5 h-3.5 w-3.5" />
-              {connectionState === "closed" || connectionState === "error" ? "Reconnect" : "Open terminal"}
+              {connectionState === "closed" || connectionState === "error" ? pageText("reconnect_6988b1") : "Open terminal"}
             </Button>
           )}
         </div>
@@ -870,6 +871,7 @@ function EnvironmentImageTemplatePanel({
   providerCapability: EnvironmentProviderCapability | null | undefined;
   providerDisplayName: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { pushToast } = useToast();
   const queryClient = useQueryClient();
   const state = capabilityState(providerCapability);
@@ -925,7 +927,7 @@ function EnvironmentImageTemplatePanel({
     },
     onError: (error) => {
       pushToast({
-        title: "Failed to start setup",
+        title: interfaceMessage("interface:errorFailedToStartSetup"),
         body: describeError(error).body,
         tone: "error",
       });
@@ -950,7 +952,7 @@ function EnvironmentImageTemplatePanel({
     },
     onError: (error) => {
       pushToast({
-        title: "Failed to capture template",
+        title: interfaceMessage("interface:errorFailedToCaptureTemplate"),
         body: describeError(error).body,
         tone: "error",
       });
@@ -976,7 +978,7 @@ function EnvironmentImageTemplatePanel({
     },
     onError: (error) => {
       pushToast({
-        title: "Failed to cancel setup",
+        title: interfaceMessage("interface:errorFailedToCancelSetup"),
         body: describeError(error).body,
         tone: "error",
       });
@@ -1000,7 +1002,7 @@ function EnvironmentImageTemplatePanel({
     },
     onError: (error) => {
       pushToast({
-        title: "Failed to roll back template",
+        title: interfaceMessage("interface:errorFailedToRollBackTemplate"),
         body: describeError(error).body,
         tone: "error",
       });
@@ -1044,7 +1046,7 @@ function EnvironmentImageTemplatePanel({
     onError: (error) => {
       if (error instanceof RelinkConfirmationDeclined) return;
       pushToast({
-        title: "Failed to relink template",
+        title: interfaceMessage("interface:errorFailedToRelinkTemplate"),
         body: describeError(error).body,
         tone: "error",
       });
@@ -1068,7 +1070,7 @@ function EnvironmentImageTemplatePanel({
     },
     onError: (error) => {
       pushToast({
-        title: "Failed to disable template",
+        title: interfaceMessage("interface:errorFailedToDisableTemplate"),
         body: describeError(error).body,
         tone: "error",
       });
@@ -1162,9 +1164,7 @@ function EnvironmentImageTemplatePanel({
               onClick={() => cancelSetupMutation.mutate(session.id)}
               disabled={isMutating}
             >
-              <X className="mr-1.5 h-3.5 w-3.5" />
-              Cancel
-            </Button>
+              <X className="mr-1.5 h-3.5 w-3.5" />{pageText("cancel_77dfd2")}</Button>
           </div>
         </div>
         {isCapturing ? (
@@ -1238,9 +1238,7 @@ function EnvironmentImageTemplatePanel({
               onClick={() => startSetupMutation.mutate({ templateId: activeTemplate.id })}
               disabled={isMutating}
             >
-              <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
-              Refresh
-            </Button>
+              <RefreshCw className="mr-1.5 h-3.5 w-3.5" />{pageText("refresh_56e3ba")}</Button>
             <Button
               size="sm"
               variant="outline"
@@ -1266,9 +1264,7 @@ function EnvironmentImageTemplatePanel({
               onClick={() => disableTemplateMutation.mutate()}
               disabled={isMutating}
             >
-              <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-              Disable
-            </Button>
+              <Trash2 className="mr-1.5 h-3.5 w-3.5" />{pageText("disable_9a7d4e")}</Button>
           </div>
         </div>
       </div>
@@ -1279,7 +1275,7 @@ function EnvironmentImageTemplatePanel({
     <div className="mt-3 border-t border-border/60 pt-3" data-testid={`custom-image-template-state-${environment.id}`}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="space-y-1">
-          <div className="text-xs font-medium">Not configured</div>
+          <div className="text-xs font-medium">{pageText("notConfigured_811931")}</div>
           <div className="text-xs text-muted-foreground">
             {latestSession
               ? sessionStatusCopy(latestSession.status)
@@ -1304,6 +1300,7 @@ function EnvironmentImageTemplatePanel({
 }
 
 export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { environmentId: routeEnvironmentId } = useParams<{ environmentId?: string }>();
   const navigate = useNavigate();
@@ -1460,7 +1457,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
     },
     onError: (error) => {
       pushToast({
-        title: "Failed to save environment variables",
+        title: interfaceMessage("interface:errorFailedToSaveEnvironmentVariables"),
         body: describeError(error).body,
         tone: "error",
       });
@@ -1517,7 +1514,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
     },
     onError: (error) => {
       pushToast({
-        title: "Failed to save environment",
+        title: interfaceMessage("interface:errorFailedToSaveEnvironment"),
         body: describeError(error).body,
         tone: "error",
       });
@@ -1537,7 +1534,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
     },
     onError: (error) => {
       pushToast({
-        title: "Failed to update default environment",
+        title: interfaceMessage("interface:errorFailedToUpdateDefaultEnvironment"),
         body: describeError(error).body,
         tone: "error",
       });
@@ -1599,7 +1596,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
         queryKey: ["environment-delete-blast-radius", input.environment.id],
       });
       pushToast({
-        title: "Failed to delete environment",
+        title: interfaceMessage("interface:errorFailedToDeleteEnvironment"),
         body: describeError(error).body,
         tone: "error",
       });
@@ -2010,14 +2007,14 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
             </span>
           </label>
           <Button size="icon-sm" variant="ghost" asChild>
-            <Link to={`${ENVIRONMENTS_PATH}/new`} aria-label="Add environment" title="Add environment">
+            <Link to={`${ENVIRONMENTS_PATH}/new`} aria-label={pageText("addEnvironment_32e373")} title={pageText("addEnvironment_32e373")}>
               <Plus className="h-4 w-4" />
             </Link>
           </Button>
         </div>
 
         {environmentsQuery.isLoading || environmentsView.kind === "reconnecting" ? (
-          <QueryPlaceholder label="Loading environments" />
+          <QueryPlaceholder label={pageText("loadingEnvironments_700833")} />
         ) : environmentsView.kind === "error" ? (
           <QueryErrorState
             error={environmentsQuery.error}
@@ -2062,7 +2059,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
                     {environment.driver === "ssh" ? (
                       <div className="text-xs text-muted-foreground">
                         {typeof environment.config.host === "string" ? environment.config.host : "SSH host"} ·{" "}
-                        {typeof environment.config.username === "string" ? environment.config.username : "user"}
+                        {typeof environment.config.username === "string" ? environment.config.username : pageText("user_12dea9")}
                       </div>
                     ) : environment.driver === "sandbox" ? (
                       <div className="text-xs text-muted-foreground">
@@ -2133,9 +2130,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
             retrying={environmentsView.isFetching}
           />
         ) : (
-          <div className="text-sm text-muted-foreground">
-            Loading environment...
-          </div>
+          <div className="text-sm text-muted-foreground">{pageText("loadingEnvironment_16379d")}</div>
         )
       ) : null}
 
@@ -2156,9 +2151,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
             <div className="mb-4">
               <Button size="sm" variant="ghost" asChild>
                 <Link to={ENVIRONMENTS_PATH}>
-                  <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
-                  Environments
-                </Link>
+                  <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />{pageText("environments_017b53")}</Link>
               </Button>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -2207,7 +2200,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
               onClick={() => managedEnvironmentEnvVarsMutation.mutate(flushEnvironmentForm().envVars)}
               disabled={managedEnvironmentEnvVarsMutation.isPending}
             >
-              {managedEnvironmentEnvVarsMutation.isPending ? "Saving..." : "Save environment variables"}
+              {managedEnvironmentEnvVarsMutation.isPending ? pageText("saving_ae7e88") : "Save environment variables"}
             </Button>
           </div>
         </div>
@@ -2222,9 +2215,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
             <div className="mb-4 flex items-center justify-between gap-2">
               <Button size="sm" variant="ghost" asChild>
                 <Link to={ENVIRONMENTS_PATH}>
-                  <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
-                  Environments
-                </Link>
+                  <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />{pageText("environments_017b53")}</Link>
               </Button>
               {editingEnvironment ? (
                 <Button
@@ -2232,7 +2223,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
                   variant="ghost"
                   className="text-muted-foreground hover:text-destructive"
                   aria-label={`Delete ${editingEnvironment.name}`}
-                  title="Delete environment"
+                  title={pageText("deleteEnvironment_8d9cd4")}
                   data-testid="environment-delete-button"
                   onClick={() => {
                     setReassignEnvironmentTargetId("");
@@ -2243,7 +2234,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
                 </Button>
               ) : null}
             </div>
-            <h1 className="text-lg font-semibold">{editingEnvironmentId ? "Edit environment" : "Add environment"}</h1>
+            <h1 className="text-lg font-semibold">{editingEnvironmentId ? pageText("editEnvironment_1a4035") : pageText("addEnvironment_32e373")}</h1>
             <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
               Configure a reusable execution target for your agents. Saved changes affect future runs; Paperclip may start fresh sessions or sandbox leases after environment config changes.
             </p>
@@ -2517,11 +2508,11 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
             >
               {environmentMutation.isPending
                 ? editingEnvironmentId
-                  ? "Saving..."
-                  : "Creating..."
+                  ? pageText("saving_ae7e88")
+                  : pageText("creating_28ea76")
                 : editingEnvironmentId
                   ? "Save environment"
-                  : "Create environment"}
+                  : pageText("createEnvironment_d3f8e8")}
             </Button>
           </div>
 
@@ -2535,7 +2526,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
             >
               <AlertDialogContent data-testid="environment-delete-dialog">
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Delete {editingEnvironment.name}?</AlertDialogTitle>
+                  <AlertDialogTitle>{pageText("delete_f6fdbe") + " "}{editingEnvironment.name}?</AlertDialogTitle>
                   <AlertDialogDescription>
                     {deleteUsageLoading
                       ? "Checking what uses this environment..."
@@ -2594,7 +2585,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
                     {agentsUsingEnvironment.length > 0 ? (
                       <label className="block space-y-1.5 text-sm">
                         <span className="font-medium">
-                          Reassign {agentsUsingEnvironment.length === 1 ? "agent" : "agents"} to
+                          Reassign {agentsUsingEnvironment.length === 1 ? pageText("agent_0608c4") : pageText("agents_e7052a")} to
                         </span>
                         <select
                           aria-label="Reassign agents to environment"
@@ -2650,10 +2641,10 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
                     }}
                   >
                     {deleteEnvironmentMutation.isPending
-                      ? "Deleting..."
+                      ? pageText("deleting_e16cac")
                       : reusableLeaseOnlyBlock && deleteBlastRadius
                         ? `Destroy ${deleteBlastRadius.reusableSandboxLeaseCount === 1 ? "1 sandbox" : `${deleteBlastRadius.reusableSandboxLeaseCount} sandboxes`} and delete`
-                        : "Delete environment"}
+                        : pageText("deleteEnvironment_8d9cd4")}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>

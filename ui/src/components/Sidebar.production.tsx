@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import {
   Inbox,
@@ -46,6 +47,7 @@ import { PluginLauncherOutlet } from "@/plugins/launchers";
 import { SidebarCompanyMenu } from "./SidebarCompanyMenu.production";
 
 export function Sidebar() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { openNewIssue } = useDialogActions();
   // Every labeled section is collapsible (session-scoped, default open) —
@@ -132,7 +134,7 @@ export function Sidebar() {
               <button
                 onClick={() => openNewIssue()}
                 data-slot="icon-button"
-                aria-label={rail ? "New Task" : undefined}
+                aria-label={rail ? pageText("newTask_cc3dbd") : undefined}
                 className="flex items-center gap-2.5 mx-2 rounded-lg px-2 py-1.5 pointer-coarse:py-1 text-(length:--text-compact) font-medium text-foreground/80 hover:bg-accent/50 hover:text-foreground transition-colors"
               >
                 <SquarePen className="h-4 w-4 shrink-0" />
@@ -153,10 +155,10 @@ export function Sidebar() {
               collapsed rail, where the old header icon was dropped entirely.
               Cmd/Ctrl+K remains the keyboard path (command palette). */}
           <SidebarNavItem to="/search" label={translateUi("interfaceCopy.search")} icon={Search} />
-          <SidebarNavItem to="/dashboard" label="Dashboard" icon={LayoutDashboard} liveCount={liveRunCount} />
+          <SidebarNavItem to="/dashboard" label={pageText("dashboard_d87f47")} icon={LayoutDashboard} liveCount={liveRunCount} />
           <SidebarNavItem
             to="/inbox"
-            label="Inbox"
+            label={pageText("inbox_44caf7")}
             icon={Inbox}
             badge={inboxBadge.inbox}
             badgeLabel="unread"
@@ -166,7 +168,7 @@ export function Sidebar() {
           {showDecisions ? (
             <SidebarNavItem
               to="/decisions"
-              label="Decisions"
+              label={pageText("decisions_af2f32")}
               icon={ListChecks}
               badge={attentionCount}
               badgeLabel="decisions"
@@ -176,16 +178,16 @@ export function Sidebar() {
             <SidebarNavItem to="/status" label={translateUi("interfaceCopy.status")} icon={LayoutGrid} textBadge="beta" />
           ) : null}
           {conferenceRoomChatEnabled ? (
-            <SidebarNavItem to="/board-chat" label="Conference Room" icon={MessagesSquare} />
+            <SidebarNavItem to="/board-chat" label={pageText("conferenceRoom_5cf12c")} icon={MessagesSquare} />
           ) : null}
         </div>
 
-        <SidebarSection label="Work" collapsible={{ open: workOpen, onOpenChange: setWorkOpen }}>
+        <SidebarSection label={pageText("work_00040b")} collapsible={{ open: workOpen, onOpenChange: setWorkOpen }}>
           <SidebarNavItem to="/issues" label={translateUi("interfaceCopy.tasks")} icon={CircleDot} />
           {showCases ? (
-            <SidebarNavItem to="/cases" label="Cases" icon={Layers} textBadge="beta" />
+            <SidebarNavItem to="/cases" label={pageText("cases_eccd8c")} icon={Layers} textBadge="beta" />
           ) : null}
-          <SidebarNavItem to="/routines" label="Routines" icon={Repeat} />
+          <SidebarNavItem to="/routines" label={pageText("routines_a445e5")} icon={Repeat} />
           {showGoalsLink ? (
             <SidebarNavItem to="/goals" label={translateUi("interfaceCopy.goals")} icon={Target} />
           ) : goalsLinkPending ? (
@@ -195,10 +197,10 @@ export function Sidebar() {
               aria-hidden="true"
             />
           ) : null}
-          <SidebarNavItem to="/artifacts" label="Artifacts" icon={Package} />
-          <SidebarNavItem to="/skills" label="Skills" icon={Boxes} />
+          <SidebarNavItem to="/artifacts" label={pageText("artifacts_a5b79f")} icon={Package} />
+          <SidebarNavItem to="/skills" label={pageText("skills_e09212")} icon={Boxes} />
           {showWorkspacesLink ? (
-            <SidebarNavItem to="/workspaces" label="Workspaces" icon={GitBranch} />
+            <SidebarNavItem to="/workspaces" label={pageText("workspaces_205b45")} icon={GitBranch} />
           ) : null}
           {streamlined ? (
             <>
@@ -226,14 +228,14 @@ export function Sidebar() {
 
         <SidebarAgents streamlined={streamlined} />
 
-        <SidebarSection label="Company" collapsible={{ open: companyOpen, onOpenChange: setCompanyOpen }}>
-          <SidebarNavItem to="/org" label="Org" icon={Network} />
-          {showApps ? <SidebarNavItem to="/apps" label="Connectors" icon={Unplug} /> : null}
-          <SidebarNavItem to="/timeline" label="Timeline" icon={GanttChartSquare} />
-          <SidebarNavItem to="/costs" label="Costs" icon={DollarSign} />
+        <SidebarSection label={pageText("company_7a1994")} collapsible={{ open: companyOpen, onOpenChange: setCompanyOpen }}>
+          <SidebarNavItem to="/org" label={pageText("org_972f71")} icon={Network} />
+          {showApps ? <SidebarNavItem to="/apps" label={pageText("connectors_4b1e95")} icon={Unplug} /> : null}
+          <SidebarNavItem to="/timeline" label={pageText("timeline_018514")} icon={GanttChartSquare} />
+          <SidebarNavItem to="/costs" label={pageText("costs_799b3e")} icon={DollarSign} />
           {/* One entry — /audit merged into the rich Activity feed (PAP-16302). */}
           <SidebarNavItem to="/activity" label={translateUi("interfaceCopy.activity")} icon={History} />
-          <SidebarNavItem to="/activity/commentary" label="Commentary" icon={History} />
+          <SidebarNavItem to="/activity/commentary" label={pageText("commentary_49214e")} icon={History} />
           <SidebarNavItem to="/company/settings" label={translateUi("interfaceCopy.settings")} icon={Settings} />
         </SidebarSection>
 

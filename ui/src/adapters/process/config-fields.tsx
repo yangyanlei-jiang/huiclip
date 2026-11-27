@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { configFieldsForSection } from "../config-sections";
 import type { AdapterConfigFieldsProps } from "../types";
 import {
@@ -34,9 +35,10 @@ export function ProcessConfigFields({
   eff,
   mark,
 }: AdapterConfigFieldsProps) {
+  const { t: pageText } = usePageTranslation("interface");
   return configFieldsForSection(section, (
     <>
-      <Field configSection="advanced" label="Command" hint={help.command}>
+      <Field configSection="advanced" label={pageText("command_890189")} hint={help.command}>
         <DraftInput
           value={
             isCreate

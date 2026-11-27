@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -142,6 +143,7 @@ export function AddConnectionDialog({
   defaultApplicationId?: string | null;
   onClose: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const qc = useQueryClient();
   const { pushToast } = useToast();
@@ -370,7 +372,7 @@ export function AddConnectionDialog({
               </div>
 
               <div className="space-y-1.5">
-                <Label>Transport</Label>
+                <Label>{pageText("transport_c10d76")}</Label>
                 <Select
                   value={transport}
                   onValueChange={(v) => setTransport(v as "mcp_remote" | "local_stdio")}
@@ -469,11 +471,9 @@ export function AddConnectionDialog({
                         onChange={(e) => setPendingHeader(e.target.value)}
                         placeholder="Header"
                         className="w-32"
-                        aria-label="Header name"
+                        aria-label={pageText("headerName_b46f85")}
                       />
-                      <Button type="button" size="sm" variant="outline" onClick={addCred} disabled={!pendingSecretId}>
-                        Add
-                      </Button>
+                      <Button type="button" size="sm" variant="outline" onClick={addCred} disabled={!pendingSecretId}>{pageText("add_61cc55")}</Button>
                     </div>
                     {pendingSecretId ? (
                       <p className="flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
@@ -562,7 +562,7 @@ export function AddConnectionDialog({
                 {probe.isPending ? "Probing…" : "Re-probe"}
               </Button>
               <Button disabled={activate.isPending || probe.isPending} onClick={() => draft && activate.mutate(draft.id)}>
-                {activate.isPending ? "Activating…" : "Activate"}
+                {activate.isPending ? "Activating…" : pageText("activate_92ef08")}
               </Button>
             </>
           )}

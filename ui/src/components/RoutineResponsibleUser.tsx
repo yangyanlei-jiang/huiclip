@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { RoutineDetail } from "@paperclipai/shared";
@@ -13,6 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { QueryErrorState, useQueryView } from "./QueryView";
 
 export function RoutineResponsibleUser({ routine }: { routine: RoutineDetail }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
   const directory = useQuery({
@@ -45,7 +47,7 @@ export function RoutineResponsibleUser({ routine }: { routine: RoutineDetail }) 
 
   return (
     <section className="flex min-w-0 flex-col gap-2" aria-labelledby="routine-responsible-heading">
-      <h2 id="routine-responsible-heading" className="text-sm font-semibold">Responsible user</h2>
+      <h2 id="routine-responsible-heading" className="text-sm font-semibold">{pageText("responsibleUser_59fcd1")}</h2>
       {routine.canChangeResponsibleUser ? (
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
@@ -56,14 +58,14 @@ export function RoutineResponsibleUser({ routine }: { routine: RoutineDetail }) 
               className="group flex w-fit max-w-full items-center gap-2 rounded-md text-left text-sm font-medium hover:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
             >
               <UserRound className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-              <span className="truncate">{change.isPending ? "Saving…" : label}</span>
+              <span className="truncate">{change.isPending ? pageText("saving_56a228") : label}</span>
               <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground opacity-60 group-hover:opacity-100 group-focus-visible:opacity-100" aria-hidden="true" />
             </button>
           </PopoverTrigger>
           <PopoverContent align="start" className="w-72 p-0">
             <Command>
               <CommandInput placeholder="Find a person…" aria-label="Find a responsible user" />
-              <CommandList aria-label="Responsible user">
+              <CommandList aria-label={pageText("responsibleUser_59fcd1")}>
                 <CommandEmpty>No people found.</CommandEmpty>
                 {(directory.data?.users ?? []).map((member) => (
                   <CommandItem

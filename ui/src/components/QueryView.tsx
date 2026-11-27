@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 /**
  * One way to render a read.
  *
@@ -138,6 +139,7 @@ const NOT_RETRYABLE: ReadonlySet<ErrorKind> = new Set(["auth", "forbidden", "not
  * from `describeError` and a Retry button. Never renders a raw error code.
  */
 export function QueryErrorState({ error, size = "panel", action, onRetry, retrying = false, className }: QueryErrorStateProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const kind = classifyError(error);
   const { title, body } = describeError(error, { action });
   const retryButton = onRetry && !NOT_RETRYABLE.has(kind) ? (
@@ -149,7 +151,7 @@ export function QueryErrorState({ error, size = "panel", action, onRetry, retryi
       disabled={retrying}
     >
       <RefreshCcw aria-hidden="true" className={cn(retrying && "animate-spin")} />
-      {retrying ? "Retrying…" : "Retry"}
+      {retrying ? pageText("retrying_231013") : pageText("retry_9f5cd8")}
     </Button>
   ) : null;
 

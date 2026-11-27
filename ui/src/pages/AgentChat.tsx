@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useCallback, useEffect, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { agentChatsApi } from "@/api/agentChats";
@@ -14,6 +15,7 @@ import { TaskDetailSurface } from "./IssueDetail";
 import { isUuidLike, type Issue } from "@paperclipai/shared";
 
 export function AgentChat() {
+  const { t: pageText } = usePageTranslation("interface");
   const { agentRef = "" } = useParams<{ agentRef: string }>();
   const { selectedCompanyId } = useCompany();
   const { enabled, loaded } = useAgentChatEnabled();
@@ -89,7 +91,7 @@ export function AgentChat() {
     || chatView.kind === "reconnecting" || (!rosterAgent && historyView.kind === "reconnecting");
   if (!loaded || agents.isPending || session.isPending || historyAgent.isFetching && !agent || reconnecting)
     return (
-      <p className="text-sm text-muted-foreground">Loading conversation…</p>
+      <p className="text-sm text-muted-foreground">{pageText("loadingConversation_6a8beb")}</p>
     );
   if (!enabled && !chat.data)
     return (
@@ -114,7 +116,7 @@ export function AgentChat() {
     return <p className="text-sm text-destructive">Agent not found.</p>;
   if (chat.isPending)
     return (
-      <p className="text-sm text-muted-foreground">Loading conversation…</p>
+      <p className="text-sm text-muted-foreground">{pageText("loadingConversation_6a8beb")}</p>
     );
   return (
     <TaskDetailSurface

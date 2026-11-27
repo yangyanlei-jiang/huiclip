@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { AlertTriangle, Info, PauseCircle, User, X } from "lucide-react";
 import { cn } from "../../lib/utils";
@@ -57,6 +58,7 @@ export function AssigneeChip({
   resolvers: HandoffChipResolvers;
   className?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   if (assignee.agentId) {
     return (
@@ -70,7 +72,7 @@ export function AssigneeChip({
   if (assignee.userId) {
     return (
       <span className={cn(CHIP_CLASS, className)} data-testid="handoff-assignee-chip" data-kind="user">
-        <span className="sr-only">User </span>
+        <span className="sr-only">{pageText("user_9f8a23") + " "}</span>
         <User className="h-3 w-3 shrink-0 text-muted-foreground" />
         <span className="max-w-(--sz-12rem) truncate">{userLabel(assignee.userId, resolvers)}</span>
       </span>
@@ -82,9 +84,7 @@ export function AssigneeChip({
       data-testid="handoff-assignee-chip"
       data-kind="unassigned"
     >
-      <span className="sr-only">No responsible — </span>
-      Unassigned
-    </span>
+      <span className="sr-only">No responsible — </span>{pageText("unassigned_e57016")}</span>
   );
 }
 

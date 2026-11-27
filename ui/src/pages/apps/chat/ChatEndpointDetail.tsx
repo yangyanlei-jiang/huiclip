@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { SpekoPhoneLine } from "@/components/voice/SpekoPhoneLine";
 import { SpekoIncomingCalls } from "@/components/voice/SpekoIncomingCalls";
@@ -248,6 +249,7 @@ export function connectionHealthPresentation(
 }
 
 export function ChatEndpointDetail() {
+  const { t: pageText } = usePageTranslation("interface");
   const { userId, settled: identitySettled } = useAccountIdentity();
   const { endpointId = "", tab: routeTab, reviewId } = useParams<{
     endpointId: string;
@@ -307,9 +309,7 @@ export function ChatEndpointDetail() {
   if (endpointQuery.isLoading || endpointView.kind === "reconnecting")
     return (
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Loader2 className="h-4 w-4 animate-spin" />
-        Loading connection…
-      </div>
+        <Loader2 className="h-4 w-4 animate-spin" />{pageText("loadingConnection_f1e853")}</div>
     );
   if (endpointView.kind === "error" || !endpoint)
     return (
@@ -363,7 +363,7 @@ export function ChatEndpointDetail() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {endpoint.provider === "speko" && <a href="https://platform.speko.ai/agents" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm text-primary underline">Open Speko<ExternalLink className="size-3.5" aria-hidden="true" /></a>}
-          {endpoint.provider === "slack" && !setupIncomplete && <Button asChild variant="outline"><a href={slackConversationUrl(endpoint, identitySettled ? userId : null)} target="_blank" rel="noopener noreferrer">Open Slack <ExternalLink className="size-4" /></a></Button>}
+          {endpoint.provider === "slack" && !setupIncomplete && <Button asChild variant="outline"><a href={slackConversationUrl(endpoint, identitySettled ? userId : null)} target="_blank" rel="noopener noreferrer">{pageText("openSlack_eec851") + " "}<ExternalLink className="size-4" /></a></Button>}
           {slackUrl && <Button asChild variant="outline"><a href={slackUrl} target="_blank" rel="noopener noreferrer">Open Slack configuration <ExternalLink className="size-4" /></a></Button>}
           {setupIncomplete ? (
             <Button
@@ -441,6 +441,7 @@ function EndpointExecutionDefaults({ endpoint }: { endpoint: ChatEndpoint }) {
 }
 
 function EmailAccess({ endpoint }: { endpoint: ChatEndpoint }) {
+  const { t: pageText } = usePageTranslation("interface");
   const connection = useQuery({
     queryKey: queryKeys.tools.connection(endpoint.connectionId ?? ""),
     queryFn: () => toolsApi.getConnection(endpoint.connectionId!),
@@ -462,12 +463,12 @@ function EmailAccess({ endpoint }: { endpoint: ChatEndpoint }) {
     />
   );
   if (agents.isPending || connection.isPending || agentsView.kind === "reconnecting" || connectionView.kind === "reconnecting") {
-    return <p role="status" className="text-sm text-muted-foreground">Loading access…</p>;
+    return <p role="status" className="text-sm text-muted-foreground">{pageText("loadingAccess_d4fbca")}</p>;
   }
   const sourceId = connection.data?.config?.credentialConnectionId;
   const credentialId = typeof sourceId === "string" ? sourceId : endpoint.connectionId;
   return <section className="max-w-3xl space-y-4">
-    <h2 className="text-lg font-semibold">Access</h2>
+    <h2 className="text-lg font-semibold">{pageText("access_2f81a2")}</h2>
     {credentialId !== endpoint.connectionId && <p className="text-sm text-muted-foreground">These settings apply to the saved AgentMail account and all inboxes using it.</p>}
     <EmailConnectionAccess key={credentialId} companyId={endpoint.companyId} connectionId={credentialId} agents={agents.data ?? []} />
   </section>;
@@ -480,6 +481,7 @@ function Settings({
   endpointId: string;
   endpoint: Awaited<ReturnType<typeof chatEndpointsApi.get>>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToast();
@@ -599,8 +601,7 @@ function Settings({
               </div>
             ))}
             {endpoint.provider === "slack" && (
-              <p className="py-3 text-sm text-muted-foreground">
-                Invite {endpoint.assignedAgentName} to a channel to add it
+              <p className="py-3 text-sm text-muted-foreground">{pageText("invite_b13660") + " "}{endpoint.assignedAgentName} to a channel to add it
               </p>
             )}
           </div>
@@ -696,6 +697,7 @@ function Access({
   allowUnlinked: boolean;
   endpoint: ChatEndpoint;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const { pushToast } = useToast();
   const [confirmationUrl, setConfirmationUrl] = useState<string | null>(null);
@@ -747,7 +749,7 @@ function Access({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-semibold">People</h2>
         {endpoint.provider === "slack" && <Dialog>
-          <DialogTrigger asChild><Button>Invite people</Button></DialogTrigger>
+          <DialogTrigger asChild><Button>{pageText("invitePeople_e1eb97")}</Button></DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Invite people to talk to {endpoint.assignedAgentName}</DialogTitle>
@@ -763,7 +765,7 @@ function Access({
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <Button variant="ghost" onClick={() => {
                   void copyTextToClipboard(joinCommand).then(() => setJoinCommandCopied(true), () => pushToast({ title: "Couldn't copy the command", tone: "error" }));
-                }}>{joinCommandCopied ? <Check className="size-4" /> : <Copy className="size-4" />}{joinCommandCopied ? "Copied" : "Copy command"}</Button>
+                }}>{joinCommandCopied ? <Check className="size-4" /> : <Copy className="size-4" />}{joinCommandCopied ? pageText("copied_8e3df4") : "Copy command"}</Button>
                 <Button onClick={() => {
                   const workspace = endpoint.providerAccountId ? `https://app.slack.com/client/${encodeURIComponent(endpoint.providerAccountId)}` : "https://app.slack.com/";
                   void copyTextToClipboard(`Talk to ${endpoint.assignedAgentName} in Slack: ${workspace}\nSend ${joinCommand}, then open the bot’s private link and sign in to Paperclip to confirm your account. If you’re new to the organization, request access for an admin to approve.`).then(() => setInviteCopied(true), () => pushToast({ title: "Couldn't copy invitation", tone: "error" }));
@@ -773,7 +775,7 @@ function Access({
           </DialogContent>
         </Dialog>}
       </div>
-      <p className="text-sm text-muted-foreground">People with linked accounts use their own Paperclip permissions. <Link className="underline underline-offset-4" to="/company/settings/members">Manage members</Link></p>
+      <p className="text-sm text-muted-foreground">People with linked accounts use their own Paperclip permissions. <Link className="underline underline-offset-4" to="/company/settings/members">{pageText("manageMembers_033125")}</Link></p>
       {confirmationUrl && (
         <div className="space-y-2 border-y border-border py-3">
           <p className="text-sm font-medium">Confirm {confirmationFor ?? "this account"}</p>
@@ -800,9 +802,7 @@ function Access({
               );
             }}
           >
-            <Copy />
-            Copy link
-          </Button>
+            <Copy />{pageText("copyLink_2f84ee")}</Button>
         </div>
       )}
       <div className="space-y-2">
@@ -839,9 +839,7 @@ function Access({
                     disabled={revoke.isPending}
                     onClick={() => revoke.mutate(link.principalId)}
                   >
-                    <Unlink />
-                    Disconnect
-                  </Button>
+                    <Unlink />{pageText("disconnect_ed28e0")}</Button>
                 ) : (
                   <Button
                     size="sm"
@@ -896,6 +894,7 @@ function Activity({
   endpointId: string;
   endpoint: Awaited<ReturnType<typeof chatEndpointsApi.get>>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -1099,7 +1098,7 @@ function Activity({
                 <p className="text-xs font-medium">{label}</p>
                 <p className="text-xs text-muted-foreground">
                   {surface.status === "current"
-                    ? "Current"
+                    ? pageText("current_4fc0e2")
                     : surface.status === "stale"
                       ? "Stale URL"
                       : "Not observed"}
@@ -1136,9 +1135,7 @@ function Activity({
                   <Loader2 className="animate-spin" />
                 ) : (
                   <Pause />
-                )}
-                Pause
-              </Button>
+                )}{pageText("pause_781961")}</Button>
             )}
             {status === "paused" && (
               <Button
@@ -1150,9 +1147,7 @@ function Activity({
                   <Loader2 className="animate-spin" />
                 ) : (
                   <Play />
-                )}
-                Resume
-              </Button>
+                )}{pageText("resume_b3bd0b")}</Button>
             )}
             {[
               "active",
@@ -1175,8 +1170,8 @@ function Activity({
               >
                 <RefreshCw />
                 {status === "draft" || status === "verifying"
-                  ? "Finish setup"
-                  : "Reconnect"}
+                  ? pageText("finishSetup_c516d2")
+                  : pageText("reconnect_6988b1")}
               </Button>
             )}
             <Button
@@ -1185,9 +1180,7 @@ function Activity({
               disabled={lifecycle.isPending}
               onClick={() => setRemoveOpen(true)}
             >
-              <Trash2 />
-              Remove connection
-            </Button>
+              <Trash2 />{pageText("removeConnection_7312a3")}</Button>
           </div>
           {status !== "draft" && status !== "verifying" && (
             <p className="text-xs text-muted-foreground">
@@ -1429,9 +1422,7 @@ function Activity({
             >
               {lifecycle.isPending && (
                 <Loader2 className="h-4 w-4 animate-spin" />
-              )}
-              Remove connection
-            </AlertDialogAction>
+              )}{pageText("removeConnection_7312a3")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

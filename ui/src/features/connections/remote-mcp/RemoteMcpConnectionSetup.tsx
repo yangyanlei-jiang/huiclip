@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { CheckCircle2, ExternalLink, HelpCircle, Loader2, Plus, Trash2 } from "lucide-react";
@@ -54,6 +55,7 @@ export function RemoteMcpConnectionSetup({ provider, state: s, actions: a, agent
   actions: RemoteMcpSetupActions;
   agents: { id: string; name: string }[];
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const uid = useId();
   const heading = useRef<HTMLHeadingElement>(null);
@@ -141,9 +143,9 @@ export function RemoteMcpConnectionSetup({ provider, state: s, actions: a, agent
         {s.step === "access" && <AccessStepContent agents={agents} lockedAgentId={lockedAgentId} authKind="oauth" grantKinds={fixedGrantKind ? [fixedGrantKind] : undefined} grantKind={s.grantKind} setGrantKind={(grantKind) => { if (grantKind !== "agent") change({ grantKind }); }}
           installChoice={s.allAgents ? "all" : "specific"} setInstallChoice={(choice) => change({ allAgents: choice === "all" })}
           installAgentIds={new Set(s.agentIds)} setInstallAgentIds={(ids) => change({ agentIds: [...ids] })}
-          submitLabel={s.setupComplete ? "Done" : "Continue"} onBack={s.setupComplete ? a.finish : a.saveExit} onContinue={s.setupComplete ? a.finish : () => a.navigate("connect")} />}
+          submitLabel={s.setupComplete ? pageText("done_e9b450") : pageText("continue_2e0262")} onBack={s.setupComplete ? a.finish : a.saveExit} onContinue={s.setupComplete ? a.finish : () => a.navigate("connect")} />}
         {s.step === "permissions" && <>
-          <div className="flex items-center justify-between gap-3"><h2 className="text-sm font-semibold">Permissions</h2><Button variant="outline" onClick={a.finish}>Connection settings</Button></div>
+          <div className="flex items-center justify-between gap-3"><h2 className="text-sm font-semibold">{pageText("permissions_d06d55")}</h2><Button variant="outline" onClick={a.finish}>Connection settings</Button></div>
           {s.tools.some((entry) => entry.broad) && boundary}
           <ActionsSection connectionId={connectionId} appName={provider.name}
             readOnly={s.tools.filter((entry) => entry.isReadOnly)} canChange={s.tools.filter((entry) => !entry.isReadOnly)} quarantined={[]}
@@ -174,7 +176,7 @@ export function RemoteMcpConnectionSetup({ provider, state: s, actions: a, agent
                 <CollapsibleContent className="mt-3">{urlField}</CollapsibleContent>
               </Collapsible> : urlField}
               {defaults(<div className="space-y-4">
-                  <p className="text-sm font-medium text-foreground">Authentication</p>
+                  <p className="text-sm font-medium text-foreground">{pageText("authentication_ee1acf")}</p>
                   <p className="text-sm text-muted-foreground">{provider.authHelp}</p>
                   <div className="space-y-2"><Label htmlFor={`${uid}-auth`}>Sign-in method</Label><select id={`${uid}-auth`} className={selectClass} value={s.auth} onChange={(event) => change({ auth: event.target.value as RemoteMcpSetupState["auth"] })}>
                     {provider.supportsBrowserAuth && <option value="auto">Automatic (sign in if required)</option>}<option value="bearer">Bearer token</option><option value="headers">Custom headers</option><option value="none">No additional authentication</option>
@@ -183,8 +185,8 @@ export function RemoteMcpConnectionSetup({ provider, state: s, actions: a, agent
                   {(s.auth === "bearer" || s.auth === "headers") && <div className="space-y-3">
                     <p className="text-sm font-medium">{s.auth === "bearer" ? "Additional headers" : "Headers"}</p>
                     {s.headers.map((header, index) => <div key={header.id} className="flex flex-wrap items-end gap-2">
-                      <div className="min-w-0 flex-1 space-y-2"><Label htmlFor={`${uid}-${header.id}-name`}>Header {index + 1} name</Label><Input id={`${uid}-${header.id}-name`} value={header.name} placeholder={provider.id === "arcade" ? "Arcade-User-ID" : "Header name"} onChange={(event) => change({ headers: s.headers.map((h) => h.id === header.id ? { ...h, name: event.target.value } : h) })} /></div>
-                      <div className="min-w-0 flex-1 space-y-2"><Label htmlFor={`${uid}-${header.id}-value`}>Header {index + 1} value</Label><Input id={`${uid}-${header.id}-value`} type="password" autoComplete="off" value={header.value} onChange={(event) => change({ headers: s.headers.map((h) => h.id === header.id ? { ...h, value: event.target.value } : h) })} /></div>
+                      <div className="min-w-0 flex-1 space-y-2"><Label htmlFor={`${uid}-${header.id}-name`}>Header {index + 1}{" " + pageText("name_6ae999")}</Label><Input id={`${uid}-${header.id}-name`} value={header.name} placeholder={provider.id === "arcade" ? "Arcade-User-ID" : pageText("headerName_b46f85")} onChange={(event) => change({ headers: s.headers.map((h) => h.id === header.id ? { ...h, name: event.target.value } : h) })} /></div>
+                      <div className="min-w-0 flex-1 space-y-2"><Label htmlFor={`${uid}-${header.id}-value`}>Header {index + 1}{" " + pageText("value_f32b67")}</Label><Input id={`${uid}-${header.id}-value`} type="password" autoComplete="off" value={header.value} onChange={(event) => change({ headers: s.headers.map((h) => h.id === header.id ? { ...h, value: event.target.value } : h) })} /></div>
                       <Button type="button" variant="ghost" size="icon" aria-label={`Remove header ${index + 1}`} onClick={() => change({ headers: s.headers.filter((h) => h.id !== header.id) })}><Trash2 className="size-4" /></Button>
                     </div>)}
                     <Button type="button" variant="outline" size="sm" onClick={() => change({ headers: [...s.headers, { id: crypto.randomUUID(), name: "", value: "" }] })}><Plus className="size-4" />Add header</Button>
@@ -193,15 +195,15 @@ export function RemoteMcpConnectionSetup({ provider, state: s, actions: a, agent
             </fieldset>
             {additionalSettings}
             {busy && <p role="status" className="flex items-center gap-2 text-sm"><Loader2 className="size-4 animate-spin motion-reduce:animate-none" />Connecting and discovering tools…</p>}
-            {footer(<>{s.setupComplete ? <Button type="button" variant="outline" disabled={busy} onClick={a.finish}>{translateUi("interfaceCopy.back")}</Button> : <span />}<Button type="submit" disabled={busy || !s.url.trim() || !settingsValid}>{busy ? "Connecting…" : error || s.connectStatus === "cancelled" ? "Try again" : `Connect ${provider.name}`}</Button></>)}
+            {footer(<>{s.setupComplete ? <Button type="button" variant="outline" disabled={busy} onClick={a.finish}>{translateUi("interfaceCopy.back")}</Button> : <span />}<Button type="submit" disabled={busy || !s.url.trim() || !settingsValid}>{busy ? pageText("connecting_fd3e79") : error || s.connectStatus === "cancelled" ? pageText("tryAgain_042c86") : `Connect ${provider.name}`}</Button></>)}
           </form>}
         </>}
 
         {s.step === "management" && <>
           {!s.connected ? <InlineBanner tone="warning" title="Disconnected">Agents cannot use this connection. Reconnect to restore access under the saved permission choices.</InlineBanner> : <div className="space-y-2"><p className="flex items-center gap-2 text-sm"><CheckCircle2 className="size-4" />Connected{s.identity ? ` as ${s.identity}` : ""}</p><p className="text-sm text-muted-foreground">{s.grantKind === "user" ? "Just me" : "Any human in the organization"} · {s.tools.length} tools · {s.allAgents ? "Any agent" : `${s.agentIds.length} agents with access`}</p></div>}
-          <div className="flex flex-wrap gap-2"><Button onClick={() => a.navigate("access")}>Who can use this connection</Button><Button variant="outline" disabled={!s.connected} onClick={() => a.navigate("permissions")}>Permissions</Button></div>
+          <div className="flex flex-wrap gap-2"><Button onClick={() => a.navigate("access")}>Who can use this connection</Button><Button variant="outline" disabled={!s.connected} onClick={() => a.navigate("permissions")}>{pageText("permissions_d06d55")}</Button></div>
           <p className="text-sm text-muted-foreground">Refresh the catalog after changing tools in {provider.name}. Existing Off and Ask first choices are preserved.</p>
-          <Button variant="outline" disabled={!s.connected || s.refreshing} onClick={a.refresh}>{s.refreshing ? "Refreshing…" : "Refresh tools"}</Button>
+          <Button variant="outline" disabled={!s.connected || s.refreshing} onClick={a.refresh}>{s.refreshing ? pageText("refreshing_961411") : pageText("refreshTools_311c38")}</Button>
           <RemoteMcpManagement providerName={provider.name} connected={s.connected} onReconnect={a.reconnect} onManage={() => a.openProvider("manage")} onDisconnect={a.disconnect} />
         </>}
         {s.step === "draft" && <><p className="text-sm">Your access choices and setup progress are kept with this connection.</p><div className="flex justify-end"><Button onClick={a.resumeDraft}>Resume setup</Button></div></>}

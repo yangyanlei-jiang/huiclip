@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -54,6 +55,7 @@ export function TextAttachmentPreview({ title, text, markdown, html = false, csv
 }
 
 export function TaskAttachmentPanel({ issueId, attachmentId }: { issueId: string; attachmentId: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const attachments = useQuery({
     queryKey: queryKeys.issues.attachments(issueId),
@@ -72,7 +74,7 @@ export function TaskAttachmentPanel({ issueId, attachmentId }: { issueId: string
   });
   const attachmentsView = useQueryView(attachments);
   const contentView = useQueryView(content);
-  if (attachments.isLoading || attachmentsView.kind === "reconnecting") return <p className="p-4 text-sm" role="status">Loading file…</p>;
+  if (attachments.isLoading || attachmentsView.kind === "reconnecting") return <p className="p-4 text-sm" role="status">{pageText("loadingFile_4ee4f5")}</p>;
   if (attachmentsView.kind === "error") {
     return (
       <QueryErrorState
@@ -91,10 +93,10 @@ export function TaskAttachmentPanel({ issueId, attachmentId }: { issueId: string
       <div className="space-y-3 p-4" role="alert">
         <p className="text-sm">{contentView.kind === "error" ? "Could not preview this file. Retry or download it." : "This file is too large or is not supported for text preview. Download it instead."}</p>
         {eligible ? <Button onClick={() => void content.refetch()}>{translateUi("interfaceCopy.retry")}</Button> : null}
-        <Button asChild variant="outline"><a href={downloadUrl} download>Download file</a></Button>
+        <Button asChild variant="outline"><a href={downloadUrl} download>{pageText("downloadFile_774025")}</a></Button>
       </div>
     );
   }
-  if (content.data === undefined) return <p className="p-4 text-sm" role="status">Loading file…</p>;
+  if (content.data === undefined) return <p className="p-4 text-sm" role="status">{pageText("loadingFile_4ee4f5")}</p>;
   return <TextAttachmentPreview key={attachment.id} title={attachment.originalFilename ?? attachment.id} text={content.data} patch={isPatchFile(attachment.originalFilename, attachment.contentType)} csv={isCsvFile(attachment.originalFilename ?? "", attachment.contentType)} markdown={isMarkdownAttachment(attachment)} html={isHtmlPreview(attachment.contentType, attachment.originalFilename)} downloadUrl={downloadUrl} />;
 }

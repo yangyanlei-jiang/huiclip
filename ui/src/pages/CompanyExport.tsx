@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
@@ -627,6 +628,7 @@ function previewErrorMessage(error: unknown): string {
 }
 
 export function CompanyExport() {
+  const { t: pageText } = usePageTranslation("interface");
   const { selectedCompanyId, selectedCompany } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { pushToast } = useToastActions();
@@ -1085,15 +1087,15 @@ export function CompanyExport() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-4 text-sm">
             <span className="font-medium">
-              {selectedCompany?.name ?? "Organization"} export
+              {selectedCompany?.name ?? pageText("organization_519255")} export
             </span>
             <span className="text-muted-foreground">
-              Exporting {selectedCount.toLocaleString()} of {totalFiles.toLocaleString()} file{totalFiles === 1 ? "" : "s"}
+              Exporting {selectedCount.toLocaleString()} of {totalFiles.toLocaleString()}{" " + pageText("file_971c41")}{totalFiles === 1 ? "" : "s"}
               {selectedCount > 0 && ` (~${formatBytes(estimatedZipBytes)})`}
             </span>
             {warnings.length > 0 && (
               <span className="text-amber-500">
-                {warnings.length} warning{warnings.length === 1 ? "" : "s"}
+                {warnings.length}{" " + pageText("warning_383fd7")}{warnings.length === 1 ? "" : "s"}
               </span>
             )}
           </div>
@@ -1199,7 +1201,7 @@ export function CompanyExport() {
                 type="text"
                 value={treeSearch}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                placeholder="Search files..."
+                placeholder={pageText("searchFiles_fe1167")}
                 className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
                 data-page-search-target="true"
               />
@@ -1272,9 +1274,7 @@ export function CompanyExport() {
                   </p>
                 </div>
                 <Button type="button" variant="outline" size="sm" onClick={startPreviewRequest}>
-                  <RotateCcw />
-                  Retry preview
-                </Button>
+                  <RotateCcw />{pageText("retryPreview_6e5493")}</Button>
               </div>
             </div>
           ) : exportPreviewMutation.isError ? ( // query-error-ok: preview is a mutation; the previous preview stays rendered behind this overlay
@@ -1291,9 +1291,7 @@ export function CompanyExport() {
                   </p>
                 </div>
                 <Button type="button" variant="outline" size="sm" onClick={startPreviewRequest}>
-                  <RotateCcw />
-                  Retry preview
-                </Button>
+                  <RotateCcw />{pageText("retryPreview_6e5493")}</Button>
               </div>
             </div>
           ) : null}

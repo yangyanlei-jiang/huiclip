@@ -1,3 +1,5 @@
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ExecutionWorkspace } from "@paperclipai/shared";
@@ -46,6 +48,7 @@ export function ExecutionWorkspaceCloseDialog({
   onOpenChange,
   onClosed,
 }: ExecutionWorkspaceCloseDialogProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
@@ -76,7 +79,7 @@ export function ExecutionWorkspaceCloseDialog({
     },
     onError: (error) => {
       pushToast({
-        title: "Failed to close workspace",
+        title: interfaceMessage("interface:errorFailedToCloseWorkspace"),
         body: describeError(error).body,
         tone: "error",
       });
@@ -100,8 +103,7 @@ export function ExecutionWorkspaceCloseDialog({
       <DialogContent className="max-h-(--sz-85vh) overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{actionLabel}</DialogTitle>
-          <DialogDescription className="break-words">
-            Archive <span className="font-medium text-foreground">{workspaceName}</span> and clean up any owned workspace
+          <DialogDescription className="break-words">{pageText("archive_2621c6") + " "}<span className="font-medium text-foreground">{workspaceName}</span> and clean up any owned workspace
             artifacts. Paperclip keeps the workspace record and task history, but removes it from active workspace views.
           </DialogDescription>
         </DialogHeader>
@@ -172,7 +174,7 @@ export function ExecutionWorkspaceCloseDialog({
 
             {readiness.warnings.length > 0 ? (
               <section className="space-y-2">
-                <h3 className="text-sm font-medium">Warnings</h3>
+                <h3 className="text-sm font-medium">{pageText("warnings_1430f9")}</h3>
                 <ul className="space-y-2 text-sm text-muted-foreground">
                   {readiness.warnings.map((warning) => (
                     <li key={warning} className="break-words rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2">
@@ -189,16 +191,16 @@ export function ExecutionWorkspaceCloseDialog({
                 <div className="rounded-xl border border-border bg-background px-4 py-3 text-sm">
                   <div className="grid gap-2 sm:grid-cols-2">
                     <div>
-                      <div className="text-xs uppercase tracking-(--tracking-eyebrow) text-muted-foreground">Branch</div>
-                      <div className="font-mono text-xs">{readiness.git.branchName ?? "Unknown"}</div>
+                      <div className="text-xs uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{pageText("branch_162751")}</div>
+                      <div className="font-mono text-xs">{readiness.git.branchName ?? pageText("unknown_bc7819")}</div>
                     </div>
                     <div>
-                      <div className="text-xs uppercase tracking-(--tracking-eyebrow) text-muted-foreground">Base ref</div>
+                      <div className="text-xs uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{pageText("baseRef_16e96d")}</div>
                       <div className="font-mono text-xs">{readiness.git.baseRef ?? "Not set"}</div>
                     </div>
                     <div>
                       <div className="text-xs uppercase tracking-(--tracking-eyebrow) text-muted-foreground">Merged into base</div>
-                      <div>{readiness.git.isMergedIntoBase == null ? "Unknown" : readiness.git.isMergedIntoBase ? "Yes" : "No"}</div>
+                      <div>{readiness.git.isMergedIntoBase == null ? pageText("unknown_bc7819") : readiness.git.isMergedIntoBase ? pageText("yes_5397e0") : pageText("no_816c52")}</div>
                     </div>
                     <div>
                       <div className="text-xs uppercase tracking-(--tracking-eyebrow) text-muted-foreground">Ahead / behind</div>

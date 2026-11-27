@@ -1,3 +1,5 @@
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useIssueIdBatches } from "@/hooks/useIssueIdBatches";
 import { TaskChatLoadingShell } from "@/components/task-chat/TaskChatLoadingShell";
@@ -489,7 +491,7 @@ function treeControlPreviewErrorCopy(error: unknown): string {
     if (error.status === 422)
       return "This subtree action is currently invalid for the selected tasks.";
   }
-  return error instanceof Error ? error.message : "Unable to load preview.";
+  return error instanceof Error ? error.message : interfaceMessage("interface:errorUnableToLoadPreviewSentence");
 }
 
 // `canBoardManageRuntime` and `readRecoveryReconcileWorkspaceId` moved to `@/lib/recovery-reconcile`
@@ -732,9 +734,11 @@ function AttributionAvatar({
   actor: AttributionActor;
   via?: string | null;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const displayLabel = pageText(label === "Assignee" ? "assignee_049e3c" : "originating");
   const accessibleLabel = via
-    ? `${label}: ${actor.name} · via ${via}`
-    : `${label}: ${actor.name}`;
+    ? pageText("actorVia", { label: displayLabel, name: actor.name, via })
+    : pageText("actorName", { label: displayLabel, name: actor.name });
   const testIdLabel = label.toLowerCase();
 
   return (
@@ -762,14 +766,14 @@ function AttributionAvatar({
           )}
           <div className="min-w-0">
             <div className="text-(length:--text-nano) font-medium uppercase leading-none text-background/70">
-              {label}
+              {displayLabel}
             </div>
             <div className="max-w-48 truncate text-xs font-medium leading-4 text-background">
               {actor.name}
             </div>
             {via ? (
               <div className="max-w-48 truncate text-(length:--text-nano) leading-3 text-background/60">
-                via {via}
+                {pageText("viaSource", { via })}
               </div>
             ) : null}
           </div>
@@ -793,6 +797,7 @@ function IssueAttributionByline({
   >;
   userLabelMap: ReadonlyMap<string, string>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const assignee: AttributionActor | null = issue.assigneeAgentId
     ? {
         kind: "agent",
@@ -845,7 +850,7 @@ function IssueAttributionByline({
     <TooltipProvider>
       <AvatarGroup
         className="-space-x-1.5"
-        aria-label="Task people"
+        aria-label={pageText("taskPeople")}
         data-testid="issue-attribution-avatar-stack"
       >
         {assignee ? (
@@ -965,6 +970,7 @@ export function IssueDetailLoadingState({
   headerSeed: ReturnType<typeof readIssueDetailHeaderSeed>;
   titleEditor?: React.ReactNode;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const identifier =
     headerSeed?.identifier ?? headerSeed?.id.slice(0, 8) ?? null;
   const { taskChatShellEnabled, streamlinedUiEnabled, coordinatorWorkspaceEnabled, loaded } = useTaskDetailInterfaceMode();
@@ -972,13 +978,13 @@ export function IssueDetailLoadingState({
   if (titleEditor) {
     return <div className="max-w-3xl space-y-6">
       <div data-testid="issue-detail-header">{titleEditor}</div>
-      <div role="status" aria-label="Loading conversation" className="flex items-center justify-center">
+      <div role="status" aria-label={pageText("loadingConversation_22707c")} className="flex items-center justify-center">
         <Skeleton aria-hidden="true" className="h-4 w-24" />
       </div>
     </div>;
   }
   if (!loaded) {
-    return <div data-testid="task-detail-presentation-loading" role="status" aria-label="Loading conversation" className="flex h-full min-h-0 w-full flex-1 items-center justify-center">
+    return <div data-testid="task-detail-presentation-loading" role="status" aria-label={pageText("loadingConversation_22707c")} className="flex h-full min-h-0 w-full flex-1 items-center justify-center">
       <Skeleton aria-hidden="true" className="h-4 w-24" />
     </div>;
   }
@@ -1015,9 +1021,7 @@ export function IssueDetailLoadingState({
                   className="border-violet-500/30 bg-violet-500/10 text-(length:--text-nano) text-violet-600 dark:text-violet-400"
                   title={`Routine execution from routine ${headerSeed.originId}`}
                 >
-                  <Repeat className="h-3 w-3" />
-                  Routine
-                </Badge>
+                  <Repeat className="h-3 w-3" />{pageText("routine_482273")}</Badge>
               ) : null}
               {/* Seeded header — same anatomy as the resolved one below, so the
                   eyebrow does not change shape when the real issue arrives. */}
@@ -1030,9 +1034,7 @@ export function IssueDetailLoadingState({
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1 text-xs text-muted-foreground opacity-50 px-1 -mx-1 py-0.5">
-                  <ProjectTile size="xs" />
-                  No project
-                </span>
+                  <ProjectTile size="xs" />{pageText("noProject_c326b7")}</span>
               )}
             </>
           ) : (
@@ -1101,6 +1103,7 @@ function InboxMobileToolbar({
   onProperties,
   onHide,
 }: InboxMobileToolbarProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -1119,7 +1122,7 @@ function InboxMobileToolbar({
             navigate(backHref);
           }
         }}
-        aria-label="Back to inbox"
+        aria-label={pageText("backToInbox_0050d6")}
       >
         <ArrowLeft className="h-5 w-5" />
       </Button>
@@ -1131,7 +1134,7 @@ function InboxMobileToolbar({
             size="icon-sm"
             onClick={onArchive}
             disabled={archivePending}
-            aria-label="Archive from inbox"
+            aria-label={pageText("archiveFromInbox_01ebe7")}
           >
             <Archive className="h-5 w-5" />
           </Button>
@@ -1139,7 +1142,7 @@ function InboxMobileToolbar({
 
         <Popover open={menuOpen} onOpenChange={setMenuOpen}>
           <PopoverTrigger asChild>
-            <Button variant="ghost" size="icon-sm" aria-label="More actions">
+            <Button variant="ghost" size="icon-sm" aria-label={pageText("moreActions_a1e34f")}>
               <MoreVertical className="h-5 w-5" />
             </Button>
           </PopoverTrigger>
@@ -1151,9 +1154,7 @@ function InboxMobileToolbar({
                 setMenuOpen(false);
               }}
             >
-              <Copy className="h-3 w-3" />
-              Copy as markdown
-            </button>
+              <Copy className="h-3 w-3" />{pageText("copyAsMarkdown_87358c")}</button>
             <button
               className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50"
               onClick={() => {
@@ -1161,9 +1162,7 @@ function InboxMobileToolbar({
                 setMenuOpen(false);
               }}
             >
-              <SlidersHorizontal className="h-3 w-3" />
-              Properties
-            </button>
+              <SlidersHorizontal className="h-3 w-3" />{pageText("properties_bc6c88")}</button>
             {issueIdProp && (
               <button
                 className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50 text-destructive"
@@ -1704,7 +1703,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
     onError: (error) => {
       pushToast({
         title: "Run retry failed",
-        body: error instanceof Error ? error.message : "Unable to retry run",
+        body: error instanceof Error ? error.message : interfaceMessage("interface:errorUnableToRetryRun"),
         tone: "error",
       });
     },
@@ -2865,6 +2864,7 @@ function IssueDetailActivityTab({
   handoffFocusSignal = 0,
   externalReferences,
 }: IssueDetailActivityTabProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { data: activity, isLoading: activityLoading } = useQuery({
     queryKey: queryKeys.issues.activity(issueId),
     queryFn: () => activityApi.forIssue(issueId),
@@ -3016,8 +3016,7 @@ function IssueDetailActivityTab({
                   </span>
                 ) : null}
                 {issueCostSummary.hasTokens ? (
-                  <span>
-                    Tokens {formatTokens(issueCostSummary.totalTokens)}
+                  <span>{pageText("tokens_c38c6c") + " "}{formatTokens(issueCostSummary.totalTokens)}
                     {issueCostSummary.cached > 0
                       ? ` (in ${formatTokens(issueCostSummary.input)}, out ${formatTokens(issueCostSummary.output)}, cached ${formatTokens(issueCostSummary.cached)})`
                       : ` (in ${formatTokens(issueCostSummary.input)}, out ${formatTokens(issueCostSummary.output)})`}
@@ -3049,8 +3048,7 @@ function IssueDetailActivityTab({
                       },
                     )}
                   </span>
-                  <span>
-                    Tokens {formatTokens(issueTreeCostTokens)}
+                  <span>{pageText("tokens_c38c6c") + " "}{formatTokens(issueTreeCostTokens)}
                     {issueTreeCostSummary.cachedInputTokens > 0
                       ? ` (in ${formatTokens(issueTreeCostSummary.inputTokens)}, out ${formatTokens(issueTreeCostSummary.outputTokens)}, cached ${formatTokens(issueTreeCostSummary.cachedInputTokens)})`
                       : ` (in ${formatTokens(issueTreeCostSummary.inputTokens)}, out ${formatTokens(issueTreeCostSummary.outputTokens)})`}
@@ -3062,8 +3060,7 @@ function IssueDetailActivityTab({
                     </span>
                   ) : null}
                   <span>
-                    {issueTreeCostSummary.issueCount} task
-                    {issueTreeCostSummary.issueCount === 1 ? "" : "s"}
+                    {issueTreeCostSummary.issueCount}{" " + pageText("task_7fbb72")}{issueTreeCostSummary.issueCount === 1 ? "" : "s"}
                   </span>
                 </div>
               ) : null}
@@ -3199,6 +3196,7 @@ export function IssueDetail({ tasksTab }: { tasksTab?: TaskSidePanelProps["tasks
 export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskSidePanelProps["tasksTab"]; conversation?: {
   agent: Agent; issue: Issue | null; ensureIssue: () => Promise<Issue>;
 } }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { issueId: routeIssueId, companyPrefix } = useParams<{ issueId: string; companyPrefix: string }>();
   const issueId = conversation ? conversation.issue?.id : routeIssueId;
@@ -4602,7 +4600,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         body:
           err instanceof Error
             ? err.message
-            : "Unable to resolve recovery action",
+            : interfaceMessage("interface:errorUnableToResolveRecoveryAction"),
         tone: "error",
       });
     },
@@ -4870,7 +4868,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         body:
           err instanceof Error
             ? err.message
-            : "Unable to save sub-task changes",
+            : interfaceMessage("interface:errorUnableToSaveSubTaskChanges"),
         tone: "error",
       });
     },
@@ -5017,7 +5015,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           variables.action === "approve"
             ? "Approval failed"
             : "Rejection failed",
-        body: err instanceof Error ? err.message : "Unable to update approval",
+        body: err instanceof Error ? err.message : interfaceMessage("interface:errorUnableToUpdateApproval"),
         tone: "error",
       });
     },
@@ -5128,7 +5126,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
             body:
               err instanceof Error
                 ? err.message
-                : "Unable to cancel the queued comment",
+                : interfaceMessage("interface:errorUnableToCancelTheQueuedComment"),
             tone: "error",
           });
         }
@@ -5378,7 +5376,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       pushToast({
         title: "Apply failed",
         body:
-          err instanceof Error ? err.message : "Unable to apply the verdicts",
+          err instanceof Error ? err.message : interfaceMessage("interface:errorUnableToApplyTheVerdicts"),
         tone: "error",
       });
     },
@@ -5403,7 +5401,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       pushToast({
         title: "Cancel failed",
         body:
-          err instanceof Error ? err.message : "Unable to cancel the question",
+          err instanceof Error ? err.message : interfaceMessage("interface:errorUnableToCancelTheQuestion"),
         tone: "error",
       });
     },
@@ -5430,7 +5428,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       pushToast({
         title: "Skip failed",
         body:
-          err instanceof Error ? err.message : "Unable to skip this request",
+          err instanceof Error ? err.message : interfaceMessage("interface:errorUnableToSkipThisRequest"),
         tone: "error",
       });
     },
@@ -5561,7 +5559,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
             body:
               err instanceof Error
                 ? err.message
-                : "Unable to cancel the queued comment",
+                : interfaceMessage("interface:errorUnableToCancelTheQueuedComment"),
             tone: "error",
           });
         }
@@ -5684,7 +5682,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         body:
           err instanceof Error
             ? err.message
-            : "Unable to cancel the queued comment",
+            : interfaceMessage("interface:errorUnableToCancelTheQueuedComment"),
         tone: "error",
       });
     },
@@ -5710,7 +5708,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       pushToast({
         title: "Delete failed",
         body:
-          err instanceof Error ? err.message : "Unable to delete the comment",
+          err instanceof Error ? err.message : interfaceMessage("interface:errorUnableToDeleteTheComment"),
         tone: "error",
       });
     },
@@ -5809,7 +5807,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         );
       }
       pushToast({
-        title: "Failed to save feedback",
+        title: interfaceMessage("interface:errorFailedToSaveFeedback"),
         body: err instanceof Error ? err.message : "Unknown error",
         tone: "error",
       });
@@ -6727,7 +6725,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         body:
           error instanceof Error
             ? error.message
-            : "Unable to copy task markdown",
+            : interfaceMessage("interface:errorUnableToCopyTaskMarkdown"),
         tone: "error",
       });
     }
@@ -7239,7 +7237,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         body:
           err instanceof Error
             ? err.message
-            : "Unable to reconcile the workspace branch.",
+            : interfaceMessage("interface:errorUnableToReconcileTheWorkspaceBranchSentence"),
         tone: "error",
       });
     },
@@ -7679,9 +7677,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
             <span className="relative flex h-1.5 w-1.5">
               <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-500" />
-            </span>
-            Live
-          </Badge>
+            </span>{pageText("live_65c821")}</Badge>
         )}
 
         {issue.originKind === "routine_execution" && issue.originId && (
@@ -7690,16 +7686,14 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
             className="inline-flex items-center gap-1 rounded-full bg-violet-500/10 border border-violet-500/30 px-2 py-0.5 text-(length:--text-nano) font-medium text-violet-600 dark:text-violet-400 shrink-0 hover:bg-violet-500/20 transition-colors"
             title={`Routine execution from routine ${issue.originId}`}
           >
-            <Repeat className="h-3 w-3" />
-            Routine
-          </Link>
+            <Repeat className="h-3 w-3" />{pageText("routine_482273")}</Link>
         )}
 
         {issue.originKind === "task_watchdog" ? (
           <Badge
             variant="outline"
             className="border-sky-500/40 bg-sky-500/10 text-(length:--text-nano) text-sky-700 dark:text-sky-300"
-            title="This task is a generated watchdog task. It verifies whether stopped work in the watched task tree is legitimate."
+            title={pageText("thisTaskIsAGeneratedWatchdogTaskIt_1e4119")}
           >
             <ScanEye className="h-3 w-3" />
             Watchdog
@@ -7736,7 +7730,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
             variant="outline"
             data-testid="issue-detail-parked-blocker"
             className="border-amber-500/60 bg-amber-500/15 text-(length:--text-nano) text-amber-700 dark:text-amber-300"
-            title="Blocked by parked work — at least one assigned blocker is in backlog and will not wake its assignee."
+            title={pageText("blockedByParkedWorkAtLeastOneAssigned_1230f7")}
           >
             <Flag className="h-3 w-3" />
             Blocked by parked work
@@ -7767,9 +7761,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           </Link>
         ) : (
           <span className="inline-flex items-center gap-1 text-xs text-muted-foreground opacity-50 px-1 -mx-1 py-0.5">
-            <ProjectTile size="xs" />
-            No project
-          </span>
+            <ProjectTile size="xs" />{pageText("noProject_c326b7")}</span>
         )}
 
         <IssueAttributionByline
@@ -7809,7 +7801,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
               variant="ghost"
               size="icon-xs"
               onClick={copyIssueToClipboard}
-              title="Copy task as markdown"
+              title={pageText("copyTaskAsMarkdown_c8bd5e")}
             >
               {copied ? (
                 <Check className="h-4 w-4 text-green-500" />
@@ -7821,7 +7813,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
               variant="ghost"
               size="icon-xs"
               onClick={() => setMobilePropsOpen(true)}
-              title="Properties"
+              title={pageText("properties_bc6c88")}
             >
               <SlidersHorizontal className="h-4 w-4" />
             </Button>
@@ -7838,8 +7830,8 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                   archiveFromInbox.mutate(issue.id);
               }}
               disabled={archivePending}
-              title="Archive from inbox"
-              aria-label="Archive from inbox"
+              title={pageText("archiveFromInbox_01ebe7")}
+              aria-label={pageText("archiveFromInbox_01ebe7")}
             >
               <Archive className="h-4 w-4" />
             </Button>
@@ -7849,8 +7841,8 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
               variant="ghost"
               size="icon-xs"
               onClick={() => setFileViewerPromptOpen(true)}
-              title="Open file... (g f)"
-              aria-label="Open file in this issue"
+              title={pageText("openFileGF_715a6d")}
+              aria-label={pageText("openFileInThisIssue_fae686")}
             >
               <FileCode2 className="h-4 w-4" />
             </Button>
@@ -7860,7 +7852,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
               variant="ghost"
               size="icon-xs"
               onClick={copyIssueToClipboard}
-              title="Copy task as markdown"
+              title={pageText("copyTaskAsMarkdown_c8bd5e")}
             >
               {copied ? (
                 <Check className="h-4 w-4 text-green-500" />
@@ -7902,8 +7894,8 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                   variant="ghost"
                   size="icon-xs"
                   className="shrink-0"
-                  aria-label="More task actions"
-                  title="More task actions"
+                  aria-label={pageText("moreTaskActions_f37d39")}
+                  title={pageText("moreTaskActions_f37d39")}
                   onKeyDown={(event) => {
                     if (event.key === "Enter" || event.key === " ") {
                       event.preventDefault();
@@ -7950,9 +7942,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                         <Check className="h-3 w-3" />
                       ) : (
                         <Copy className="h-3 w-3" />
-                      )}
-                      Copy as markdown
-                    </button>
+                      )}{pageText("copyAsMarkdown_87358c")}</button>
                     {canArchiveFromInbox ? (
                       <button
                         className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-accent/50 disabled:opacity-50"
@@ -7963,9 +7953,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                           setMoreOpen(false);
                         }}
                       >
-                        <Archive className="h-3 w-3" />
-                        Archive from inbox
-                      </button>
+                        <Archive className="h-3 w-3" />{pageText("archiveFromInbox_01ebe7")}</button>
                     ) : null}
                   </>
                 ) : null}
@@ -8071,7 +8059,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           readCurrentValue={async () => (await issuesApi.getCore(issue.id, { cache: "no-store", fresh: true })).description ?? ""}
           as="p"
           className="text-sm leading-7 text-foreground"
-          placeholder="Add a description..."
+          placeholder={pageText("addADescription_8c1d83")}
           multiline
           foldable
           mentions={mentionOptions}
@@ -8282,9 +8270,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                 onClick={openNewSubIssue}
                 className="shrink-0 shadow-none"
               >
-                <Plus className="mr-1.5 h-3.5 w-3.5" />
-                New Sub-task
-              </Button>
+                <Plus className="mr-1.5 h-3.5 w-3.5" />{pageText("newSubTask_377408")}</Button>
             </div>
           )}
 
@@ -8404,9 +8390,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
               return (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between gap-2">
-                    <h3 className="text-sm font-medium text-muted-foreground">
-                      Artifacts
-                    </h3>
+                    <h3 className="text-sm font-medium text-muted-foreground">{pageText("artifacts_a5b79f")}</h3>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {workProductsWithFileRefs.map(({ product, fileRef }) => (
@@ -8442,13 +8426,9 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                 className={cn("w-full justify-start gap-1", shellSectionClass)}
               >
                 <TabsTrigger value="chat" className="gap-1.5">
-                  <MessageSquare className="h-3.5 w-3.5" />
-                  Chat
-                </TabsTrigger>
+                  <MessageSquare className="h-3.5 w-3.5" />{pageText("chat_2ced57")}</TabsTrigger>
                 <TabsTrigger value="activity" className="gap-1.5">
-                  <ActivityIcon className="h-3.5 w-3.5" />
-                  Activity
-                </TabsTrigger>
+                  <ActivityIcon className="h-3.5 w-3.5" />{pageText("activity_81c0d9")}</TabsTrigger>
                 <TabsTrigger value="related-work" className="gap-1.5">
                   <ListTree className="h-3.5 w-3.5" />
                   Related work
@@ -8989,8 +8969,8 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                   <SheetHeader>
                     <SheetTitle className="text-sm">
                       {documentDeepLink?.documentKey === "plan"
-                        ? "Plan"
-                        : "Properties"}
+                        ? pageText("plan_ae2f98")
+                        : pageText("properties_bc6c88")}
                     </SheetTitle>
                   </SheetHeader>
                   <ScrollArea className="flex-1 overflow-y-auto">

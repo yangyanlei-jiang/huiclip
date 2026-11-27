@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useId, useRef, useState } from "react";
 import { isValidExistingBranchName } from "@paperclipai/shared";
@@ -28,6 +29,7 @@ export function WorkspaceBaseRefRecoveryNotice({
   requestedRef, repository, defaultBranch, agentName, configuredBy,
   taskOverride = true, failureKind = "unresolved_ref", unavailableReason, onRepair,
 }: WorkspaceBaseRefRecoveryNoticeProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const id = useId();
   const [editing, setEditing] = useState(!defaultBranch);
@@ -68,7 +70,7 @@ export function WorkspaceBaseRefRecoveryNotice({
       <div className="flex min-w-0 flex-1 flex-col gap-3">
         <div className="flex flex-col gap-1" role="status" aria-live="polite">
           <h2 id={`${id}-title`} className="break-words text-sm font-semibold">
-            {repairedBranch ? "Branch updated · retry requested" : failureKind === "missing_branch" ? <>Branch <code className="font-mono">{requestedRef}</code> was not found</> : <>Couldn’t use branch <code className="font-mono">{requestedRef}</code></>}
+            {repairedBranch ? "Branch updated · retry requested" : failureKind === "missing_branch" ? <>{pageText("branch_162751") + " "}<code className="font-mono">{requestedRef}</code> was not found</> : <>Couldn’t use branch <code className="font-mono">{requestedRef}</code></>}
           </h2>
           <p className="text-sm leading-relaxed text-muted-foreground">
             {repairedBranch
@@ -107,7 +109,7 @@ export function WorkspaceBaseRefRecoveryNotice({
         )}
         <div>
           <Button type="button" variant="ghost" size="xs" className="text-muted-foreground" aria-expanded={details} aria-controls={`${id}-details`} onClick={() => setDetails(value => !value)}>
-            {details ? "Hide details" : "Why did this happen?"}<ChevronDown aria-hidden className={cn("size-3", details && "rotate-180")} />
+            {details ? pageText("hideDetails_f8c248") : "Why did this happen?"}<ChevronDown aria-hidden className={cn("size-3", details && "rotate-180")} />
           </Button>
           {details && <div id={`${id}-details`} className="mt-2 rounded-md border border-border bg-background">
             <SystemNoticeMetadataSections tone="neutral" sections={[{ rows: [

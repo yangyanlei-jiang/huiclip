@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type { ReactNode } from "react";
 import { Check, Layers } from "lucide-react";
 import type { ArtifactGroupBy, ArtifactKindFilter } from "@/api/artifacts";
@@ -44,11 +45,12 @@ export interface ArtifactsToolbarProps {
 
 /** Shared shipped Artifacts controls. Canonical proposal: Components / Toolbars / Artifacts. */
 export function ArtifactsToolbar({ query: draftQuery, onQueryChange: setDraftQuery, groupBy, onGroupByChange: selectGroupBy, kind, onKindChange: selectKind, filters }: ArtifactsToolbarProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const grouping = groupBy !== "none";
   return (
     <div data-canonical-toolbar="artifacts" role="toolbar" aria-label="Artifacts controls" className="flex flex-col items-start gap-4">
       <div className="design-toolbar-controls flex w-full flex-wrap items-center gap-4">
-        <ToolbarSearch query={draftQuery} onQueryChange={setDraftQuery} label="Search artifacts" placeholder="Search artifacts…" clearLabel="Clear artifact search" />
+        <ToolbarSearch query={draftQuery} onQueryChange={setDraftQuery} label={pageText("searchArtifacts_200f88")} placeholder={pageText("searchArtifacts_de789d")} clearLabel="Clear artifact search" />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -214,6 +215,7 @@ function AwaitingJoinApprovalPanel({
 }
 
 export function InviteLandingPage() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -613,8 +615,7 @@ export function InviteLandingPage() {
             ) : null}
 
             {sessionQuery.data ? (
-              <div className="border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-50">
-                Signed in as <span className="font-medium">{sessionLabel}</span>.
+              <div className="border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-50">{pageText("signedInAs_a02107") + " "}<span className="font-medium">{sessionLabel}</span>.
               </div>
             ) : null}
           </section>
@@ -665,7 +666,7 @@ export function InviteLandingPage() {
                   disabled={acceptMutation.isPending || agentName.trim().length === 0}
                   onClick={() => acceptMutation.mutate()}
                 >
-                  {acceptMutation.isPending ? "Working..." : joinButtonLabel}
+                  {acceptMutation.isPending ? pageText("working_049ac8") : joinButtonLabel}
                 </Button>
               </div>
             ) : requiresHumanAccount ? (
@@ -693,9 +694,7 @@ export function InviteLandingPage() {
                       setAuthFeedback(null);
                       setAuthMode("sign_up");
                     }}
-                  >
-                    Create account
-                  </button>
+                  >{pageText("createAccount_aaf374")}</button>
                   <button
                     type="button"
                     className={`${modeButtonBaseClassName} ${
@@ -805,7 +804,7 @@ export function InviteLandingPage() {
                     aria-disabled={!authCanSubmit || authMutation.isPending}
                   >
                     {authMutation.isPending
-                      ? "Working..."
+                      ? pageText("working_049ac8")
                       : authMode === "sign_in"
                         ? "Sign in and continue"
                         : "Create account and continue"}
@@ -859,7 +858,7 @@ export function InviteLandingPage() {
                       acceptMutation.mutate();
                     }}
                   >
-                    {acceptMutation.isPending ? "Working..." : joinButtonLabel}
+                    {acceptMutation.isPending ? pageText("working_049ac8") : joinButtonLabel}
                   </Button>
                 )}
               </div>

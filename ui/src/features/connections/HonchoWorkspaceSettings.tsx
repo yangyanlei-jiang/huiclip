@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useId, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -9,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { InlineBanner } from "@/components/InlineBanner";
 
 export function HonchoWorkspaceSettings({ connection, canConfigure }: { connection: ToolConnection; canConfigure: boolean }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const id = useId();
   const client = useQueryClient();
@@ -28,7 +30,7 @@ export function HonchoWorkspaceSettings({ connection, canConfigure }: { connecti
     {mutation.error && <div role="alert"><InlineBanner tone="danger">{describeError(mutation.error).body}</InlineBanner></div>}
     {draft !== null && draft !== saved && <div className="flex items-center justify-between">
       <Button variant="ghost" disabled={mutation.isPending} onClick={() => { setDraft(null); mutation.reset(); }}>{translateUi("interfaceCopy.cancel")}</Button>
-      <Button disabled={!canConfigure || mutation.isPending || !value.trim()} onClick={() => mutation.mutate()}>{mutation.isPending ? "Saving…" : "Save workspace"}</Button>
+      <Button disabled={!canConfigure || mutation.isPending || !value.trim()} onClick={() => mutation.mutate()}>{mutation.isPending ? pageText("saving_56a228") : "Save workspace"}</Button>
     </div>}
   </section>;
 }

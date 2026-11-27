@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import type { ActivityEvent, Issue, Agent, ProviderTraceMetadata } from "@paperclipai/shared";
@@ -605,6 +606,7 @@ export function IssueRunLedgerContent({
   onRerunWithTrace,
   providerTraceMetadata = new Map(),
 }: IssueRunLedgerContentProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [inspectedRun, setInspectedRun] = useState<LedgerRun | null>(null);
   const ledgerRuns = useMemo(
@@ -717,8 +719,7 @@ export function IssueRunLedgerContent({
               ))}
               {children.active.length > 4 ? (
                 <span className="rounded-md border border-border px-2 py-1 text-(length:--text-micro) text-muted-foreground">
-                  +{children.active.length - 4} more
-                </span>
+                  +{children.active.length - 4}{" " + pageText("more_e7c95b")}</span>
               ) : null}
             </div>
           ) : null}
@@ -746,8 +747,7 @@ export function IssueRunLedgerContent({
             .
             {latestSilentRun.outputSilence.evaluationIssueIdentifier ? (
               <>
-                {" "}
-                Review{" "}
+                {" "}{pageText("review_e29a79")}{" "}
                 <Link
                   to={`/issues/${latestSilentRun.outputSilence.evaluationIssueIdentifier}`}
                   className="font-medium underline underline-offset-2"
@@ -888,9 +888,7 @@ export function IssueRunLedgerContent({
                   </span>
                   {run.isLive ? (
                     <span className="inline-flex items-center gap-1 rounded-md border border-blue-500/30 bg-blue-500/10 px-1.5 py-0.5 text-(length:--text-micro) text-blue-700 dark:text-blue-300">
-                      <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
-                      live
-                    </span>
+                      <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />{pageText("live_98aadb")}</span>
                   ) : null}
                   <ProviderTraceStatusBadge
                     trace={providerTraceMetadata.get(run.runId)}
@@ -953,14 +951,14 @@ export function IssueRunLedgerContent({
                 <div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-3">
                   <div className="min-w-0">
                     <span className="text-foreground">Elapsed</span>{" "}
-                    {duration ?? "unknown"}
+                    {duration ?? pageText("unknown_50d8b4")}
                   </div>
                   <div className="min-w-0">
                     <span className="text-foreground">Last useful action</span>{" "}
                     {lastUsefulActionLabel(run)}
                   </div>
                   <div className="min-w-0">
-                    <span className="text-foreground">Stop</span>{" "}
+                    <span className="text-foreground">{pageText("stop_9e2534")}</span>{" "}
                     {stopStatusLabel(run, stopReason)}
                   </div>
                 </div>

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -262,11 +263,12 @@ function ConnectionCallout({
   reconnectUnavailableMessage: string;
   onConnect: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <section className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border px-4 py-3">
       <div>
         <h2 className="text-sm font-semibold text-foreground">
-          {previousConnection ? "Needs attention" : "Not connected"}
+          {previousConnection ? pageText("needsAttention_a12672") : "Not connected"}
         </h2>
         <p className="mt-0.5 text-sm text-muted-foreground">
           {previousConnection
@@ -280,7 +282,7 @@ function ConnectionCallout({
         ) : null}
       </div>
       {!previousConnection || canReconnect ? (
-        <Button onClick={onConnect}>{previousConnection ? "Reconnect" : "Connect"}</Button>
+        <Button onClick={onConnect}>{previousConnection ? pageText("reconnect_6988b1") : pageText("connect_b65463")}</Button>
       ) : null}
     </section>
   );

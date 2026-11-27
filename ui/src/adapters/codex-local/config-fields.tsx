@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectPopover } from "../../components/ui/select";
 import { AdapterMark } from "../../components/AdapterMark";
 import { MuseRunnerConnection } from "../../components/MuseRunnerConnection";
@@ -85,6 +86,7 @@ export function CodexLocalConfigFields({
   managedSandboxOnly,
   hideRunnerHarness,
 }: AdapterConfigFieldsProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const runnerManaged = adapterType === "paperclip_runner";
   // The execution engine picks which binary runs on the execution host, and the
   // ACP sub-fields below name host paths. The platform-managed environment owns
@@ -202,11 +204,11 @@ export function CodexLocalConfigFields({
     <>
       {!hideEngineChoice && (
         <Field
-          label="Execution engine"
+          label={pageText("executionEngine_1f5a0b")}
           hint="Default uses ACP. If ACP is unavailable, the run fails with a setup error. Choose CLI explicitly to use it."
         >
           <SelectPopover
-            aria-label="Execution engine"
+            aria-label={pageText("executionEngine_1f5a0b")}
             value={engine}
             onValueChange={(next) => {
               const value =
@@ -788,7 +790,7 @@ export function CodexLocalConfigFields({
         </>
       )}
       {!runnerManaged && !hideInstructionsFile && (
-        <Field label="Agent instructions file" hint={instructionsFileHint}>
+        <Field label={pageText("agentInstructionsFile_9765d1")} hint={instructionsFileHint}>
           <div className="flex items-center gap-2">
             <DraftInput
               value={

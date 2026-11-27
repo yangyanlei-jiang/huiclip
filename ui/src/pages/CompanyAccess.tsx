@@ -1,3 +1,5 @@
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -41,6 +43,7 @@ const reassignmentIssueStatuses = "backlog,todo,in_progress,in_review,blocked,fa
 type EditableMemberStatus = "pending" | "active" | "suspended";
 
 export function CompanyAccess() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { selectedCompany, selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -139,7 +142,7 @@ export function CompanyAccess() {
     },
     onError: (error) => {
       pushToast({
-        title: "Failed to update member",
+        title: interfaceMessage("interface:errorFailedToUpdateMember"),
         body: describeError(error).body,
         tone: "error",
       });
@@ -157,7 +160,7 @@ export function CompanyAccess() {
     },
     onError: (error) => {
       pushToast({
-        title: "Failed to approve join request",
+        title: interfaceMessage("interface:errorFailedToApproveJoinRequest"),
         body: describeError(error).body,
         tone: "error",
       });
@@ -175,7 +178,7 @@ export function CompanyAccess() {
     },
     onError: (error) => {
       pushToast({
-        title: "Failed to reject join request",
+        title: interfaceMessage("interface:errorFailedToRejectJoinRequest"),
         body: describeError(error).body,
         tone: "error",
       });
@@ -231,7 +234,7 @@ export function CompanyAccess() {
     },
     onError: (error) => {
       pushToast({
-        title: "Failed to remove member",
+        title: interfaceMessage("interface:errorFailedToRemoveMember"),
         body: describeError(error).body,
         tone: "error",
       });
@@ -296,7 +299,7 @@ export function CompanyAccess() {
         </div>
         {cloudInviteUrl && (
           <Button asChild>
-            <a href={cloudInviteUrl}><UserPlus />Invite people</a>
+            <a href={cloudInviteUrl}><UserPlus />{pageText("invitePeople_e1eb97")}</a>
           </Button>
         )}
       </div>
@@ -331,7 +334,7 @@ export function CompanyAccess() {
                   Review pending join requests before they become active organization members.
                 </p>
               </div>
-              <Badge variant="outline">{pendingHumanJoinRequests.length} pending</Badge>
+              <Badge variant="outline">{pendingHumanJoinRequests.length}{" " + pageText("pending_e22586")}</Badge>
             </div>
             <div className="space-y-3">
               {pendingHumanJoinRequests.map((request) => (
@@ -426,9 +429,7 @@ export function CompanyAccess() {
                             disabled={!canArchive}
                             title={!canArchive ? removalReason ?? undefined : undefined}
                           >
-                            <Trash2 className="mr-1 h-3.5 w-3.5" />
-                            Remove
-                          </Button>
+                            <Trash2 className="mr-1 h-3.5 w-3.5" />{pageText("remove_e96390")}</Button>
                         </span>
                       </div>
                     </td>
@@ -443,7 +444,7 @@ export function CompanyAccess() {
       <Dialog open={!!editingMember} onOpenChange={(open) => !open && setEditingMemberId(null)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Edit member</DialogTitle>
+            <DialogTitle>{pageText("editMember_775824")}</DialogTitle>
             <DialogDescription>
               Update organization role and membership status for {editingMember?.user?.name || editingMember?.user?.email || editingMember?.principalId}.
             </DialogDescription>
@@ -498,7 +499,7 @@ export function CompanyAccess() {
               }}
               disabled={updateMemberMutation.isPending}
             >
-              {updateMemberMutation.isPending ? "Saving…" : "Save member"}
+              {updateMemberMutation.isPending ? pageText("saving_56a228") : "Save member"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -507,9 +508,8 @@ export function CompanyAccess() {
       <Dialog open={!!removingMember} onOpenChange={(open) => !open && setRemovingMemberId(null)}>
         <DialogContent className="max-w-xl">
           <DialogHeader>
-            <DialogTitle>Remove member</DialogTitle>
-            <DialogDescription>
-              Archive {memberDisplayName(removingMember)} and move active assignments before hiding this user from assignment fields.
+            <DialogTitle>{pageText("removeMember_1c31d1")}</DialogTitle>
+            <DialogDescription>{pageText("archive_2621c6") + " "}{memberDisplayName(removingMember)} and move active assignments before hiding this user from assignment fields.
             </DialogDescription>
           </DialogHeader>
           {removingMember && (
@@ -582,7 +582,7 @@ export function CompanyAccess() {
               }}
               disabled={archiveMemberMutation.isPending || assignedIssuesQuery.isLoading}
             >
-              {archiveMemberMutation.isPending ? "Removing..." : "Remove member"}
+              {archiveMemberMutation.isPending ? pageText("removing_2a76d4") : pageText("removeMember_1c31d1")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -599,6 +599,7 @@ export function CompanyAccess() {
 }
 
 export function CompanyAccessLegacyRoute() {
+  const { t: pageText } = usePageTranslation("interface");
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { slots, isLoading, errorMessage } = usePluginSlots({
@@ -647,7 +648,7 @@ export function CompanyAccessLegacyRoute() {
         </div>
         <div className="flex flex-wrap gap-2">
           <Button asChild>
-            <Link to="/company/settings/members">Open Members</Link>
+            <Link to="/company/settings/members">{pageText("openMembers_eb6da5")}</Link>
           </Button>
           <Button asChild variant="outline">
             <Link to="/company/settings/members?tab=invites">Open Invites</Link>

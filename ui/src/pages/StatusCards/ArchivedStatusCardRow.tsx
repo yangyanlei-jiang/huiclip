@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 
@@ -24,6 +25,7 @@ export function ArchivedStatusCardRow({
   onRestore: () => void;
   restorePending?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   // Lifetime cost is a rollup of the card's full update ledger (live P1 data).
   const updatesQuery = useQuery({
     queryKey: queryKeys.statusCards.updates(card.id),
@@ -35,8 +37,7 @@ export function ArchivedStatusCardRow({
     <div className="flex items-center justify-between gap-4 rounded-lg border border-border bg-muted/30 px-4 py-3">
       <div className="min-w-0">
         <p className="truncate text-sm font-semibold">{card.title ?? "Untitled card"}</p>
-        <p className="mt-0.5 text-xs text-muted-foreground" title={card.archivedAt ? formatDateTime(card.archivedAt) : undefined}>
-          archived {shortDate(card.archivedAt)} · last summary {shortDate(card.lastGeneratedAt)}
+        <p className="mt-0.5 text-xs text-muted-foreground" title={card.archivedAt ? formatDateTime(card.archivedAt) : undefined}>{pageText("archived_48f0f9") + " "}{shortDate(card.archivedAt)} · last summary {shortDate(card.lastGeneratedAt)}
           {rollup ? ` · lifetime ${formatTokens(rollup.totalTokens)} / ${formatCents(rollup.totalCostCents)}` : ""}
         </p>
       </div>
@@ -44,13 +45,9 @@ export function ArchivedStatusCardRow({
           summary); Restore is safe but secondary — it brings the card back
           stale and never auto-runs. */}
       <div className="flex shrink-0 gap-2">
-        <Button size="sm" onClick={onView}>
-          View
-        </Button>
+        <Button size="sm" onClick={onView}>{pageText("view_69bd4e")}</Button>
         <Button variant="outline" size="sm" onClick={onRestore} disabled={restorePending}>
-          {restorePending ? <Loader2 className="animate-spin" /> : null}
-          Restore
-        </Button>
+          {restorePending ? <Loader2 className="animate-spin" /> : null}{pageText("restore_3cbe6d")}</Button>
       </div>
     </div>
   );

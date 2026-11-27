@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { createContext, useContext, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Mail, Paperclip } from "lucide-react";
@@ -49,6 +50,7 @@ export function EmailMessageCard({
   publication?: EmailPublicationSummary;
   issueId: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const attachments = useQuery({
     queryKey: ["email-attachments", issueId],
     queryFn: () => issuesApi.listAttachments(issueId),
@@ -74,9 +76,7 @@ export function EmailMessageCard({
         <p className="text-sm font-medium">
           {message.from}
           {message.direction === "inbound" && (
-            <span className="ml-2 rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
-              External
-            </span>
+            <span className="ml-2 rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">{pageText("external_8d10c6")}</span>
           )}
         </p>
         <p className="break-words text-xs text-muted-foreground">
@@ -105,7 +105,7 @@ export function EmailMessageCard({
                 className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-xs"
               >
                 <Paperclip className="size-3.5" />
-                {attachment?.originalFilename ?? "Open attachment"}
+                {attachment?.originalFilename ?? pageText("openAttachment_b36bd6")}
               </a>
             );
           })}
@@ -132,7 +132,7 @@ export function EmailMessageCard({
               : publication.outcome === "uncertain"
                 ? "Delivery uncertain"
                 : publication.outcome === "queued"
-                  ? "Queued"
+                  ? pageText("queued_6a5998")
                   : "Sent"}
           {publication.error ? ` · ${publication.error}` : ""}
         </p>

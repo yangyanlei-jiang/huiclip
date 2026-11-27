@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { AgentIdentity } from "@/components/AgentIdentity";
 import type { AvatarAgent } from "./AgentAvatar";
@@ -107,6 +108,7 @@ export function IssueColumnPicker({
   iconOnly?: boolean;
   rowPresentation?: "legacy" | "task";
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -115,10 +117,10 @@ export function IssueColumnPicker({
           variant={iconOnly ? "outline" : "ghost"}
           size={iconOnly ? "icon" : "sm"}
           className={iconOnly ? "h-8 w-8 shrink-0" : "hidden h-8 shrink-0 px-2 text-xs sm:inline-flex"}
-          title="Columns"
+          title={pageText("columns_cf723c")}
         >
           <Columns3 className={iconOnly ? "h-3.5 w-3.5" : "mr-1 h-3.5 w-3.5"} />
-          {!iconOnly && "Columns"}
+          {!iconOnly && pageText("columns_cf723c")}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-(--sz-300px) rounded-xl border-border/70 p-1.5 shadow-xl shadow-black/10">
@@ -309,6 +311,7 @@ export function InboxIssueTrailingColumns({
   assigneeContent?: ReactNode;
   onFilterWorkspace?: (workspaceId: string) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const activityText = issueActivityTimestamp(issue);
   const userLabel = assigneeUserName ?? formatAssigneeUserLabel(issue.assigneeUserId, currentUserId) ?? "User";
@@ -396,9 +399,7 @@ export function InboxIssueTrailingColumns({
           }
 
           return (
-            <span key={column} className="min-w-0 truncate text-xs text-muted-foreground">
-              Unknown
-            </span>
+            <span key={column} className="min-w-0 truncate text-xs text-muted-foreground">{pageText("unknown_bc7819")}</span>
           );
         }
 
@@ -422,9 +423,7 @@ export function InboxIssueTrailingColumns({
           }
 
           return (
-            <span key={column} className="min-w-0 truncate text-xs text-muted-foreground">
-              No project
-            </span>
+            <span key={column} className="min-w-0 truncate text-xs text-muted-foreground">{pageText("noProject_c326b7")}</span>
           );
         }
 

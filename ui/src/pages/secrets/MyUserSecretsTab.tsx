@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { CompanySecret } from "@paperclipai/shared";
@@ -126,6 +127,7 @@ function MyUserSecretRow({
   onClear: () => void;
   clearing: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { definition, secret } = entry;
   const state = myValueState(definition, secret);
   const disabledDefinition = definition.status !== "active";
@@ -165,7 +167,7 @@ function MyUserSecretRow({
         </Badge>
         {!disabledDefinition ? (
           <Button size="sm" variant={secret ? "outline" : "default"} onClick={onSet}>
-            {secret ? "Update" : "Set value"}
+            {secret ? pageText("update_fb91e2") : "Set value"}
           </Button>
         ) : null}
         {secret ? (

@@ -1,3 +1,5 @@
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useId, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -25,6 +27,7 @@ function deriveInitials(name: string) {
 }
 
 export function ProfileSettings() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { selectedCompanyId, selectedCompany } = useCompany();
@@ -146,7 +149,7 @@ export function ProfileSettings() {
   }
 
   if (!sessionQuery.data) {
-    return <div className="text-sm text-destructive">Failed to load profile.</div>;
+    return <div className="text-sm text-destructive">{interfaceMessage("interface:errorFailedToLoadProfileSentence")}</div>;
   }
 
   const currentName = name.trim() || sessionQuery.data.user.name || "Board";
@@ -162,7 +165,7 @@ export function ProfileSettings() {
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <UserRoundPen className="h-5 w-5 text-muted-foreground" />
-          <h1 className="text-lg font-semibold">Profile</h1>
+          <h1 className="text-lg font-semibold">{pageText("profile_ff4fc0")}</h1>
         </div>
         <p className="text-sm text-muted-foreground">
           Control how your account appears in the sidebar and other board surfaces.
@@ -226,9 +229,7 @@ export function ProfileSettings() {
                       onClick={() => removeAvatarMutation.mutate()}
                       disabled={isSavingProfile}
                     >
-                      {removeAvatarMutation.isPending ? <LoaderCircle className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
-                      Remove
-                    </Button>
+                      {removeAvatarMutation.isPending ? <LoaderCircle className="size-4 animate-spin" /> : <Trash2 className="size-4" />}{pageText("remove_e96390")}</Button>
                   ) : null}
                 </div>
               </div>
@@ -260,7 +261,7 @@ export function ProfileSettings() {
               value={name}
               onChange={(event) => setName(event.target.value)}
               maxLength={120}
-              placeholder="Board"
+              placeholder={pageText("board_e879b0")}
             />
             <p className="text-xs text-muted-foreground">
               Shown in the sidebar account footer and comment author surfaces.
@@ -283,7 +284,7 @@ export function ProfileSettings() {
           <div className="md:col-span-2 flex justify-end">
             <Button type="submit" disabled={isSavingProfile || !name.trim()}>
               {updateMutation.isPending ? <LoaderCircle className="size-4 animate-spin" /> : <Save className="size-4" />}
-              {updateMutation.isPending ? "Saving..." : "Save profile"}
+              {updateMutation.isPending ? pageText("saving_ae7e88") : "Save profile"}
             </Button>
           </div>
         </form>

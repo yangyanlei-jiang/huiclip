@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { TaskChatImageGrid } from "./TaskChatImageGrid";
@@ -297,6 +298,7 @@ function ProviderActivityCard({
 }: {
   item: TaskChatProviderActivityItem;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (item.family === "plan_proposal") return <PlanProposalCard item={item} />;
   const Icon = FAMILY_ICON[item.family];
   const hasDetails =
@@ -378,8 +380,7 @@ function ProviderActivityCard({
           )}
         >
           <summary className="flex cursor-pointer list-none items-center gap-1 text-xs font-medium text-muted-foreground">
-            <ChevronDown aria-hidden className="h-3.5 w-3.5" /> Details
-          </summary>
+            <ChevronDown aria-hidden className="h-3.5 w-3.5" />{" " + pageText("details_dc3dec")}</summary>
           {item.details.length > 0 ? (
             <dl className="mt-2 flex min-w-0 flex-col gap-1.5 text-xs">
               {item.details.map((detail) => (
@@ -488,6 +489,7 @@ const OPERATION_LABEL: Record<string, string> = {
 };
 
 function WorkspaceChangeCard({ item }: { item: TaskChatWorkspaceChangeItem }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [openPaths, setOpenPaths] = useState<ReadonlySet<string>>(() => new Set());
   const [expanded, setExpanded] = useState(false);
   const visibleFiles = expanded ? item.files : item.files.slice(0, 5);
@@ -548,7 +550,7 @@ function WorkspaceChangeCard({ item }: { item: TaskChatWorkspaceChangeItem }) {
       ) : null}
       {fileCount > item.files.length ? (
         <p className="mt-1 px-2 text-xs text-muted-foreground" data-testid="task-chat-workspace-change-omitted">
-          {fileCount - item.files.length} more {fileCount - item.files.length === 1 ? "file" : "files"} changed.
+          {fileCount - item.files.length}{" " + pageText("more_e7c95b") + " "}{fileCount - item.files.length === 1 ? pageText("file_971c41") : pageText("files_a1f13b")} changed.
           This change set is too large to list them here.
         </p>
       ) : null}
@@ -557,6 +559,7 @@ function WorkspaceChangeCard({ item }: { item: TaskChatWorkspaceChangeItem }) {
 }
 
 function WorkspaceFileCard({ item }: { item: TaskChatWorkspaceFileItem }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [open, setOpen] = useState(false);
   const extension = item.displayName.includes(".")
     ? item.displayName.split(".").at(-1)?.toUpperCase()
@@ -595,9 +598,7 @@ function WorkspaceFileCard({ item }: { item: TaskChatWorkspaceFileItem }) {
             size="sm"
             variant="outline"
             onClick={() => setOpen(true)}
-          >
-            Preview
-          </Button>
+          >{pageText("preview_f1fbb2")}</Button>
         </div>
       </CardShell>
       <Dialog open={open} onOpenChange={setOpen}>

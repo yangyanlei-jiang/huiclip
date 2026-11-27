@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -121,6 +122,7 @@ function SortableQueuedMessage({
   onDiscard: () => void;
   onCancelAutoSteer: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const immutableResponse = entry.source?.kind === "interaction";
   const label = queuedMessageLabel(entry);
@@ -209,7 +211,7 @@ function SortableQueuedMessage({
           ) : (
             <CornerDownRight className="h-3.5 w-3.5" aria-hidden />
           )}
-          {queue.targetRunId ? "Interrupt" : "Send"}
+          {queue.targetRunId ? pageText("interrupt_d5db45") : "Send"}
         </button>
       ) : (
         <button
@@ -263,9 +265,7 @@ function SortableQueuedMessage({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-44">
           <DropdownMenuItem disabled={!entry.canEdit} onSelect={onEdit}>
-            <Pencil className="h-4 w-4" aria-hidden />
-            Edit message
-          </DropdownMenuItem>
+            <Pencil className="h-4 w-4" aria-hidden />{pageText("editMessage_96116a")}</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu> : null}
     </div>

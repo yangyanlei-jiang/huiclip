@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useId } from "react";
 import { Loader2, Pause, Play } from "lucide-react";
 import { Link } from "@/lib/router";
@@ -22,6 +23,7 @@ export function TaskChatPausedTakeover({
 }: {
   hasDraft?: boolean;
 } & TaskComposerPause) {
+  const { t: pageText } = usePageTranslation("interface");
   const headingId = useId();
   const subtree = scope === "subtree";
   return (
@@ -55,7 +57,7 @@ export function TaskChatPausedTakeover({
         ) : null}
         {resumeHref ? (
           <Button asChild size="sm" className="bg-(--status-agent-paused) text-foreground hover:bg-(--status-agent-paused)/80 dark:text-background">
-            <Link to={resumeHref}><Play aria-hidden="true" />Resume subtree</Link>
+            <Link to={resumeHref}><Play aria-hidden="true" />{pageText("resumeSubtree_614751")}</Link>
           </Button>
         ) : (
           <Button
@@ -65,7 +67,7 @@ export function TaskChatPausedTakeover({
             className="bg-(--status-agent-paused) text-foreground hover:bg-(--status-agent-paused)/80 dark:text-background"
           >
             {pending ? <Loader2 aria-hidden="true" className="animate-spin" /> : <Play aria-hidden="true" />}
-            {pending ? "Resuming…" : subtree ? "Resume subtree" : "Resume task"}
+            {pending ? pageText("resuming_ab0bec") : subtree ? pageText("resumeSubtree_614751") : pageText("resumeTask_556229")}
           </Button>
         )}
       </div>

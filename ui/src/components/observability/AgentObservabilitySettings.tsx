@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useQueryView } from "@/components/QueryView";
 import { useEffect, useRef, useState } from "react";
@@ -40,6 +41,7 @@ export interface AgentObservabilitySettingsViewProps {
 }
 
 export function AgentObservabilitySettingsView(props: AgentObservabilitySettingsViewProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { companyId, settings, canManage = true, saving, testing, removing, error, conflict, onSave, onTest, onRemove, onReload } = props;
   const [provider, setProvider] = useState<"braintrust" | "otlp">("braintrust");
@@ -113,7 +115,7 @@ export function AgentObservabilitySettingsView(props: AgentObservabilitySettings
             <Input id="agent-observability-project" value={projectId} onChange={event => setProjectId(event.target.value)} placeholder="Braintrust project UUID" autoComplete="off" />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="agent-observability-key">API key</Label>
+            <Label htmlFor="agent-observability-key">{pageText("apiKey_cf678c")}</Label>
             {!providerChanged && original?.credentialsConfigured && !replaceKey ? <div className="flex items-center justify-between gap-3">
               <span className="text-sm text-muted-foreground">API key configured</span><Button type="button" variant="outline" size="sm" onClick={() => setReplaceKey(true)}>Replace API key</Button>
             </div> : <Input id="agent-observability-key" type="password" value={apiKey} onChange={event => setApiKey(event.target.value)} autoComplete="new-password" />}
@@ -127,7 +129,7 @@ export function AgentObservabilitySettingsView(props: AgentObservabilitySettings
             <Button type="button" variant="outline" size="sm" disabled={headers.length >= 16} onClick={() => setHeaders(rows => [...rows, { id: nextHeader.current++, originalName: null, name: "", value: "" }])}>Add header</Button></div>
             {headers.length === 0 && <p className="text-sm text-muted-foreground">No authentication headers.</p>}
             {headers.map(row => <div key={row.id} className="flex flex-wrap items-center gap-2">
-              <Input className="min-w-0 flex-1" aria-label="Header name" value={row.name} onChange={event => setHeaders(rows => rows.map(item => item.id === row.id ? { ...item, name: event.target.value } : item))} autoComplete="off" />
+              <Input className="min-w-0 flex-1" aria-label={pageText("headerName_b46f85")} value={row.name} onChange={event => setHeaders(rows => rows.map(item => item.id === row.id ? { ...item, name: event.target.value } : item))} autoComplete="off" />
               <Input className="min-w-0 flex-1" aria-label={`Value for ${row.name || "header"}`} type="password" value={row.value} placeholder={row.originalName && !requireFreshHeaders ? "Keep saved value" : "Header value"}
                 onChange={event => setHeaders(rows => rows.map(item => item.id === row.id ? { ...item, value: event.target.value } : item))} autoComplete="new-password" />
               <Button type="button" size="sm" variant="ghost" aria-label={`Remove ${row.name || "header"}`} onClick={() => setHeaders(rows => rows.filter(item => item.id !== row.id))}>{translateUi("interfaceCopy.remove")}</Button>
@@ -151,13 +153,13 @@ export function AgentObservabilitySettingsView(props: AgentObservabilitySettings
       </div>}
       <div className="flex items-center justify-between gap-3">
         <Button type="button" variant="ghost" disabled={busy || !dirty} onClick={reset}>{translateUi("interfaceCopy.cancel")}</Button>
-        <Button type="button" disabled={busy || !dirty || hasConflict} onClick={() => save()}>{saving ? "Saving…" : "Save changes"}</Button>
+        <Button type="button" disabled={busy || !dirty || hasConflict} onClick={() => save()}>{saving ? pageText("saving_56a228") : pageText("saveChanges_179359")}</Button>
       </div>
-      {dirty && settings && <p className="text-xs text-muted-foreground">Save changes before testing.</p>}
+      {dirty && settings && <p className="text-xs text-muted-foreground">{pageText("saveChangesBeforeTesting_041f38")}</p>}
       {settings && <div className="flex flex-wrap items-center gap-2">
-        <Button type="button" variant="outline" disabled={busy || dirty || hasConflict} onClick={onTest}>{testing ? "Testing…" : "Test saved settings"}</Button>
+        <Button type="button" variant="outline" disabled={busy || dirty || hasConflict} onClick={onTest}>{testing ? pageText("testing_95c456") : "Test saved settings"}</Button>
         {settings.enabled && <Button type="button" size="sm" variant="ghost" disabled={busy || dirty || hasConflict} onClick={() => save(false)}>Disable export</Button>}
-        <Button type="button" size="sm" variant="ghost" disabled={busy || dirty || hasConflict} onClick={onRemove}>{removing ? "Removing…" : "Remove configuration"}</Button>
+        <Button type="button" size="sm" variant="ghost" disabled={busy || dirty || hasConflict} onClick={onRemove}>{removing ? pageText("removing_579d7e") : pageText("removeConfiguration_0ff093")}</Button>
       </div>}
     </>}
   </section>;

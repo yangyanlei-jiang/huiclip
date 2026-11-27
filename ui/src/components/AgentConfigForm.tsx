@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useAdapterLoginCancellation } from "./useAdapterLoginCancellation";
 import { ACCOUNT_BOUND_MODEL_DISCOVERY_QUERY_OPTIONS, isAccountBoundAcpxAgent } from "@/lib/native-model-catalog";
@@ -357,6 +358,7 @@ function ConfigSections({ order, hidden, className, children }: {
 /* ---- Form ---- */
 
 export function AgentConfigForm(props: AgentConfigFormProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { mode, adapterModels: externalModels } = props;
   const isCreate = mode === "create";
@@ -1572,7 +1574,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
             <div className="flex items-center gap-3">
               <span className="text-xs text-muted-foreground">{translateUi("interfaceCopy.unsavedChanges")}</span>
               <Button size="sm" onClick={handleSave} disabled={props.isSaving}>
-                {props.isSaving ? "Saving..." : "Save"}
+                {props.isSaving ? pageText("saving_ae7e88") : pageText("save_efc007")}
               </Button>
             </div>
           </div>
@@ -1657,7 +1659,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
               onClick={handleSave}
               disabled={!isCreate && props.isSaving}
             >
-              {!isCreate && props.isSaving ? "Saving..." : "Save"}
+              {!isCreate && props.isSaving ? pageText("saving_ae7e88") : pageText("save_efc007")}
             </Button>
           </div>
         </div>
@@ -1792,7 +1794,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       <div data-config-section="adapter" className={cn(!cards && (isCreate ? "border-t border-border" : "border-b border-border"))}>
         {untitled("adapter") && !showInlineAdapterTestEnvironmentButton ? null : <div className={cn(cards ? "flex items-center justify-between mb-3" : "px-4 py-2 flex items-center justify-between gap-2")}>
           {cards
-            ? (untitled("adapter") ? <span /> : <h3 className="text-sm font-medium">{props.sectionTitles?.["adapter"] ?? "Adapter"}</h3>)
+            ? (untitled("adapter") ? <span /> : <h3 className="text-sm font-medium">{props.sectionTitles?.["adapter"] ?? pageText("adapter_e6b461")}</h3>)
             : <span className="text-xs font-medium text-muted-foreground">{translateUi("interfaceCopy.adapter")}</span>
           }
           {showInlineAdapterTestEnvironmentButton && (
@@ -2112,7 +2114,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                 flashes on a managed instance.
               */}
               {!hideHostPaths && (
-                <Field label="Command" hint={help.localCommand}>
+                <Field label={pageText("command_890189")} hint={help.localCommand}>
                   <DraftInput
                     value={
                       isCreate
@@ -2190,8 +2192,8 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       {isCreate && showCreateRunPolicySection ? (
         <div data-config-section="run-policy" className={cn(!cards && "border-b border-border")}>
           {cards
-            ? <h3 className="text-sm font-medium flex items-center gap-2 mb-3"><Heart className="h-3 w-3" /> Run Policy</h3>
-            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground flex items-center gap-2"><Heart className="h-3 w-3" /> Run Policy</div>
+            ? <h3 className="text-sm font-medium flex items-center gap-2 mb-3"><Heart className="h-3 w-3" />{" " + pageText("runPolicy_379354")}</h3>
+            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground flex items-center gap-2"><Heart className="h-3 w-3" />{" " + pageText("runPolicy_379354")}</div>
           }
           <div data-agent-tile={panels ? "" : undefined} className={cn(cards ? cardBody : "px-4 pb-3 space-y-3")}>
             <ToggleWithNumber
@@ -2214,8 +2216,8 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       ) : !isCreate ? (
         <div data-config-section="run-policy" className={cn(!cards && "border-b border-border")}>
           {cards
-            ? <h3 className="text-sm font-medium flex items-center gap-2 mb-3"><Heart className="h-3 w-3" /> Run Policy</h3>
-            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground flex items-center gap-2"><Heart className="h-3 w-3" /> Run Policy</div>
+            ? <h3 className="text-sm font-medium flex items-center gap-2 mb-3"><Heart className="h-3 w-3" />{" " + pageText("runPolicy_379354")}</h3>
+            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground flex items-center gap-2"><Heart className="h-3 w-3" />{" " + pageText("runPolicy_379354")}</div>
           }
           <div className={cn(cards ? "border border-border rounded-lg overflow-hidden" : "")}>
             <div className={cn(cards ? "p-4 space-y-3" : "px-4 pb-3 space-y-3")}>
@@ -2614,6 +2616,7 @@ function DisplayedCodeLoginPanel({
   onOpenAuthorization,
   onRetryReady,
 }: AdapterLoginPanelProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [sessionId, setSessionId] = useState<string | null>(null);
   const cancellation = useAdapterLoginCancellation(loginActive, companyId, adapterType, false, sessionId, { environmentId, aiConnection });
@@ -2999,7 +3002,7 @@ function DisplayedCodeLoginPanel({
         {isActive && !prompt && (
           <div className="flex items-center gap-2 text-(length:--text-micro) text-muted-foreground">
             <Loader2 className="size-3 animate-spin shrink-0" />
-            <span>Preparing...</span>
+            <span>{pageText("preparing_f440b5")}</span>
           </div>
         )}
 
@@ -3030,7 +3033,7 @@ function DisplayedCodeLoginPanel({
               </div>
               <span className="font-mono text-xs text-foreground break-all">{prompt.code}</span>
             </div>
-            <AdapterLoginCopyButton value={prompt.code} label="Copy code" />
+            <AdapterLoginCopyButton value={prompt.code} label={pageText("copyCode_6c1069")} />
           </div>
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
@@ -3153,6 +3156,7 @@ function SubmittedBrowserCodeLoginPanel({
   onSubmitReady,
   onRetryReady,
 }: AdapterLoginPanelProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [sessionId, setSessionId] = useState<string | null>(null);
   const cancellation = useAdapterLoginCancellation(loginActive, companyId, adapterType, true, sessionId, { environmentId, aiConnection });
@@ -3807,7 +3811,7 @@ function SubmittedBrowserCodeLoginPanel({
             disabled={startDisabled}
             onClick={() => startLogin.mutate()}
           >
-            {storedToken && !isActive && !isStored ? "Sign in to replace" : "Sign in"}
+            {storedToken && !isActive && !isStored ? "Sign in to replace" : pageText("signIn_ada2e9")}
           </Button>
         </div>
       </div>
@@ -3841,7 +3845,7 @@ function SubmittedBrowserCodeLoginPanel({
         {isActive && !authorizationUrl && !isCompleting && (
           <div className="flex items-center gap-2 text-(length:--text-micro) text-muted-foreground">
             <Loader2 className="size-3 animate-spin shrink-0" />
-            <span>Preparing...</span>
+            <span>{pageText("preparing_f440b5")}</span>
           </div>
         )}
 
@@ -3953,6 +3957,7 @@ function SubmittedBrowserCodeLoginPanel({
 }
 
 export function AdapterEnvironmentResult({ result }: { result: AdapterEnvironmentTestResult }) {
+  const { t: pageText } = usePageTranslation("interface");
   const statusLabel =
     result.status === "pass" ? "Passed" : result.status === "warn" ? "Warnings" : "Failed";
   const statusClass =
@@ -3979,7 +3984,7 @@ export function AdapterEnvironmentResult({ result }: { result: AdapterEnvironmen
             <span className="mx-1 opacity-60">·</span>
             <span>{check.message}</span>
             {check.detail && <span className="block opacity-75 break-all">({check.detail})</span>}
-            {check.hint && <span className="block opacity-90 break-words">Hint: {check.hint}</span>}
+            {check.hint && <span className="block opacity-90 break-words">{pageText("hint_7de196") + " "}{check.hint}</span>}
           </div>
         ))}
       </div>
@@ -4025,10 +4030,9 @@ export function AdapterTypeDropdown({
 }
 
 function ExperimentalBadge() {
+  const { t: pageText } = usePageTranslation("interface");
   return (
-    <span className="shrink-0 rounded border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-(length:--text-nano) font-medium leading-none text-amber-700 dark:text-amber-200">
-      Experimental
-    </span>
+    <span className="shrink-0 rounded border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-(length:--text-nano) font-medium leading-none text-amber-700 dark:text-amber-200">{pageText("experimental_b718f8")}</span>
   );
 }
 
@@ -4076,6 +4080,7 @@ export function ModelDropdown({
   defaultLabel?: string;
   presentation?: "searchable" | "native";
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [modelSearch, setModelSearch] = useState("");
   const [enteringCustomModel, setEnteringCustomModel] = useState(false);
@@ -4181,9 +4186,9 @@ export function ModelDropdown({
               placeholder="Enter model ID or alias" autoFocus required={required} />
           </label>
         )}
-        {loadingModels && <p role="status" className="mt-2 text-xs text-muted-foreground">Loading models…</p>}
+        {loadingModels && <p role="status" className="mt-2 text-xs text-muted-foreground">{pageText("loadingModels_d23f24")}</p>}
         {onRefreshModels && <Button type="button" variant="ghost" size="sm" disabled={refreshingModels}
-          onClick={() => void onRefreshModels()}>{refreshingModels ? "Refreshing…" : "Refresh models"}</Button>}
+          onClick={() => void onRefreshModels()}>{refreshingModels ? pageText("refreshing_961411") : pageText("refreshModels_ba6da3")}</Button>}
       </Field>
     );
   }
@@ -4192,7 +4197,7 @@ export function ModelDropdown({
     <Field label={translateUi("interfaceCopy.model")} hint={help.model}>
       <SelectPopover aria-label={translateUi("interfaceCopy.model")} value={value}
         displayValue={<span className={cn("truncate", !value && "text-muted-foreground")}>
-          {selected?.label ?? (value || (allowDefault ? (defaultLabel ?? "Default") : required ? "Select model (required)" : "Select model"))}
+          {selected?.label ?? (value || (allowDefault ? (defaultLabel ?? pageText("default_808d7d")) : required ? "Select model (required)" : pageText("selectModel_426e99")))}
         </span>}
         open={open}
         onOpenChange={(nextOpen) => {
@@ -4204,7 +4209,7 @@ export function ModelDropdown({
           <div className="relative mb-1">
             <input
               className="w-full px-2 py-1.5 pr-6 text-xs bg-transparent outline-none border-b border-border placeholder:text-muted-foreground/50"
-              placeholder={creatable ? "Search models... (type to create)" : "Search models..."}
+              placeholder={creatable ? "Search models... (type to create)" : pageText("searchModels_61c1b9")}
               value={modelSearch}
               onChange={(e) => setModelSearch(e.target.value)}
               autoFocus
@@ -4253,7 +4258,7 @@ export function ModelDropdown({
                 <path d="M21 12a9 9 0 0 1-15.28 6.36L3 16" />
                 <path d="M8 16H3v5" />
               </svg>
-              {refreshingModels ? "Refreshing..." : "Refresh models"}
+              {refreshingModels ? pageText("refreshing_5b7bdb") : pageText("refreshModels_ba6da3")}
             </button>
           )}
           {value && (!models.some((m) => m.id === value) || promotedModelIds.has(value)) && (
@@ -4270,9 +4275,7 @@ export function ModelDropdown({
               <span className="block w-full text-left truncate font-mono text-xs" title={value}>
                 {models.find((m) => m.id === value)?.label ?? value}
               </span>
-              <Badge variant="outline" className="ml-auto text-(length:--text-nano) px-1.5 bg-green-500/15 text-green-400 border-green-500/20">
-                current
-              </Badge>
+              <Badge variant="outline" className="ml-auto text-(length:--text-nano) px-1.5 bg-green-500/15 text-green-400 border-green-500/20">{pageText("current_405ab5")}</Badge>
             </button>
           )}
           {detectedModel && detectedModel !== value && (
@@ -4382,9 +4385,9 @@ export function ModelDropdown({
             {filteredModels.length === 0 && !canCreateManualModel && promotedModelIds.size === 0 && (
               <div className="px-2 py-2 space-y-2">
                 <p className="text-xs text-muted-foreground">
-                  {loadingModels ? "Loading models…" : onDetectModel
+                  {loadingModels ? pageText("loadingModels_d23f24") : onDetectModel
                     ? (emptyDetectHint ?? "No model detected yet. Enter a provider/model manually.")
-                    : "No models found."}
+                    : pageText("noModelsFound_159d88")}
                 </p>
               </div>
             )}
@@ -4408,8 +4411,9 @@ function ThinkingEffortDropdown({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  return <Field label="Thinking effort" hint={help.thinkingEffort}>
-    <SelectPopover aria-label="Thinking effort" value={value} onValueChange={onChange}
+  const { t: pageText } = usePageTranslation("interface");
+  return <Field label={pageText("thinkingEffort_ffa438")} hint={help.thinkingEffort}>
+    <SelectPopover aria-label={pageText("thinkingEffort_ffa438")} value={value} onValueChange={onChange}
       open={open} onOpenChange={onOpenChange}
       options={options.map(option => ({ value: option.id, label: option.label,
         suffix: option.id ? <span className="text-xs text-muted-foreground font-mono">{option.id}</span> : undefined,

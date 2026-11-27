@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { useCallback, useMemo, useState } from "react";
@@ -380,6 +381,7 @@ function ApproveDialog({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const isSecret = draft?.proposal.kind === "secret";
   const previewName = draft
@@ -419,7 +421,7 @@ function ApproveDialog({
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1">
-                    <Label htmlFor="approve-folder">Folder</Label>
+                    <Label htmlFor="approve-folder">{pageText("folder_30baa2")}</Label>
                     <Input
                       id="approve-folder"
                       value={draft.folder}
@@ -597,6 +599,7 @@ function RejectDialog({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const canConfirm = reason.trim().length > 0;
   return (
@@ -631,7 +634,7 @@ function RejectDialog({
             <DialogFooter>
               <Button variant="ghost" onClick={onCancel} disabled={pending}>{translateUi("interfaceCopy.cancel")}</Button>
               <Button variant="destructive" onClick={onConfirm} disabled={pending || !canConfirm}>
-                {pending ? "Rejecting…" : "Reject"}
+                {pending ? "Rejecting…" : pageText("reject_2b03b5")}
               </Button>
             </DialogFooter>
           </>
@@ -658,6 +661,7 @@ export function ProposalActions({
   disabled?: boolean;
   size?: "sm" | "xs";
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const blocked = !proposal.viewerCanApprove;
   const heightClass = size === "xs" ? "h-7 px-2 text-xs" : "";
   const approveButton = (
@@ -666,9 +670,7 @@ export function ProposalActions({
       className={heightClass}
       disabled={disabled || blocked}
       onClick={() => onApprove(proposal)}
-    >
-      Approve
-    </Button>
+    >{pageText("approve_7b2c7f")}</Button>
   );
   return (
     <div className="flex items-center gap-1.5">
@@ -692,9 +694,7 @@ export function ProposalActions({
         className={heightClass}
         disabled={disabled}
         onClick={() => onReject(proposal)}
-      >
-        Reject
-      </Button>
+      >{pageText("reject_2b03b5")}</Button>
     </div>
   );
 }

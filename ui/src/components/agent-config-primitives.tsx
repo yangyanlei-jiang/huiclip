@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState, useRef, useEffect, useCallback } from "react";
 import {
   Tooltip,
@@ -382,6 +383,7 @@ export function DraftNumberInput({
  * type the path due to browser security limitations.
  */
 export function ChoosePathButton() {
+  const { t: pageText } = usePageTranslation("interface");
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -389,9 +391,7 @@ export function ChoosePathButton() {
         type="button"
         className="inline-flex items-center rounded-md border border-border px-2 py-0.5 text-xs text-muted-foreground hover:bg-accent/50 transition-colors shrink-0"
         onClick={() => setOpen(true)}
-      >
-        Choose
-      </button>
+      >{pageText("choose_78b7c9")}</button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
@@ -429,8 +429,8 @@ export function ChoosePathButton() {
             <section className="space-y-1.5">
               <p className="font-medium">Terminal fallback (macOS/Linux)</p>
               <ol className="list-decimal space-y-1 pl-5 text-muted-foreground">
-                <li>Run <code>cd /path/to/folder</code>.</li>
-                <li>Run <code>pwd</code>.</li>
+                <li>{pageText("run_b1b392") + " "}<code>cd /path/to/folder</code>.</li>
+                <li>{pageText("run_b1b392") + " "}<code>pwd</code>.</li>
                 <li>Copy the output and paste it into the path input.</li>
               </ol>
             </section>

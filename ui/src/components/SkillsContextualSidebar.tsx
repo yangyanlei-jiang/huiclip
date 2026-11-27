@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { GithubIcon } from "@/components/icons/github-icon";
 import { Compass, Library, PencilRuler } from "lucide-react";
 import { useLocation } from "@/lib/router";
@@ -18,27 +19,28 @@ export {
 } from "@/pages/skills/skills-navigation";
 
 export function SkillsContextualSidebar() {
+  const { t: pageText } = usePageTranslation("interface");
   const location = useLocation();
   const activeView = resolveSkillsNavigationView(location.pathname, location.search);
 
   return (
     <ContextualSidebarFrame
       surface="skills"
-      title="Skills"
+      title={pageText("skills_e09212")}
       icon={Library}
       fallbackTo="/dashboard"
       showHeader={false}
       className="border-r border-border bg-background"
     >
       <nav
-        aria-label="Skills"
+        aria-label={pageText("skills_e09212")}
         data-slot="contextual-sidebar-nav"
         className={contextualSidebarStyles.nav}
       >
         <div data-slot="contextual-sidebar-group" className={contextualSidebarStyles.group}>
           <SidebarNavItem
             to={SKILLS_NAVIGATION_HREFS.installed}
-            label="Installed"
+            label={pageText("installed_7bb440")}
             icon={Library}
             active={activeView === "installed"}
             end

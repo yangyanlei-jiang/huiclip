@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Building2, Loader2, Lock, RefreshCw, TriangleAlert, UserRound } from "lucide-react";
@@ -123,6 +124,7 @@ export function IdentitiesSection({
   onOpenAudience: (grantId: string) => void;
   onCloseAudience: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const grants = grantsQuery?.grants ?? [];
   const capabilities = grantsQuery?.capabilities;
   const currentUserId = grantsQuery?.currentUserId ?? null;
@@ -249,9 +251,7 @@ export function IdentitiesSection({
           orgGrant ? (
             orgGrant.capabilities?.canEditAudience ? (
               <div className="flex justify-end">
-                  <Button size="sm" variant="outline" onClick={() => onOpenAudience(orgGrant.id)}>
-                    Manage access
-                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => onOpenAudience(orgGrant.id)}>{pageText("manageAccess_a86dd5")}</Button>
               </div>
             ) : null
           ) : (
@@ -294,6 +294,7 @@ function GitHubConnectionSummary({
   onRefreshAccess?: () => void;
   refreshPending: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const github = grant.providerTenant?.github;
   if (!github) return null;
   const configurationUrl = github.appSlug
@@ -320,7 +321,7 @@ function GitHubConnectionSummary({
       <div className="space-y-3 py-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
-            <div className="text-sm font-medium text-foreground">Repositories</div>
+            <div className="text-sm font-medium text-foreground">{pageText("repositories_c91e6e")}</div>
             {repositoryWarning ? (
               <div
                 role="note"
@@ -338,7 +339,7 @@ function GitHubConnectionSummary({
           </div>
           <div className="flex items-center gap-2">
             {onRefreshAccess && configurationUrl ? (
-              <Button size="icon-sm" variant="outline" aria-label="Refresh access" title="Refresh access" disabled={refreshPending} onClick={onRefreshAccess}>
+              <Button size="icon-sm" variant="outline" aria-label={pageText("refreshAccess_822875")} title={pageText("refreshAccess_822875")} disabled={refreshPending} onClick={onRefreshAccess}>
                 {refreshPending ? <Loader2 className="animate-spin" aria-hidden="true" /> : <RefreshCw aria-hidden="true" />}
               </Button>
             ) : null}

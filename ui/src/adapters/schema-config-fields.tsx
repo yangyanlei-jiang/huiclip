@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { schemaFieldSection } from "./config-sections";
 import { useState, useEffect, useRef, useCallback } from "react";
 
@@ -24,6 +25,7 @@ function SelectField({
   options: Array<{ value: string; label: string }>;
   onChange: (value: string) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [open, setOpen] = useState(false);
   const selectedOpt = options.find((o) => o.value === value);
   return (
@@ -31,7 +33,7 @@ function SelectField({
       <PopoverTrigger asChild>
         <button className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-sm hover:bg-accent/50 transition-colors w-full justify-between">
           <span className={!value ? "text-muted-foreground" : ""}>
-            {selectedOpt?.label ?? value ?? "Select..."}
+            {selectedOpt?.label ?? value ?? pageText("select_b92e64")}
           </span>
           <ChevronDown className="h-3 w-3 text-muted-foreground" />
         </button>

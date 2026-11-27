@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useId, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -26,6 +27,7 @@ export function PromptInjectionPreventionSettingsView({ settings, choices, model
   onSave: (settings: UpdatePromptInjectionPrevention) => void; onTest: () => void; onAdd?: () => void;
   onConnectionChange?: (id: string | null) => void; onDraftChange?: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [draft, setDraft] = useState(() => editable(settings));
   const modelId = useId();
@@ -58,7 +60,7 @@ export function PromptInjectionPreventionSettingsView({ settings, choices, model
     {!choices.length && <p className="text-sm text-muted-foreground">Add a shared OpenRouter API connection to use model checks.</p>}
     <div className="flex items-center gap-3">
       {onAdd && <Button variant="outline" size="sm" disabled={saving || testing} onClick={onAdd}>Add OpenRouter connection</Button>}
-      <Link to="/apps" className="text-sm underline underline-offset-4">Manage connections</Link>
+      <Link to="/apps" className="text-sm underline underline-offset-4">{pageText("manageConnections_223fb7")}</Link>
     </div>
     {draft.connectionId && <fieldset disabled={saving || testing} className="space-y-4">
       {(!selected || selected.status !== "connected") && <p role="status" className="text-sm text-muted-foreground">The saved connection is unavailable. Choose a replacement, disable model checks, or clear the selection. Built-in detection stays active.</p>}
@@ -76,15 +78,15 @@ export function PromptInjectionPreventionSettingsView({ settings, choices, model
     {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
     {!dirty && result && <div role={result.passed ? "status" : "alert"} className={result.passed ? "space-y-2 text-sm" : "space-y-2 text-sm text-destructive"}>
       <p>{result.passed ? "Both model checks passed." : "Model checks did not pass. Check the connection and model, then try again."}</p>
-      {result.samples.map(s => <p key={s.name} className="text-xs">{s.name}: {s.passed ? "Passed" : s.reason ? `Model unavailable (${s.reason}); built-in detection is the fallback.` : "Incorrect verdict"} · {(s.durationMs / 1000).toFixed(2)} seconds</p>)}
+      {result.samples.map(s => <p key={s.name} className="text-xs">{s.name}: {s.passed ? pageText("passed_271d60") : s.reason ? `Model unavailable (${s.reason}); built-in detection is the fallback.` : "Incorrect verdict"} · {(s.durationMs / 1000).toFixed(2)} seconds</p>)}
     </div>}
     <div className="flex items-center justify-between gap-3">
       <div className="space-y-1">
-        <Button variant="outline" size="sm" onClick={onTest} disabled={dirty || !settings.enabled || saving || testing}>{testing ? "Testing…" : "Test model checks"}</Button>
-        <p className="text-xs text-muted-foreground">{dirty ? "Save changes before testing." : "Tests two fixed samples with an API charge."}</p>
+        <Button variant="outline" size="sm" onClick={onTest} disabled={dirty || !settings.enabled || saving || testing}>{testing ? pageText("testing_95c456") : "Test model checks"}</Button>
+        <p className="text-xs text-muted-foreground">{dirty ? pageText("saveChangesBeforeTesting_041f38") : "Tests two fixed samples with an API charge."}</p>
       </div>
       {dirty && <Button disabled={saving || testing || !updatePromptInjectionPreventionSchema.safeParse(draft).success || (draft.enabled && selected?.status !== "connected")}
-        onClick={() => onSave(draft)}>{saving ? "Saving…" : "Save prompt injection settings"}</Button>}
+        onClick={() => onSave(draft)}>{saving ? pageText("saving_56a228") : "Save prompt injection settings"}</Button>}
     </div>
   </section>;
 }

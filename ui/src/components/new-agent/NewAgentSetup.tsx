@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { ACCOUNT_BOUND_MODEL_DISCOVERY_QUERY_OPTIONS } from "@/lib/native-model-catalog";
 import { PAPERCLIP_RUNNER_ACPX_PROFILES } from "@paperclipai/adapter-utils";
@@ -132,6 +133,7 @@ function Setup({
   createdAgentId: string | null;
   setupAgentId: string | null;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const navigate = useNavigate();
   const cache = useQueryClient();
@@ -1053,7 +1055,7 @@ function Setup({
                   <OnboardingCard className="mx-auto">
                     <div className="mb-8">
                       <OnboardingHeading
-                        title="Connect a model"
+                        title={pageText("connectAModel_aaf2b3")}
                         center
                       />
                     </div>
@@ -1158,7 +1160,7 @@ function Setup({
                         onClick={() => navigate(isDot ? "/agents/all" : `${agentUrl(created)}/runtime`)}
                       >
                         <Settings2 className="size-4" />
-                        {isDot ? "Back to Agents" : "Edit configuration"}
+                        {isDot ? "Back to Agents" : pageText("editConfiguration_8139ad")}
                       </Button>
                       <Button
                         disabled={created.status === "pending_approval" || (!isDot && !runtimeReady)}
@@ -1240,11 +1242,11 @@ function Setup({
                               />
                             )}
                             {efforts.length > 0 && (
-                              <Field label="Thinking effort">
-                                {brandType === "codex_local" ? <SelectPopover aria-label="Thinking effort" value={effort}
+                              <Field label={pageText("thinkingEffort_ffa438")}>
+                                {brandType === "codex_local" ? <SelectPopover aria-label={pageText("thinkingEffort_ffa438")} value={effort}
                                   onValueChange={value => { setEffort(value); resetTest(); }}
                                   options={[{ value: "", label: "Auto" }, ...efforts.map(value => ({ value, label: value }))]} /> : <NativeSelect
-                                  aria-label="Thinking effort"
+                                  aria-label={pageText("thinkingEffort_ffa438")}
                                   value={effort}
                                   onChange={(event) => {
                                     setEffort(event.target.value);
@@ -1328,7 +1330,7 @@ function Setup({
                                               "cursor_cloud",
                                               "hermes_gateway",
                                             ].includes(adapterType))
-                                          ? "Required"
+                                          ? pageText("required_eed6bf")
                                           : "Optional if already configured"
                                     }
                                   />
@@ -1457,9 +1459,9 @@ function Setup({
                                 placeholder="https://github.com/your-org/repo"
                               />
                             </Field>
-                            <Field label="Branch">
+                            <Field label={pageText("branch_162751")}>
                               <Input
-                                aria-label="Branch"
+                                aria-label={pageText("branch_162751")}
                                 placeholder="Repository default"
                                 value={branch}
                                 onChange={(event) => {
@@ -1516,7 +1518,7 @@ function Setup({
                     {environmentSaveError && !environmentSelectionSaved && <Button disabled={busy} onClick={() => void changeEnvironment()}>Retry saving environment</Button>}
                     <div className="flex justify-between border-t border-border py-5">
                       <div className="flex items-center gap-3">
-                        <Button type="button" variant="ghost" disabled={busy} onClick={() => void saveAndExit()}>{pendingAntigravity ? "Back to agents" : "Save & exit"}</Button>
+                        <Button type="button" variant="ghost" disabled={busy} onClick={() => void saveAndExit()}>{pendingAntigravity ? "Back to agents" : pageText("saveExit_fc5599")}</Button>
                       {connectionAdapter ? (
                         <Button
                           type="button"
@@ -1524,9 +1526,7 @@ function Setup({
                           disabled={busy}
                           onClick={editConnection}
                         >
-                          <ArrowLeft className="size-4" />
-                          Connection
-                        </Button>
+                          <ArrowLeft className="size-4" />{pageText("connection_6512ee")}</Button>
                       ) : (
                         null
                       )}
@@ -1548,7 +1548,7 @@ function Setup({
                           Boolean(connectionAdapter && !connection)
                         }
                       >
-                        {saving ? "Saving…" : "Finish setup"}
+                        {saving ? pageText("saving_56a228") : pageText("finishSetup_c516d2")}
                         <Check className="size-4" />
                       </Button>}
                     </div>

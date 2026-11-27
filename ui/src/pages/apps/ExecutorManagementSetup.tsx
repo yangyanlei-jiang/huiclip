@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -13,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export function ExecutorManagementSetup({ connection, onClose }: { connection: ToolConnection; onClose: () => void }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [url, setUrl] = useState(typeof connection.config?.managementUrl === "string" ? connection.config?.managementUrl : "");
   const queries = useQueryClient();
@@ -30,7 +32,7 @@ export function ExecutorManagementSetup({ connection, onClose }: { connection: T
     <form className="space-y-4" onSubmit={event => { event.preventDefault(); save.mutate(); }}>
       <div className="space-y-2"><Label htmlFor="executor-console-url">Console URL</Label><Input id="executor-console-url" type="url" required value={url} onChange={event => setUrl(event.target.value)} /></div>
       {save.error ? <p role="alert" className="text-sm text-destructive">{describeError(save.error).body}</p> : null}
-      <DialogFooter className="sm:justify-between"><Button type="button" variant="ghost" onClick={onClose} disabled={save.isPending}>{translateUi("interfaceCopy.cancel")}</Button><Button type="submit" disabled={!settled || save.isPending || !url.trim()}>{save.isPending ? "Saving…" : "Save"}</Button></DialogFooter>
+      <DialogFooter className="sm:justify-between"><Button type="button" variant="ghost" onClick={onClose} disabled={save.isPending}>{translateUi("interfaceCopy.cancel")}</Button><Button type="submit" disabled={!settled || save.isPending || !url.trim()}>{save.isPending ? pageText("saving_56a228") : pageText("save_efc007")}</Button></DialogFooter>
     </form>
   </DialogContent></Dialog>;
 }

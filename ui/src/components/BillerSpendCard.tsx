@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useMemo } from "react";
 import type { CostByBiller, CostByProviderModel } from "@paperclipai/shared";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -23,6 +24,7 @@ export function BillerSpendCard({
   totalCompanySpendCents,
   providerRows,
 }: BillerSpendCardProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const providerBreakdown = useMemo(() => {
     const map = new Map<string, { provider: string; costCents: number; inputTokens: number; outputTokens: number }>();
     for (const entry of providerRows) {
@@ -67,9 +69,9 @@ export function BillerSpendCard({
               {" · "}
               <span className="font-mono">{formatTokens(row.outputTokens)}</span> out
               {" · "}
-              {row.providerCount} provider{row.providerCount === 1 ? "" : "s"}
+              {row.providerCount}{" " + pageText("provider_90c5d1")}{row.providerCount === 1 ? "" : "s"}
               {" · "}
-              {row.modelCount} model{row.modelCount === 1 ? "" : "s"}
+              {row.modelCount}{" " + pageText("model_1d06a0")}{row.modelCount === 1 ? "" : "s"}
             </CardDescription>
           </div>
           <div className="text-xl shrink-0">

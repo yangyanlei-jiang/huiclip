@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { NavLink, useLocation } from "@/lib/router";
@@ -124,6 +125,7 @@ function ProjectItem({
   leaving = false,
   isDragging = false,
 }: ProjectItemProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const routeRef = projectRouteRef(project);
   const { summary: externalObjectsSummary } = useProjectExternalObjectSummary(project.id);
 
@@ -147,7 +149,7 @@ function ProjectItem({
     >
       <ProjectTile color={project.color ?? null} icon={project.icon ?? null} size="xs" />
       <span className={rail ? SIDEBAR_RAIL_HIDDEN_LABEL : "flex-1 truncate"}>{project.name}</span>
-            {!rail && project.visibility === "private" ? <Lock className="size-3.5 shrink-0 text-muted-foreground" aria-label="Private project" /> : null}
+            {!rail && project.visibility === "private" ? <Lock className="size-3.5 shrink-0 text-muted-foreground" aria-label={pageText("privateProject_505bbd")} /> : null}
       {!rail ? <ExternalObjectStatusSummary summary={externalObjectsSummary} compact /> : null}
       {!rail && project.pauseReason === "budget" ? <BudgetSidebarMarker title="Project paused by budget" /> : null}
     </NavLink>

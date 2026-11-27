@@ -1,3 +1,4 @@
+import { t as interfaceMessage } from "@/i18n";
 import { useCallback } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { HeartbeatRun } from "@paperclipai/shared";
@@ -126,7 +127,7 @@ function WorkspaceValidationRecoverySurface({ run }: { run: HeartbeatRun }) {
     onError: (err) => {
       pushToast({
         title: "Reconcile failed",
-        body: err instanceof Error ? err.message : "Unable to reconcile the workspace branch.",
+        body: err instanceof Error ? err.message : interfaceMessage("interface:errorUnableToReconcileTheWorkspaceBranchSentence"),
         tone: "error",
       });
     },
@@ -204,7 +205,7 @@ function WorkspaceValidationRecoverySurface({ run }: { run: HeartbeatRun }) {
     onError: (err) => {
       pushToast({
         title: "Recovery resolution failed",
-        body: err instanceof Error ? err.message : "Unable to resolve recovery action",
+        body: err instanceof Error ? err.message : interfaceMessage("interface:errorUnableToResolveRecoveryAction"),
         tone: "error",
       });
     },

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { connectionIntentsApi } from "@/api/connection-intents";
 import { readOAuthWindowOutcome } from "@/lib/oauthWindowOutcome";
@@ -590,6 +591,7 @@ export interface ConnectionSetupFlowProps {
  * here so a provider can never drift between entry points.
  */
 export function ConnectionSetupFlow(props: ConnectionSetupFlowProps = {}) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [searchParams] = useSearchParams();
   const params = useParams<{ appKey?: string }>();
@@ -621,7 +623,7 @@ export function ConnectionSetupFlow(props: ConnectionSetupFlowProps = {}) {
   const existingView = useQueryView(existing);
   const provider = source || existing.data?.config?.sourceTemplateKey;
   const method = searchParams.get("method") || existing.data?.config?.connectionMethodKey;
-  if (lookup && (existingView.kind === "loading" || existingView.kind === "reconnecting")) return <p className="p-6 text-sm text-muted-foreground">Loading connection…</p>;
+  if (lookup && (existingView.kind === "loading" || existingView.kind === "reconnecting")) return <p className="p-6 text-sm text-muted-foreground">{pageText("loadingConnection_f1e853")}</p>;
   if (lookup && existingView.kind === "error") return <div role="alert" className="space-y-3 p-6"><p>Could not load this connection. Your saved access and credentials have not changed.</p><Button variant="outline" onClick={() => void existing.refetch()}>{translateUi("interfaceCopy.tryAgain")}</Button></div>;
   if (gatedDefinitions.length) {
     if (!availability.loaded) return <p role="status" className="p-6 text-sm text-muted-foreground">Loading connection settings…</p>;
@@ -664,6 +666,7 @@ function StandardConnectionSetupFlow({
   onCancel,
   renderCredentialStep,
 }: ConnectionSetupFlowProps = {}) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const workspaceSelectionRef = useRef<GoogleWorkspaceServiceSelection | null>(null);
   const [workspaceConsent, setWorkspaceConsent] = useState<(() => void) | null>(null);
@@ -2010,9 +2013,7 @@ function StandardConnectionSetupFlow({
               }
             }}
           >{translateUi("interfaceCopy.tryAgain")}</Button>
-          <Button type="button" variant="outline" onClick={() => navigate("/apps")}>
-            Back to apps
-          </Button>
+          <Button type="button" variant="outline" onClick={() => navigate("/apps")}>{pageText("backToApps_95a03b")}</Button>
         </div>
       </div>
     );
@@ -2039,9 +2040,7 @@ function StandardConnectionSetupFlow({
         <p className="mt-2 text-sm text-muted-foreground">
           The saved connection no longer exists or is not available to this organization.
         </p>
-        <Button type="button" variant="outline" className="mt-5" onClick={() => navigate("/apps")}>
-          Back to apps
-        </Button>
+        <Button type="button" variant="outline" className="mt-5" onClick={() => navigate("/apps")}>{pageText("backToApps_95a03b")}</Button>
       </div>
     );
   }
@@ -2059,9 +2058,7 @@ function StandardConnectionSetupFlow({
         <p className="mt-2 text-sm text-muted-foreground">
           This saved draft does not match the requested provider. The connection was not changed.
         </p>
-        <Button type="button" variant="outline" className="mt-5" onClick={() => navigate("/apps")}>
-          Back to apps
-        </Button>
+        <Button type="button" variant="outline" className="mt-5" onClick={() => navigate("/apps")}>{pageText("backToApps_95a03b")}</Button>
       </div>
     );
   }
@@ -2080,9 +2077,7 @@ function StandardConnectionSetupFlow({
             ? "The retained connection no longer exists or is not available to this organization."
             : "This reconnect link does not match the retained connection's provider."}
         </p>
-        <Button type="button" variant="outline" className="mt-5" onClick={() => navigate("/apps")}>
-          Back to apps
-        </Button>
+        <Button type="button" variant="outline" className="mt-5" onClick={() => navigate("/apps")}>{pageText("backToApps_95a03b")}</Button>
       </div>
     );
   }
@@ -2096,9 +2091,7 @@ function StandardConnectionSetupFlow({
         </p>
         <div className="mt-5 flex flex-wrap gap-2">
           <Button type="button" onClick={galleryView.retry} disabled={galleryView.isFetching}>{translateUi("interfaceCopy.tryAgain")}</Button>
-          <Button type="button" variant="outline" onClick={() => navigate("/apps")}>
-            Back to apps
-          </Button>
+          <Button type="button" variant="outline" onClick={() => navigate("/apps")}>{pageText("backToApps_95a03b")}</Button>
         </div>
       </div>
     );
@@ -2111,9 +2104,7 @@ function StandardConnectionSetupFlow({
         <p className="mt-2 text-sm text-muted-foreground">
           Paperclip no longer has a supported setup method for this retained connection. The retained connection was not changed.
         </p>
-        <Button type="button" variant="outline" className="mt-5" onClick={() => navigate("/apps")}>
-          Back to apps
-        </Button>
+        <Button type="button" variant="outline" className="mt-5" onClick={() => navigate("/apps")}>{pageText("backToApps_95a03b")}</Button>
       </div>
     );
   }
@@ -2151,7 +2142,7 @@ function StandardConnectionSetupFlow({
       <div className="max-w-5xl" data-testid="connection-existing-choice">
         <div className="mb-6">
           <h1 className="text-2xl font-bold tracking-tight">
-            Use an existing {requestedAppKey ? "connection" : "app connection"}
+            Use an existing {requestedAppKey ? pageText("connection_814605") : "app connection"}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Reuse a connection without changing who already has access, or connect a new one.
@@ -2613,9 +2604,7 @@ function StandardConnectionSetupFlow({
           <div className="mt-6 flex items-center justify-between gap-3">
             <Button type="button" variant="ghost" onClick={backToGallery}>{translateUi("interfaceCopy.back")}</Button>
             <Button type="button" disabled={galleryQuery.isFetching} onClick={() => void galleryQuery.refetch()}>
-              {galleryQuery.isFetching ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              Try again
-            </Button>
+              {galleryQuery.isFetching ? <Loader2 className="h-4 w-4 animate-spin" /> : null}{pageText("tryAgain_042c86")}</Button>
           </div>
         </div>
       ) : step === "key" && entry && showConnectorEnrollmentStep ? (
@@ -2672,7 +2661,7 @@ function StandardConnectionSetupFlow({
               >
                 {startConnectorEnrollment.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                 {connectorEnrollmentQuery.data?.status === "pending"
-                  ? "Continue"
+                  ? pageText("continue_2e0262")
                   : "Connect with Paperclip"}
               </Button>
             </div>
@@ -2917,6 +2906,7 @@ export function OAuthConnectStateScreen({
   onBack: () => void;
   onCancel: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const serverName = entry?.name ?? identity?.name ?? "this server";
   const unverifiedHost = entry ? null : identity?.unverifiedHost ?? null;
@@ -3003,12 +2993,12 @@ export function OAuthConnectStateScreen({
             <Button type="button" onClick={onRetry} disabled={!settingsValid}>
               {phase === "entry"
                 ? resuming ? `Finish with ${serverName}` : `Continue to ${serverName}`
-                : "Try again"}
+                : pageText("tryAgain_042c86")}
               {phase === "entry" ? <ArrowUpRight className="h-4 w-4" aria-hidden="true" /> : null}
             </Button>
           ) : (
             <Button type="button" disabled>
-              {phase === "redirecting" ? `Opening ${serverName}…` : "Preparing…"}
+              {phase === "redirecting" ? `Opening ${serverName}…` : pageText("preparing_0b1d6c")}
             </Button>
           )}
           {authorizationUrl ? <Button variant="outline" asChild><a href={authorizationUrl} target="_blank" rel="noopener noreferrer" onClick={onOpenAuthorization}>Open sign-in in a new tab</a></Button> : null}
@@ -3035,6 +3025,7 @@ function ZapierConnectStep({
   onBack: () => void;
   onConnect: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const normalizedLink = normalizeAppLink(link);
   const zapierHostname = normalizedLink ? new URL(normalizedLink).hostname : "";
@@ -3068,7 +3059,7 @@ function ZapierConnectStep({
         <Button variant="ghost" onClick={onBack} disabled={submitting}>{translateUi("interfaceCopy.back")}</Button>
         <Button onClick={onConnect} disabled={submitting || !isZapierLink}>
           {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {submitting ? "Checking…" : "Check link"}
+          {submitting ? pageText("checking_820d60") : "Check link"}
         </Button>
       </div>
     </div>
@@ -3105,6 +3096,7 @@ function GalleryStep({
   onPick: (entry: AppDefinition) => void;
   onUseLink: (link: string) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const [search, setSearch] = useState("");
   const [linkInput, setLinkInput] = useState(initialLink);
@@ -3294,7 +3286,7 @@ function GalleryStep({
                 {matchedEntry.availability?.available === false
                   ? "Not available"
                   : matchedEntry.slug === "zapier"
-                    ? "Continue"
+                    ? pageText("continue_2e0262")
                     : `Use ${matchedEntry.name}`}
               </Button>
             </div>
@@ -3402,6 +3394,7 @@ function LinkConnectStep({
   onBack: () => void;
   onConnect: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const host = endpointHost(link);
   const headerError = authMode === "custom_headers" ? customHeaderError(headers) : null;
@@ -3504,8 +3497,8 @@ function LinkConnectStep({
                     <Input
                       value={row.name}
                       onChange={(e) => updateHeader(row.id, { name: e.target.value })}
-                      placeholder="Header name"
-                      aria-label="Header name"
+                      placeholder={pageText("headerName_b46f85")}
+                      aria-label={pageText("headerName_b46f85")}
                       className="h-10 font-mono"
                     />
                     <Input
@@ -3584,7 +3577,7 @@ function LinkConnectStep({
         <Button variant="ghost" onClick={onBack} disabled={submitting}>{translateUi("interfaceCopy.back")}</Button>
         <Button onClick={onConnect} disabled={submitting || !canSubmit || Boolean(headerError)}>
           {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          {submitting ? "Checking…" : "Check link"}
+          {submitting ? pageText("checking_820d60") : "Check link"}
         </Button>
       </div>
     </div>
@@ -3714,6 +3707,7 @@ function KeyStep({
   onBack: () => void;
   onConnect: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const methods = useMemo(
     () => connectionMethodsForCredentialSource(entry, credentialSource),
@@ -3963,7 +3957,7 @@ function KeyStep({
           <Button variant="ghost" onClick={onBack} disabled={submitting}>{translateUi("interfaceCopy.back")}</Button>
           <Button onClick={onConnect} disabled={submitting || !canConnect}>
             {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {submitting ? "Checking…" : "Connect"}
+            {submitting ? pageText("checking_820d60") : pageText("connect_b65463")}
           </Button>
         </div>
       </div>
@@ -4103,12 +4097,12 @@ function KeyStep({
         <Button onClick={onConnect} disabled={submitting || !settingsValid || !hasMethodSelection || !allFilled || !oauthClientFilled || !vercelConnectorFilled || !configFilled || !configRequirementMet}>
           {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {submitting
-            ? "Checking…"
+            ? pageText("checking_820d60")
             : usingVercel
               ? method?.auth === "oauth" ? "Validate and continue" : "Validate and connect"
               : method?.auth === "oauth"
                 ? entry.slug === "github" ? "Continue to GitHub" : "Continue to sign in"
-                : "Connect"}
+                : pageText("connect_b65463")}
         </Button>
       </div>
     </div>
@@ -4121,6 +4115,7 @@ function KeyStep({
  * has to say whether the clipboard actually took it.
  */
 function CopyValueButton({ value, ariaLabel }: { value: string; ariaLabel: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { copied, failed, copy } = useCopyAction();
   return (
     <Button
@@ -4131,7 +4126,7 @@ function CopyValueButton({ value, ariaLabel }: { value: string; ariaLabel: strin
       onClick={() => void copy(value)}
     >
       {copied ? <Check className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}
-      {copied ? "Copied" : failed ? "Copy failed" : "Copy"}
+      {copied ? pageText("copied_8e3df4") : failed ? pageText("copyFailed_bd5acb") : pageText("copy_af74f7")}
     </Button>
   );
 }
@@ -4155,6 +4150,7 @@ function OAuthClientFields({
   onClientSecretChange: (next: string) => void;
   required: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="space-y-4 rounded-lg border border-border p-4">
       <div>
@@ -4177,8 +4173,7 @@ function OAuthClientFields({
             target="_blank"
             rel="noreferrer"
             className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-foreground underline underline-offset-2"
-          >
-            Open {entry.name} app settings
+          >{pageText("open_cf9b77") + " "}{entry.name} app settings
             <ArrowUpRight className="h-3 w-3" />
           </a>
         ) : null}
@@ -4209,7 +4204,7 @@ function OAuthClientFields({
           value={clientId}
           onChange={(event) => onClientIdChange(event.target.value)}
           autoComplete="off"
-          placeholder={required ? "Required" : "Optional"}
+          placeholder={required ? pageText("required_eed6bf") : pageText("optional_0c6c41")}
           className="mt-2 h-11 font-mono"
         />
       </div>
@@ -4223,7 +4218,7 @@ function OAuthClientFields({
           value={clientSecret}
           onChange={(event) => onClientSecretChange(event.target.value)}
           autoComplete="off"
-          placeholder={method.oauthClientSecretRequired ? "Required" : "Optional for public clients"}
+          placeholder={method.oauthClientSecretRequired ? pageText("required_eed6bf") : "Optional for public clients"}
           className="mt-2 h-11 font-mono"
         />
       </div>
@@ -4767,6 +4762,7 @@ export function ConnectionSetupCompletionScreen({
   statedDefault?: string;
   onDone: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="mx-auto max-w-md py-10 text-center">
       <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border-2 border-emerald-500 bg-emerald-500/10">
@@ -4786,9 +4782,7 @@ export function ConnectionSetupCompletionScreen({
         ))}
       </dl>
       <div className="mt-8">
-        <Button size="lg" className="px-10" onClick={onDone}>
-          View connection
-        </Button>
+        <Button size="lg" className="px-10" onClick={onDone}>{pageText("viewConnection_8ef81c")}</Button>
       </div>
     </div>
   );

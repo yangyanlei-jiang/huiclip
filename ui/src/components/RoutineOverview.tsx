@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import type {
   Issue,
@@ -140,6 +141,7 @@ function OverviewFact({
 }
 
 export function RoutineOverview() {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   const { routine, routineRuns, currentAssignee, hasLiveRun } = useRoutineDetail();
   const schedule = summarizeRoutineSchedule(routine.triggers);
@@ -183,7 +185,7 @@ export function RoutineOverview() {
         />
         <OverviewFact
           icon={Play}
-          label="Last run"
+          label={pageText("lastRun_333c63")}
           value={lastRun ? <StatusBadge status={lastRun.status} /> : "No runs yet"}
           detail={lastRun ? formatRoutineTimestamp(lastRun.triggeredAt) : "Run manually or wait for a trigger"}
         />

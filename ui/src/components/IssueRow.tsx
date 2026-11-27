@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTranslation as useUiTranslation } from "@/i18n";
 import { requiresExecutionReconciliation } from "@paperclipai/shared";
 import { useState, type CSSProperties, type ReactNode } from "react";
@@ -105,6 +106,7 @@ export function InboxArchiveButton({
   disabled?: boolean;
   compact?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { t: translateUi } = useUiTranslation();
   return (
     <button
@@ -128,9 +130,7 @@ export function InboxArchiveButton({
       )}
       aria-label={translateUi("interfaceCopy.archive")}
     >
-      <Archive className="h-3.5 w-3.5" />
-      Archive
-    </button>
+      <Archive className="h-3.5 w-3.5" />{pageText("archive_2621c6")}</button>
   );
 }
 
@@ -173,6 +173,7 @@ export function IssueRow({
   chevronInGuide = false,
   showDivider = false,
 }: IssueRowProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const visibleColumns = useTaskListColumns();
   const { hoveredCell, onMouseMove: handleCellHover, clearHoveredCell } = useCellMarqueeHover();
   const [titleFocused, setTitleFocused] = useState(false);
@@ -202,7 +203,7 @@ export function IssueRow({
         "inline-flex h-4 w-4 items-center justify-center rounded-full transition-colors",
         selected ? "hover:bg-muted/80" : "hover:bg-blue-500/20",
       )}
-      aria-label="Mark as read"
+      aria-label={pageText("markAsRead_c1ee86")}
     >
       <span
         className={cn(
@@ -233,7 +234,7 @@ export function IssueRow({
     <Badge variant="outline"
       data-testid="issue-row-parked-blocker"
       className="[&>svg]:size-2.5 ml-1.5 gap-0.5 border-amber-500/60 bg-amber-500/15 text-(length:--text-nano) text-amber-700 dark:text-amber-300"
-      title="Blocked by parked work — at least one assigned blocker is in backlog and will not wake its assignee."
+      title={pageText("blockedByParkedWorkAtLeastOneAssigned_1230f7")}
     >
       <Flag className="h-2.5 w-2.5" aria-hidden />
       Blocked by parked work
@@ -286,7 +287,7 @@ export function IssueRow({
           refreshed && "task-row-link",
         )}
       >
-        <span className="sr-only">Open {identifier}: {issue.title}</span>
+        <span className="sr-only">{pageText("open_cf9b77") + " "}{identifier}: {issue.title}</span>
       </Link>
     );
     return (
@@ -487,7 +488,7 @@ export function IssueRow({
           "absolute inset-0 rounded-lg no-underline text-inherit focus-visible:z-10 focus-visible:outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-ring",
         )}
       >
-        <span className="sr-only">Open {identifier}: {issue.title}</span>
+        <span className="sr-only">{pageText("open_cf9b77") + " "}{identifier}: {issue.title}</span>
       </Link>
       <span className="flex shrink-0 items-center gap-1 pt-px sm:hidden">
         {mobileLeading ?? <StatusIcon {...taskStatusIconProps(issue)} size="md" className={selectedStatusClass} />}
