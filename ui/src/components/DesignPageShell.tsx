@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type { ReactNode } from "react";
 import { SidebarShell } from "./SidebarShell";
 import { DesignPageAside } from "./DesignPageAside";
@@ -33,13 +34,14 @@ export function DesignPageShell({
   rightSidebarMaximized = false,
   rightSidebarStorageKey = `${sidebarStorageKey}.right`,
 }: DesignPageShellProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const handleMainScroll = useScrollbarWhileScrolling<HTMLElement>();
   const handleAsideScroll = useScrollbarWhileScrolling();
   const hasRightSidebar = rightSidebar != null && rightSidebar !== false;
   const maximized = hasRightSidebar && rightSidebarMaximized;
   return (
     <FlyoutAppearanceProvider><div className="task-row-design-preview design-page-shell" data-testid="design-page-shell" data-aside-maximized={maximized || undefined}>
-      <a href={maximized ? "#design-page-aside-content" : "#design-page-content"} className="design-page-skip-link">Skip to main content</a>
+      <a href={maximized ? "#design-page-aside-content" : "#design-page-content"} className="design-page-skip-link">{pageText("skipToMainContent_be504f")}</a>
       <SidebarShell open resizable storageKey={sidebarStorageKey} className="design-page-navigation">{sidebar}</SidebarShell>
       <div className="design-page-main">
         <header className="design-page-header"><h1>{title}</h1>{headerActions && <div className="design-page-header-actions">{headerActions}</div>}</header>

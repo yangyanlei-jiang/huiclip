@@ -23,8 +23,7 @@ describe("shell navigation", () => {
     expect(classifyShellRoute("/PAP/tools/runtime", "PAP").builtInContextualSurface).toBe("apps");
     expect(classifyShellRoute("/PAP/agents/agent-1/instructions", "PAP").builtInContextualSurface).toBe("agent");
     expect(classifyShellRoute("/PAP/agents/agent-1/runs/run-1", "PAP").builtInContextualSurface).toBe("agent");
-    // A routine is one page in the global shell; it has no section sidebar.
-    expect(classifyShellRoute("/PAP/routines/routine-1", "PAP").builtInContextualSurface).toBeNull();
+    expect(classifyShellRoute("/PAP/routines/routine-1/overview", "PAP").builtInContextualSurface).toBe("routine");
     expect(classifyShellRoute("/PAP/skills", "PAP").builtInContextualSurface).toBe("skills");
     expect(classifyShellRoute("/PAP/skills/studio/skill-1", "PAP").builtInContextualSurface).toBe("skills");
   });

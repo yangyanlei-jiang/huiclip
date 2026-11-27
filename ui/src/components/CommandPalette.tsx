@@ -1,6 +1,6 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { AgentIdentity } from "@/components/AgentIdentity";
 import { useCombinedInboxTasksEnabled } from "@/hooks/useCombinedInboxTasksEnabled";
-import { useResponsibilitiesEnabled } from "@/hooks/useResponsibilitiesEnabled";
 import { useState, useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "@/lib/router";
 import { useQuery } from "@tanstack/react-query";
@@ -10,6 +10,7 @@ import { useSidebar } from "../context/SidebarContext";
 import { issuesApi } from "../api/issues";
 import { authApi } from "../api/auth";
 import { agentsApi } from "../api/agents";
+import { projectsApi } from "../api/projects";
 import { instanceSettingsApi } from "../api/instanceSettings";
 import { queryKeys } from "../lib/queryKeys";
 import {
@@ -23,7 +24,6 @@ import {
 } from "@/components/ui/command";
 import {
   CircleDot,
-  Compass,
   Bot,
   Hexagon,
   Target,
@@ -44,7 +44,6 @@ import {
   parseSearchQuery,
   type SearchQueryParserContext,
 } from "../lib/search-query-parser";
-import { companyProjectsQuery } from "@/lib/company-projects-query";
 
 const SEARCH_ALL_VALUE = "__paperclip-search-all__";
 
@@ -92,6 +91,7 @@ function scoreProjectMatch(name: string, description: string, q: string): number
 }
 
 export function CommandPalette() {
+  const { t: pageText } = usePageTranslation("interface");
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
@@ -106,7 +106,6 @@ export function CommandPalette() {
     queryFn: () => instanceSettingsApi.getExperimental(),
   });
   const { enabled: combinedInboxTasksEnabled } = useCombinedInboxTasksEnabled();
-  const { enabled: responsibilitiesEnabled } = useResponsibilitiesEnabled();
   const fileViewerEnabled = experimentalSettings?.enableExperimentalFileViewer === true;
 
   useEffect(() => {
@@ -132,7 +131,8 @@ export function CommandPalette() {
   });
 
   const { data: allProjects = [] } = useQuery({
-    ...companyProjectsQuery(selectedCompanyId!),
+    queryKey: queryKeys.projects.list(selectedCompanyId!),
+    queryFn: () => projectsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId && open,
   });
   const projects = useMemo(
@@ -226,7 +226,7 @@ export function CommandPalette() {
         if (v && isMobile) setSidebarOpen(false);
       }}>
       <CommandInput
-        placeholder="Search tasks, agents, projects..."
+        placeholder={pageText("searchTasksAgentsProjects_173230")}
         value={query}
         onValueChange={setQuery}
         onKeyDown={(event) => {
@@ -244,13 +244,10 @@ export function CommandPalette() {
       <CommandList>
         <CommandEmpty>
           {showSearchAll ? (
-            <span>
-              No quick task matches. Press{" "}
-              <kbd className="rounded border border-border bg-muted px-1 py-0.5 text-(length:--text-nano)">↵</kbd>{" "}
-              to <span className="font-medium">search all</span> or keep typing to refine.
-            </span>
+            <span>{pageText("noQuickTaskMatchesPress_ff31fe")}{" "}
+              <kbd className="rounded border border-border bg-muted px-1 py-0.5 text-(length:--text-nano)">↵</kbd>{" "}{pageText("to_4374aa") + " "}<span className="font-medium">{pageText("searchAll_47bf39")}</span>{" " + pageText("orKeepTypingToRefine_bc7364")}</span>
           ) : (
-            "No results found."
+            pageText("noResultsFound_e9cc6d")
           )}
         </CommandEmpty>
 
@@ -263,11 +260,10 @@ export function CommandPalette() {
               data-testid="command-search-all"
             >
               <Search className="mr-2 h-4 w-4" />
-              <span className="flex-1 truncate">
-                Search all for <span className="font-semibold">&ldquo;{searchQuery}&rdquo;</span>
+              <span className="flex-1 truncate">{pageText("searchAllFor_7414e1") + " "}<span className="font-semibold">&ldquo;{searchQuery}&rdquo;</span>
               </span>
               <span className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground">
-                <span>open full search</span>
+                <span>{pageText("openFullSearch_da2012")}</span>
                 <kbd className="rounded border border-border bg-background px-1 py-0.5 text-(length:--text-nano)">↵</kbd>
               </span>
             </CommandItem>
@@ -323,9 +319,7 @@ export function CommandPalette() {
               openNewIssue();
             }}
           >
-            <SquarePen className="mr-2 h-4 w-4" />
-            Create new task
-            <span className="ml-auto text-xs text-muted-foreground">C</span>
+            <SquarePen className="mr-2 h-4 w-4" />{pageText("createNewTask_5f80d7")}<span className="ml-auto text-xs text-muted-foreground">C</span>
           </CommandItem>
           {onIssueDetail && fileViewerEnabled && (
             <CommandItem
@@ -334,9 +328,7 @@ export function CommandPalette() {
                 window.dispatchEvent(new CustomEvent("paperclip:open-file-viewer"));
               }}
             >
-              <FileCode2 className="mr-2 h-4 w-4" />
-              Open file in this issue...
-              <span className="ml-auto text-xs text-muted-foreground">g f</span>
+              <FileCode2 className="mr-2 h-4 w-4" />{pageText("openFileInThisIssue_11d036")}<span className="ml-auto text-xs text-muted-foreground">g f</span>
             </CommandItem>
           )}
           <CommandItem
@@ -345,58 +337,32 @@ export function CommandPalette() {
               openNewAgent();
             }}
           >
-            <Plus className="mr-2 h-4 w-4" />
-            Create new agent
-          </CommandItem>
+            <Plus className="mr-2 h-4 w-4" />{pageText("createNewAgent_b64126")}</CommandItem>
           <CommandItem onSelect={() => go("/projects")}>
-            <Plus className="mr-2 h-4 w-4" />
-            Create new project
-          </CommandItem>
+            <Plus className="mr-2 h-4 w-4" />{pageText("createNewProject_dcd5a8")}</CommandItem>
         </CommandGroup>
 
         <CommandSeparator />
 
         <CommandGroup heading="Pages">
-          {/* One Dashboard: the Responsibilities home while that experiment is on, the classic one otherwise. */}
-          {responsibilitiesEnabled ? (
-            <CommandItem onSelect={() => go("/responsibilities")}>
-              <Compass className="mr-2 h-4 w-4" />
-              Dashboard
-            </CommandItem>
-          ) : (
-            <CommandItem onSelect={() => go("/dashboard")}>
-              <LayoutDashboard className="mr-2 h-4 w-4" />
-              Dashboard
-            </CommandItem>
-          )}
+          <CommandItem onSelect={() => go("/dashboard")}>
+            <LayoutDashboard className="mr-2 h-4 w-4" />{pageText("dashboard_d87f47")}</CommandItem>
           <CommandItem onSelect={() => go(combinedInboxTasksEnabled ? "/issues?view=mine" : "/inbox")}>
             <Inbox className="mr-2 h-4 w-4" />
-            {combinedInboxTasksEnabled ? "My work" : "Inbox"}
+            {combinedInboxTasksEnabled ? pageText("myWork_57a125") : pageText("inbox_44caf7")}
           </CommandItem>
           <CommandItem onSelect={() => go("/issues")}>
-            <CircleDot className="mr-2 h-4 w-4" />
-            Tasks
-          </CommandItem>
+            <CircleDot className="mr-2 h-4 w-4" />{pageText("tasks_090ec5")}</CommandItem>
           <CommandItem onSelect={() => go("/projects")}>
-            <Hexagon className="mr-2 h-4 w-4" />
-            Projects
-          </CommandItem>
+            <Hexagon className="mr-2 h-4 w-4" />{pageText("projects_53e890")}</CommandItem>
           <CommandItem onSelect={() => go("/goals")}>
-            <Target className="mr-2 h-4 w-4" />
-            Goals
-          </CommandItem>
+            <Target className="mr-2 h-4 w-4" />{pageText("goals_48d8c6")}</CommandItem>
           <CommandItem onSelect={() => go("/agents")}>
-            <Bot className="mr-2 h-4 w-4" />
-            Agents
-          </CommandItem>
+            <Bot className="mr-2 h-4 w-4" />{pageText("agents_64acf7")}</CommandItem>
           <CommandItem onSelect={() => go("/costs")}>
-            <DollarSign className="mr-2 h-4 w-4" />
-            Costs
-          </CommandItem>
+            <DollarSign className="mr-2 h-4 w-4" />{pageText("costs_799b3e")}</CommandItem>
           <CommandItem onSelect={() => go("/activity")}>
-            <History className="mr-2 h-4 w-4" />
-            Activity
-          </CommandItem>
+            <History className="mr-2 h-4 w-4" />{pageText("activity_81c0d9")}</CommandItem>
         </CommandGroup>
 
         {visibleIssues.length > 0 && (

@@ -1,3 +1,5 @@
+import { t as translateDynamic } from "../i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useCallback, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -38,15 +40,13 @@ import { useHiddenSettings } from "@/hooks/useHiddenSettings";
 import { useCompanyOrder } from "@/hooks/useCompanyOrder";
 import { useSignOut } from "@/hooks/useSignOut";
 import { queryKeys } from "@/lib/queryKeys";
-import { cn } from "@/lib/utils";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
+import { cn, SIDEBAR_RAIL_HIDDEN_LABEL } from "@/lib/utils";
 import { useSidebar } from "../context/SidebarContext";
 import { CompanyPatternIcon } from "./CompanyPatternIcon";
 import { TruncatedText } from "./TruncatedText";
 import { FlyoutHeader, FlyoutOptions } from "./ui/flyout";
 
 import { PluginOrganizationSwitcher } from "./PluginOrganizationSwitcher";
-import { useCompanyHomePath } from "@/hooks/useCompanyHomePath";
 
 interface SidebarCompanyMenuProps {
   open?: boolean;
@@ -130,7 +130,7 @@ function SortableCompanyItem({
         <button
           type="button"
           ref={setActivatorNodeRef}
-          aria-label={`Reorder ${company.name}`}
+          aria-label={translateDynamic("dynamic:reorder", { value1: company.name })}
           className="inline-flex size-8 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-(length:--rad-2) focus-visible:ring-ring"
           onClick={(event) => {
             event.preventDefault();
@@ -159,15 +159,16 @@ export function SidebarCompanyMenu({ showChevron, ...props }: SidebarCompanyMenu
 }
 
 function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange, showChevron = true }: SidebarCompanyMenuProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const [internalOpen, setInternalOpen] = useState(false);
   const [isEditingOrder, setIsEditingOrder] = useState(false);
   const { companies, selectedCompany, setSelectedCompanyId, companyListUnavailable, retryCompanies } =
     useCompany();
   const { openOnboarding } = useDialogActions();
-  const { isMobile, setSidebarOpen } = useSidebar();
+  const { isMobile, setSidebarOpen, collapsed, peeking } = useSidebar();
+  const rail = collapsed && !peeking;
   const location = useLocation();
   const navigate = useNavigate();
-  const { path: homePath } = useCompanyHomePath();
   const open = controlledOpen ?? internalOpen;
   const setOpen = onOpenChange ?? setInternalOpen;
   const sensors = useSensors(
@@ -198,7 +199,6 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange, showChevron = 
     hiddenSettingsLoaded &&
     !hidesCompanyPage(hiddenSettings, "company.members") &&
     !hidesCompanyPage(hiddenSettings, "company.invites");
-  const switcherNoun = "organization";
   const currentName = selectedCompany?.name ?? null;
   // Managed hosts forbid local company creation. Their extension owns that action.
   const companyCreationManaged = Boolean(useCloudInstance());
@@ -228,7 +228,7 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange, showChevron = 
     setOpen(false);
     if (isMobile) setSidebarOpen(false);
     if (shouldLeaveCurrentRoute) {
-      navigate(`/${company.issuePrefix}${homePath}`);
+      navigate(`/${company.issuePrefix}/dashboard`);
     }
   }
 
@@ -273,12 +273,11 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange, showChevron = 
           className="h-9 min-w-0 flex-1 justify-start gap-2 px-4 text-left hover:bg-sidebar-accent hover:text-sidebar-accent-foreground has-[>svg]:px-4 dark:hover:bg-sidebar-accent dark:hover:text-sidebar-accent-foreground"
           aria-label={
             currentName
-              ? `Open ${currentName} ${switcherNoun} switcher`
-              : `Open ${switcherNoun} switcher`
+              ? pageText("options:namedOrganizationSwitcher", { name: currentName })
+              : pageText("options:organizationSwitcher")
           }
         >
-          {/* Customer data: the organization name stays masked in session replay. */}
-          <span className={cn("flex min-w-0 flex-1 items-center gap-2", ANALYTICS_MASK_CLASS)}>
+          <span className="flex min-w-0 flex-1 items-center gap-2">
             {selectedCompany ? <WorkspaceIcon company={selectedCompany} /> : null}
             {/* The header has room for ~110px of name beside the collapse
                 control (~142px on mobile, which hides it) — search moved to
@@ -286,13 +285,16 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange, showChevron = 
                 truncates stays hover-recoverable via title. */}
             <TruncatedText
               marqueeResetKey={open}
-              className="min-w-0 truncate text-sm font-bold text-foreground"
+              className={cn(
+                "min-w-0 truncate text-sm font-bold text-foreground",
+                rail && SIDEBAR_RAIL_HIDDEN_LABEL,
+              )}
               title={currentName ?? undefined}
             >
-              {currentName ?? `Select ${switcherNoun}`}
+              {currentName ?? pageText("options:selectOrganization")}
             </TruncatedText>
           </span>
-          {showChevron && <ChevronsUpDown className="size-3.5 shrink-0 text-muted-foreground" />}
+          {!rail && showChevron && <ChevronsUpDown className="size-3.5 shrink-0 text-muted-foreground" />}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
@@ -301,9 +303,7 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange, showChevron = 
         className="ml-2 w-(--organization-popover-width) max-w-(--sz-calc-24) overflow-hidden rounded-xl border-border bg-popover p-0 shadow-(--shadow-profile-popover)"
       >
         <FlyoutHeader className="flex h-(--organization-popover-header-height) items-center justify-between gap-2 px-3.5">
-          <DropdownMenuLabel className="p-0 text-(length:--text-compact) font-semibold text-foreground">
-            Organizations
-          </DropdownMenuLabel>
+          <DropdownMenuLabel className="p-0 text-(length:--text-compact) font-semibold text-foreground">{pageText("organizations_076052")}</DropdownMenuLabel>
           <button
             type="button"
             onClick={(event) => {
@@ -313,7 +313,7 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange, showChevron = 
             }}
             className="rounded px-1.5 py-0.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
-            {isEditingOrder ? "Done" : "Edit"}
+            {isEditingOrder ? pageText("done_e9b450") : pageText("edit_530164")}
           </button>
         </FlyoutHeader>
         <FlyoutOptions className="flex max-h-96 flex-col gap-0.5 overflow-y-auto px-2.5 pb-2 pt-1">
@@ -344,7 +344,7 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange, showChevron = 
             // offer the way back.
             companyListUnavailable ? (
               <>
-                <DropdownMenuItem disabled>Couldn&apos;t load organizations</DropdownMenuItem>
+                <DropdownMenuItem disabled>{pageText("couldnTLoadOrganizations_411064")}</DropdownMenuItem>
                 <DropdownMenuItem
                   onSelect={(event) => {
                     // Keep the menu open so the result of the retry is visible.
@@ -352,12 +352,10 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange, showChevron = 
                     void retryCompanies();
                   }}
                 >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Try again
-                </DropdownMenuItem>
+                  <RefreshCw className="h-4 w-4 mr-2" />{pageText("tryAgain_042c86")}</DropdownMenuItem>
               </>
             ) : (
-              <DropdownMenuItem disabled>No organizations</DropdownMenuItem>
+              <DropdownMenuItem disabled>{pageText("noOrganizations_9468e6")}</DropdownMenuItem>
             )
           ) : null}
         </FlyoutOptions>
@@ -371,7 +369,7 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange, showChevron = 
               <span className="flex size-5 shrink-0 items-center justify-center text-muted-foreground">
                 <Plus className="size-4" />
               </span>
-              <TruncatedText className="min-w-0 flex-1 truncate">Create organization</TruncatedText>
+              <TruncatedText className="min-w-0 flex-1 truncate">{pageText("createOrganization_4370c6")}</TruncatedText>
             </DropdownMenuItem>
           )}
           {showInvitePeople ? (
@@ -390,7 +388,7 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange, showChevron = 
                   <UserPlus className="size-4" />
                 </span>
                 <TruncatedText className="min-w-0 flex-1 truncate">
-                  {currentName ? `Invite people to ${currentName}` : "Invite people"}
+                  {currentName ? pageText("options:inviteToNamedOrganization", { name: currentName }) : pageText("invitePeople_e1eb97")}
                 </TruncatedText>
               </Link>
             </DropdownMenuItem>
@@ -405,7 +403,7 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange, showChevron = 
                 <LogOut className="size-4" />
               </span>
               <TruncatedText className="min-w-0 flex-1 truncate">
-                {signOutMutation.isPending ? "Signing out..." : "Sign out"}
+                {signOutMutation.isPending ? pageText("signingOut_b9412f") : pageText("signOut_dc1649")}
               </TruncatedText>
             </DropdownMenuItem>
           ) : null}

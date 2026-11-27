@@ -1,7 +1,9 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { Star, SquarePen } from "lucide-react";
 import { SidebarNavItem } from "@/components/SidebarNavItem";
 import { AgentIcon } from "@/components/AgentIconPicker";
 import { Button } from "@/components/ui/button";
+import { useSidebar } from "@/context/SidebarContext";
 import type { Agent } from "@paperclipai/shared";
 import { agentRouteRef, cn } from "@/lib/utils";
 import { orderChatAgents } from "@/lib/recent-agent-chats";
@@ -23,6 +25,9 @@ export function AgentChatSidebar({
   onToggleStar: (id: string) => void;
   onOpenChat: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { collapsed, peeking } = useSidebar();
+  const rail = collapsed && !peeking;
   const ordered = orderChatAgents(agents, starredIds, recentIds);
   const row = (agent: Agent) => {
     const pinned = starredIds.includes(agent.id);
@@ -35,39 +40,41 @@ export function AgentChatSidebar({
           iconNode={
             <AgentIcon icon={agent.icon} className="h-4 w-4 shrink-0" />
           }
-          className="pr-9"
+          className={rail ? undefined : "pr-9"}
         />
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-xs"
-          aria-label={`${pinned ? "Unstar" : "Star"} ${agent.name}`}
-          aria-pressed={pinned}
-          title={pinned ? "Unstar agent" : "Star agent to pin"}
-          onClick={(event) => {
-            event.stopPropagation();
-            onToggleStar(agent.id);
-          }}
-          className={cn("absolute right-2 top-(--pct-50) -translate-y-(--pct-50) text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover/agent-chat:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100", pinned && "opacity-100")}
-        >
-          <Star
-            aria-hidden="true"
-            className={cn("size-3.5", pinned && "fill-current")}
-          />
-        </Button>
+        {!rail && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-xs"
+            aria-label={`${pinned ? "Unstar" : "Star"} ${agent.name}`}
+            aria-pressed={pinned}
+            title={pinned ? pageText("unstarAgent_06c923") : pageText("starAgentToPin_1dbb24")}
+            onClick={(event) => {
+              event.stopPropagation();
+              onToggleStar(agent.id);
+            }}
+            className={cn("absolute right-2 top-(--pct-50) -translate-y-(--pct-50) text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover/agent-chat:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100", pinned && "opacity-100")}
+          >
+            <Star
+              aria-hidden="true"
+              className={cn("size-3.5", pinned && "fill-current")}
+            />
+          </Button>
+        )}
       </div>
     );
   };
   return (
-    <section aria-label="Chats" className="group/chats flex flex-col gap-0.5">
+    <section aria-label={pageText("chats_6c9e84")} className="group/chats flex flex-col gap-0.5">
       <div className="relative flex min-h-9 items-center px-4 py-1.5">
-        <span className="font-mono text-(length:--text-nano) font-medium uppercase tracking-widest text-muted-foreground/60">Chats</span>
+        <span className={cn("font-mono text-(length:--text-nano) font-medium uppercase tracking-widest text-muted-foreground/60", rail && "sr-only")}>{pageText("chats_6c9e84")}</span>
         <Button
           type="button"
           variant="ghost"
           size="icon-xs"
-          aria-label="Chat with an agent"
-          title="Chat with an agent"
+          aria-label={pageText("chatWithAnAgent_b5e325")}
+          title={pageText("chatWithAnAgent_b5e325")}
           onClick={onOpenChat}
           className="absolute right-2 top-(--pct-50) -translate-y-(--pct-50) text-muted-foreground opacity-0 group-hover/chats:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100"
         >

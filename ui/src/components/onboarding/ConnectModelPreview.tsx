@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { AgentCharacter } from "../AgentCharacter";
 import { useState } from "react";
 import { MotionConfig } from "motion/react";
@@ -80,6 +81,7 @@ export function ConnectModelPreview({
   initialUseApiKeys?: boolean;
   control?: CredentialControl;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [selectedId, setSelectedId] = useState<string | null>(initialSourceId);
   const [useApiKeys, setUseApiKeys] = useState(initialUseApiKeys);
   const mode: CredentialMode = useApiKeys ? "api" : "subscription";
@@ -106,14 +108,14 @@ export function ConnectModelPreview({
         <div className="pt-6">
           <OnboardingHeading
             center
-            title="Connect a model"
+            title={pageText("connectAModel_aaf2b3")}
             lede="Paperclip works with your existing subscription or API keys."
           />
         </div>
 
         <div className="space-y-2 pt-12">
           <ModelSourceTiles
-            label="Model source"
+            label={pageText("modelSource_60d88e")}
             sources={MODEL_SOURCES}
             mode={mode}
             selectedId={selectedId}
@@ -132,9 +134,7 @@ export function ConnectModelPreview({
                 checked={useApiKeys}
                 onCheckedChange={(checked) => setUseApiKeys(checked === true)}
               />
-              <span className="text-sm font-medium text-foreground">
-                Use API keys instead
-              </span>
+              <span className="text-sm font-medium text-foreground">{pageText("useAPIKeysInstead_3ddb78")}</span>
             </label>
           )}
         </div>

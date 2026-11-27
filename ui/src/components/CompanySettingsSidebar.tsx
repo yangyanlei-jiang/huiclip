@@ -1,3 +1,5 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft,
@@ -43,6 +45,8 @@ function isSandboxProviderOnly(plugin: PluginRecord): boolean {
 }
 
 export function CompanySettingsSidebar() {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const { selectedCompanyId } = useCompany();
   const { hidden: hiddenSettings } = useHiddenSettings();
   const showPage = (pageKey: string) => !hiddenSettings.has(pageKey);
@@ -84,7 +88,7 @@ export function CompanySettingsSidebar() {
   return (
     <ContextualSidebarFrame
       surface="settings"
-      title="Settings"
+      title={translateUi("interfaceCopy.settings")}
       showHeader={false}
       className={primarySidebarStyles.surface}
     >
@@ -93,20 +97,20 @@ export function CompanySettingsSidebar() {
         className="flex h-(--sz-60px) shrink-0 items-center px-3"
       >
         <div data-slot="settings-back-group" className={`${primarySidebarStyles.group} w-full`}>
-          <SidebarNavItem to="/dashboard" label="Back to app" icon={ArrowLeft} />
+          <SidebarNavItem to="/dashboard" label={pageText("backToApp_8a68b2")} icon={ArrowLeft} />
         </div>
       </div>
       <nav
-        aria-label="Settings"
+        aria-label={translateUi("interfaceCopy.settings")}
         data-slot="contextual-sidebar-nav"
         className={primarySidebarStyles.nav}
       >
         <div data-slot="contextual-sidebar-group" className={primarySidebarStyles.group}>
-          <SidebarNavItem to="/company/settings" label="General" icon={SlidersHorizontal} end />
+          <SidebarNavItem to="/company/settings" label={translateUi("interfaceCopy.general")} icon={SlidersHorizontal} end />
           {showPage("instance.profile") && (
             <SidebarNavItem
               to={`${INSTANCE_SETTINGS_PATH_PREFIX}/profile`}
-              label="Profile"
+              label={pageText("profile_ff4fc0")}
               icon={UserRoundPen}
               end
             />
@@ -114,7 +118,7 @@ export function CompanySettingsSidebar() {
           {showPage("company.members") && (
             <SidebarNavItem
               to="/company/settings/members"
-              label="Members"
+              label={pageText("members_1cb449")}
               icon={Users}
               badge={badges?.joinRequests ?? 0}
               end
@@ -132,42 +136,42 @@ export function CompanySettingsSidebar() {
               />
             ))}
           {showPage("company.secrets") && (
-            <SidebarNavItem to="/company/settings/secrets" label="Secrets" icon={KeyRound} end />
+            <SidebarNavItem to="/company/settings/secrets" label={pageText("secrets_1e3732")} icon={KeyRound} end />
           )}
           {showPage("instance.environments") && (
             <SidebarNavItem
               to={`${INSTANCE_SETTINGS_PATH_PREFIX}/environments`}
-              label="Environments"
+              label={pageText("environments_017b53")}
               icon={MonitorCog}
               end
             />
           )}
-          <SidebarNavItem to="/company/settings/connections" label="Connections" icon={Link2} end />
+          <SidebarNavItem to="/company/settings/connections" label={translateUi("interfaceCopy.connections")} icon={Link2} end />
           {showPage("instance.access") && (
             <SidebarNavItem
               to={`${INSTANCE_SETTINGS_PATH_PREFIX}/access`}
-              label="Access"
+              label={pageText("access_2f81a2")}
               icon={Shield}
               end
             />
           )}
           {showPage("company.export") && (
-            <SidebarNavItem to="/company/export" label="Export" icon={Download} />
+            <SidebarNavItem to="/company/export" label={pageText("export_f3e4fa")} icon={Download} />
           )}
           {!isCloud && showPage("company.import") && (
-            <SidebarNavItem to="/company/import" label="Import" icon={Upload} end />
+            <SidebarNavItem to="/company/import" label={pageText("import_d6fbc9")} icon={Upload} end />
           )}
           {showPage("instance.experimental") && (
             <SidebarNavItem
               to={`${INSTANCE_SETTINGS_PATH_PREFIX}/experimental`}
-              label="Experimental"
+              label={pageText("experimental_b718f8")}
               icon={FlaskConical}
             />
           )}
           {showPlugins && (
             <SidebarNavItem
               to={`${INSTANCE_SETTINGS_PATH_PREFIX}/plugins`}
-              label="System plugins"
+              label={pageText("plugins_ab2e26")}
               icon={Puzzle}
             />
           )}
@@ -195,7 +199,7 @@ export function CompanySettingsSidebar() {
           {showPage("instance.adapters") && (
             <SidebarNavItem
               to={`${INSTANCE_SETTINGS_PATH_PREFIX}/adapters`}
-              label="Adapters"
+              label={pageText("adapters_e07a4a")}
               icon={Cpu}
             />
           )}

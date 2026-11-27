@@ -1,8 +1,8 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useWorkspaceBaseRefRecovery, useWorkspaceRetry } from "@/components/WorkspaceBaseRefRecovery";
 import { WorkspaceBaseRefRecoveryNotice } from "@/components/WorkspaceBaseRefRecoveryNotice";
 import { DispositionRecoveryNotice, useDispositionRecoverySnapshot } from "@/components/DispositionRecoveryNotice";
 import { useId, useState } from "react";
-import { useProviderLimitMessage } from "@/hooks/useProviderLimitMessage";
 import {
   ChevronDown,
   CircleCheck,
@@ -59,15 +59,15 @@ export function TaskChatSystemNotice({
   onTryAgainNoLiveExecutionPath?: () => Promise<void> | void;
   tryAgainNoLiveExecutionPathPending?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const recoverySnapshot = useDispositionRecoverySnapshot(item.metadata);
   const branchRecovery = useWorkspaceBaseRefRecovery(item.metadata);
   const workspaceRetry = useWorkspaceRetry(item.metadata);
   const streamlined = useStreamlinedTaskChatPresentation();
   const [open, setOpen] = useState(Boolean(item.presentation?.detailsDefaultOpen));
   const detailsId = useId();
-  const body = useProviderLimitMessage(item.text);
   const { title, tone, detail } = humanizeSystemNotice({
-    body,
+    body: item.text,
     presentation: item.presentation,
   });
   const sections = mapCommentMetadataToSystemNoticeSections(item.metadata, {
@@ -135,7 +135,7 @@ export function TaskChatSystemNotice({
             disabled={tryAgainNoLiveExecutionPathPending}
             data-testid="task-chat-no-live-path-try-again"
           >
-            {tryAgainNoLiveExecutionPathPending ? "Trying again..." : "Try again"}
+            {tryAgainNoLiveExecutionPathPending ? pageText("tryingAgain_f42d99") : pageText("tryAgain_042c86")}
           </Button>
         ) : null}
       </div>
@@ -148,7 +148,7 @@ export function TaskChatSystemNotice({
           {showBody ? (
             <div className="px-3 py-2.5 text-foreground/90">
               <MarkdownBody softBreaks linkIssueReferences>
-                {body}
+                {item.text}
               </MarkdownBody>
             </div>
           ) : null}
@@ -171,7 +171,7 @@ export function TaskChatSystemNotice({
                 disabled={tryAgainNoLiveExecutionPathPending}
                 data-testid="task-chat-no-live-path-try-again"
               >
-                {tryAgainNoLiveExecutionPathPending ? "Trying again..." : "Try again"}
+                {tryAgainNoLiveExecutionPathPending ? pageText("tryingAgain_f42d99") : pageText("tryAgain_042c86")}
               </Button>
             </div>
           ) : null}

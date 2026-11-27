@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "slug": "anthropic",
-  "name": "Anthropic (Claude)",
-  "description": "Connect to Claude with Anthropic.",
+  "name": "Anthropic",
+  "description": "Use Anthropic APIs with a restricted key.",
   "categories": [
     "ai"
   ],

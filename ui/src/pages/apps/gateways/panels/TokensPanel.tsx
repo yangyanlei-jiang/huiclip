@@ -1,3 +1,6 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { type FormEvent, type ReactNode, useEffect, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, Copy, KeyRound, Plus } from "lucide-react";
@@ -8,7 +11,6 @@ import type {
   ToolMcpGatewayWithTokens,
 } from "@paperclipai/shared";
 import { toolsApi } from "@/api/tools";
-import { useAccountIdentity } from "@/api/companies-query";
 import { Button } from "@/components/ui/button";
 import {
   Collapsible,
@@ -30,7 +32,6 @@ import {
   type TokenStatus,
 } from "../gateway-helpers";
 import { describeError } from "@/api/errors";
-import { ANALYTICS_NO_CAPTURE_CLASS } from "@/lib/analytics/privacy";
 
 const DEFAULT_ACTIONS: ToolMcpGatewayTokenAction[] = ["tools/list", "tools/call"];
 const TOKEN_PAGE_SIZE = 10;
@@ -40,7 +41,6 @@ function defaultExpiry(): string {
 }
 
 const STATUS_CLASS: Record<TokenStatus, string> = {
-  pending: "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300",
   active: "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
   expiring: "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300",
   expired: "border-border bg-muted text-muted-foreground",
@@ -70,12 +70,13 @@ function TokenField({ label, value }: { label: string; value: ReactNode }) {
 }
 
 function ExpiryValue({ token }: { token: ToolMcpGatewayToken }) {
+  const { t: pageText } = usePageTranslation("interface");
   const expiresAt = toDate(token.expiresAt);
-  if (!expiresAt) return <>No expiry</>;
+  if (!expiresAt) return <>{pageText("noExpiry_39d436")}</>;
   if (expiresAt.getTime() <= Date.now()) {
-    return <><span className="font-medium text-foreground">Expired</span> <RelativeTime value={token.expiresAt} /></>;
+    return <><span className="font-medium text-foreground">{pageText("expired_a689a9")}</span> <RelativeTime value={token.expiresAt} /></>;
   }
-  return <>Expires <RelativeTime value={token.expiresAt} /></>;
+  return <>{pageText("expires_a99be3") + " "}<RelativeTime value={token.expiresAt} /></>;
 }
 
 export function TokensPanel({
@@ -87,6 +88,8 @@ export function TokensPanel({
   gateway: ToolMcpGatewayWithTokens;
   onTokenCreated?: (token: ToolMcpGatewayTokenCreated) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToast();
   const [minting, setMinting] = useState(false);
@@ -104,12 +107,6 @@ export function TokensPanel({
   const tokens = useMemo(
     () => [...gateway.tokens].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
     [gateway.tokens],
-  );
-  // Only the person an agent-created token acts for can reveal it.
-  const { userId } = useAccountIdentity();
-  const pendingTokens = useMemo(
-    () => tokens.filter((token) => tokenStatus(token) === "pending" && (!token.responsibleUserId || !userId || token.responsibleUserId === userId)),
-    [tokens, userId],
   );
   const pageCount = Math.max(1, Math.ceil(tokens.length / TOKEN_PAGE_SIZE));
   const visibleTokens = tokens.slice((historyPage - 1) * TOKEN_PAGE_SIZE, historyPage * TOKEN_PAGE_SIZE);
@@ -135,8 +132,8 @@ export function TokensPanel({
       setOwnerNote("");
       setExpiresAt(defaultExpiry());
       pushToast({
-        title: "Token issued",
-        body: "Copy it now — you won’t see the full value again after leaving this page.",
+        title: interfaceNotice("interface:tokenIssued_7007ea"),
+        body: interfaceNotice("interface:copyItNowYouWonTSeeThe_c8c775"),
         tone: "success",
       });
       onTokenCreated?.(token);
@@ -144,29 +141,7 @@ export function TokensPanel({
     },
     onError: (error) =>
       pushToast({
-        title: "Token was not issued",
-        body: describeError(error).body,
-        tone: "error",
-      }),
-  });
-
-  // Agent-created tokens get their value only when the person reveals them here.
-  const revealMutation = useMutation({
-    mutationFn: (tokenId: string) => toolsApi.revealGatewayToken(companyId, tokenId),
-    onSuccess: async (token) => {
-      setCreated(token);
-      setRevealed(true);
-      pushToast({
-        title: "Token revealed",
-        body: "Copy it now — you won’t see the full value again after leaving this page.",
-        tone: "success",
-      });
-      onTokenCreated?.(token);
-      await invalidate();
-    },
-    onError: (error) =>
-      pushToast({
-        title: "Token was not revealed",
+        title: interfaceNotice("interface:tokenWasNotIssued_7a7caf"),
         body: describeError(error).body,
         tone: "error",
       }),
@@ -177,12 +152,12 @@ export function TokensPanel({
     onSuccess: async (token) => {
       setConfirmToken(null);
       setRevokeName("");
-      pushToast({ title: "Token revoked", body: `${token.name} can no longer connect.`, tone: "success" });
+      pushToast({ title: interfaceNotice("interface:tokenRevoked_602c0d"), body: `${token.name} can no longer connect.`, tone: "success" });
       await invalidate();
     },
     onError: (error) =>
       pushToast({
-        title: "Token was not revoked",
+        title: interfaceNotice("interface:tokenWasNotRevoked_7e4125"),
         body: describeError(error).body,
         tone: "error",
       }),
@@ -191,10 +166,10 @@ export function TokensPanel({
   async function copyToken(value: string) {
     try {
       await copyTextToClipboard(value);
-      pushToast({ title: "Copied", body: "Access token", tone: "success" });
+      pushToast({ title: interfaceNotice("interface:copied_8e3df4"), body: interfaceNotice("interface:accessToken_f69d5c"), tone: "success" });
     } catch (error) {
       pushToast({
-        title: "Copy failed",
+        title: interfaceNotice("interface:copyFailed_bd5acb"),
         body: describeError(error).body,
         tone: "error",
       });
@@ -221,106 +196,61 @@ export function TokensPanel({
     <div className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="max-w-2xl space-y-1">
-          <p className="text-sm text-muted-foreground">
-            Issue a reusable token for an external client. Its name is also used as the client label.
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Paperclip creates a fresh one-hour runtime token when an agent run starts, then revokes it when the
-            run ends. Codex can receive the same gateway through both an app connection and the managed-gateway
-            path, so one run may leave two revoked rows. These are audit history, not repeated manual tokens.
-          </p>
+          <p className="text-sm text-muted-foreground">{pageText("issueAReusableTokenForAnExternalClient_89271b")}</p>
+          <p className="text-xs text-muted-foreground">{pageText("paperclipCreatesAFreshOneHourRuntimeToken_8605b0")}</p>
         </div>
         <Button size="sm" onClick={startIssuing}>
-          <Plus className="mr-1.5 h-3.5 w-3.5" />
-          Issue token
-        </Button>
+          <Plus className="mr-1.5 h-3.5 w-3.5" />{pageText("issueToken_9f0343")}</Button>
       </div>
 
       {minting ? (
         <form className="space-y-3" onSubmit={submit}>
           <div className="grid gap-3 md:grid-cols-[1fr_auto]">
             <label className="space-y-1.5 text-sm">
-              <span className="text-xs font-medium text-muted-foreground">Token name</span>
+              <span className="text-xs font-medium text-muted-foreground">{pageText("tokenName_b031b8")}</span>
               <Input value={name} onChange={(event) => setName(event.target.value)} required autoFocus />
-              <span className="text-xs text-muted-foreground">Also used as the client label.</span>
+              <span className="text-xs text-muted-foreground">{pageText("alsoUsedAsTheClientLabel_9bd40a")}</span>
             </label>
             <label className="space-y-1.5 text-sm">
-              <span className="text-xs font-medium text-muted-foreground">Expires</span>
+              <span className="text-xs font-medium text-muted-foreground">{translateUi("interfaceCopy.expires")}</span>
               <Input type="date" value={expiresAt} onChange={(event) => setExpiresAt(event.target.value)} required />
             </label>
           </div>
           <label className="block space-y-1.5 text-sm">
-            <span className="text-xs font-medium text-muted-foreground">Owner note (optional)</span>
+            <span className="text-xs font-medium text-muted-foreground">{pageText("ownerNoteOptional_f74f35")}</span>
             <Input
               value={ownerNote}
               onChange={(event) => setOwnerNote(event.target.value)}
-              placeholder="Who uses this token or why it exists"
+              placeholder={pageText("whoUsesThisTokenOrWhyItExists_e819ca")}
             />
           </label>
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="ghost" size="sm" onClick={() => setMinting(false)}>
-              Cancel
-            </Button>
+            <Button type="button" variant="ghost" size="sm" onClick={() => setMinting(false)}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button type="submit" size="sm" disabled={createMutation.isPending || !name.trim()}>
-              {createMutation.isPending ? "Issuing…" : "Issue token"}
+              {createMutation.isPending ? pageText("issuing_6bc09d") : pageText("issueToken_9f0343")}
             </Button>
           </div>
         </form>
-      ) : null}
-
-      {pendingTokens.length > 0 ? (
-        <section className="space-y-2 border-y border-border py-4" aria-label="Tokens waiting to be revealed">
-          <div>
-            <div className="text-sm font-semibold text-foreground">Waiting for you to reveal</div>
-            <div className="text-xs text-muted-foreground">
-              An agent created these tokens for you. A value is generated when you reveal it and is shown only once.
-            </div>
-          </div>
-          {pendingTokens.map((token) => (
-            <div key={token.id} className="flex flex-wrap items-center justify-between gap-2">
-              <div className="min-w-0">
-                <div className="truncate font-medium text-foreground">{token.name}</div>
-                <div className="text-xs text-muted-foreground">
-                  {maskedTokenLabel(token)} · <ExpiryValue token={token} />
-                </div>
-              </div>
-              <Button
-                size="sm"
-                disabled={revealMutation.isPending}
-                onClick={() => revealMutation.mutate(token.id)}
-                aria-label={`Reveal token ${token.name}`}
-              >
-                Reveal token
-              </Button>
-            </div>
-          ))}
-        </section>
       ) : null}
 
       {created ? (
         <div className="space-y-2 border-y border-border py-4">
           <div className="flex items-center justify-between gap-2">
             <div>
-              <div className="text-sm font-semibold text-foreground">New token — copy now</div>
-              <div className="text-xs text-muted-foreground">
-                It is now available in Client snippets for a copy-ready configuration.
-              </div>
+              <div className="text-sm font-semibold text-foreground">{pageText("newTokenCopyNow_c1331a")}</div>
+              <div className="text-xs text-muted-foreground">{pageText("itIsNowAvailableInClientSnippetsFor_68c461")}</div>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => setCreated(null)} aria-label="Dismiss new token">
-              Dismiss
-            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setCreated(null)} aria-label={pageText("dismissNewToken_6c68d3")}>{pageText("dismiss_70afe9")}</Button>
           </div>
           <div className="flex items-center gap-2">
-            <code className={cn("min-w-0 flex-1 truncate rounded bg-muted px-3 py-2 font-mono text-xs text-foreground", ANALYTICS_NO_CAPTURE_CLASS)}>
+            <code className="min-w-0 flex-1 truncate rounded bg-muted px-3 py-2 font-mono text-xs text-foreground">
               {revealed ? created.token : maskedTokenLabel(created)}
             </code>
             {revealed ? (
               <Button variant="outline" size="sm" onClick={() => void copyToken(created.token)}>
-                <Copy className="mr-1 h-3.5 w-3.5" />
-                Copy
-              </Button>
+                <Copy className="mr-1 h-3.5 w-3.5" />{pageText("copy_af74f7")}</Button>
             ) : (
-              <Button variant="outline" size="sm" onClick={() => setRevealed(true)}>Show</Button>
+              <Button variant="outline" size="sm" onClick={() => setRevealed(true)}>{pageText("show_d97d1e")}</Button>
             )}
           </div>
         </div>
@@ -330,28 +260,26 @@ export function TokensPanel({
         <CollapsibleTrigger asChild>
           <Button variant="ghost" className="h-auto w-full justify-between px-0 py-1 hover:bg-transparent">
             <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
-              <KeyRound className="h-4 w-4 text-muted-foreground" />
-              Token history
-              <span className="font-normal text-muted-foreground">{tokens.length}</span>
+              <KeyRound className="h-4 w-4 text-muted-foreground" />{pageText("tokenHistory_a31a69")}<span className="font-normal text-muted-foreground">{tokens.length}</span>
             </span>
             {historyOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </Button>
         </CollapsibleTrigger>
         <CollapsibleContent className="space-y-3 pt-3">
           {tokens.length === 0 ? (
-            <p className="py-4 text-sm text-muted-foreground">No tokens have been issued for this gateway.</p>
+            <p className="py-4 text-sm text-muted-foreground">{pageText("noTokensHaveBeenIssuedForThisGateway_d0177e")}</p>
           ) : (
             <>
               <div className="hidden overflow-x-auto rounded-lg border border-border sm:block">
                 <table className="w-full min-w-(--sz-44rem) text-sm">
                   <thead>
                     <tr className="border-b border-border bg-muted/40 text-left text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-                      <th className="px-4 py-2.5">Token</th>
-                      <th className="px-4 py-2.5">Owner</th>
-                      <th className="px-4 py-2.5">Created</th>
-                      <th className="px-4 py-2.5">Last used</th>
-                      <th className="px-4 py-2.5">Expiry</th>
-                      <th className="px-4 py-2.5">Status</th>
+                      <th className="px-4 py-2.5">{pageText("token_a1141e")}</th>
+                      <th className="px-4 py-2.5">{translateUi("interfaceCopy.owner")}</th>
+                      <th className="px-4 py-2.5">{translateUi("interfaceCopy.created")}</th>
+                      <th className="px-4 py-2.5">{translateUi("interfaceCopy.lastUsed")}</th>
+                      <th className="px-4 py-2.5">{pageText("expiry_ba8f57")}</th>
+                      <th className="px-4 py-2.5">{translateUi("interfaceCopy.status")}</th>
                       <th className="px-4 py-2.5 text-right" />
                     </tr>
                   </thead>
@@ -378,9 +306,7 @@ export function TokensPanel({
                                 size="sm"
                                 className="h-7 px-2 text-xs text-destructive hover:text-destructive"
                                 onClick={() => startRevoke(token)}
-                              >
-                                Revoke
-                              </Button>
+                              >{pageText("revoke_0be720")}</Button>
                             ) : null}
                           </td>
                         </tr>
@@ -403,10 +329,10 @@ export function TokensPanel({
                         <StatusBadge status={status} />
                       </div>
                       <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                        <TokenField label="Owner" value={token.clientLabel || token.ownerNote || "—"} />
-                        <TokenField label="Created" value={<RelativeTime value={token.createdAt} />} />
-                        <TokenField label="Last used" value={token.lastUsedAt ? <RelativeTime value={token.lastUsedAt} /> : "—"} />
-                        <TokenField label="Expiry" value={<ExpiryValue token={token} />} />
+                        <TokenField label={translateUi("interfaceCopy.owner")} value={token.clientLabel || token.ownerNote || "—"} />
+                        <TokenField label={translateUi("interfaceCopy.created")} value={<RelativeTime value={token.createdAt} />} />
+                        <TokenField label={translateUi("interfaceCopy.lastUsed")} value={token.lastUsedAt ? <RelativeTime value={token.lastUsedAt} /> : "—"} />
+                        <TokenField label={pageText("expiry_ba8f57")} value={<ExpiryValue token={token} />} />
                       </dl>
                       {status !== "revoked" ? (
                         <Button
@@ -414,9 +340,7 @@ export function TokensPanel({
                           size="sm"
                           className="mt-3 w-full text-xs text-destructive hover:text-destructive"
                           onClick={() => startRevoke(token)}
-                        >
-                          Revoke
-                        </Button>
+                        >{pageText("revoke_0be720")}</Button>
                       ) : null}
                     </div>
                   );
@@ -425,16 +349,14 @@ export function TokensPanel({
 
               {pageCount > 1 ? (
                 <div className="flex items-center justify-between gap-3">
-                  <p className="text-xs text-muted-foreground">
-                    Page {historyPage} of {pageCount} · {tokens.length} tokens
-                  </p>
+                  <p className="text-xs text-muted-foreground">{pageText("page_fb0627") + " "}{historyPage}{" " + pageText("of_de04fa") + " "}{pageCount} · {tokens.length}{" " + pageText("tokens_339143")}</p>
                   <div className="flex items-center gap-1">
                     <Button
                       variant="ghost"
                       size="sm"
                       disabled={historyPage === 1}
                       onClick={() => setHistoryPage((page) => Math.max(1, page - 1))}
-                      aria-label="Previous token page"
+                      aria-label={pageText("previousTokenPage_e8fe99")}
                     >
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
@@ -443,7 +365,7 @@ export function TokensPanel({
                       size="sm"
                       disabled={historyPage === pageCount}
                       onClick={() => setHistoryPage((page) => Math.min(pageCount, page + 1))}
-                      aria-label="Next token page"
+                      aria-label={pageText("nextTokenPage_7f838c")}
                     >
                       <ChevronRight className="h-4 w-4" />
                     </Button>
@@ -459,17 +381,14 @@ export function TokensPanel({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true">
           <div className="w-full max-w-md space-y-3 rounded-lg border border-border bg-card p-5 shadow-lg">
             <div>
-              <h3 className="text-sm font-semibold text-foreground">Revoke this token?</h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Any client using <span className="font-medium text-foreground">{confirmToken.name}</span> goes
-                silent immediately. This can’t be undone. Type the token name to confirm.
-              </p>
+              <h3 className="text-sm font-semibold text-foreground">{pageText("revokeThisToken_1e71d8")}</h3>
+              <p className="mt-1 text-sm text-muted-foreground">{pageText("anyClientUsing_26f612") + " "}<span className="font-medium text-foreground">{confirmToken.name}</span>{" " + pageText("goesSilentImmediatelyThisCanTBeUndone_e8500f")}</p>
             </div>
             <Input
               value={revokeName}
               onChange={(event) => setRevokeName(event.target.value)}
               placeholder={confirmToken.name}
-              aria-label="Type the token name to confirm"
+              aria-label={pageText("typeTheTokenNameToConfirm_be7ab3")}
               autoFocus
             />
             <div className="flex justify-end gap-2">
@@ -480,16 +399,14 @@ export function TokensPanel({
                   setConfirmToken(null);
                   setRevokeName("");
                 }}
-              >
-                Cancel
-              </Button>
+              >{translateUi("interfaceCopy.cancel")}</Button>
               <Button
                 variant="destructive"
                 size="sm"
                 disabled={revokeName.trim() !== confirmToken.name || revokeMutation.isPending}
                 onClick={() => revokeMutation.mutate(confirmToken.id)}
               >
-                {revokeMutation.isPending ? "Revoking…" : "Revoke token"}
+                {revokeMutation.isPending ? pageText("revoking_2c8a0e") : pageText("revokeToken_9b8466")}
               </Button>
             </div>
           </div>

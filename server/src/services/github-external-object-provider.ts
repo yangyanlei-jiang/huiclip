@@ -13,14 +13,6 @@ import type {
 
 type FetchLike = (url: string, init?: RequestInit) => Promise<Response>;
 
-type GitHubObjectResolver = Omit<ExternalObjectResolver, "resolve"> & {
-  resolve(input: {
-    companyId: string;
-    object: { externalId: string; sanitizedCanonicalUrl: string | null };
-    signal?: AbortSignal;
-  }): Promise<ExternalObjectResolveResult>;
-};
-
 export interface GitHubExternalObjectProviderOptions {
   fetch?: FetchLike;
   requestTimeoutMs?: number;
@@ -345,8 +337,6 @@ function pullRequestSnapshot(identity: GitHubObjectIdentity, body: Record<string
       state,
       merged,
       draft,
-      title,
-      mergeable: asBoolean(body.mergeable),
       ...(authorLogin ? { authorLogin } : {}),
       ...(headRef ? { headRef } : {}),
       ...(headSha ? { headSha } : {}),
@@ -409,7 +399,7 @@ async function safeJson(response: Response) {
 export function createGitHubExternalObjectProvider(
   db: Db,
   opts: GitHubExternalObjectProviderOptions = {},
-): { detector: ExternalObjectDetector; resolvers: GitHubObjectResolver[] } {
+): { detector: ExternalObjectDetector; resolvers: ExternalObjectResolver[] } {
   const fetchImpl = opts.fetch ?? ghFetch;
   const secretNames = opts.secretNames ?? DEFAULT_GITHUB_TOKEN_SECRET_NAMES;
   // `credentialProvider` is the preferred seam; `tokenProvider` stays for callers that
@@ -472,7 +462,7 @@ export function createGitHubExternalObjectProvider(
     },
   };
 
-  function resolver(objectType: GitHubObjectIdentity["objectType"]): GitHubObjectResolver {
+  function resolver(objectType: GitHubObjectIdentity["objectType"]): ExternalObjectResolver {
     return {
       providerKey: "github",
       objectType,

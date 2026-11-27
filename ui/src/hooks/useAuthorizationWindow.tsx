@@ -1,3 +1,4 @@
+import { t as plainText } from "@/i18n";
 import { useCallback, useRef, useState } from "react";
 import type { ToolOAuthStartResult } from "@paperclipai/shared";
 import { prepareOAuthNavigation, savePendingCloudHandoff } from "@/lib/oauthHandoff";
@@ -40,7 +41,7 @@ export function useAuthorizationWindow() {
     } catch (error) { cancel(); throw error; }
   }, [cancel]);
   const fallback = fallbackUrl ? <Button variant="outline" asChild>
-    <a href={fallbackUrl} target="_blank" rel="noopener noreferrer">Open sign-in in a new tab</a>
+    <a href={fallbackUrl} target="_blank" rel="noopener noreferrer">{plainText("interface:openSignInInANewTab_f83559")}</a>
   </Button> : null;
   return { reserve, open, cancel, fallback, windowRef: popup };
 }

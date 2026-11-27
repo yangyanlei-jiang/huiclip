@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { countLabel } from "./gallery-model";
 import type { PanelSection } from "./panel-order";
 import { StateFlag } from "./StateFlag";
@@ -14,6 +15,7 @@ import { StateFlag } from "./StateFlag";
 const SHADOW = { filter: "var(--tac-divider-shadow)" } as const;
 
 export function PanelDivider({ section }: { section: PanelSection }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <header className="flex flex-col gap-1.5">
       <div className="relative flex items-end justify-between gap-3 pb-(--tac-divider-bar)">
@@ -39,8 +41,7 @@ export function PanelDivider({ section }: { section: PanelSection }) {
         <span aria-hidden className="absolute inset-x-0 bottom-0 block h-(--tac-divider-bar) rounded-r-full bg-(--tac-folder)" />
       </div>
       {section.run ? (
-        <p className="pl-0.5 text-(length:--text-micro) leading-4 text-(--tac-meta)">
-          Run started{" "}
+        <p className="pl-0.5 text-(length:--text-micro) leading-4 text-(--tac-meta)">{pageText("runStarted_7d7825")}{" "}
           <time dateTime={section.run.startedAt} className="font-mono">
             {section.run.startedLabel}
           </time>

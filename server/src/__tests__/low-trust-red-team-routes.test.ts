@@ -57,7 +57,6 @@ import { issueRoutes } from "../routes/issues.js";
 import { issueService } from "../services/issues.js";
 import { heartbeatService } from "../services/heartbeat.js";
 import { LOW_TRUST_QUARANTINED_BODY } from "../services/source-trust.js";
-import { uniqueIssuePrefix } from "./helpers/issue-prefix.js";
 
 const externalTestDatabaseUrl = resolveExternalTestDatabaseUrl("PAPERCLIP_LOW_TRUST_TEST_DATABASE_URL");
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
@@ -445,7 +444,7 @@ async function seedLowTrustFixture(db: Db) {
     .insert(companies)
     .values({
       name: `Low trust ${nonce}`,
-      issuePrefix: uniqueIssuePrefix("LT"),
+      issuePrefix: `LT${nonce.slice(0, 4).toUpperCase()}`,
       defaultResponsibleUserId: "board-user",
     })
     .returning();
@@ -2270,7 +2269,7 @@ describeEmbeddedPostgres(
         .insert(companies)
         .values({
           name: "Foreign low-trust source",
-          issuePrefix: uniqueIssuePrefix("FGN"),
+          issuePrefix: `FGN${randomUUID().slice(0, 4).toUpperCase()}`,
           defaultResponsibleUserId: "board-user",
         })
         .returning();

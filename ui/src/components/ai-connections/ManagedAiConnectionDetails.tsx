@@ -1,6 +1,6 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { heartbeatsApi } from "@/api/heartbeats";
-import { useToastActions } from "@/context/ToastContext";
-import { aiSignInRemovalNotice } from "@/features/connections/googleAccessRemoval";
 import { Button } from "@/components/ui/button";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { aiConnectionsApi } from "@/api/ai-connections";
@@ -11,7 +11,7 @@ import { useNavigate } from "@/lib/router";
 import { AiConnectionAccountControls } from "./AiConnectionAccountControls";
 import { AiConnectionUsagePanel } from "./AiConnectionUsagePanel";
 import { AiConnectionAccountDetails } from "./AiConnectionAccountDetails";
-import { aiConnectionCatalogSlug, type ToolConnection, type AiConnectionMetadata } from "@paperclipai/shared";
+import type { ToolConnection, AiConnectionMetadata } from "@paperclipai/shared";
 import { aiMethodLabel } from "./model";
 import { queryKeys } from "@/lib/queryKeys";
 import { retryTransientOnly } from "@/lib/query-client";
@@ -25,14 +25,15 @@ export function ManagedAiConnectionRow({
 }: {
   connection: ToolConnection;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const metadata = connection.config?.ai as AiConnectionMetadata | undefined;
   if (!metadata) return null;
   return (
     <p className="text-xs text-muted-foreground">
       {metadata.routing ? metadata.routing.kind === "bedrock" ? `Bedrock · ${metadata.routing.region}` : metadata.routing.kind === "openrouter" ? "OpenRouter" : metadata.routing.baseUrl : aiMethodLabel(metadata.provider, metadata.method)} ·{" "}
       {connection.credentialPolicy === "per_user"
-        ? "Personal"
-        : "Company shared"}
+        ? pageText("personal_40f073")
+        : pageText("companyShared_62c755")}
     </p>
   );
 }
@@ -41,6 +42,8 @@ export function ManagedAiConnectionDetails({
 }: {
   connection: ToolConnection;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const client = useQueryClient();
   const navigate = useNavigate();
   const runs = useQuery({
@@ -64,15 +67,10 @@ export function ManagedAiConnectionDetails({
   const accountsView = useQueryView(accounts);
   const grantsView = useQueryView(grants);
   const refresh = () => client.invalidateQueries();
-  const { pushToast } = useToastActions();
   const revoke = useMutation({
     mutationFn: (id: string) =>
       toolsApi.revokeConnectionGrant(connection.id, id),
-    onSuccess: (revoked) => {
-      const notice = aiSignInRemovalNotice(revoked.signInRemoval);
-      if (notice) pushToast({ title: "Account disconnected", body: notice.body, tone: notice.tone, ...(notice.action ? { action: notice.action } : {}) });
-      return refresh();
-    },
+    onSuccess: refresh,
   });
   const stop = useMutation({
     mutationFn: (id: string) => heartbeatsApi.cancel(id),
@@ -102,9 +100,7 @@ export function ManagedAiConnectionDetails({
           if (accounts.error) void accounts.refetch();
           if (grants.error) void grants.refetch();
         }}
-      >
-        Retry
-      </Button>
+      >{translateUi("interfaceCopy.retry")}</Button>
     </div>
   ) : null;
   if ((!account || !grant) && loadFailure) return loadFailure;
@@ -112,8 +108,8 @@ export function ManagedAiConnectionDetails({
     return (
       <p role="status" className="text-sm text-muted-foreground">
         {accounts.isPending || grants.isPending || sessionView.kind === "reconnecting" || accountsView.kind === "reconnecting" || grantsView.kind === "reconnecting"
-          ? "Loading AI account…"
-          : "This account is not available to you."}
+          ? pageText("loadingAIAccount_0e6e68")
+          : pageText("thisAccountIsNotAvailableToYou_c5283e")}
       </p>
     );
   return (
@@ -123,7 +119,7 @@ export function ManagedAiConnectionDetails({
       {defaults.error && defaults.failedProvider && <AiDefaultError provider={AI_PROVIDERS[defaults.failedProvider].name}
         pending={defaults.pending(defaults.failedProvider)} onRetry={defaults.retry} />}
       <AiConnectionAccountDetails account={account} grant={grant} />
-      {account.routing && <details className="rounded-lg border border-border p-4"><summary className="cursor-pointer text-sm font-medium">Provider settings</summary><dl className="mt-4 grid grid-cols-2 gap-3 text-sm"><dt className="text-muted-foreground">Destination</dt><dd className="break-all">{account.routing.baseUrl ?? (account.routing.kind === "bedrock" ? account.routing.region : "OpenRouter")}</dd><dt className="text-muted-foreground">API format</dt><dd>{account.routing.kind === "openrouter" ? "Selected by harness" : account.routing.protocol}</dd><dt className="text-muted-foreground">Authentication</dt><dd>{account.routing.auth}</dd><dt className="text-muted-foreground">Models</dt><dd>{account.routing.models.map(m => m.label ?? m.id).join(", ") || "Enter a model ID on the agent"}</dd></dl></details>}
+      {account.routing && <details className="rounded-lg border border-border p-4"><summary className="cursor-pointer text-sm font-medium">{pageText("providerSettings_afda9c")}</summary><dl className="mt-4 grid grid-cols-2 gap-3 text-sm"><dt className="text-muted-foreground">{pageText("destination_d42713")}</dt><dd className="break-all">{account.routing.baseUrl ?? (account.routing.kind === "bedrock" ? account.routing.region : "OpenRouter")}</dd><dt className="text-muted-foreground">{pageText("apiFormat_ba7636")}</dt><dd>{account.routing.kind === "openrouter" ? pageText("selectedByHarness_ecfb34") : account.routing.protocol}</dd><dt className="text-muted-foreground">{pageText("authentication_ee1acf")}</dt><dd>{account.routing.auth}</dd><dt className="text-muted-foreground">{pageText("models_f3798f")}</dt><dd>{account.routing.models.map(m => m.label ?? m.id).join(", ") || pageText("enterAModelIDOnTheAgent_bd6fb4")}</dd></dl></details>}
       <AiConnectionAccountControls
         account={account}
         grant={grant}
@@ -155,16 +151,14 @@ export function ManagedAiConnectionDetails({
                   size="sm"
                   disabled={stop.isPending}
                   onClick={() => stop.mutate(run.id)}
-                >
-                  Stop run
-                </Button>
+                >{pageText("stopRun_3fa97b")}</Button>
               </div>
             ))}
           </div>
         }
         onReconnect={() =>
           navigate(
-            `/apps/connect?source=${aiConnectionCatalogSlug(account.provider)}&reconnect=${connection.id}&method=ai-${account.method}`,
+            `/apps/connect?source=${account.provider}&reconnect=${connection.id}&method=ai-${account.method}`,
           )
         }
       />

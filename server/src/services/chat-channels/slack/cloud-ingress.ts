@@ -1,4 +1,3 @@
-import { receiveSlackCloudCallback } from "./cloud-callback.js";
 import type { Db } from "@paperclipai/db";
 import { chatEndpoints, toolConnections } from "@paperclipai/db";
 import { and, eq } from "drizzle-orm";
@@ -27,19 +26,10 @@ export function createSlackCloudEventIngress(db: Db, options: {
   withCredentialMutationLease: ReturnType<typeof chatCredentialMutationLease>;
   resolveCredentials: ReturnType<typeof createChatCredentials>["resolveCredentials"];
   runtimeGeneration(endpoint: EndpointRow): number;
-  handleFormReceipt?(event: SlackCloudEvent): Promise<void>;
-  connectorIdentity?(): { instanceId: string; environment: string } | undefined;
   handleWebhook(publicId: string, provider: "slack", request: Request, expectedGeneration: number): Promise<Response>;
 }) {
   return registerSlackCloudEventIngress(db, async event => {
-    if (event.payload.slackFormOpen !== undefined) {
-      if (!options.handleFormReceipt) throw new SlackCloudReceiptError("form_owner_not_ready", "retry");
-      return options.handleFormReceipt(event);
-    }
-    const callback = event.payload.slackCallback !== undefined;
-    const identity = callback ? options.connectorIdentity?.() : undefined;
-    if (callback && !identity) throw new SlackCloudReceiptError("callback_identity_unavailable", "retry");
-    const value = callback ? event.payload.slackCallback : event.payload.slackEvent;
+    const value = event.payload.slackEvent;
     if (!value || typeof value !== "object" || Array.isArray(value)) throw new SlackCloudReceiptError("invalid_receipt", "invalid");
     const packet = value as Record<string, unknown>;
     if (typeof packet.endpointId !== "string" || !/^[a-f0-9-]{36}$/i.test(packet.endpointId))
@@ -55,9 +45,7 @@ export function createSlackCloudEventIngress(db: Db, options: {
       const endpoint = current.endpoint;
       if (packet.companyId !== endpoint.companyId || packet.publicId !== endpoint.publicId
         || packet.connectionId !== endpoint.connectionId || packet.runtimeGeneration !== options.runtimeGeneration(endpoint)) return null;
-      const setup = endpoint.setup as InternalSetupState;
-      if (callback && setup.slackCloudInstanceId !== identity?.instanceId) throw new SlackCloudReceiptError("callback_instance_changed", "attention");
-      const enrolled = setup.slackCloudEvents;
+      const enrolled = (endpoint.setup as InternalSetupState).slackCloudEvents;
 
       if (!enrolled) throw new Error("Slack Cloud enrollment is not locally committed");
       if (enrolled.version !== 1 || enrolled.runtimeGeneration !== options.runtimeGeneration(endpoint)
@@ -69,11 +57,6 @@ export function createSlackCloudEventIngress(db: Db, options: {
         bindingId: enrolled.bindingId, teamId: enrolled.teamId, appId: enrolled.appId, signingSecret };
     });
     if (!binding) return;
-    if (callback) {
-      if (!binding || !identity) return;
-      return receiveSlackCloudCallback(event, { ...binding, ...identity },
-        request => options.handleWebhook(binding.publicId, "slack", request, binding.runtimeGeneration));
-    }
     await receiveSlackCloudEvent(event, binding,
       request => options.handleWebhook(binding.publicId, "slack", request, binding.runtimeGeneration));
   });

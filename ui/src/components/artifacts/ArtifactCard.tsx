@@ -1,9 +1,9 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { type SyntheticEvent, useEffect, useRef, useState } from "react";
 import { Download, ExternalLink, Paperclip, Play } from "lucide-react";
 import type { CompanyArtifact } from "@/api/artifacts";
 import { Link } from "@/lib/router";
 import { cn, formatDate } from "@/lib/utils";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 interface ArtifactCardProps {
   artifact: CompanyArtifact;
@@ -36,9 +36,10 @@ function PlaceholderPreview({ label }: { label?: string }) {
 type PreviewArtifact = Pick<CompanyArtifact, "mediaKind" | "contentPath" | "title"> & Partial<Pick<CompanyArtifact, "source" | "previewText">>;
 
 function ImagePreview({ artifact }: { artifact: PreviewArtifact }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [errored, setErrored] = useState(false);
   if (errored || !artifact.contentPath) {
-    return <PlaceholderPreview label="Image" />;
+    return <PlaceholderPreview label={pageText("image_50e19f")} />;
   }
   return (
     <PreviewFrame>
@@ -135,14 +136,15 @@ function VideoPreview({ artifact }: { artifact: PreviewArtifact }) {
 }
 
 function TextPreview({ artifact }: { artifact: PreviewArtifact }) {
+  const { t: pageText } = usePageTranslation("interface");
   const preview = artifact.previewText?.trim();
   if (!preview) {
-    return <PlaceholderPreview label={artifact.source === "document" ? "Document" : "Text"} />;
+    return <PlaceholderPreview label={artifact.source === "document" ? pageText("document_e214b8") : pageText("text_c3328c")} />;
   }
   return (
     <PreviewFrame className="bg-card">
       <div className="absolute inset-0 overflow-hidden p-3">
-        <p className={cn("max-h-full overflow-hidden whitespace-pre-wrap break-words text-base leading-6 text-muted-foreground/75", ANALYTICS_MASK_CLASS)}>
+        <p className="max-h-full overflow-hidden whitespace-pre-wrap break-words text-base leading-6 text-muted-foreground/75">
           {preview}
         </p>
       </div>
@@ -152,6 +154,7 @@ function TextPreview({ artifact }: { artifact: PreviewArtifact }) {
 }
 
 export function ArtifactPreview({ artifact }: { artifact: PreviewArtifact }) {
+  const { t: pageText } = usePageTranslation("interface");
   switch (artifact.mediaKind) {
     case "image":
       return <ImagePreview key={artifact.contentPath} artifact={artifact} />;
@@ -161,7 +164,7 @@ export function ArtifactPreview({ artifact }: { artifact: PreviewArtifact }) {
     case "document":
       return <TextPreview artifact={artifact} />;
     case "file":
-      return <PlaceholderPreview label="File" />;
+      return <PlaceholderPreview label={pageText("file_2c3caf")} />;
     case "empty":
     default:
       return <PlaceholderPreview />;
@@ -194,6 +197,7 @@ function SecondaryAction({
 }
 
 export function ArtifactCard({ artifact }: ArtifactCardProps) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <Link
       // design-allow(card-pattern): navigation <Link> card; Card renders a div and would break anchor semantics (C5a Run 3)
@@ -215,12 +219,12 @@ export function ArtifactCard({ artifact }: ArtifactCardProps) {
           </h3>
           <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
             {artifact.openPath ? (
-              <SecondaryAction href={artifact.openPath} title="Open file in new tab">
+              <SecondaryAction href={artifact.openPath} title={pageText("openFileInNewTab_165abc")}>
                 <ExternalLink className="h-3.5 w-3.5" />
               </SecondaryAction>
             ) : null}
             {artifact.downloadPath ? (
-              <SecondaryAction href={artifact.downloadPath} download title="Download file">
+              <SecondaryAction href={artifact.downloadPath} download title={pageText("downloadFile_774025")}>
                 <Download className="h-3.5 w-3.5" />
               </SecondaryAction>
             ) : null}
@@ -228,7 +232,7 @@ export function ArtifactCard({ artifact }: ArtifactCardProps) {
         </div>
 
         <div className="mt-0.5 flex items-center gap-1.5 text-(length:--text-micro) text-muted-foreground/65">
-          <span>Last edited {formatDate(artifact.updatedAt)}</span>
+          <span>{pageText("lastEdited_7e2f47") + " "}{formatDate(artifact.updatedAt)}</span>
           {artifact.createdByAgent ? (
             <>
               <span className="text-muted-foreground/50">·</span>

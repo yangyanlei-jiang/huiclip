@@ -1,3 +1,5 @@
+import { t as translateDynamic } from "../../i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { type ReactNode, useMemo, useState } from "react";
 import { Check, ChevronDown, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -57,6 +59,7 @@ function summarizeTrigger(label: string, selected: string[], options: FilterMenu
 }
 
 export function SearchFilterMenu(props: SearchFilterMenuProps) {
+  const { t: translateUi } = useUiTranslation();
   const {
     label,
     options,
@@ -102,7 +105,7 @@ export function SearchFilterMenu(props: SearchFilterMenuProps) {
             active && "border-primary/60 text-foreground",
             triggerClassName,
           )}
-          aria-label={`Filter by ${label}`}
+          aria-label={translateDynamic("dynamic:filterBy", { value1: label })}
         >
           <span className="truncate">{summarizeTrigger(label, selected, options)}</span>
           {active ? (
@@ -122,9 +125,7 @@ export function SearchFilterMenu(props: SearchFilterMenuProps) {
               type="button"
               className="text-xs text-muted-foreground hover:text-foreground"
               onClick={() => props.onClear()}
-            >
-              Clear
-            </button>
+            >{translateUi("interfaceCopy.clear")}</button>
           ) : null}
         </div>
 

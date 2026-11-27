@@ -73,9 +73,9 @@ export interface InstanceExperimentalSettings {
   enableApps: boolean;
   /** Exposes chat connector setup and Board surfaces; existing delivery continues when hidden. */
   enableChatConnectors: boolean;
-  /** @deprecated Compatibility key only. GitHub review bots are always enabled. */
+  /** Show GitHub review bot setup and management independently of chat connectors. */
   enableGitHubReviewBots: boolean;
-  /** @deprecated Compatibility key only. Assistant connections (MCP) are always enabled. */
+  /** Allow person-authorized assistant tools and task event delivery. */
   enablePublicMcp: boolean;
   /** Enable the standalone Dot choice and dedicated agent MCP connection independently of the general Runner rollout. */
   enableOpenAiDot: boolean;
@@ -89,8 +89,6 @@ export interface InstanceExperimentalSettings {
   enablePaperclipNotebook: boolean;
   /** Show and allow the built-in Google Workspace connector while its Google verification is pending. */
   enableGoogleWorkspaceConnector: boolean;
-  /** Show and allow the AWS connector (minted per-connection AWS credentials). */
-  enableAwsConnector: boolean;
   enableCases: boolean;
   enableAgentChat: boolean;
   /** Reorganized left nav, Inbox-as-Tasks-views, and the chat agent rail + task cards. */
@@ -109,8 +107,6 @@ export interface InstanceExperimentalSettings {
   enableBetaSkills: boolean;
   enableSummaries: boolean;
   enableStatusCards: boolean;
-  /** Areas of responsibility: per-user areas with the projects, tasks and routines under them. */
-  enableResponsibilities: boolean;
   enableDecisions: boolean;
   /** Show company connection settings and allow contextual fast-response acknowledgements. */
   enableFastResponses: boolean;
@@ -132,13 +128,6 @@ export interface InstanceExperimentalSettings {
    * flipping it later does not change an existing first task.
    */
   enableFirstTaskPlanProposal: boolean;
-  /**
-   * Experimental Paperclip Cloud onboarding starter inference: provides a
-   * Cloud-funded $1 OpenRouter allowance (defaulting to OpenCode / Luna) via
-   * the tenant server proxy so the user's first agent works out of the box,
-   * then prompts to connect their own subscription when exhausted.
-   */
-  enableCloudTrialInference: boolean;
   autoRestartDevServerWhenIdle: boolean;
   enableWorkspaceBranchReconcileForward: boolean;
   enableWorkspaceDirtyQuarantineRepair: boolean;
@@ -157,17 +146,6 @@ export interface InstanceExperimentalSettings {
    * redeploy.
    */
   enableSandboxDuplexBridge: boolean;
-  /**
-   * MCP Tasks: long provider tool calls become durable tasks that survive
-   * timeouts, restarts, and deploys. Default off: the extension is not
-   * declared, so behavior matches a client without it.
-   */
-  enableMcpTasks: boolean;
-  /**
-   * Let a signed-in user start Google Antigravity's native swarm with `/swarm`
-   * at the start of a task comment. Local hosts with a Google sign-in only. Default off.
-   */
-  enableAntigravitySwarm: boolean;
   /**
    * @deprecated Compatibility-only. Provider WebSocket ingress now follows
    * enableNativeRunner and this value has no runtime effect.

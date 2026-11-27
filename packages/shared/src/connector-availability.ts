@@ -17,7 +17,8 @@ function channelMethodEnabled(
   method: ConnectionMethodDef,
   settings: Partial<InstanceExperimentalSettings> | null | undefined,
 ): boolean {
-  if (method.provider === "agentmail" || method.provider === "github") return true;
+  if (method.provider === "agentmail") return true;
+  if (method.provider === "github") return settings?.enableGitHubReviewBots === true;
   return settings?.enableChatConnectors === true;
 }
 

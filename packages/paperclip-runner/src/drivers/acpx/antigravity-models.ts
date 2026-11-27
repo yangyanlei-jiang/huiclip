@@ -1,10 +1,8 @@
 import type { ChildProcessWithoutNullStreams } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { antigravityNativeDistributionSpec } from "./antigravity-installation.js";
-import { ANTIGRAVITY_RUNTIME_VERSION } from "./generated-profiles.js";
 import { antigravityPrivateEnvironment, checkAntigravityPrivateHome, retireAntigravityProcess } from "./antigravity-process.js";
 import { verifyNativeAcpxInstallation, type VerifiedAcpxCommandLease } from "./installation-integrity.js";
-import { AntigravityRuntimeUnavailableError } from "./antigravity-runtime-unavailable.js";
 
 const SCHEMA = "paperclip.antigravity.models.v1";
 const ERROR = "Could not load models for this Google account. Retry or sign in again.";
@@ -70,10 +68,7 @@ function catalog(value: unknown, nonce: string): AntigravityModelCatalog {
  * writeback. Execution retires before ordinary results/errors. A cleanup error
  * transfers the home-retention obligation through its retired completion.
  */
-export async function discoverAntigravityModels(
-  home: string,
-  options: { signal?: AbortSignal } = {},
-): Promise<AntigravityModelCatalog> {
+export async function discoverAntigravityModels(home: string, options: { signal?: AbortSignal } = {}): Promise<AntigravityModelCatalog> {
   const deadline = new AbortController(), timer = setTimeout(() => deadline.abort(), 30_000);
   const signal = options.signal ? AbortSignal.any([options.signal, deadline.signal]) : deadline.signal;
   let lease: VerifiedAcpxCommandLease | undefined, child: ChildProcessWithoutNullStreams | undefined, closed: Promise<void> | undefined;
@@ -83,10 +78,7 @@ export async function discoverAntigravityModels(
     signal.throwIfAborted();
     await checkAntigravityPrivateHome(home);
     signal.throwIfAborted();
-    let installation;
-    try {
-      installation = await verifyNativeAcpxInstallation(antigravityNativeDistributionSpec());
-    } catch { throw new AntigravityRuntimeUnavailableError(); }
+    const installation = await verifyNativeAcpxInstallation(antigravityNativeDistributionSpec());
     signal.throwIfAborted();
     lease = await installation.openCommand({ signal });
     const environment = await antigravityPrivateEnvironment(home);
@@ -116,7 +108,7 @@ export async function discoverAntigravityModels(
           if (phase > 2 || message.jsonrpc !== "2.0" || message.id !== phase || "method" in message || "error" in message || !Object.hasOwn(message, "result")) { fail(); return; }
           if (phase === 1) {
             const initialized = record(message.result), info = record(initialized.agentInfo), capabilities = record(record(record(initialized.agentCapabilities)._meta).antigravity);
-            if (initialized.protocolVersion !== 1 || info.name !== "antigravity-acp" || info.version !== ANTIGRAVITY_RUNTIME_VERSION
+            if (initialized.protocolVersion !== 1 || info.name !== "antigravity-acp" || info.version !== "1.4.3"
               || capabilities.paperclipAdmission !== 1 || capabilities.paperclipModels !== 1
               || !Array.isArray(initialized.authMethods) || !initialized.authMethods.some(value => record(value).id === "oauth-personal")) { fail(); return; }
             phase = 2; send(2);
@@ -135,7 +127,7 @@ export async function discoverAntigravityModels(
       peer.stdin.on("error", () => { if (phase !== 3) fail(); });
       if (signal.aborted) fail(); else send(1);
     });
-  } catch (error) { failure ??= error instanceof AntigravityRuntimeUnavailableError ? error : new Error(ERROR); }
+  } catch { failure ??= new Error(ERROR); }
   finally {
     try {
       if (child && closed) await retireAntigravityProcess(child, closed);

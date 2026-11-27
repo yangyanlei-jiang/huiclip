@@ -83,11 +83,9 @@ describe("actorMiddleware authenticated session profile", () => {
     const inserts: Array<{ values: Record<string, unknown> }> = [];
     const db = {
       insert: vi.fn(() => {
-        let own: { values: Record<string, unknown> } | undefined;
         const chain = {
           values(values: Record<string, unknown>) {
-            own = { values };
-            inserts.push(own);
+            inserts.push({ values });
             return chain;
           },
           onConflictDoUpdate() {
@@ -98,9 +96,9 @@ describe("actorMiddleware authenticated session profile", () => {
           },
           returning() {
             return Promise.resolve([{
-              companyId: own?.values.companyId,
-              membershipRole: own?.values.membershipRole,
-              status: own?.values.status,
+              companyId: inserts.at(-1)?.values.companyId,
+              membershipRole: inserts.at(-1)?.values.membershipRole,
+              status: inserts.at(-1)?.values.status,
             }]);
           },
         };
@@ -145,18 +143,15 @@ describe("actorMiddleware authenticated session profile", () => {
     expect(res.body.companyIds[0]).toMatch(/^[0-9a-f-]{36}$/);
     // authUsers, companies, companyMemberships, the role-default
     // principalPermissionGrants, and the lazily initialized instance setting.
-    // The instance setting is read concurrently with the tenant sync, so
-    // match inserts by content rather than position.
     expect(inserts).toHaveLength(5);
-    expect(inserts.map((insert) => insert.values)).toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        id: "global-user-1",
-        email: "owner@example.com",
-        emailVerified: true,
-      }),
-      expect.objectContaining({ name: "Purple Rain" }),
-      expect.objectContaining({ singletonKey: "default" }),
-    ]));
+    expect(inserts[0]?.values).toMatchObject({
+      id: "global-user-1",
+      email: "owner@example.com",
+      emailVerified: true,
+    });
+    expect(inserts[1]?.values).toMatchObject({
+      name: "Purple Rain",
+    });
   });
 
   it("lets the cloud tenant actor through assertCompanyAccess for a company it holds a membership row in", async () => {

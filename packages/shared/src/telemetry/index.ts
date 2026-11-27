@@ -1,5 +1,4 @@
 export { TelemetryClient } from "./client.js";
-export type { TelemetryOutgoingBatch, TelemetrySendResult, TelemetryTransport } from "./client.js";
 export { resolveTelemetryConfig, resolveCaps, TELEMETRY_DEFAULTS } from "./config.js";
 export type { TelemetryConfigOverrides } from "./config.js";
 export { loadOrCreateState } from "./state.js";
@@ -22,16 +21,7 @@ export {
   trackConnectionCreated,
   trackConnectionUpdated,
   trackConnectionInvoked,
-  trackConnectionAppLinked,
-  trackConnectionAppRequested,
   trackServerStarted,
-  trackModelConnected,
-  trackTaskCreated,
-  trackTaskCompleted,
-  trackTaskBlocked,
-  trackPlanCreated,
-  trackPlanApproved,
-  trackArtifactCreated,
 } from "./events.js";
 export type {
   TelemetryConfig,
@@ -50,6 +40,5 @@ export type {
   EventDimensionsMap,
   PaperclipEventName,
 } from "./generated/paperclip-telemetry.js";
-export { PAPERCLIP_EVENTS, PAPERCLIP_ENUM_DESCRIPTIONS } from "./generated/paperclip-telemetry.js";
 export { EVENT_RETENTION_CLASS, RETENTION_DAYS } from "./retention.js";
 export type { RetentionClass } from "./retention.js";

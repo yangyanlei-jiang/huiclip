@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { ArrowUpRight, ListTree } from "lucide-react";
 import { Link } from "@/lib/router";
 import { IssueStatusBadge } from "@/components/StatusBadge";
@@ -5,6 +6,7 @@ import type { TaskChatTaskCreatedItem } from "./task-chat-model";
 import { taskStatusIconProps } from "@/lib/task-status-presentation";
 
 export function TaskChatTaskCreatedCard({ item }: { item: TaskChatTaskCreatedItem }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { task } = item;
   return (
     <Link
@@ -15,7 +17,7 @@ export function TaskChatTaskCreatedCard({ item }: { item: TaskChatTaskCreatedIte
     >
       <ListTree className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />
       <span className="min-w-0 flex-1 space-y-2">
-        <span className="block text-xs text-muted-foreground">{item.isSubtask ? "Subtask created" : "Task created"}</span>
+        <span className="block text-xs text-muted-foreground">{item.isSubtask ? pageText("subtaskCreated_5b4cf8") : pageText("taskCreated_de1d01")}</span>
         <span className="block break-words text-sm font-medium">{task.title}</span>
         <span className="flex flex-wrap items-center gap-2">
           {task.identifier && <span className="font-mono text-xs text-muted-foreground">{task.identifier}</span>}

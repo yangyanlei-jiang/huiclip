@@ -1,5 +1,10 @@
+import { t as interfaceNotice } from "@/i18n";
+import { optionLabel } from "@/i18n/option-label";
+import { t as translateDynamic } from "../i18n";
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useShowAgentCreatedTasks } from "../hooks/useShowAgentCreatedTasks";
-import { configurationWarningMessages } from "../lib/configuration-warnings";
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { Link, useParams, useNavigate, useLocation, Navigate } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -29,7 +34,6 @@ import { PageTabBar } from "../components/PageTabBar";
 import { ProjectWorkspacesContent } from "../components/ProjectWorkspacesContent";
 import { SummarySlotCard } from "../components/SummarySlotCard";
 import { MembershipAction } from "../components/MembershipAction";
-import { useCoordinatorWorkspaceEnabled } from "../hooks/useCoordinatorWorkspaceEnabled";
 import { StarToggle } from "../components/StarToggle";
 import { buildProjectWorkspaceSummaries } from "../lib/project-workspaces-tab";
 import { collectLiveIssueIds } from "../lib/liveIssueIds";
@@ -50,7 +54,6 @@ import {
   useResourceMemberships,
 } from "../hooks/useResourceMemberships";
 import { useUpdateIssueMutation } from "../hooks/useUpdateIssueMutation";
-import { companyProjectsQuery } from "@/lib/company-projects-query";
 
 /* ── Top-level tab types ── */
 
@@ -91,6 +94,8 @@ function ProjectTilePicker({
   onSelectIcon: (icon: string) => void;
   onSelectColor: (color: string | null) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
 
@@ -115,16 +120,16 @@ function ProjectTilePicker({
         <button
           type="button"
           className="shrink-0 rounded-lg cursor-pointer hover:ring-2 hover:ring-foreground/20 transition-(--tp-box-shadow)"
-          aria-label="Change project icon and color"
+          aria-label={pageText("changeProjectIconAndColor_797079")}
         >
           <ProjectTile color={color} icon={icon} size="md" />
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-72 p-3" align="start">
         {/* Icon search + grid */}
-        <p className="text-xs font-medium text-muted-foreground mb-2">Icon</p>
+        <p className="text-xs font-medium text-muted-foreground mb-2">{pageText("icon_716f63")}</p>
         <Input
-          placeholder="Search icons..."
+          placeholder={pageText("searchIcons_2f149a")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="mb-2 h-8 text-sm"
@@ -146,13 +151,13 @@ function ProjectTilePicker({
             </button>
           ))}
           {filteredIcons.length === 0 && (
-            <p className="col-span-7 text-xs text-muted-foreground text-center py-2">No icons match</p>
+            <p className="col-span-7 text-xs text-muted-foreground text-center py-2">{pageText("noIconsMatch_1f5069")}</p>
           )}
         </div>
 
         {/* Color swatches */}
         <div className="mt-3 border-t border-border pt-3">
-          <p className="text-xs font-medium text-muted-foreground mb-2">Color</p>
+          <p className="text-xs font-medium text-muted-foreground mb-2">{translateUi("interfaceCopy.color")}</p>
           <div className="grid grid-cols-5 gap-1.5">
             {/* Neutral / reset-to-gray option */}
             <button
@@ -163,8 +168,8 @@ function ProjectTilePicker({
                   ? "ring-2 ring-foreground ring-offset-1 ring-offset-background rounded-md"
                   : ""
               }`}
-              aria-label="Reset to neutral gray"
-              title="Neutral (default)"
+              aria-label={pageText("resetToNeutralGray_0bf173")}
+              title={pageText("neutralDefault_e4d316")}
             >
               <ProjectTile color={null} size="sm" />
             </button>
@@ -179,7 +184,7 @@ function ProjectTilePicker({
                     : "hover:ring-2 hover:ring-foreground/30"
                 }`}
                 style={{ backgroundColor: swatch }}
-                aria-label={`Select color ${swatch}`}
+                aria-label={translateDynamic("dynamic:selectColor", { value1: swatch })}
               />
             ))}
           </div>
@@ -219,7 +224,8 @@ function ProjectIssuesList({ projectId, companyId }: { projectId: string; compan
   });
   usePublishSharedQueryData(sharedLiveRuns, liveRuns, liveRunsUpdatedAt);
   const { data: projects } = useQuery({
-    ...companyProjectsQuery(companyId),
+    queryKey: queryKeys.projects.list(companyId),
+    queryFn: () => projectsApi.list(companyId),
     enabled: !!companyId,
   });
 
@@ -272,7 +278,8 @@ function ProjectPluginOperationsList({
     enabled: !!companyId,
   });
   const { data: projects } = useQuery({
-    ...companyProjectsQuery(companyId),
+    queryKey: queryKeys.projects.list(companyId),
+    queryFn: () => projectsApi.list(companyId),
     enabled: !!companyId,
   });
   const liveRunsQueryKey = queryKeys.liveRuns(companyId);
@@ -329,14 +336,13 @@ function ProjectPluginOperationsList({
 /* ── Main project page ── */
 
 export function ProjectDetail() {
+  const { t: pageText } = usePageTranslation("interface");
   const { companyPrefix, projectId, filter } = useParams<{
     companyPrefix?: string;
     projectId: string;
     filter?: string;
   }>();
   const { companies, selectedCompanyId, setSelectedCompanyId } = useCompany();
-  const workspace = useCoordinatorWorkspaceEnabled();
-  const classicWorkspace = workspace.loaded && !workspace.enabled;
   const { closePanel } = usePanel();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { pushToast } = useToastActions();
@@ -471,9 +477,7 @@ export function ProjectDetail() {
   const updateProject = useMutation({
     mutationFn: (data: Record<string, unknown>) =>
       projectsApi.update(projectLookupRef, data, resolvedCompanyId ?? lookupCompanyId),
-    onSuccess: (updated, data) => {
-      const notice = configurationWarningMessages(updated);
-      if (notice) pushToast({ title: "Project saved", body: notice, tone: "warn" });
+    onSuccess: (_project, data) => {
       invalidateProject();
       if (data.visibility !== undefined) queryClient.invalidateQueries({ queryKey: ["issues"] });
     },
@@ -498,7 +502,7 @@ export function ProjectDetail() {
     },
     onError: (_, archived) => {
       pushToast({
-        title: archived ? "Failed to archive project" : "Failed to unarchive project",
+        title: archived ? interfaceMessage("interface:errorFailedToArchiveProject") : interfaceMessage("interface:errorFailedToUnarchiveProject"),
         tone: "error",
       });
     },
@@ -521,10 +525,10 @@ export function ProjectDetail() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: "Projects", href: "/projects" },
-      { label: project?.name ?? routeProjectRef ?? "Project" },
+      { label: optionLabel("Projects"), href: "/projects" },
+      { label: project?.name ?? routeProjectRef ?? interfaceNotice("interface:project_f6f4da") },
     ]);
-  }, [setBreadcrumbs, project, routeProjectRef]);
+  }, [pageText, setBreadcrumbs, project, routeProjectRef]);
 
   useEffect(() => {
     if (!project) return;
@@ -605,9 +609,7 @@ export function ProjectDetail() {
     fieldSaveRequestIds.current[field] = requestId;
     setFieldState(field, "saving");
     try {
-      const updated = await projectsApi.update(projectLookupRef, data, resolvedCompanyId ?? lookupCompanyId);
-      const notice = configurationWarningMessages(updated);
-      if (notice) pushToast({ title: "Project saved", body: notice, tone: "warn" });
+      await projectsApi.update(projectLookupRef, data, resolvedCompanyId ?? lookupCompanyId);
       invalidateProject();
       if (data.visibility !== undefined) queryClient.invalidateQueries({ queryKey: ["issues"] });
       if (fieldSaveRequestIds.current[field] !== requestId) return;
@@ -619,7 +621,7 @@ export function ProjectDetail() {
       scheduleFieldReset(field, 3000);
       throw error;
     }
-  }, [invalidateProject, lookupCompanyId, projectLookupRef, pushToast, queryClient, resolvedCompanyId, scheduleFieldReset, setFieldState]);
+  }, [invalidateProject, lookupCompanyId, projectLookupRef, queryClient, resolvedCompanyId, scheduleFieldReset, setFieldState]);
 
   const projectBudgetSummary = useMemo(() => {
     const matched = budgetOverview?.policies.find(
@@ -717,7 +719,7 @@ export function ProjectDetail() {
   }
   if (!project) return null;
   const showLeftProjectNotice =
-    classicWorkspace && projectMembershipState === "left" && !dismissedLeftProjectIds.has(project.id);
+    projectMembershipState === "left" && !dismissedLeftProjectIds.has(project.id);
   const projectMembershipPending =
     membershipMutation.isPending &&
     membershipMutation.variables?.resourceType === "project" &&
@@ -752,9 +754,7 @@ export function ProjectDetail() {
     <div className="space-y-6">
       {showLeftProjectNotice ? (
         <div className="flex items-center gap-3 border border-yellow-300/35 bg-yellow-300/10 px-3 py-2 text-sm text-yellow-900 dark:text-yellow-100">
-          <p className="min-w-0 flex-1">
-            You left this project. It no longer appears in your sidebar.
-          </p>
+          <p className="min-w-0 flex-1">{pageText("youLeftThisProjectItNoLongerAppears_8191a6")}</p>
           <MembershipAction
             compact
             state="left"
@@ -777,7 +777,7 @@ export function ProjectDetail() {
           <button
             type="button"
             className="h-6 w-6 shrink-0 text-yellow-900/70 hover:text-yellow-900 dark:text-yellow-100/70 dark:hover:text-yellow-100"
-            aria-label="Dismiss project membership notice"
+            aria-label={pageText("dismissProjectMembershipNotice_53b2f4")}
             onClick={() => setDismissedLeftProjectIds((current) => new Set(current).add(project.id))}
           >
             ×
@@ -802,41 +802,36 @@ export function ProjectDetail() {
           />
           {project.pauseReason === "budget" ? (
             <div className="inline-flex items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1 text-(length:--text-micro) font-medium uppercase tracking-(--tracking-caps) text-red-800 dark:text-red-200">
-              <span className="h-2 w-2 rounded-full bg-red-400" />
-              Paused by budget hard stop
-            </div>
+              <span className="h-2 w-2 rounded-full bg-red-400" />{pageText("pausedByBudgetHardStop_75a496")}</div>
           ) : null}
           {project.managedByPlugin ? (
             <div className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-1 text-(length:--text-micro) font-medium text-muted-foreground">
-              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: project.color ?? "var(--project-seed)" }} />
-              Managed by {project.managedByPlugin.pluginDisplayName}
+              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: project.color ?? "var(--project-seed)" }} />{pageText("managedBy_8babd5") + " "}{project.managedByPlugin.pluginDisplayName}
             </div>
           ) : null}
         </div>
-        {classicWorkspace && (
-          <div className="ml-auto flex items-center gap-2">
-            <StarToggle
-              size="button"
-              starred={projectStarred}
-              pending={projectStarPending}
-              resourceName={project.name}
-              onToggle={(next) => membershipMutation.mutate({
-                resourceType: "project",
-                resourceId: project.id,
-                resourceName: project.name,
-                starred: next,
-              })}
-            />
-          </div>
-        )}
+        <div className="ml-auto flex items-center gap-2">
+          <StarToggle
+            size="button"
+            starred={projectStarred}
+            pending={projectStarPending}
+            resourceName={project.name}
+            onToggle={(next) => membershipMutation.mutate({
+              resourceType: "project",
+              resourceId: project.id,
+              resourceName: project.name,
+              starred: next,
+            })}
+          />
+        </div>
       </div>
 
       <SummarySlotCard
         companyId={resolvedCompanyId}
         scopeKind="project"
         scopeId={project.id}
-        title="Project summary"
-        description="Summarizer keeps the latest project status, next step, and operator-needed items here."
+        title={pageText("projectSummary_398c81")}
+        description={pageText("summarizerKeepsTheLatestProjectStatusNextStep_af1406")}
       />
 
       <PluginSlotOutlet
@@ -873,12 +868,12 @@ export function ProjectDetail() {
       <Tabs value={activeTab ?? "list"} onValueChange={(value) => handleTabChange(value as ProjectTab)}>
         <PageTabBar
           items={[
-            { value: "list", label: "Tasks" },
+            { value: "list", label: optionLabel("Tasks") },
 
-            ...(project.managedByPlugin ? [{ value: "plugin-operations", label: "Plugin operations" }] : []),
-            ...(showWorkspacesTab ? [{ value: "workspaces", label: "Workspaces" }] : []),
-            { value: "configuration", label: "Configuration" },
-            { value: "budget", label: "Budget" },
+            ...(project.managedByPlugin ? [{ value: "plugin-operations", label: optionLabel("Plugin operations") }] : []),
+            ...(showWorkspacesTab ? [{ value: "workspaces", label: optionLabel("Workspaces") }] : []),
+            { value: "configuration", label: optionLabel("Configuration") },
+            { value: "budget", label: optionLabel("Budget") },
             ...pluginTabItems.map((item) => ({
               value: item.value,
               label: item.label,
@@ -922,7 +917,7 @@ export function ProjectDetail() {
             />
           )
         ) : (
-          <p className="text-sm text-muted-foreground">Loading workspaces...</p>
+          <p className="text-sm text-muted-foreground">{pageText("loadingWorkspaces_f06f20")}</p>
         )
       ) : null}
 

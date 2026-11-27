@@ -1,3 +1,9 @@
+import { controlText } from "@/i18n/controls";
+import { t as interfaceNotice } from "@/i18n";
+import { t as translateDynamic } from "../i18n";
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { SkillsPageNavigation } from "@/components/skill-studio/SkillsNavigationTabs";
 import { interactionReadinessRefetchInterval } from "@/lib/issue-thread-interactions";
 import { SkillBinaryFile } from "../components/SkillBinaryFile";
@@ -179,7 +185,6 @@ import {
   type RunTemplateSelection,
   type SavedInputDraftState,
 } from "@/lib/skill-studio";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 const PANE_STORAGE_KEY = "skillStudio.paneSizes";
 const RUN_TEMPLATE_STORAGE_KEY_PREFIX = "skillStudio.runTemplate";
@@ -199,7 +204,7 @@ function useMutationErrorToast() {
       // Under the open default there is no permission chrome. When an action is
       // actually denied — by an explicit company policy (State B) or a platform
       // safety invariant (State C) — show the actionable denial title/remediation
-      // instead of a generic "try again" error (`doc/company-skill-policy.md`, PAP-13865). Transient
+      // instead of a generic "try again" error (§9.10, PAP-13865). Transient
       // failures keep the plain error toast.
       const denial = classifySkillDenial(error);
       if (denial) {
@@ -276,6 +281,7 @@ function useIsMobile() {
 // ---------------------------------------------------------------------------
 
 export function SkillStudio() {
+  const { t: pageText } = usePageTranslation("interface");
   const { skillId = "" } = useParams<{ skillId: string }>();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -313,19 +319,19 @@ export function SkillStudio() {
     setBreadcrumbs(
       isCreateMode
         ? [
-            { label: "Skills", href: "/skills" },
-            { label: "Studio", href: "/skills/studio" },
-            { label: "New skill" },
+            { label: interfaceNotice("interface:skills_e09212"), href: "/skills" },
+            { label: interfaceNotice("interface:studio_5b23bd"), href: "/skills/studio" },
+            { label: interfaceNotice("interface:newSkill_a7b490") },
           ]
         : skill
         ? [
-            { label: "Skills", href: "/skills" },
-            { label: "Studio", href: "/skills/studio" },
+            { label: interfaceNotice("interface:skills_e09212"), href: "/skills" },
+            { label: interfaceNotice("interface:studio_5b23bd"), href: "/skills/studio" },
             { label: skill.name },
           ]
         : [
-            { label: "Skills", href: "/skills" },
-            { label: "Studio" },
+            { label: interfaceNotice("interface:skills_e09212"), href: "/skills" },
+            { label: interfaceNotice("interface:studio_5b23bd") },
           ],
     );
   }, [isCreateMode, setBreadcrumbs, skill]);
@@ -337,7 +343,7 @@ export function SkillStudio() {
   }, [skill?.id]);
 
   if (!companyId) {
-    return <StudioMessage message="Select an organization to open Skill Studio." />;
+    return <StudioMessage message={pageText("selectAnOrganizationToOpenSkillStudio_a176ab")} />;
   }
   if (isCreateMode) {
     return (
@@ -366,7 +372,7 @@ export function SkillStudio() {
     );
   }
   if (detailQuery.isLoading || detailView.kind === "reconnecting") {
-    return <StudioMessage message="Loading skill…" />;
+    return <StudioMessage message={pageText("loadingSkill_2d9a92")} />;
   }
   // "Not found" only for a real 404; an outage never looks like a missing skill.
   if (detailView.kind === "error" && detailView.errorKind !== "not_found") {
@@ -381,7 +387,7 @@ export function SkillStudio() {
     );
   }
   if (detailView.kind === "error" || !detailQuery.data) {
-    return <StudioMessage message="Skill not found." />;
+    return <StudioMessage message={pageText("skillNotFound_c8a379")} />;
   }
 
   return (
@@ -424,7 +430,7 @@ function StudioCreateMode({
             skills={skills}
             loading={skillsLoading}
             onSelectSkill={onSelectSkill}
-            emptyLabel="New skill"
+            emptyLabel={interfaceNotice("interface:newSkill_a7b490")}
           />
         </header>
         <SkillsPageNavigation activeView="authored" />
@@ -458,6 +464,8 @@ function StudioNewSkillPanel({
   forkLoading: boolean;
   forkError: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const toast = useOptionalToastActions();
@@ -502,20 +510,20 @@ function StudioNewSkillPanel({
       toast?.pushToast({
         tone: "error",
         title: "Skill creation failed",
-        body: error instanceof Error ? error.message : "Failed to create skill.",
+        body: error instanceof Error ? error.message : interfaceMessage("interface:errorFailedToCreateSkillSentence"),
       });
     },
   });
 
   if (forkFromSkillId && forkLoading) {
-    return <StudioMessage message="Loading fork source..." />;
+    return <StudioMessage message={pageText("loadingForkSource_865150")} />;
   }
 
   const previewCard: DiscoveryCard = {
     key: effectiveSlug || draft.name || "new-skill",
     skillId: null,
     catalogRef: null,
-    name: draft.name || "New Skill",
+    name: draft.name || controlText("New Skill"),
     slug: effectiveSlug || "skill",
     author: "you",
     version: null,
@@ -537,33 +545,28 @@ function StudioNewSkillPanel({
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-6">
       <div className="space-y-1">
         <h1 className="text-lg font-semibold text-foreground">
-          {draft.forkedFromSkillId ? "Fork skill" : "Create a new skill"}
+          {draft.forkedFromSkillId ? pageText("forkSkill_ab250e") : pageText("createANewSkill_9fcfa5")}
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Create an editable organization skill and open it directly in Studio.
-        </p>
+        <p className="text-sm text-muted-foreground">{pageText("createAnEditableOrganizationSkillAndOpenIt_440a32")}</p>
       </div>
 
       {draft.forkedFromName ? (
         <div className="flex items-center gap-2 rounded-md border border-border bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
-          <GitFork className="h-4 w-4" />
-          Forking {draft.forkedFromName}
+          <GitFork className="h-4 w-4" />{pageText("forking_cac22b") + " "}{draft.forkedFromName}
         </div>
       ) : forkError ? (
         <div className="flex items-center gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-          <AlertTriangle className="h-4 w-4" />
-          Fork source not found. You can still create a blank skill.
-        </div>
+          <AlertTriangle className="h-4 w-4" />{pageText("forkSourceNotFoundYouCanStillCreate_f2e30e")}</div>
       ) : null}
 
       <section className="space-y-3">
         <div>
-          <h2 className="text-sm font-medium text-foreground">Basics</h2>
-          <p className="text-xs text-muted-foreground">Name the skill and set the route-safe slug.</p>
+          <h2 className="text-sm font-medium text-foreground">{pageText("basics_5fcebe")}</h2>
+          <p className="text-xs text-muted-foreground">{pageText("nameTheSkillAndSetTheRouteSafe_d97530")}</p>
         </div>
         <div className="grid gap-3 md:grid-cols-2">
           <div className="space-y-1.5">
-            <Label htmlFor="skill-name">Name</Label>
+            <Label htmlFor="skill-name">{translateUi("interfaceCopy.name")}</Label>
             <Input
               id="skill-name"
               value={draft.name}
@@ -577,11 +580,11 @@ function StudioNewSkillPanel({
                     : draft.markdown,
                 });
               }}
-              placeholder="Code review"
+              placeholder={pageText("codeReview_c7d0e7")}
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="skill-slug">Slug</Label>
+            <Label htmlFor="skill-slug">{pageText("slug_094da9")}</Label>
             <Input
               id="skill-slug"
               value={draft.slug}
@@ -596,7 +599,7 @@ function StudioNewSkillPanel({
           </div>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="skill-tagline">Tagline</Label>
+          <Label htmlFor="skill-tagline">{pageText("tagline_b0f794")}</Label>
           <Textarea
             id="skill-tagline"
             value={draft.tagline}
@@ -610,7 +613,7 @@ function StudioNewSkillPanel({
                   : draft.markdown,
               });
             }}
-            placeholder="Review repository changes for correctness, tests, and maintainability."
+            placeholder={pageText("reviewRepositoryChangesForCorrectnessTestsAndMaintainability_c28b01")}
             className="min-h-20"
           />
         </div>
@@ -618,18 +621,18 @@ function StudioNewSkillPanel({
 
       <section className="space-y-3">
         <div>
-          <h2 className="text-sm font-medium text-foreground">Appearance</h2>
-          <p className="text-xs text-muted-foreground">Tune how the skill appears in the store and Studio switcher.</p>
+          <h2 className="text-sm font-medium text-foreground">{pageText("appearance_41def7")}</h2>
+          <p className="text-xs text-muted-foreground">{pageText("tuneHowTheSkillAppearsInTheStore_9e1adf")}</p>
         </div>
         <div className="flex items-center gap-3">
           <SkillCardIcon card={previewCard} size={48} />
           <div className="min-w-0">
             <div className="truncate text-sm font-medium">{previewCard.name}</div>
-            <div className="truncate text-xs text-muted-foreground">{draft.tagline || "No tagline yet."}</div>
+            <div className="truncate text-xs text-muted-foreground">{draft.tagline || pageText("noTaglineYet_626b82")}</div>
           </div>
         </div>
         <div className="space-y-2">
-          <Label>Color</Label>
+          <Label>{translateUi("interfaceCopy.color")}</Label>
           <div className="flex flex-wrap items-center gap-2">
             {SKILL_CREATE_ACCENTS.map((color) => (
               <button
@@ -641,11 +644,11 @@ function StudioNewSkillPanel({
                   draft.color === color ? "border-foreground" : "border-border",
                 )}
                 style={{ backgroundColor: color }}
-                aria-label={`Use ${color}`}
+                aria-label={translateDynamic("dynamic:use", { value1: color })}
               />
             ))}
             <Input
-              aria-label="Hex color"
+              aria-label={pageText("hexColor_1ba7b1")}
               value={draft.color}
               onChange={(event) => patchDraft({ color: event.target.value })}
               className="h-7 w-28 font-mono text-xs"
@@ -653,7 +656,7 @@ function StudioNewSkillPanel({
           </div>
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="skill-categories">Categories</Label>
+          <Label htmlFor="skill-categories">{translateUi("interfaceCopy.categories")}</Label>
           <Input
             id="skill-categories"
             value={categoryDraft}
@@ -665,8 +668,8 @@ function StudioNewSkillPanel({
 
       <section className="space-y-3">
         <div>
-          <h2 className="text-sm font-medium text-foreground">Sharing</h2>
-          <p className="text-xs text-muted-foreground">Choose who can discover this skill inside Paperclip.</p>
+          <h2 className="text-sm font-medium text-foreground">{translateUi("interfaceCopy.sharing")}</h2>
+          <p className="text-xs text-muted-foreground">{pageText("chooseWhoCanDiscoverThisSkillInsidePaperclip_d57c15")}</p>
         </div>
         <div className="grid gap-2 sm:grid-cols-3">
           {(["company", "private"] as const).map((scope) => (
@@ -679,9 +682,9 @@ function StudioNewSkillPanel({
                 draft.sharingScope === scope ? "border-foreground bg-accent/50" : "border-border",
               )}
             >
-              <span className="block font-medium">{scope === "company" ? "Organization" : "Private"}</span>
+              <span className="block font-medium">{scope === "company" ? pageText("organization_519255") : pageText("private_237dfa")}</span>
               <span className="mt-1 block text-xs text-muted-foreground">
-                {scope === "company" ? "Visible inside this organization." : "Only visible in your library."}
+                {scope === "company" ? pageText("visibleInsideThisOrganization_b76398") : pageText("onlyVisibleInYourLibrary_3ee838")}
               </span>
             </button>
           ))}
@@ -690,14 +693,14 @@ function StudioNewSkillPanel({
             disabled
             className="rounded-md border border-dashed border-border px-3 py-2 text-left text-sm text-muted-foreground"
           >
-            <span className="block font-medium">Public</span>
-            <span className="mt-1 block text-xs">Coming later.</span>
+            <span className="block font-medium">{pageText("public_dc5eb7")}</span>
+            <span className="mt-1 block text-xs">{pageText("comingLater_34fb4f")}</span>
           </button>
         </div>
       </section>
 
       <details className="rounded-md border border-border px-3 py-2">
-        <summary className="cursor-pointer text-sm font-medium text-foreground">Starter content</summary>
+        <summary className="cursor-pointer text-sm font-medium text-foreground">{pageText("starterContent_d298dc")}</summary>
         <Textarea
           value={draft.markdown}
           onChange={(event) => patchDraft({ markdown: event.target.value })}
@@ -706,12 +709,10 @@ function StudioNewSkillPanel({
       </details>
 
       <div className="flex items-center justify-end gap-2 border-t border-border pt-4">
-        <Button variant="ghost" onClick={() => navigate("/skills/studio")} disabled={createSkill.isPending}>
-          Cancel
-        </Button>
+        <Button variant="ghost" onClick={() => navigate("/skills/studio")} disabled={createSkill.isPending}>{translateUi("interfaceCopy.cancel")}</Button>
         <Button onClick={() => createSkill.mutate()} disabled={createSkill.isPending || !nameValid}>
           <FilePlus className="h-4 w-4" />
-          {createSkill.isPending ? "Creating..." : draft.forkedFromSkillId ? "Create fork" : "Create skill"}
+          {createSkill.isPending ? pageText("creating_28ea76") : draft.forkedFromSkillId ? pageText("createFork_7caad0") : pageText("createSkill_f7fc4f")}
         </Button>
       </div>
     </div>
@@ -737,6 +738,7 @@ function StudioEmptyState({
   onSelectSkill: (skillId: string) => void;
   onCreateNew: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <TooltipProvider delayDuration={200}>
       <div className="flex h-full min-h-0 flex-col">
@@ -746,15 +748,15 @@ function StudioEmptyState({
             skills={skills}
             loading={skillsLoading}
             onSelectSkill={onSelectSkill}
-            emptyLabel="Select skill"
+            emptyLabel={interfaceNotice("interface:selectSkill_a31b96")}
           />
         </header>
         <SkillsPageNavigation activeView="authored" />
         <div className="flex flex-1 items-center justify-center">
           <EmptyState
             icon={FileCode}
-            message={skillsLoading ? "Loading skills..." : "Select a skill to open Studio."}
-            action="Create a new skill"
+            message={skillsLoading ? pageText("loadingSkills_18f634") : pageText("selectASkillToOpenStudio_4131c4")}
+            action={controlText("Create a new skill")}
             onAction={onCreateNew}
           />
         </div>
@@ -780,6 +782,7 @@ function StudioLanding({
   onSelectSkill: (skillId: string) => void;
   onCreateNew: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   // Recency-sorted list, enriched with the last human editor (PAP-13149) — the
   // source for both landing sections. Kept separate from the alphabetical
   // switcher list so each cache stays sorted the way its consumer expects.
@@ -820,25 +823,23 @@ function StudioLanding({
             skills={skills}
             loading={skillsLoading}
             onSelectSkill={onSelectSkill}
-            emptyLabel="Select skill"
+            emptyLabel={interfaceNotice("interface:selectSkill_a31b96")}
           />
           <Button variant="ghost" size="sm" className="ml-auto" onClick={onCreateNew}>
-            <Plus className="mr-1.5 h-3.5 w-3.5" />
-            New skill
-          </Button>
+            <Plus className="mr-1.5 h-3.5 w-3.5" />{pageText("newSkill_a7b490")}</Button>
         </header>
         <SkillsPageNavigation activeView="authored" />
         <div className="min-h-0 flex-1 overflow-auto">
           <div className="mx-auto w-full max-w-3xl space-y-8 px-4 py-8">
             {visited.length > 0 ? (
               <StudioLandingSection
-                title="Recently visited"
+                title={pageText("recentlyVisited_4da0da")}
                 skills={visited}
                 onSelectSkill={onSelectSkill}
               />
             ) : null}
             <StudioLandingSection
-              title="Recently updated"
+              title={pageText("recentlyUpdated_5f0500")}
               skills={updated}
               onSelectSkill={onSelectSkill}
             />
@@ -884,6 +885,7 @@ function StudioLandingRow({
   skill: CompanySkillListItem;
   onSelect: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const editor = skillEditorAvatar(skill.lastEditor);
   return (
     <button
@@ -898,8 +900,7 @@ function StudioLandingRow({
           <span className="truncate text-xs text-muted-foreground">{skill.tagline}</span>
         ) : null}
       </span>
-      <span className="shrink-0 text-xs text-muted-foreground">
-        updated {relativeTime(skill.updatedAt)}
+      <span className="shrink-0 text-xs text-muted-foreground">{pageText("updated_13a189") + " "}{relativeTime(skill.updatedAt)}
       </span>
       {editor ? (
         <Tooltip>
@@ -1154,6 +1155,8 @@ function StudioHeader({
   onSelectSkill: (skillId: string) => void;
   onOpenVersions: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const version = skill.currentVersion?.revisionNumber ?? null;
   const toast = useOptionalToastActions();
   const copyShareLink = useCallback(() => {
@@ -1179,10 +1182,10 @@ function StudioHeader({
         <span className="font-mono text-xs text-muted-foreground">v{version}</span>
       )}
       {skillDirty ? (
-        <Badge variant="secondary">Unsaved edits</Badge>
+        <Badge variant="secondary">{pageText("unsavedEdits_0881bf")}</Badge>
       ) : null}
       {!skill.editable ? (
-        <Badge variant="secondary">Read-only</Badge>
+        <Badge variant="secondary">{translateUi("interfaceCopy.readonly")}</Badge>
       ) : null}
       {skill.forkedFromSkillId ? (
         <SkillLineageChip
@@ -1193,19 +1196,16 @@ function StudioHeader({
       <AgentsUsingSkillBadge companyId={companyId} skill={skill} />
       <div className="ml-auto flex items-center gap-1">
         <Button variant="ghost" size="sm" onClick={onOpenVersions}>
-          <History className="mr-1.5 h-3.5 w-3.5" />
-          Version history
-        </Button>
+          <History className="mr-1.5 h-3.5 w-3.5" />{pageText("versionHistory_91f865")}</Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon-sm" aria-label="Studio menu">
+            <Button variant="ghost" size="icon-sm" aria-label={pageText("studioMenu_39504b")}>
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-52">
             <DropdownMenuItem onClick={copyShareLink}>
-              <Share2 className="mr-2 h-4 w-4" /> Share link
-            </DropdownMenuItem>
+              <Share2 className="mr-2 h-4 w-4" />{" " + pageText("shareLink_3c1362")}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -1230,6 +1230,7 @@ function SkillSwitcher({
   onSelectSkill: (skillId: string) => void;
   emptyLabel?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const groups = useMemo<readonly SearchableSelectGroup<string, SkillSwitcherOption>[]>(() => {
     const options: SkillSwitcherOption[] = withCurrentSkill(skills, skill).map((item) => ({
       key: item.id,
@@ -1249,8 +1250,8 @@ function SkillSwitcher({
       loading={loading}
       loadingMessage="Loading skills..."
       placeholder={emptyLabel}
-      searchPlaceholder="Search skills..."
-      emptyMessage="No matching skills."
+      searchPlaceholder={pageText("searchSkills_d4e6fa")}
+      emptyMessage={pageText("noMatchingSkills_41fe0d")}
       onValueChange={(value) => {
         if (value !== skill?.id) onSelectSkill(value);
       }}
@@ -1293,6 +1294,8 @@ function SkillPane({
   onDirtyChange: (dirty: boolean) => void;
   onEditACopy: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const skillId = skill.id;
   const queryClient = useQueryClient();
   const onError = useMutationErrorToast();
@@ -1357,7 +1360,7 @@ function SkillPane({
     if (
       dirty
       && typeof window !== "undefined"
-      && !window.confirm("Discard unsaved edits and switch files?")
+      && !window.confirm(interfaceNotice("interface:discardUnsavedEditsAndSwitchFiles_36be45"))
     ) {
       return;
     }
@@ -1391,7 +1394,7 @@ function SkillPane({
   });
 
   async function loadLatestSavedFile() {
-    if (dirty && !window.confirm("Discard unsaved edits and load the latest saved file?")) return;
+    if (dirty && !window.confirm(interfaceNotice("interface:discardUnsavedEditsAndLoadTheLatestSaved_dddb2c"))) return;
     const result = await fileQuery.refetch();
     if (result.error) { onError("Couldn't load latest file")(result.error); return; }
     if (!result.data) return;
@@ -1474,7 +1477,7 @@ function SkillPane({
           />
         }
       >
-        <EmptyState icon={FileCode} message="This skill has no files yet." />
+        <EmptyState icon={FileCode} message={pageText("thisSkillHasNoFilesYet_7cfa5d")} />
         <SkillPathDialog
           mode={createDialog}
           open={createDialog !== null}
@@ -1513,16 +1516,14 @@ function SkillPane({
       <div className="flex min-h-0 flex-1 flex-col">
         {versionConflict ? (
           <div role="alert" className="flex items-center gap-2 border-b border-border bg-muted px-3 py-2 text-xs">
-            <span>This skill changed since you opened it. Your unsaved edits are still here. Copy them before loading the latest file to reconcile the changes.</span>
-            <Button size="sm" variant="outline" disabled={fileQuery.isFetching} onClick={() => void loadLatestSavedFile()}>
-              Load latest saved file
-            </Button>
+            <span>{pageText("thisSkillChangedSinceYouOpenedItYour_e37829")}</span>
+            <Button size="sm" variant="outline" disabled={fileQuery.isFetching} onClick={() => void loadLatestSavedFile()}>{pageText("loadLatestSavedFile_50dc10")}</Button>
           </div>
         ) : null}
         {dirty && !readOnly ? (
           <div className="flex items-start gap-2 border-b border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
             <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
-            <span>Unsaved edits live only in this Studio session. Save to create the next version before running tests or switching files.</span>
+            <span>{pageText("unsavedEditsLiveOnlyInThisStudioSession_53eab0")}</span>
           </div>
         ) : null}
         <div className="max-h-(--sz-11_75rem) overflow-auto border-b border-border p-1">
@@ -1540,7 +1541,7 @@ function SkillPane({
             }
             onSelectFile={selectFile}
             showCheckboxes={false}
-            ariaLabel="Skill files"
+            ariaLabel={interfaceNotice("interface:skillFiles_4bd632")}
           />
         </div>
         <SkillSourceProvenance skill={skill} />
@@ -1549,18 +1550,15 @@ function SkillPane({
             <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
             <div className="min-w-0 flex-1">
               <p>
-                {skill.metadata?.skillSourceId ? "This skill is synced from GitHub and is read-only." : skill.editableReason ?? "This skill is read-only because it comes from an external source."}
-                {" "}Make an editable copy to change it — the original stays untouched.
-              </p>
+                {skill.metadata?.skillSourceId ? pageText("thisSkillIsSyncedFromGitHubAndIs_3df8ee") : skill.editableReason ?? pageText("thisSkillIsReadOnlyBecauseItComes_00cd4b")}
+                {" "}{pageText("makeAnEditableCopyToChangeItThe_a7cf35")}</p>
               <Button
                 type="button"
                 size="sm"
                 className="mt-2"
                 onClick={onEditACopy}
               >
-                <GitFork className="mr-1.5 h-3.5 w-3.5" />
-                Make a copy
-              </Button>
+                <GitFork className="mr-1.5 h-3.5 w-3.5" />{pageText("makeACopy_fdf343")}</Button>
             </div>
           </div>
         )}
@@ -1571,16 +1569,16 @@ function SkillPane({
           </span>
           <div className="flex items-center gap-2">
             {readOnly ? (
-              <Badge variant="secondary">Read-only</Badge>
+              <Badge variant="secondary">{translateUi("interfaceCopy.readonly")}</Badge>
             ) : (
               <>
-                {dirty && <Badge variant="secondary">Unsaved</Badge>}
+                {dirty && <Badge variant="secondary">{pageText("unsaved_2ab06e")}</Badge>}
                 <Button
                   size="sm"
                   disabled={!dirty || saveMutation.isPending}
                   onClick={() => saveMutation.mutate({ path: selectedFile, content: draft, versionId: baseVersionId })}
                 >
-                  {saveMutation.isPending ? "Saving…" : "Save"}
+                  {saveMutation.isPending ? pageText("saving_56a228") : pageText("save_efc007")}
                 </Button>
               </>
             )}
@@ -1719,6 +1717,8 @@ function SkillFileActions({
   onDeleteFile: () => void;
   onDeleteFolder: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const disabled = readOnly || pending;
   const deleteDisabled = disabled || !canDeleteFile;
   return (
@@ -1726,22 +1726,22 @@ function SkillFileActions({
       <Tooltip>
         <TooltipTrigger asChild>
           <span>
-            <Button variant="ghost" size="icon-sm" disabled={disabled} onClick={onAddFile} aria-label="Add file">
+            <Button variant="ghost" size="icon-sm" disabled={disabled} onClick={onAddFile} aria-label={pageText("addFile_4881d0")}>
               <FilePlus className="h-4 w-4" />
             </Button>
           </span>
         </TooltipTrigger>
-        <TooltipContent>Add file</TooltipContent>
+        <TooltipContent>{pageText("addFile_4881d0")}</TooltipContent>
       </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
           <span>
-            <Button variant="ghost" size="icon-sm" disabled={disabled} onClick={onAddFolder} aria-label="Add folder">
+            <Button variant="ghost" size="icon-sm" disabled={disabled} onClick={onAddFolder} aria-label={pageText("addFolder_03eb1a")}>
               <FolderPlus className="h-4 w-4" />
             </Button>
           </span>
         </TooltipTrigger>
-        <TooltipContent>Add folder</TooltipContent>
+        <TooltipContent>{pageText("addFolder_03eb1a")}</TooltipContent>
       </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
@@ -1751,27 +1751,27 @@ function SkillFileActions({
               size="icon-sm"
               disabled={deleteDisabled}
               onClick={() => {
-                if (typeof window === "undefined" || window.confirm(`Delete ${selectedFile}?`)) {
+                if (typeof window === "undefined" || window.confirm(controlText("Delete {{file}}?", { file: selectedFile }))) {
                   onDeleteFile();
                 }
               }}
-              aria-label="Delete file"
+              aria-label={pageText("deleteFile_b9ea4b")}
             >
               <Trash2 className="h-4 w-4" />
             </Button>
           </span>
         </TooltipTrigger>
-        <TooltipContent>{canDeleteFile ? "Delete file" : "SKILL.md cannot be deleted"}</TooltipContent>
+        <TooltipContent>{canDeleteFile ? pageText("deleteFile_b9ea4b") : pageText("skillMdCannotBeDeleted_403191")}</TooltipContent>
       </Tooltip>
       <Tooltip>
         <TooltipTrigger asChild>
           <span>
-            <Button variant="ghost" size="icon-sm" disabled={disabled} onClick={onDeleteFolder} aria-label="Delete folder">
+            <Button variant="ghost" size="icon-sm" disabled={disabled} onClick={onDeleteFolder} aria-label={translateUi("interfaceCopy.deleteFolder")}>
               <FolderMinus className="h-4 w-4" />
             </Button>
           </span>
         </TooltipTrigger>
-        <TooltipContent>Delete folder</TooltipContent>
+        <TooltipContent>{translateUi("interfaceCopy.deleteFolder")}</TooltipContent>
       </Tooltip>
     </div>
   );
@@ -1794,6 +1794,8 @@ function SkillPathDialog({
   pending: boolean;
   onSubmit: (path: string, content: string) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [pathValue, setPathValue] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -1805,19 +1807,19 @@ function SkillPathDialog({
     setError(null);
   }, [currentFolder, mode, open]);
 
-  const title = mode === "folder" ? "Add folder" : "Add file";
-  const label = mode === "folder" ? "Folder path" : "File path";
+  const title = mode === "folder" ? controlText("Add folder") : controlText("Add file");
+  const label = mode === "folder" ? controlText("Folder path") : controlText("File path");
 
   function submit() {
     if (!mode) return;
     const normalized = normalizeStudioPath(pathValue);
     if (!normalized) {
-      setError(`${label} is required.`);
+      setError(controlText("{{label}} is required.", { label }));
       return;
     }
     if (mode === "file") {
       if (existingPaths.has(normalized)) {
-        setError("A file already exists at that path.");
+        setError(interfaceNotice("interface:aFileAlreadyExistsAtThatPath_76489a"));
         return;
       }
       onSubmit(normalized, "");
@@ -1826,7 +1828,7 @@ function SkillPathDialog({
 
     const folderPath = normalized.replace(/\/+$/, "");
     if ([...existingPaths].some((path) => path.startsWith(`${folderPath}/`))) {
-      setError("A folder already exists at that path.");
+      setError(interfaceNotice("interface:aFolderAlreadyExistsAtThatPath_500a7a"));
       return;
     }
     onSubmit(folderSeedFile(folderPath), folderSeedContent(folderPath));
@@ -1837,9 +1839,7 @@ function SkillPathDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>
-            Saved changes create a new version immediately. External sources are not updated until you publish or install an update.
-          </DialogDescription>
+          <DialogDescription>{pageText("savedChangesCreateANewVersionImmediatelyExternal_e14e6e")}</DialogDescription>
         </DialogHeader>
         <div className="space-y-2">
           <Label htmlFor="skill-path-input">{label}</Label>
@@ -1853,17 +1853,13 @@ function SkillPathDialog({
             placeholder={mode === "folder" ? "references/examples" : "references/examples.md"}
           />
           {mode === "folder" ? (
-            <p className="text-xs text-muted-foreground">A README.md seed file is created so the folder appears in the file tree.</p>
+            <p className="text-xs text-muted-foreground">{pageText("aREADMEMdSeedFileIsCreatedSo_0b3084")}</p>
           ) : null}
           {error ? <p className="text-xs text-destructive">{error}</p> : null}
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button disabled={pending} onClick={submit}>
-            Create
-          </Button>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>{translateUi("interfaceCopy.cancel")}</Button>
+          <Button disabled={pending} onClick={submit}>{translateUi("interfaceCopy.create")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -1885,6 +1881,8 @@ function DeleteFolderDialog({
   pending: boolean;
   onSubmit: (path: string) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [pathValue, setPathValue] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -1897,16 +1895,16 @@ function DeleteFolderDialog({
   function submit() {
     const normalized = normalizeStudioPath(pathValue).replace(/\/+$/, "");
     if (!normalized) {
-      setError("Folder path is required.");
+      setError(interfaceNotice("interface:folderPathIsRequired_729f79"));
       return;
     }
     const matchingFiles = [...existingPaths].filter((path) => path.startsWith(`${normalized}/`));
     if (matchingFiles.length === 0) {
-      setError("No files exist under that folder.");
+      setError(interfaceNotice("interface:noFilesExistUnderThatFolder_c8de4a"));
       return;
     }
     if (matchingFiles.includes("SKILL.md")) {
-      setError("SKILL.md cannot be deleted.");
+      setError(interfaceNotice("interface:skillMdCannotBeDeleted_b34f98"));
       return;
     }
     onSubmit(normalized);
@@ -1916,13 +1914,11 @@ function DeleteFolderDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Delete folder</DialogTitle>
-          <DialogDescription>
-            This removes every skill file under the folder and saves the result as the next version.
-          </DialogDescription>
+          <DialogTitle>{translateUi("interfaceCopy.deleteFolder")}</DialogTitle>
+          <DialogDescription>{pageText("thisRemovesEverySkillFileUnderTheFolder_51aff1")}</DialogDescription>
         </DialogHeader>
         <div className="space-y-2">
-          <Label htmlFor="skill-folder-delete">Folder path</Label>
+          <Label htmlFor="skill-folder-delete">{pageText("folderPath_cd6605")}</Label>
           <Input
             id="skill-folder-delete"
             value={pathValue}
@@ -1935,12 +1931,8 @@ function DeleteFolderDialog({
           {error ? <p className="text-xs text-destructive">{error}</p> : null}
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
-          <Button variant="destructive" disabled={pending} onClick={submit}>
-            Delete
-          </Button>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>{translateUi("interfaceCopy.cancel")}</Button>
+          <Button variant="destructive" disabled={pending} onClick={submit}>{translateUi("interfaceCopy.delete")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -1974,6 +1966,8 @@ function InputPane({
   onSelectInput: (id: string) => void;
   onSelectAdHoc: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const onError = useMutationErrorToast();
   // The row's menu closes on click, so its copy confirmation goes to a toast.
@@ -2028,7 +2022,7 @@ function InputPane({
     if (!dirty) return true;
     return (
       typeof window === "undefined"
-      || window.confirm("Discard unsaved changes to this input?")
+      || window.confirm(interfaceNotice("interface:discardUnsavedChangesToThisInput_d9310d"))
     );
   }, [dirty]);
 
@@ -2085,7 +2079,7 @@ function InputPane({
                 type="button"
                 variant="ghost"
                 size="icon-xs"
-                aria-label={collapsed ? "Expand input" : "Collapse input"}
+                aria-label={collapsed ? pageText("expandInput_44e7b4") : pageText("collapseInput_ecc618")}
                 onClick={() => setCollapsed((current) => !current)}
               >
                 {collapsed ? (
@@ -2095,20 +2089,20 @@ function InputPane({
                 )}
               </Button>
             </TooltipTrigger>
-            <TooltipContent>{collapsed ? "Expand input" : "Collapse input"}</TooltipContent>
+            <TooltipContent>{collapsed ? pageText("expandInput_44e7b4") : pageText("collapseInput_ecc618")}</TooltipContent>
           </Tooltip>
-          <span>Input</span>
+          <span>{translateUi("interfaceCopy.input")}</span>
         </span>
       }
       action={
         <div className="flex items-center gap-1">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon-sm" onClick={selectAdHocInput} aria-label="New input">
+              <Button variant="ghost" size="icon-sm" onClick={selectAdHocInput} aria-label={pageText("newInput_db4bda")}>
                 <Plus className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
-            <TooltipContent>New input</TooltipContent>
+            <TooltipContent>{pageText("newInput_db4bda")}</TooltipContent>
           </Tooltip>
         </div>
       }
@@ -2120,20 +2114,19 @@ function InputPane({
           onClick={() => setCollapsed(false)}
         >
           <ChevronRight className="h-3.5 w-3.5" />
-          <span>Input folded</span>
+          <span>{pageText("inputFolded_459ad7")}</span>
         </button>
       ) : (
         <div className="flex min-h-0 flex-1 flex-col">
           {loading || inputs.length > 0 ? (
             <div className="max-h-(--sz-11_75rem) overflow-auto border-b border-border p-1">
               {loading ? (
-                <div className="p-3 text-xs text-muted-foreground">Loading inputs…</div>
+                <div className="p-3 text-xs text-muted-foreground">{pageText("loadingInputs_0e4937")}</div>
               ) : (
                 <>
                   {adHocMode && (
                     <div className="flex items-center gap-2 rounded px-2 py-1.5 text-sm italic text-muted-foreground">
-                      <FilePlus className="h-3.5 w-3.5" /> New input (not saved)
-                    </div>
+                      <FilePlus className="h-3.5 w-3.5" />{" " + pageText("newInputNotSaved_006451")}</div>
                   )}
                   <FileTree
                     nodes={nodes}
@@ -2160,7 +2153,7 @@ function InputPane({
                           <DropdownMenuTrigger asChild>
                             <button
                               className="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground"
-                              aria-label={`Input actions for ${node.name}`}
+                              aria-label={translateDynamic("dynamic:inputActionsFor", { value1: node.name })}
                               onClick={(e) => e.stopPropagation()}
                             >
                               <MoreHorizontal className="h-3.5 w-3.5" />
@@ -2173,20 +2166,18 @@ function InputPane({
                                 if (input) void copyWithToast(input.content, "Input content copied");
                               }}
                             >
-                              <Copy className="mr-2 h-4 w-4" /> Copy content
-                            </DropdownMenuItem>
+                              <Copy className="mr-2 h-4 w-4" />{" " + pageText("copyContent_2d7387")}</DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
                               variant="destructive"
                               onClick={() => deleteMutation.mutate(id)}
                             >
-                              <Trash2 className="mr-2 h-4 w-4" /> Delete
-                            </DropdownMenuItem>
+                              <Trash2 className="mr-2 h-4 w-4" />{" " + pageText("delete_f6fdbe")}</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       );
                     }}
-                    ariaLabel="Test inputs"
+                    ariaLabel={interfaceNotice("interface:testInputs_52238f")}
                   />
                 </>
               )}
@@ -2196,17 +2187,17 @@ function InputPane({
             <textarea
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
-              placeholder="Paste text - treated as a new issue description."
-              aria-label="Skill test input"
+              placeholder={pageText("pasteTextTreatedAsANewIssueDescription_c460da")}
+              aria-label={pageText("skillTestInput_817739")}
               className="min-h-0 flex-1 resize-none border-0 bg-transparent px-3 py-3 text-sm leading-6 outline-none placeholder:text-muted-foreground focus-visible:ring-0"
             />
           </div>
           <div className="flex items-center gap-2 border-t border-border px-3 py-2">
             <div className="mr-auto flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
               <span className="truncate">
-                {selectedInput ? selectedInput.name : adHocMode ? "New input" : "No input selected"}
+                {selectedInput ? selectedInput.name : adHocMode ? pageText("newInput_db4bda") : pageText("noInputSelected_4b121a")}
               </span>
-              {dirty ? <Badge variant="secondary">Unsaved</Badge> : null}
+              {dirty ? <Badge variant="secondary">{pageText("unsaved_2ab06e")}</Badge> : null}
             </div>
             {selectedInput && dirty ? (
               <>
@@ -2219,16 +2210,14 @@ function InputPane({
                     draft: selectedInput.content,
                     baselineContent: selectedInput.content,
                   })}
-                >
-                  Revert
-                </Button>
+                >{pageText("revert_272607")}</Button>
                 <Button
                   variant="outline"
                   size="sm"
                   disabled={!canSaveSelectedInput || updateMutation.isPending}
                   onClick={() => updateMutation.mutate({ content: draft })}
                 >
-                  {updateMutation.isPending ? "Saving..." : "Save changes"}
+                  {updateMutation.isPending ? pageText("saving_ae7e88") : pageText("saveChanges_179359")}
                 </Button>
               </>
             ) : null}
@@ -2236,9 +2225,7 @@ function InputPane({
               size="sm"
               disabled={!draft.trim()}
               onClick={() => setSaveDialogOpen(true)}
-            >
-              Save as input
-            </Button>
+            >{pageText("saveAsInput_198117")}</Button>
           </div>
         </div>
       )}
@@ -2272,6 +2259,8 @@ function SaveInputDialog({
   initialContent: string;
   onSaved: (input: CompanySkillTestInput) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const [name, setName] = useState("");
   const [content, setContent] = useState(initialContent);
@@ -2306,24 +2295,22 @@ function SaveInputDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Save test input</DialogTitle>
-          <DialogDescription>
-            Runs snapshot input at run time — editing later won't change past runs.
-          </DialogDescription>
+          <DialogTitle>{pageText("saveTestInput_56db09")}</DialogTitle>
+          <DialogDescription>{pageText("runsSnapshotInputAtRunTimeEditingLater_b7ad75")}</DialogDescription>
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1">
-            <Label htmlFor="input-name">Name</Label>
+            <Label htmlFor="input-name">{translateUi("interfaceCopy.name")}</Label>
             <Input
               id="input-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="onboarding/happy-path"
             />
-            <p className="text-xs text-muted-foreground">Use “/” for folders, e.g. onboarding/happy-path</p>
+            <p className="text-xs text-muted-foreground">{pageText("useForFoldersEGOnboardingHappyPath_5d69d8")}</p>
           </div>
           <div className="space-y-1">
-            <Label htmlFor="input-content">Content</Label>
+            <Label htmlFor="input-content">{translateUi("interfaceCopy.content")}</Label>
             <Textarea
               id="input-content"
               value={content}
@@ -2333,15 +2320,11 @@ function SaveInputDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>{translateUi("interfaceCopy.cancel")}</Button>
           <Button
             disabled={!name.trim() || !content.trim() || createMutation.isPending}
             onClick={() => createMutation.mutate()}
-          >
-            Save
-          </Button>
+          >{translateUi("interfaceCopy.save")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -2386,6 +2369,7 @@ function RunsPane({
   filterInput: CompanySkillTestInput | null;
   onClearFilter: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const skillId = skill.id;
   const queryClient = useQueryClient();
   const onError = useMutationErrorToast();
@@ -2573,7 +2557,7 @@ function RunsPane({
 
   return (
     <PaneScaffold
-      title="Test runs"
+      title={pageText("testRuns_acb829")}
       action={
         <div className="flex items-center gap-2">
           <AgentPicker
@@ -2590,8 +2574,7 @@ function RunsPane({
                   disabled={gate.disabled || Boolean(templateGateReason) || createRunMutation.isPending}
                   onClick={() => createRunMutation.mutate()}
                 >
-                  <Play className="mr-1.5 h-3.5 w-3.5" /> Run
-                </Button>
+                  <Play className="mr-1.5 h-3.5 w-3.5" />{" " + pageText("run_b1b392")}</Button>
               </span>
             </TooltipTrigger>
             {runDisabledReason && <TooltipContent side="bottom">{runDisabledReason}</TooltipContent>}
@@ -2616,7 +2599,7 @@ function RunsPane({
           onDeleteTemplate={(template) => {
             if (
               typeof window !== "undefined"
-              && !window.confirm(`Delete run template "${template.name}"?`)
+              && !window.confirm(controlText("Delete run template \"{{name}}\"?", { name: template.name }))
             ) {
               return;
             }
@@ -2640,9 +2623,9 @@ function RunsPane({
         )}
         <div className="min-h-0 flex-1 overflow-auto p-3">
           {runsQuery.isLoading ? (
-            <div className="text-xs text-muted-foreground">Loading runs…</div>
+            <div className="text-xs text-muted-foreground">{pageText("loadingRuns_9dd9a8")}</div>
           ) : runs.length === 0 ? (
-            <EmptyState icon={FlaskConical} message="No test runs yet. Pick an agent and Run." />
+            <EmptyState icon={FlaskConical} message={pageText("noTestRunsYetPickAnAgentAnd_243431")} />
           ) : (
             <div className="space-y-1 rounded-md border border-border p-1">
               {runs.map((run) => (
@@ -2721,6 +2704,8 @@ function RunTemplateAdvancedPanel({
   deletingTemplateId: string | null;
   actionPending: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const templateGroups = useMemo<readonly SearchableSelectGroup<string, RunTemplateOption>[]>(() => {
     const noTemplateOption: RunTemplateOption = {
       key: "no-template",
@@ -2766,23 +2751,23 @@ function RunTemplateAdvancedPanel({
         ) : (
           <ChevronRight className="h-3.5 w-3.5" />
         )}
-        <span className="font-semibold uppercase tracking-wide">Advanced</span>
+        <span className="font-semibold uppercase tracking-wide">{translateUi("interfaceCopy.advanced")}</span>
         <span className="ml-auto truncate">{selectedTemplateName}</span>
       </button>
       {open ? (
         <div className="space-y-3 px-3 pb-3 pt-1">
           <div className="flex items-end gap-2">
             <div className="min-w-0 flex-1 space-y-1">
-              <Label>Run template</Label>
+              <Label>{pageText("runTemplate_5d918b")}</Label>
               <SearchableSelect<string, RunTemplateOption>
                 value={selectedValue}
                 groups={templateGroups}
                 loading={templatesLoading}
                 disabled={templatesLoading || templatesError}
                 loadingMessage="Loading templates..."
-                placeholder="Select template"
-                searchPlaceholder="Search templates..."
-                emptyMessage="No templates."
+                placeholder={pageText("selectTemplate_422dc6")}
+                searchPlaceholder={pageText("searchTemplates_2cc6fc")}
+                emptyMessage={pageText("noTemplates_3497c2")}
                 contentClassName="w-(--sz-320px)"
                 onValueChange={(value) => onSelectTemplate(runTemplateSelectionFromOption(value))}
                 renderValue={(option) => option?.label ?? selectedTemplateName}
@@ -2790,7 +2775,7 @@ function RunTemplateAdvancedPanel({
                   <span className="flex min-w-0 flex-col">
                     <span className={cn("truncate", selected && "font-medium")}>{option.label}</span>
                     <span className="truncate text-(length:--text-micro) text-muted-foreground">
-                      {option.description ?? (option.builtIn ? "Built in" : "Custom")}
+                      {option.description ?? (option.builtIn ? pageText("builtIn_6b0c36") : pageText("custom_081ae3"))}
                     </span>
                   </span>
                 )}
@@ -2802,14 +2787,14 @@ function RunTemplateAdvancedPanel({
                   type="button"
                   variant="outline"
                   size="icon-sm"
-                  aria-label="Create run template"
+                  aria-label={pageText("createRunTemplate_46462c")}
                   disabled={actionPending}
                   onClick={onCreateTemplate}
                 >
                   <Plus />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>Create run template</TooltipContent>
+              <TooltipContent>{pageText("createRunTemplate_46462c")}</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -2818,7 +2803,7 @@ function RunTemplateAdvancedPanel({
                     type="button"
                     variant="ghost"
                     size="icon-sm"
-                    aria-label="Edit run template"
+                    aria-label={pageText("editRunTemplate_565839")}
                     disabled={!canEdit || actionPending}
                     onClick={() => selectedTemplate && onEditTemplate(selectedTemplate)}
                   >
@@ -2826,7 +2811,7 @@ function RunTemplateAdvancedPanel({
                   </Button>
                 </span>
               </TooltipTrigger>
-              <TooltipContent>Edit custom template</TooltipContent>
+              <TooltipContent>{pageText("editCustomTemplate_50e111")}</TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -2835,7 +2820,7 @@ function RunTemplateAdvancedPanel({
                     type="button"
                     variant="ghost"
                     size="icon-sm"
-                    aria-label="Duplicate run template"
+                    aria-label={pageText("duplicateRunTemplate_19e0f1")}
                     disabled={!canDuplicate || actionPending}
                     onClick={() => selectedTemplate && onDuplicateTemplate(selectedTemplate)}
                   >
@@ -2844,7 +2829,7 @@ function RunTemplateAdvancedPanel({
                 </span>
               </TooltipTrigger>
               <TooltipContent>
-                {selectedTemplate?.builtIn ? "Duplicate built-in template" : "Duplicate template"}
+                {selectedTemplate?.builtIn ? pageText("duplicateBuiltInTemplate_d9c2d5") : pageText("duplicateTemplate_6d15b2")}
               </TooltipContent>
             </Tooltip>
             <Tooltip>
@@ -2854,7 +2839,7 @@ function RunTemplateAdvancedPanel({
                     type="button"
                     variant="ghost"
                     size="icon-sm"
-                    aria-label="Delete run template"
+                    aria-label={pageText("deleteRunTemplate_52d913")}
                     className="text-destructive hover:text-destructive"
                     disabled={!canDelete || actionPending || deletingTemplateId === selectedTemplate?.id}
                     onClick={() => selectedTemplate && onDeleteTemplate(selectedTemplate)}
@@ -2863,27 +2848,27 @@ function RunTemplateAdvancedPanel({
                   </Button>
                 </span>
               </TooltipTrigger>
-              <TooltipContent>Delete custom template</TooltipContent>
+              <TooltipContent>{pageText("deleteCustomTemplate_3e6a00")}</TooltipContent>
             </Tooltip>
           </div>
 
           {templatesError ? (
-            <p className="text-xs text-destructive">Run templates could not load.</p>
+            <p className="text-xs text-destructive">{pageText("runTemplatesCouldNotLoad_dce78f")}</p>
           ) : selectedTemplateId === null ? (
-            <p className="text-xs text-muted-foreground">Runs will use only the input text.</p>
+            <p className="text-xs text-muted-foreground">{pageText("runsWillUseOnlyTheInputText_ecf6dd")}</p>
           ) : selectedMissing ? (
-            <p className="text-xs text-destructive">Selected template is no longer available.</p>
+            <p className="text-xs text-destructive">{pageText("selectedTemplateIsNoLongerAvailable_573c59")}</p>
           ) : selectedTemplate ? (
             <div className="space-y-2">
               {selectedTemplate.description ? (
                 <p className="text-xs text-muted-foreground">{selectedTemplate.description}</p>
               ) : null}
-              <pre className={cn("max-h-(--sz-240px) overflow-auto whitespace-pre-wrap rounded-md border border-border bg-muted/30 p-3 text-xs leading-5 text-muted-foreground", ANALYTICS_MASK_CLASS)}>
+              <pre className="max-h-(--sz-240px) overflow-auto whitespace-pre-wrap rounded-md border border-border bg-muted/30 p-3 text-xs leading-5 text-muted-foreground">
                 {selectedTemplate.body}
               </pre>
             </div>
           ) : (
-            <p className="text-xs text-muted-foreground">Loading template...</p>
+            <p className="text-xs text-muted-foreground">{pageText("loadingTemplate_7043b2")}</p>
           )}
         </div>
       ) : null}
@@ -2902,6 +2887,8 @@ function RunTemplateDialog({
   onOpenChange: (open: boolean) => void;
   onSubmit: (payload: CompanySkillTestRunTemplateCreateRequest) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const source = state?.source ?? null;
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -2932,40 +2919,37 @@ function RunTemplateDialog({
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-1">
-            <Label htmlFor="run-template-name">Name</Label>
+            <Label htmlFor="run-template-name">{translateUi("interfaceCopy.name")}</Label>
             <Input
               id="run-template-name"
               value={name}
               onChange={(event) => setName(event.target.value)}
-              placeholder="Focused smoke"
+              placeholder={pageText("focusedSmoke_7ab50b")}
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="run-template-description">Description</Label>
+            <Label htmlFor="run-template-description">{translateUi("interfaceCopy.description")}</Label>
             <Input
               id="run-template-description"
               value={description}
               onChange={(event) => setDescription(event.target.value)}
-              placeholder="Short instructions for common skill checks"
+              placeholder={pageText("shortInstructionsForCommonSkillChecks_dd43f8")}
             />
           </div>
           <div className="space-y-1">
-            <Label htmlFor="run-template-body">Body</Label>
+            <Label htmlFor="run-template-body">{pageText("body_718a7e")}</Label>
             <Textarea
               id="run-template-body"
               value={body}
               onChange={(event) => setBody(event.target.value)}
               className="min-h-(--sz-240px) font-mono text-xs leading-5"
             />
-            <p className="text-xs text-muted-foreground">
-              Placeholders: {"{{skillName}}"}, {"{{skillKey}}"}, {"{{skillInvocation}}"}, {"{{skillVersion}}"}, {"{{runId}}"}, {"{{issueId}}"}, {"{{outputDocumentKey}}"}.
+            <p className="text-xs text-muted-foreground">{pageText("placeholders_eaed51") + " "}{"{{skillName}}"}, {"{{skillKey}}"}, {"{{skillInvocation}}"}, {"{{skillVersion}}"}, {"{{runId}}"}, {"{{issueId}}"}, {"{{outputDocumentKey}}"}.
             </p>
           </div>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            Cancel
-          </Button>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>{translateUi("interfaceCopy.cancel")}</Button>
           <Button
             disabled={!name.trim() || !body.trim() || pending}
             onClick={() =>
@@ -2976,7 +2960,7 @@ function RunTemplateDialog({
               })
             }
           >
-            {pending ? "Saving..." : "Save template"}
+            {pending ? pageText("saving_ae7e88") : pageText("saveTemplate_0885fa")}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -3023,6 +3007,7 @@ function AgentPicker({
   selectedAgent: Agent | null;
   onSelect: (id: string) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [open, setOpen] = useState(false);
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -3031,15 +3016,15 @@ function AgentPicker({
           {selectedAgent ? (
             <AgentIdentity agent={selectedAgent} size="xs" />
           ) : (
-            <span className="text-muted-foreground">Pick an agent</span>
+            <span className="text-muted-foreground">{pageText("pickAnAgent_f7bf29")}</span>
           )}
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-64 p-0">
         <Command>
-          <CommandInput placeholder="Search agents…" />
+          <CommandInput placeholder={pageText("searchAgents_97ce8a")} />
           <CommandList>
-            <CommandEmpty>No agents.</CommandEmpty>
+            <CommandEmpty>{pageText("noAgents_0b8ea2")}</CommandEmpty>
             <CommandGroup>
               {agents.map((agent) => {
                 const selectable = isAgentSelectable(agent);
@@ -3064,9 +3049,7 @@ function AgentPicker({
                     />
                     <AgentIdentity agent={agent} size="xs" />
                     {!selectable && (
-                      <Badge variant="secondary" className="ml-auto">
-                        Paused
-                      </Badge>
+                      <Badge variant="secondary" className="ml-auto">{pageText("paused_c7dfb6")}</Badge>
                     )}
                   </CommandItem>
                 );
@@ -3098,6 +3081,8 @@ function RunDetailView({
   onBack: () => void;
   onSelectRun: (id: string | null) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const skillId = skill.id;
   const queryClient = useQueryClient();
   const onError = useMutationErrorToast();
@@ -3163,15 +3148,15 @@ function RunDetailView({
 
   if (detailQuery.isLoading) {
     return (
-      <PaneScaffold title="Run" action={<BackButton onBack={onBack} />}>
-        <div className="p-3 text-xs text-muted-foreground">Loading run…</div>
+      <PaneScaffold title={translateUi("interfaceCopy.run")} action={<BackButton onBack={onBack} />}>
+        <div className="p-3 text-xs text-muted-foreground">{pageText("loadingRun_f91e59")}</div>
       </PaneScaffold>
     );
   }
   if (!detail) {
     return (
-      <PaneScaffold title="Run" action={<BackButton onBack={onBack} />}>
-        <div className="p-3 text-xs text-muted-foreground">Run not found.</div>
+      <PaneScaffold title={translateUi("interfaceCopy.run")} action={<BackButton onBack={onBack} />}>
+        <div className="p-3 text-xs text-muted-foreground">{pageText("runNotFound_f7c1c6")}</div>
       </PaneScaffold>
     );
   }
@@ -3185,12 +3170,12 @@ function RunDetailView({
   const taskLink = testTaskLinkState(detail);
 
   return (
-    <PaneScaffold title="Run" action={<BackButton onBack={onBack} />}>
+    <PaneScaffold title={translateUi("interfaceCopy.run")} action={<BackButton onBack={onBack} />}>
       <div className="min-h-0 flex-1 space-y-3 overflow-auto p-3">
         <div className="flex flex-wrap items-center gap-2">
           <StatusBadge status={runBadgeStatus(detail.status)} />
           <AgentIdentity agent={agent ?? { id: detail.agentId, name: agentName }} size="xs" />
-          {removed && <Badge variant="secondary">removed</Badge>}
+          {removed && <Badge variant="secondary">{pageText("removed_69992f")}</Badge>}
           <span className="font-mono text-xs text-muted-foreground">
             v{detail.skillVersion.revisionNumber}
           </span>
@@ -3201,20 +3186,20 @@ function RunDetailView({
 
         {/* snapshot property block */}
         <div className="rounded-md border border-border text-xs">
-          <PropRow label="Input" value={detail.inputId ? "saved input" : "ad-hoc paste"} />
-          <PropRow label="Template" value={detail.templateName ?? "No template"} />
-          <PropRow label="Skill version" value={`v${detail.skillVersion.revisionNumber}`} />
-          <PropRow label="Created" value={relativeTime(detail.createdAt)} />
+          <PropRow label={translateUi("interfaceCopy.input")} value={detail.inputId ? "saved input" : "ad-hoc paste"} />
+          <PropRow label={pageText("template_3ec1ae")} value={detail.templateName ?? "No template"} />
+          <PropRow label={pageText("skillVersion_c35b9d")} value={`v${detail.skillVersion.revisionNumber}`} />
+          <PropRow label={translateUi("interfaceCopy.created")} value={relativeTime(detail.createdAt)} />
         </div>
 
         {showRunErrorCard(detail.status) && (
           <Card className="border-destructive/50">
             <CardHeader className="flex-row items-center gap-2 space-y-0 pb-2">
               <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
-              <span className="text-sm font-medium">Run failed</span>
+              <span className="text-sm font-medium">{pageText("runFailed_9a731f")}</span>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground">
-              {detail.error ?? "The test task ended with an error."}
+              {detail.error ?? pageText("theTestTaskEndedWithAnError_6e8cb7")}
             </CardContent>
           </Card>
         )}
@@ -3223,16 +3208,15 @@ function RunDetailView({
         {outputMode === "output" || outputMode === "draft" ? (
           <section className="space-y-2">
             <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              {outputMode === "draft" ? "Draft at failure" : "Output snapshot"}
+              {outputMode === "draft" ? pageText("draftAtFailure_122e44") : pageText("outputSnapshot_334549")}
             </h3>
             <div className="rounded-md border border-border p-3">
-              <MarkdownBody>{detail.outputBody || "_No output_"}</MarkdownBody>
+              <MarkdownBody>{detail.outputBody || pageText("noOutput_fe2087")}</MarkdownBody>
             </div>
           </section>
         ) : outputMode === "pending" ? (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Clock className="h-3.5 w-3.5" /> Working… output will appear here.
-          </div>
+            <Clock className="h-3.5 w-3.5" />{" " + pageText("workingOutputWillAppearHere_4f6bac")}</div>
         ) : null}
 
         {unavailableCopy ? (
@@ -3291,17 +3275,14 @@ function RunDetailView({
             disabled={reRunMutation.isPending}
             onClick={() => reRunMutation.mutate()}
           >
-            <RotateCcw className="mr-1.5 h-3.5 w-3.5" /> Re-run
-          </Button>
+            <RotateCcw className="mr-1.5 h-3.5 w-3.5" />{" " + pageText("reRun_a7c77b")}</Button>
           {nonTerminal ? (
             <Button
               variant="ghost"
               size="sm"
               disabled={cancelMutation.isPending}
               onClick={() => cancelMutation.mutate()}
-            >
-              Cancel
-            </Button>
+            >{translateUi("interfaceCopy.cancel")}</Button>
           ) : (
             <Button
               variant="ghost"
@@ -3310,19 +3291,16 @@ function RunDetailView({
               disabled={deleteMutation.isPending}
               onClick={() => deleteMutation.mutate()}
             >
-              <Trash2 className="mr-1.5 h-3.5 w-3.5" /> Delete
-            </Button>
+              <Trash2 className="mr-1.5 h-3.5 w-3.5" />{" " + pageText("delete_f6fdbe")}</Button>
           )}
           {taskLink.enabled && detail.harnessIssue ? (
             <Button variant="link" size="sm" asChild>
-              <Link to={`/issues/${detail.harnessIssue.id}`}>Open test task ↗</Link>
+              <Link to={`/issues/${detail.harnessIssue.id}`}>{pageText("openTestTask_56f6f4")}</Link>
             </Button>
           ) : (
             <Tooltip>
               <TooltipTrigger asChild>
-                <span className="cursor-not-allowed text-xs text-muted-foreground">
-                  Open test task ↗
-                </span>
+                <span className="cursor-not-allowed text-xs text-muted-foreground">{pageText("openTestTask_56f6f4")}</span>
               </TooltipTrigger>
               <TooltipContent>{taskLink.reason}</TooltipContent>
             </Tooltip>
@@ -3357,11 +3335,12 @@ function RunHarnessUnavailableNotice({
 }
 
 function RunDocumentsSection({ documents }: { documents: IssueDocument[] }) {
+  const { t: translateUi } = useUiTranslation();
   return (
     <section className="space-y-2">
       <div className="flex items-center gap-2">
         <FileText className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
-        <h3 className="text-sm font-medium text-muted-foreground">Documents</h3>
+        <h3 className="text-sm font-medium text-muted-foreground">{translateUi("interfaceCopy.documents")}</h3>
         <span className="text-xs text-muted-foreground">{documents.length}</span>
       </div>
       <div className="space-y-2">
@@ -3394,6 +3373,7 @@ function InteractionSection({
   agents: Agent[];
   onAnswered: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const harnessIssueId = detail.harnessIssue?.id ?? null;
   const hasInlineAnswerable = detail.interactions.some((i) => isInteractionAnswerable(i));
 
@@ -3433,9 +3413,7 @@ function InteractionSection({
 
   return (
     <section>
-      <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        Interactions
-      </h3>
+      <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{pageText("interactions_0b3583")}</h3>
       <div className="space-y-2">
         {detail.interactions.map((summary) => {
           const inline = routeInteraction(summary.kind) === "inline";
@@ -3467,7 +3445,7 @@ function InteractionSection({
               trailing={
                 harnessIssueId ? (
                   <Button variant="link" size="xs" asChild>
-                    <Link to={`/issues/${harnessIssueId}`}>Open test task ↗</Link>
+                    <Link to={`/issues/${harnessIssueId}`}>{pageText("openTestTask_56f6f4")}</Link>
                   </Button>
                 ) : null
               }
@@ -3498,6 +3476,7 @@ function VersionHistorySheet({
   onRestored: () => void;
   onFilterRuns: (inputId: string) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const skillId = skill.id;
   const queryClient = useQueryClient();
   const versionsQuery = useQuery({
@@ -3556,13 +3535,13 @@ function VersionHistorySheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="left" className="w-full sm:max-w-(--sz-560px)">
         <SheetHeader>
-          <SheetTitle>Version history</SheetTitle>
+          <SheetTitle>{pageText("versionHistory_91f865")}</SheetTitle>
         </SheetHeader>
         <div className="mt-3 space-y-2 overflow-auto">
           {versionsQuery.isLoading ? (
-            <div className="text-xs text-muted-foreground">Loading versions…</div>
+            <div className="text-xs text-muted-foreground">{pageText("loadingVersions_b8043f")}</div>
           ) : versions.length === 0 ? (
-            <EmptyState icon={History} message="No versions yet. Save changes to create the first." />
+            <EmptyState icon={History} message={pageText("noVersionsYetSaveChangesToCreateThe_c64a9a")} />
           ) : (
             <div className="space-y-1 rounded-md border border-border p-1">
               {versions.map((v) => (
@@ -3590,8 +3569,7 @@ function VersionHistorySheet({
                         e.stopPropagation();
                         restore.mutate(v);
                       }}
-                    >
-                      Restore as v{(skill.currentVersion?.revisionNumber ?? v.revisionNumber) + 1}
+                    >{pageText("restoreAsV_78085a")}{(skill.currentVersion?.revisionNumber ?? v.revisionNumber) + 1}
                     </Button>
                   }
                 />
@@ -3604,14 +3582,13 @@ function VersionHistorySheet({
             </p>
           )}
           {leftId && rightId && (leftQuery.isLoading || rightQuery.isLoading) && (
-            <p className="text-sm text-muted-foreground">Loading selected versions…</p>
+            <p className="text-sm text-muted-foreground">{pageText("loadingSelectedVersions_595a76")}</p>
           )}
           {diff && (
             <div className="rounded-md border border-border">
-              <div className="border-b border-border px-3 py-1.5 text-xs text-muted-foreground">
-                Diff v{left?.revisionNumber} → v{right?.revisionNumber}
+              <div className="border-b border-border px-3 py-1.5 text-xs text-muted-foreground">{pageText("diffV_2c7282")}{left?.revisionNumber} → v{right?.revisionNumber}
               </div>
-              <pre className={cn("max-h-64 overflow-auto p-2 text-xs", ANALYTICS_MASK_CLASS)}>
+              <pre className="max-h-64 overflow-auto p-2 text-xs">
                 {diff.map((row, i) => (
                   <div
                     key={i}
@@ -3670,10 +3647,10 @@ function PropRow({ label, value }: { label: string; value: string }) {
 }
 
 function BackButton({ onBack }: { onBack: () => void }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <Button variant="ghost" size="sm" onClick={onBack}>
-      <ArrowLeft className="mr-1.5 h-3.5 w-3.5" /> Back
-    </Button>
+      <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />{" " + pageText("back_b52b36")}</Button>
   );
 }
 
@@ -3686,12 +3663,14 @@ function MobileTabs({
   input: React.ReactNode;
   runs: React.ReactNode;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   return (
     <Tabs defaultValue="skill" className="flex flex-1 flex-col">
       <TabsList variant="line" className="px-3">
-        <TabsTrigger value="skill">Skill</TabsTrigger>
-        <TabsTrigger value="input">Input</TabsTrigger>
-        <TabsTrigger value="runs">Runs</TabsTrigger>
+        <TabsTrigger value="skill">{pageText("skill_ec9f63")}</TabsTrigger>
+        <TabsTrigger value="input">{translateUi("interfaceCopy.input")}</TabsTrigger>
+        <TabsTrigger value="runs">{translateUi("interfaceCopy.runs")}</TabsTrigger>
       </TabsList>
       <TabsContent value="skill" className="min-h-0 flex-1">
         {skill}

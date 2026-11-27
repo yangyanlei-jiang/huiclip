@@ -1,3 +1,5 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@/lib/router";
 import { decisionQueuesApi } from "../api/decisionQueues";
@@ -25,6 +27,8 @@ interface DecisionQueueRailProps {
  * the queue's pending items.
  */
 export function DecisionQueueRail({ companyId, activeQueueKey = null }: DecisionQueueRailProps) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const { data: queues } = useQuery({
     queryKey: queryKeys.decisionQueues.list(companyId),
     queryFn: () => decisionQueuesApi.list(companyId),
@@ -40,8 +44,8 @@ export function DecisionQueueRail({ companyId, activeQueueKey = null }: Decision
   const now = Date.now();
 
   return (
-    <nav className="flex flex-wrap items-center gap-1.5" aria-label="Decision queues" data-decision-queue-rail>
-      <Chip href={decisionsHref(null)} active={activeQueueKey == null} label="All" />
+    <nav className="flex flex-wrap items-center gap-1.5" aria-label={pageText("decisionQueues_866287")} data-decision-queue-rail>
+      <Chip href={decisionsHref(null)} active={activeQueueKey == null} label={translateUi("interfaceCopy.all")} />
       {queues.map((queue) => {
         const recent = now - new Date(queue.updatedAt).getTime() < RECENT_ACTIVITY_MS;
         return (
@@ -72,6 +76,7 @@ function Chip({
   count?: number;
   recent?: boolean;
 }) {
+  const { t: translateUi } = useUiTranslation();
   return (
     <Link
       to={href}
@@ -84,7 +89,7 @@ function Chip({
       aria-current={active ? "page" : undefined}
     >
       {recent && (
-        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" aria-label="Recent activity" />
+        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" aria-label={translateUi("interfaceCopy.recentActivity")} />
       )}
       <span className="truncate">{label}</span>
       {count != null && count > 0 && (

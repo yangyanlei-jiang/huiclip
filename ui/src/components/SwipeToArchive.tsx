@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Archive } from "lucide-react";
 import { cn } from "../lib/utils";
@@ -21,6 +22,7 @@ export function SwipeToArchive({
   selected = false,
   className,
 }: SwipeToArchiveProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const containerRef = useRef<HTMLDivElement | null>(null);
   const startPointRef = useRef<{ x: number; y: number } | null>(null);
   const widthRef = useRef(0);
@@ -199,9 +201,7 @@ export function SwipeToArchive({
         style={{ opacity: archiveReveal }}
       >
         <span className="inline-flex items-center gap-2 text-sm font-medium">
-          <Archive className="h-4 w-4" />
-          Archive
-        </span>
+          <Archive className="h-4 w-4" />{pageText("archive_2621c6")}</span>
       </div>
       <div
         data-inbox-row-surface

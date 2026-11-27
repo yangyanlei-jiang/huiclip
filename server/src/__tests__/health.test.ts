@@ -116,20 +116,6 @@ describe("GET /health", () => {
     });
   });
 
-  it("publishes deployment harness policy and reflects configuration updates", async () => {
-    const env = {
-      PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN: "tenant-token",
-      PAPERCLIP_PRIMARY_HOST: "example.paperclip.app",
-      PAPERCLIP_AVAILABLE_HARNESSES: '["gemini_local","plugin:example"]',
-    };
-    const app = createApp(undefined, testServerInfo, undefined, env);
-    expect((await request(app).get("/health")).body.cloud.availableHarnesses).toEqual(["gemini_local", "plugin:example"]);
-    env.PAPERCLIP_AVAILABLE_HARNESSES = "[]";
-    expect((await request(app).get("/health")).body.cloud.availableHarnesses).toEqual([]);
-    env.PAPERCLIP_AVAILABLE_HARNESSES = "invalid";
-    expect((await request(app).get("/health")).body.cloud.availableHarnesses).toEqual([]);
-  });
-
   it("lists operator-hidden settings and drops unknown keys", async () => {
     const app = createApp(undefined, testServerInfo, undefined, {
       PAPERCLIP_HIDDEN_SETTINGS: "instance.plugins,instance.adapters,instance.bogus",
@@ -397,7 +383,6 @@ describe("GET /health", () => {
       deploymentMode: "authenticated",
       deploymentExposure: "public",
       localAiLoginSupported: false,
-      hostedGoogleAiLoginSupported: true,
       commit: testServerInfo.git.fullSha,
       bootstrapStatus: "ready",
       bootstrapInviteActive: false,
@@ -456,7 +441,6 @@ describe("GET /health", () => {
       deploymentMode: "authenticated",
       deploymentExposure: "public",
       localAiLoginSupported: false,
-      hostedGoogleAiLoginSupported: true,
       commit: testServerInfo.git.fullSha,
       bootstrapStatus: "ready",
       bootstrapInviteActive: false,
@@ -496,7 +480,6 @@ describe("GET /health", () => {
       deploymentMode: "authenticated",
       deploymentExposure: "public",
       localAiLoginSupported: false,
-      hostedGoogleAiLoginSupported: true,
       commit: testServerInfo.git.fullSha,
       bootstrapStatus: "ready",
       bootstrapInviteActive: false,

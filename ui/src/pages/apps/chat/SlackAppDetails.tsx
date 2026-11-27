@@ -1,10 +1,9 @@
+import { t as translateDynamic } from "../../../i18n";
 import type { ReactNode } from "react";
 import { ChevronRight, CircleHelp } from "lucide-react";
 import { slackAppConfigurationSchema, type SlackAppConfiguration } from "@paperclipai/shared";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
-import { cn } from "@/lib/utils";
 
 export function SlackSetupAdvanced({ children, label = "Advanced" }: { children: ReactNode; label?: string }) {
   return <details className="group text-sm">
@@ -30,9 +29,9 @@ export function SlackAppDetails({ value, readOnly, onChange, onBlur }: {
     ] as const).map(([key, label, maxLength, help]) => <div key={key} className="grid items-center gap-2 sm:grid-cols-2">
       <div className="flex items-center gap-1.5">
         <label htmlFor={`slack-${key}`}>{label}</label>
-        <Tooltip><TooltipTrigger asChild><button type="button" aria-label={`Help with ${label.toLowerCase()}`} className="rounded-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <Tooltip><TooltipTrigger asChild><button type="button" aria-label={translateDynamic("dynamic:helpWith", { value1: label.toLowerCase() })} className="rounded-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
           <CircleHelp className="size-3.5" aria-hidden="true" />
-        </button></TooltipTrigger><TooltipContent className={cn("max-w-xs", ANALYTICS_MASK_CLASS)}>{help}</TooltipContent></Tooltip>
+        </button></TooltipTrigger><TooltipContent className="max-w-xs">{help}</TooltipContent></Tooltip>
       </div>
       <Input id={`slack-${key}`} value={value[key]} maxLength={maxLength} readOnly={readOnly}
         aria-invalid={!validation.success && validation.error.issues.some(issue => issue.path[0] === key)}

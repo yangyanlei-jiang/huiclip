@@ -1545,7 +1545,7 @@ describe("company portability", () => {
         projectWorkspaceId: "workspace-imported",
         title: "Write launch task",
       }),
-    ]), undefined, undefined);
+    ]));
   });
 
   it("normalizes invalid imported project icon names to null", async () => {
@@ -4015,8 +4015,6 @@ describe("company portability", () => {
           labelIds: ["label-created-bug", "label-created-urgent"],
         }),
       ]),
-      undefined,
-      undefined,
     );
   });
 
@@ -4075,8 +4073,6 @@ describe("company portability", () => {
           labelIds: ["target-bug", "label-created-urgent"],
         }),
       ]),
-      undefined,
-      undefined,
     );
     expect(result.warnings).toContain(
       "Existing label color was kept for bug; the imported bundle used different colors.",
@@ -4135,8 +4131,6 @@ describe("company portability", () => {
       expect.arrayContaining([
         expect.objectContaining({ labelIds: [] }),
       ]),
-      undefined,
-      undefined,
     );
     expect(result.warnings).toContain(
       "Task kickoff dropped 2 label references because the bundle carries raw label ids that do not exist in the target company.",
@@ -4376,8 +4370,6 @@ describe("company portability", () => {
           sourceTrust: null,
         }),
       ]),
-      undefined,
-      undefined,
     );
     expect(insertedRelationValues).toEqual([
       {
@@ -4432,8 +4424,6 @@ describe("company portability", () => {
       expect.arrayContaining([
         expect.objectContaining({ title: "Beta task" }),
       ]),
-      undefined,
-      undefined,
     );
     expect(documentSvc.createIssueDocumentsForImport).not.toHaveBeenCalled();
     expect(workProductSvc.createManyForImport).not.toHaveBeenCalled();
@@ -5293,8 +5283,6 @@ describe("company portability", () => {
       expect.arrayContaining([
         expect.objectContaining({ title: "Kickoff" }),
       ]),
-      undefined,
-      undefined,
     );
     expect(result.warnings).toContain(v5Warning);
   });
@@ -5443,7 +5431,7 @@ describe("company portability", () => {
         metadata,
         createdAt: "2026-05-04T12:00:00.000Z",
       }),
-    ]), undefined, undefined);
+    ]));
   });
 
   it("does not export raw comment author user ids", async () => {
@@ -5559,7 +5547,7 @@ describe("company portability", () => {
         metadata: null,
         createdAt: "2026-05-04T12:00:00.000Z",
       }),
-    ]), undefined, undefined);
+    ]));
     expect(result.warnings).toContain(
       "Comment on task pap-1 was imported as a system comment because no importing user was available.",
     );

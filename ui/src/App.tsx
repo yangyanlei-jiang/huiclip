@@ -1,4 +1,4 @@
-import { AnnouncementVisitProvider } from "./context/AnnouncementVisitContext";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useCoordinatorWorkspaceEnabled } from "./hooks/useCoordinatorWorkspaceEnabled";
 import { AgentChats } from "./pages/AgentChats";
 import { lazy, Suspense, useEffect, type ReactNode } from "react";
@@ -8,9 +8,6 @@ import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/i18n";
 import { Layout } from "./components/Layout";
 import { ConferenceRoomChatGate } from "./components/ConferenceRoomChatGate";
-import { ResponsibilitiesGate } from "./components/ResponsibilitiesGate";
-import { CompanyHomeRedirect } from "./components/CompanyHomeRedirect";
-import { useCompanyHomePath } from "./hooks/useCompanyHomePath";
 import { CasesExperimentalGate } from "./components/CasesExperimentalGate";
 import { StatusCardsExperimentalGate } from "./components/StatusCardsExperimentalGate";
 import { CloudManagedPageGate } from "./components/CloudManagedPageGate";
@@ -24,10 +21,8 @@ import { useHiddenSettings } from "./hooks/useHiddenSettings";
 import { OnboardingWizardVariant } from "./components/OnboardingWizardVariant";
 import { CloudAccessGate } from "./components/CloudAccessGate";
 import { ConnectionStatusBanner } from "./components/ConnectionStatusBanner";
-import { PageLoadTracker } from "./components/PageLoadTracker";
 import { ShellConfigurationGate } from "./components/ShellConfigurationGate";
 import { PaperclipLoading } from "./components/AnimatedPaperclipIcon";
-import { QueryErrorState } from "./components/QueryView";
 import { AGENT_FILTER_TABS } from "./lib/agent-filter-tabs";
 import { useCombinedInboxTasksEnabled } from "./hooks/useCombinedInboxTasksEnabled";
 import { ChatConnectorsExperimentalGate } from "./components/ChatConnectorsExperimentalGate";
@@ -78,8 +73,6 @@ const Agents = lazy(() => import("./pages/Agents").then((module) => ({ default: 
 const Cases = lazy(() => import("./pages/Cases").then((module) => ({ default: module.Cases })));
 const CaseDetail = lazy(() => import("./pages/CaseDetail").then((module) => ({ default: module.CaseDetail })));
 const Dashboard = lazy(() => import("./pages/Dashboard").then((module) => ({ default: module.Dashboard })));
-const Responsibilities = lazy(() => import("./pages/Responsibilities").then((module) => ({ default: module.Responsibilities })));
-const ResponsibilityDetail = lazy(() => import("./pages/ResponsibilityDetail").then((module) => ({ default: module.ResponsibilityDetail })));
 const DashboardLive = lazy(() => import("./pages/DashboardLive").then((module) => ({ default: module.DashboardLive })));
 const Timeline = lazy(() => import("./pages/Timeline").then((module) => ({ default: module.Timeline })));
 const Companies = lazy(() => import("./pages/Companies").then((module) => ({ default: module.Companies })));
@@ -115,7 +108,6 @@ const AdvancedToolsRoute = lazy(() => import("./pages/tools/AdvancedToolsRoute")
 const ProfileWizardRoute = lazy(() => import("./pages/tools/profiles/ProfileWizardRoute").then((module) => ({ default: module.ProfileWizardRoute })));
 const ProfileDetailRoute = lazy(() => import("./pages/tools/profiles/ProfileDetailRoute").then((module) => ({ default: module.ProfileDetailRoute })));
 const Browse = lazy(() => import("./pages/apps/Browse").then((module) => ({ default: module.Browse })));
-const TailscaleConnector = lazy(() => import("./pages/apps/TailscaleConnector").then((module) => ({ default: module.TailscaleConnector })));
 const AppsConnect = lazy(() => import("./pages/apps/AppsConnect").then((module) => ({ default: module.AppsConnect })));
 const ChatEndpointSetup = lazy(() => import("./pages/apps/chat/ChatEndpointSetup").then((module) => ({ default: module.ChatEndpointSetup })));
 const ChatEndpointDetail = lazy(() => import("./pages/apps/chat/ChatEndpointDetail").then((module) => ({ default: module.ChatEndpointDetail })));
@@ -145,6 +137,7 @@ const CompanyExport = lazy(() => import("./pages/CompanyExport").then((module) =
 
 const ProductionAgents = lazy(() => import("./pages/Agents.production").then((module) => ({ default: module.Agents })));
 const ProductionRoutines = lazy(() => import("./pages/Routines.production").then((module) => ({ default: module.Routines })));
+const ProductionRoutineDetail = lazy(() => import("./pages/RoutineDetail.production").then((module) => ({ default: module.RoutineDetail })));
 const ProductionCompanySkills = lazy(() => import("./pages/CompanySkills.production").then((module) => ({ default: module.CompanySkills })));
 const ProductionCompanyActivity = lazy(() => import("./pages/audit/CompanyActivity.production").then((module) => ({ default: module.CompanyActivity })));
 const ProductionOrgChart = lazy(() => import("./pages/OrgChart.production").then((module) => ({ default: module.OrgChart })));
@@ -158,13 +151,8 @@ function boardRoutes(streamlinedUiEnabled: boolean, combinedInboxTasksEnabled: b
   const mergedTasks = streamlinedUiEnabled && combinedInboxTasksEnabled;
   return (
     <>
-      <Route index element={<CompanyHomeRedirect />} />
+      <Route index element={<Navigate to="dashboard" replace />} />
       <Route path="dashboard" element={<Dashboard />} />
-      {/* Areas of responsibility (experimental): home when the flag is on. */}
-      <Route element={<ResponsibilitiesGate />}>
-        <Route path="responsibilities" element={<Responsibilities />} />
-        <Route path="responsibilities/:responsibilityId" element={<ResponsibilityDetail />} />
-      </Route>
       <Route path="dashboard/live" element={<DashboardLive />} />
       <Route
         path="timeline"
@@ -211,9 +199,6 @@ function boardRoutes(streamlinedUiEnabled: boolean, combinedInboxTasksEnabled: b
       <Route path="tools" element={<LegacyToolsRedirect />} />
       <Route path="tools/:tab" element={<LegacyToolsRedirect />} />
       <Route path="apps" element={<Browse />} />
-      <Route path="apps/plugin/:pluginKey" element={<Browse />} />
-      <Route path="apps/category/:categoryId" element={<Browse />} />
-      <Route path="apps/tailscale" element={<TailscaleConnector />} />
       <Route path="apps/assistant-connection" element={<AssistantConnection />} />
       <Route path="apps/browse" element={<Navigate to="/apps" replace />} />
       <Route path="apps/connections" element={<Navigate to="/apps" replace />} />
@@ -370,9 +355,8 @@ function boardRoutes(streamlinedUiEnabled: boolean, combinedInboxTasksEnabled: b
       {/* Back-compat: the board lived at /status-cards before PAP-15223. */}
       <Route path="status-cards" element={<StatusCardsLegacyRedirect />} />
       <Route path="status-cards/:cardId" element={<StatusCardsLegacyRedirect />} />
-      {/* One routine page in both shells; older section addresses redirect inside it. */}
-      <Route path="routines/:routineId" element={<RoutineDetail />} />
-      <Route path="routines/:routineId/:section" element={<RoutineDetail />} />
+      <Route path="routines/:routineId" element={streamlinedUiEnabled ? <RoutineDetail /> : <ProductionSurface><ProductionRoutineDetail /></ProductionSurface>} />
+      <Route path="routines/:routineId/:section" element={streamlinedUiEnabled ? <RoutineDetail /> : <ProductionSurface><ProductionRoutineDetail /></ProductionSurface>} />
       <Route element={<IsolatedWorkspacesRouteGate />}>
         <Route element={<ExecutionWorkspaceCompanyGate />}>
           <Route path="execution-workspaces/:workspaceId" element={<ExecutionWorkspaceDetail />} />
@@ -471,8 +455,8 @@ function AppsConnectEntryRoute({
 } = {}) {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
-  const { enabled: chatConnectorsEnabled } = useChatConnectorsEnabled();
-  return canEnterAppsConnect(searchParams, { chatConnectorsEnabled })
+  const { enabled: chatConnectorsEnabled, githubEnabled: githubReviewBotsEnabled } = useChatConnectorsEnabled();
+  return canEnterAppsConnect(searchParams, { chatConnectorsEnabled, githubReviewBotsEnabled })
     ? <AppsConnect credentialSource={credentialSource} />
     : <Navigate to="/apps" replace />;
 }
@@ -585,6 +569,7 @@ function legacyToolsRedirectTarget(tab?: string) {
 }
 
 export function OnboardingRoutePage() {
+  const { t: pageText } = usePageTranslation("interface");
   const { companies } = useCompany();
   const { openOnboarding } = useDialogActions();
   const { t } = useTranslation();
@@ -605,15 +590,15 @@ export function OnboardingRoutePage() {
   }
 
   const title = matchedCompany
-    ? `Add another agent to ${matchedCompany.name}`
+    ? t("dynamic:onboardAdd", { name: matchedCompany.name })
     : companies.length > 0
-      ? "Create another organization"
-      : "Create your first organization";
+      ? t("dynamic:onboardAnother")
+      : t("dynamic:onboardFirst");
   const description = matchedCompany
-    ? "Run onboarding again to add an agent and a starter task for this organization."
+    ? t("dynamic:onboardAddDetails")
     : companies.length > 0
-      ? "Run onboarding again to create another organization and seed its first agent."
-      : "Get started by creating an organization and your first agent.";
+      ? t("dynamic:onboardAnotherDetails")
+      : t("dynamic:onboardFirstDetails");
 
   return (
     <div className="mx-auto max-w-xl py-10">
@@ -651,7 +636,7 @@ export function OnboardingRoutePage() {
                     : openOnboarding()
               }
             >
-              {matchedCompany ? "Add Agent" : "Start Onboarding"}
+              {matchedCompany ? pageText("addAgent_732872") : pageText("startOnboarding_aa32fa")}
             </Button>
           )}
         </div>
@@ -663,12 +648,8 @@ export function OnboardingRoutePage() {
 function CompanyRootRedirect() {
   const { companies, selectedCompany, loading } = useCompany();
   const location = useLocation();
-  const home = useCompanyHomePath();
 
-  if (!loading && home.error) {
-    return <QueryErrorState error={home.error} size="page" action="load your settings" onRetry={home.retry} />;
-  }
-  if (loading || !home.loaded) {
+  if (loading) {
     return <PaperclipLoading />;
   }
 
@@ -685,7 +666,7 @@ function CompanyRootRedirect() {
     return <NoCompaniesStartPage />;
   }
 
-  return <Navigate to={`/${targetCompany.issuePrefix}${home.path}`} replace />;
+  return <Navigate to={`/${targetCompany.issuePrefix}/dashboard`} replace />;
 }
 
 function StatusCardsLegacyRedirect() {
@@ -785,7 +766,7 @@ function NoCompaniesStartPage() {
 export function App() {
   const { pathname } = useLocation();
   const { enabled: classicStreamlinedUiEnabled, loaded: classicStreamlinedUiLoaded } = useStreamlinedUiEnabled();
-  const { enabled: coordinatorWorkspaceEnabled, loaded: coordinatorWorkspaceLoaded, userId } = useCoordinatorWorkspaceEnabled();
+  const { enabled: coordinatorWorkspaceEnabled, loaded: coordinatorWorkspaceLoaded } = useCoordinatorWorkspaceEnabled();
   const streamlinedUiEnabled = classicStreamlinedUiEnabled || coordinatorWorkspaceEnabled;
   const streamlinedUiLoaded = classicStreamlinedUiLoaded && coordinatorWorkspaceLoaded;
   const { enabled: combinedInboxTasksEnabled } = useCombinedInboxTasksEnabled();
@@ -796,10 +777,10 @@ export function App() {
     else if (/^\/[^/]+\/(issues|tasks)\/?$/.test(pathname)) void loadIssues().catch(() => undefined);
   }, [pathname]);
 
-  // One route tree for both the router and the page-load measurement, so
-  // every page is measured under its route pattern.
-  const routeTree = (
+  return (
     <>
+      <ConnectionStatusBanner />
+      <Suspense fallback={<PaperclipLoading />}><Routes>
         <Route path="oauth-handoff" element={<PaperclipCloudOAuthHandoffPage />} />
         <Route path="auth" element={<AuthPage />} />
         <Route path="board-claim/:token" element={<BoardClaimPage />} />
@@ -832,7 +813,6 @@ export function App() {
           <Route path="issues" element={<UnprefixedBoardRedirect />} />
           <Route path="tasks" element={<UnprefixedBoardRedirect />} />
           <Route path="issues/:issueId" element={<UnprefixedBoardRedirect />} />
-          <Route path="approvals/:approvalId" element={<UnprefixedBoardRedirect />} />
           <Route path="routines" element={<UnprefixedBoardRedirect />} />
           <Route path="routines/:routineId" element={<UnprefixedBoardRedirect />} />
           <Route path="cases" element={<UnprefixedBoardRedirect />} />
@@ -842,8 +822,6 @@ export function App() {
           <Route path="status-cards" element={<UnprefixedBoardRedirect />} />
           <Route path="status-cards/:cardId" element={<UnprefixedBoardRedirect />} />
           <Route path="artifacts" element={<UnprefixedBoardRedirect />} />
-          <Route path="responsibilities" element={<UnprefixedBoardRedirect />} />
-          <Route path="responsibilities/:responsibilityId" element={<UnprefixedBoardRedirect />} />
           <Route path="audit" element={<UnprefixedBoardRedirect />} />
           {streamlinedUiEnabled ? (
             <>
@@ -881,11 +859,6 @@ export function App() {
           <Route path="projects/:projectId/workspaces/:workspaceId" element={<UnprefixedBoardRedirect />} />
           <Route path="projects/:projectId/configuration" element={<UnprefixedBoardRedirect />} />
           <Route path="workspaces" element={<UnprefixedBoardRedirect />} />
-          <Route path="dashboard" element={<UnprefixedBoardRedirect />} />
-          <Route path="apps" element={<UnprefixedBoardRedirect />} />
-          <Route path="apps/connect" element={<UnprefixedBoardRedirect />} />
-          <Route path="chats" element={<UnprefixedBoardRedirect />} />
-          <Route path="inbox" element={<UnprefixedBoardRedirect />} />
           <Route path="execution-workspaces/:workspaceId" element={<UnprefixedExecutionWorkspaceRedirect />} />
           <Route path="execution-workspaces/:workspaceId/services" element={<UnprefixedExecutionWorkspaceRedirect />} />
           <Route path="execution-workspaces/:workspaceId/configuration" element={<UnprefixedExecutionWorkspaceRedirect />} />
@@ -898,15 +871,8 @@ export function App() {
           <Route path="*" element={<NotFoundPage scope="global" />} />
           </Route>
         </Route>
-    </>
-  );
-
-  return (
-    <AnnouncementVisitProvider userId={userId}>
-      <ConnectionStatusBanner />
-      <PageLoadTracker routes={routeTree} />
-      <Suspense fallback={<PaperclipLoading />}><Routes>{routeTree}</Routes></Suspense>
+      </Routes></Suspense>
       <OnboardingWizardVariant />
-    </AnnouncementVisitProvider>
+    </>
   );
 }

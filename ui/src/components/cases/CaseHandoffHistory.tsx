@@ -1,3 +1,5 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useQueryView } from "@/components/QueryView";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { ArrowRight, ChevronRight } from "lucide-react";
@@ -21,6 +23,7 @@ function HandoffActor({ id, name, fallback, agents }: {
 }
 
 export function CaseHandoffHistory({ caseId, task, agents }: { caseId: string; task?: CaseWorkIssue | null; agents?: CaseAgentMap }) {
+  const { t: pageText } = usePageTranslation("interface");
   const history = useInfiniteQuery({
     queryKey: queryKeys.cases.handoffs(caseId),
     initialPageParam: null as string | null,
@@ -30,17 +33,19 @@ export function CaseHandoffHistory({ caseId, task, agents }: { caseId: string; t
   const historyView = useQueryView(history);
   const waiting = ["loading", "reconnecting"].includes(historyView.kind);
   const handoffs = history.data?.pages.flatMap(page => page.items) ?? [];
-  return <section className="space-y-3" aria-label="Case handoffs">
-    <h2 className="text-sm font-semibold">Handoffs</h2>
-    {waiting ? <p className="text-sm text-muted-foreground">Loading handoffs…</p> : null}
-    {(historyView.kind === "error") ? <p role="alert" className="text-sm text-destructive">Handoffs couldn’t be loaded.</p> : null}
-    {!waiting && !(historyView.kind === "error") && handoffs.length === 0 ? <p className="text-sm text-muted-foreground">No handoffs yet.</p> : null}
+  return <section className="space-y-3" aria-label={pageText("caseHandoffs_cb7258")}>
+    <h2 className="text-sm font-semibold">{pageText("handoffs_158bea")}</h2>
+    {waiting ? <p className="text-sm text-muted-foreground">{pageText("loadingHandoffs_a20387")}</p> : null}
+    {(historyView.kind === "error") ? <p role="alert" className="text-sm text-destructive">{pageText("handoffsCouldnTBeLoaded_4d3809")}</p> : null}
+    {!waiting && !(historyView.kind === "error") && handoffs.length === 0 ? <p className="text-sm text-muted-foreground">{pageText("noHandoffsYet_88b80f")}</p> : null}
     <ol className="divide-y divide-border">{handoffs.map(handoff => <HandoffRow key={handoff.id} handoff={handoff} task={task} agents={agents} />)}</ol>
-    {history.hasNextPage ? <Button variant="ghost" size="sm" disabled={history.isFetchingNextPage} onClick={() => void history.fetchNextPage()}>Load older handoffs</Button> : null}
+    {history.hasNextPage ? <Button variant="ghost" size="sm" disabled={history.isFetchingNextPage} onClick={() => void history.fetchNextPage()}>{pageText("loadOlderHandoffs_5afa4d")}</Button> : null}
   </section>;
 }
 
 function HandoffRow({ handoff, task, agents }: { handoff: CaseHandoffView; task?: CaseWorkIssue | null; agents?: CaseAgentMap }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const createdAt = new Date(handoff.createdAt).toISOString();
   const terminal = handoff.destinationKind === "done";
   const settled = handoff.state === "delivered" || handoff.state === "completed";
@@ -53,7 +58,7 @@ function HandoffRow({ handoff, task, agents }: { handoff: CaseHandoffView; task?
         <ChevronRight aria-hidden className="mt-0.5 size-4 shrink-0 text-muted-foreground transition-transform duration-(--motion-duration-fast) group-open:rotate-90 motion-reduce:transition-none" />
         <span className="min-w-0 flex-1 space-y-1">
           <span className="flex flex-wrap items-baseline justify-between gap-2">
-            <span className="text-sm font-medium">{terminal ? "Done" : handoff.phase}{stateLabel && <span className="ml-2 text-xs font-normal text-muted-foreground">{stateLabel}</span>}</span>
+            <span className="text-sm font-medium">{terminal ? pageText("done_e9b450") : handoff.phase}{stateLabel && <span className="ml-2 text-xs font-normal text-muted-foreground">{stateLabel}</span>}</span>
             <span className="flex items-center gap-3">
               {handoffTask && <IssueReferencePill issue={handoffTask} variant="property" />}
               <time dateTime={createdAt} title={formatDateTime(createdAt)} className="font-mono text-xs text-muted-foreground">{relativeTime(createdAt)}</time>
@@ -62,15 +67,15 @@ function HandoffRow({ handoff, task, agents }: { handoff: CaseHandoffView; task?
           <span className="flex flex-wrap items-center gap-2 text-muted-foreground">
             <HandoffActor id={handoff.fromAgentId} name={handoff.fromAgentName} fallback={handoff.actorType === "user" ? "User" : "System"} agents={agents} />
             <ArrowRight aria-hidden className="size-3" />
-            {terminal ? <span className="text-xs">Done</span>
+            {terminal ? <span className="text-xs">{translateUi("interfaceCopy.done")}</span>
               : <HandoffActor id={handoff.toAgentId} name={handoff.toAgentName} fallback="Agent" agents={agents} />}
           </span>
         </span>
       </summary>
       <div className="space-y-2 pb-4 pl-6">
         {handoff.workflowTransition && <p className="text-xs text-muted-foreground">
-          {handoff.workflowTransition.from.name ?? "Case instructions"}{handoff.workflowTransition.from.phase ? ` · ${handoff.workflowTransition.from.phase}` : ""}
-          {" → "}{handoff.workflowTransition.to.name ?? "Case instructions"} · {handoff.workflowTransition.to.phase}
+          {handoff.workflowTransition.from.name ?? pageText("caseInstructions_0df6da")}{handoff.workflowTransition.from.phase ? ` · ${handoff.workflowTransition.from.phase}` : ""}
+          {" → "}{handoff.workflowTransition.to.name ?? pageText("caseInstructions_0df6da")} · {handoff.workflowTransition.to.phase}
         </p>}
         {handoff.lastError && !settled && handoff.state !== "cancelled" ? <p className="text-xs text-muted-foreground">{handoff.lastError}</p> : null}
         <MarkdownBody linkIssueReferences linkCaseReferences>{handoff.instructions}</MarkdownBody>

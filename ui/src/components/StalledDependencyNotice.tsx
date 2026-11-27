@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type { Issue, IssueBlockerStalledWakeContext } from "@paperclipai/shared";
 import { useQueries } from "@tanstack/react-query";
 import { AlertTriangle, RotateCcw } from "lucide-react";
@@ -8,7 +9,6 @@ import { queryKeys } from "../lib/queryKeys";
 import { createIssueDetailPath } from "../lib/issueDetailBreadcrumb";
 import { useTaskRetry } from "../hooks/useTaskRetry";
 import { describeError } from "../api/errors";
-import { ProviderLimitMessage } from "./ProviderLimitMessage";
 
 /**
  * Children and blockers of this task that stopped on a recovery action that
@@ -23,6 +23,7 @@ export function StalledDependencyNotice({ stalled }: { stalled: IssueBlockerStal
 }
 
 function StalledDependencyList({ entries }: { entries: IssueBlockerStalledWakeContext[] }) {
+  const { t: pageText } = usePageTranslation("interface");
   // The child's own task state decides whether Retry is offered, as on its page.
   const children = useQueries({
     queries: entries.map(entry => {
@@ -44,7 +45,7 @@ function StalledDependencyList({ entries }: { entries: IssueBlockerStalledWakeCo
     >
       <div className="flex items-center gap-1.5 font-medium">
         <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden />
-        {rows.length === 1 ? "A dependency needs the board" : `${rows.length} dependencies need the board`}
+        {rows.length === 1 ? pageText("aDependencyNeedsTheBoard_f9cb14") : `${rows.length} dependencies need the board`}
       </div>
       <ul className="mt-1.5 space-y-1.5">
         {rows.map(({ entry, child }) => <StalledDependencyRow key={entry.recoveryAction.id} entry={entry}
@@ -58,6 +59,7 @@ function StalledDependencyList({ entries }: { entries: IssueBlockerStalledWakeCo
 function StalledDependencyRow({ entry, child, readError, isFetching, refetch }: {
   entry: IssueBlockerStalledWakeContext; child: Issue | undefined; readError: Error | null; isFetching: boolean; refetch: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const ref = entry.stalledIssueIdentifier ?? entry.stalledIssueId;
   const retry = useTaskRetry(child);
   const canRetry = child?.interruption?.canRetry === true;
@@ -67,28 +69,25 @@ function StalledDependencyRow({ entry, child, readError, isFetching, refetch }: 
   return (
     <li data-testid="stalled-dependency-row" className="flex flex-wrap items-center gap-x-2 gap-y-1">
       <span className="text-xs text-amber-800 dark:text-amber-200">
-        {entry.relation === "child" ? "Child" : "Blocker"}
+        {entry.relation === "child" ? pageText("child_6842c7") : pageText("blocker_7ed533")}
       </span>
       <Link to={createIssueDetailPath(ref)} className="font-mono text-xs underline-offset-2 hover:underline">
-        {entry.stalledIssueIdentifier ?? "Task"}
+        {entry.stalledIssueIdentifier ?? pageText("task_7bb0dd")}
       </Link>
       <span className="min-w-0 flex-1 truncate">{entry.stalledIssueTitle}</span>
       {entry.recoveryAction.nextAction ? (
-        <span className="basis-full text-xs text-amber-800 dark:text-amber-200"><ProviderLimitMessage>{entry.recoveryAction.nextAction}</ProviderLimitMessage></span>
+        <span className="basis-full text-xs text-amber-800 dark:text-amber-200">{entry.recoveryAction.nextAction}</span>
       ) : null}
       {readError && !child ? (
-        <span role="alert" className="flex basis-full items-center gap-2 text-xs text-destructive">
-          Could not load this task's state: {describeError(readError).body}
-          <Button size="sm" variant="outline" className="h-6 px-2" disabled={isFetching} onClick={refetch}>
-            Reload
-          </Button>
+        <span role="alert" className="flex basis-full items-center gap-2 text-xs text-destructive">{pageText("couldNotLoadThisTaskSState_c3817e") + " "}{describeError(readError).body}
+          <Button size="sm" variant="outline" className="h-6 px-2" disabled={isFetching} onClick={refetch}>{pageText("reload_cce715")}</Button>
         </span>
       ) : null}
       {failed ? (
         <span role="alert" className="basis-full text-xs text-destructive">{describeError(retry.error).body}</span>
       ) : null}
       {retry.takingLonger ? (
-        <span role="status" className="basis-full text-xs text-muted-foreground">Taking longer than usual…</span>
+        <span role="status" className="basis-full text-xs text-muted-foreground">{pageText("takingLongerThanUsual_43d19c")}</span>
       ) : null}
       {canRetry || failed || retry.takingLonger ? (
         <Button
@@ -100,7 +99,7 @@ function StalledDependencyRow({ entry, child, readError, isFetching, refetch }: 
           className="h-7 gap-1 border-amber-300/80 bg-background/80 text-amber-950 shadow-none hover:bg-amber-100 dark:border-amber-500/50 dark:bg-background/40 dark:text-amber-100 dark:hover:bg-amber-500/15"
         >
           <RotateCcw className="h-3 w-3" aria-hidden />
-          {retry.optimistic && !retry.takingLonger ? "Retrying…" : "Retry"}
+          {retry.optimistic && !retry.takingLonger ? pageText("retrying_231013") : pageText("retry_9f5cd8")}
         </Button>
       ) : null}
     </li>

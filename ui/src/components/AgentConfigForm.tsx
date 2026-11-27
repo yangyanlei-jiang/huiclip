@@ -1,15 +1,16 @@
-import { environmentSupportsLoginPty } from "@paperclipai/shared";
-import { matchesAdapterLoginTarget, useAdapterLoginCancellation } from "./useAdapterLoginCancellation";
-import { ACCOUNT_BOUND_MODEL_DISCOVERY_QUERY_OPTIONS, antigravityModelGroup, isAccountBoundAcpxAgent } from "@/lib/native-model-catalog";
+import { adapterCopy } from "../i18n/adapter-copy";
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
+import { useAdapterLoginCancellation } from "./useAdapterLoginCancellation";
+import { ACCOUNT_BOUND_MODEL_DISCOVERY_QUERY_OPTIONS, isAccountBoundAcpxAgent } from "@/lib/native-model-catalog";
 import { useConnectionModels } from "./ai-connections/useConnectionModels";
 import { agentHarnessType, agentRunner, paperclipRunnerProfileForHarness, normalizeClaudeRunnerOptions, type AgentRunnerChoice } from "@paperclipai/shared";
 import { adaptersApi } from "../api/adapters";
 import { canQualifyRunnerEnvironment, qualifyRunnerEnvironment } from "../lib/qualify-claude-setup";
 import { aiRoutingHarness } from "@paperclipai/shared";
 import { AiConnectionField } from "./ai-connections/AiConnectionField";
-import { isAiConnectionCompatibleForSelection, personalAiDefault } from "./ai-connections/model";
-import { aiConnectionsApi } from "@/api/ai-connections";
-import { aiConnectionBindingSchema, aiRuntimeConnectionBindingSchema, isAiConnectionCompatible } from "@paperclipai/shared";
+import { aiConnectionBindingSchema, aiRuntimeConnectionBindingSchema } from "@paperclipai/shared";
 import { testAgentSetup } from "@/lib/test-agent-setup";
 import { setupEfforts } from "../lib/agent-setup-fields";
 import { RuntimeTestCard } from "./RuntimeTestCard";
@@ -28,7 +29,6 @@ import type {
   EnvBinding,
   EnvSecretRefBinding,
   Environment,
-  SecretVersionSelector,
 } from "@paperclipai/shared";
 import { AGENT_DEFAULT_MAX_CONCURRENT_RUNS, supportedEnvironmentDriversForAdapter, isValidBrowserCode, ADAPTER_AUTH_MISSING_CHECK_CODE } from "@paperclipai/shared";
 import type { AdapterModel } from "../api/agents";
@@ -93,21 +93,11 @@ import {
   type EnvironmentVariablesEditorHandle,
 } from "./environment-variables-editor";
 import { buildFixedClaudeOAuthBinding, CLAUDE_OAUTH_TOKEN_ENV_KEY } from "./environment-variables-editor/model";
-import { AgentSecretAccessEditor, type BindAsEnvVarRequest } from "./AgentSecretAccessEditor";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { AgentSecretAccessEditor } from "./AgentSecretAccessEditor";
 import { useProposalReview } from "../pages/secrets/proposal-review";
 import { AGENT_ACCESS_CONFIG_PATH_PREFIX } from "../lib/secret-delivery";
 import { shouldShowLegacyWorkingDirectoryField } from "../lib/legacy-agent-config";
 import { listAdapterOptions, listVisibleAdapterTypes } from "../adapters/metadata";
-import { useCloudInstance } from "@/hooks/useCloudInstance";
-import { useCloudHarnessPolicy } from "@/hooks/useCloudHarnessPolicy";
 import { getAdapterDisplay, getAdapterLabel } from "../adapters/adapter-display-registry";
 import { useDisabledAdaptersSync } from "../adapters/use-disabled-adapters";
 import { buildAgentUpdatePatch, omitUndefinedEntries, type AgentConfigOverlay } from "../lib/agent-config-patch";
@@ -126,7 +116,6 @@ import {
   type CreateConfigValues,
 } from "@paperclipai/adapter-utils";
 import { Badge } from "@/components/ui/badge";
-import { ANALYTICS_NO_CAPTURE_CLASS } from "@/lib/analytics/privacy";
 
 /* ---- Props ---- */
 
@@ -194,18 +183,6 @@ const emptyOverlay: AgentConfigOverlay = {
 
 /** Stable empty object used as fallback for missing env config to avoid new-object-per-render. */
 const EMPTY_ENV: Record<string, EnvBinding> = {};
-
-export function resolveEffectiveAgentEnv(
-  overlayAdapterConfig: Record<string, unknown>,
-  savedAdapterConfig: Record<string, unknown> | null | undefined,
-  flushedEnv?: Record<string, EnvBinding> | null,
-): Record<string, EnvBinding> {
-  if (flushedEnv !== undefined && flushedEnv !== null) return flushedEnv;
-  if (Object.prototype.hasOwnProperty.call(overlayAdapterConfig, "env")) {
-    return (overlayAdapterConfig.env as Record<string, EnvBinding> | undefined) ?? EMPTY_ENV;
-  }
-  return (savedAdapterConfig?.env as Record<string, EnvBinding> | undefined) ?? EMPTY_ENV;
-}
 
 export function supportsAdapterModelRefresh(adapterType: string): boolean {
   return adapterType === "claude_local" || adapterType === "codex_local" || adapterType === "paperclip_runner" || adapterType === "opencode_local";
@@ -383,6 +360,8 @@ function ConfigSections({ order, hidden, className, children }: {
 /* ---- Form ---- */
 
 export function AgentConfigForm(props: AgentConfigFormProps) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const { mode, adapterModels: externalModels } = props;
   const isCreate = mode === "create";
   const panels = props.sectionLayout === "panels";
@@ -496,17 +475,9 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
   );
   const createSecret = useMutation({
     mutationFn: (input: { name: string; value: string }) => {
-      if (!selectedCompanyId) throw new Error("Select an organization to create secrets");
+      if (!selectedCompanyId) throw new Error(adapterCopy("Select an organization to create secrets"));
       return secretsApi.create(selectedCompanyId, input);
     },
-    onSuccess: () => {
-      if (!selectedCompanyId) return;
-      queryClient.invalidateQueries({ queryKey: queryKeys.secrets.list(selectedCompanyId) });
-    },
-  });
-  const rotateSecret = useMutation({
-    mutationFn: (input: { secretId: string; value: string }) =>
-      secretsApi.rotate(input.secretId, { value: input.value }),
     onSuccess: () => {
       if (!selectedCompanyId) return;
       queryClient.invalidateQueries({ queryKey: queryKeys.secrets.list(selectedCompanyId) });
@@ -515,7 +486,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
 
   const uploadMarkdownImage = useMutation({
     mutationFn: async ({ file, namespace }: { file: File; namespace: string }) => {
-      if (!selectedCompanyId) throw new Error("Select an organization to upload images");
+      if (!selectedCompanyId) throw new Error(adapterCopy("Select an organization to upload images"));
       return assetsApi.uploadImage(selectedCompanyId, file, namespace);
     },
   });
@@ -576,11 +547,8 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
 
   type RecordOverlayGroup = "identity" | "adapterConfig" | "heartbeat" | "debug" | "runtime";
 
-  const displayedOriginals = new Map<string, unknown>();
-
   /** Read effective value: overlay if dirty, else original */
   function eff<T>(group: RecordOverlayGroup, field: string, original: T): T {
-    displayedOriginals.set(`${group}.${field}`, original);
     const o = overlay[group];
     if (field in o) return o[field] as T;
     return original;
@@ -588,20 +556,14 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
 
   /** Mark field dirty in overlay */
   function mark(group: RecordOverlayGroup, field: string, value: unknown) {
-    const key = `${group}.${field}`;
-    setOverlay((prev) => {
-      const next = { ...prev[group] };
-      if (displayedOriginals.has(key) && overlayValuesEqual(value, displayedOriginals.get(key))) {
-        delete next[field];
-      } else {
-        next[field] = value;
-      }
-      return { ...prev, [group]: next };
-    });
+    setOverlay((prev) => ({
+      ...prev,
+      [group]: { ...prev[group], [field]: value },
+    }));
   }
 
   function flushEnvironmentDraft() {
-    return environmentVariablesEditorRef.current?.flushPendingDraft() ?? { status: "clean" as const };
+    return environmentVariablesEditorRef.current?.flushPendingDraft() ?? null;
   }
 
   /**
@@ -627,81 +589,6 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
     });
   }, [isCreate, !isCreate ? props.agent : undefined]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const [pendingEnvBindConflict, setPendingEnvBindConflict] = useState<{
-    binding: BindAsEnvVarRequest;
-    availableEnvKey: string;
-    existingKind: "plain" | "secret_ref" | "user_secret_ref";
-  } | null>(null);
-
-  const commitSecretEnvBinding = useCallback((
-    envKey: string,
-    secretId: string,
-    version: SecretVersionSelector,
-    baseEnvOverride?: Record<string, EnvBinding> | null,
-  ) => {
-    if (isCreate) return;
-    setOverlay((prev) => {
-      const existingEnv = resolveEffectiveAgentEnv(
-        prev.adapterConfig,
-        props.agent.adapterConfig as Record<string, unknown> | null | undefined,
-        baseEnvOverride,
-      );
-      return {
-        ...prev,
-        adapterConfig: {
-          ...prev.adapterConfig,
-          env: {
-            ...existingEnv,
-            [envKey]: {
-              type: "secret_ref",
-              secretId,
-              version,
-            },
-          },
-        },
-      };
-    });
-  }, [isCreate, !isCreate ? props.agent : undefined]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const bindSecretAsEnvVar = useCallback((binding: BindAsEnvVarRequest) => {
-    if (isCreate) return;
-    const flushResult = flushEnvironmentDraft();
-    if (flushResult.status === "blocked") return;
-    const flushedEnv = flushResult.status === "flushed" ? flushResult.value : null;
-    const currentEnv = resolveEffectiveAgentEnv(
-      overlay.adapterConfig,
-      props.agent.adapterConfig as Record<string, unknown> | null | undefined,
-      flushedEnv,
-    );
-    const existing = Object.prototype.hasOwnProperty.call(currentEnv, binding.envKey)
-      ? currentEnv[binding.envKey]
-      : undefined;
-    const alreadySameSecret =
-      typeof existing === "object" &&
-      existing !== null &&
-      existing.type === "secret_ref" &&
-      existing.secretId === binding.secretId;
-    if (existing !== undefined && !alreadySameSecret && !binding.replaceExisting) {
-      let suffix = 2;
-      while (Object.prototype.hasOwnProperty.call(currentEnv, `${binding.envKey}_${suffix}`)) {
-        suffix += 1;
-      }
-      const existingKind =
-        typeof existing === "object" && existing !== null && existing.type === "secret_ref"
-          ? "secret_ref"
-          : typeof existing === "object" && existing !== null && existing.type === "user_secret_ref"
-            ? "user_secret_ref"
-            : "plain";
-      setPendingEnvBindConflict({
-        binding,
-        availableEnvKey: `${binding.envKey}_${suffix}`,
-        existingKind,
-      });
-      return;
-    }
-    commitSecretEnvBinding(binding.envKey, binding.secretId, binding.version, flushedEnv);
-  }, [isCreate, overlay.adapterConfig, !isCreate ? props.agent : undefined, commitSecretEnvBinding]); // eslint-disable-line react-hooks/exhaustive-deps
-
   /** Build accumulated patch and send to parent */
   const handleCancel = useCallback(() => {
     setOverlay({ ...emptyOverlay });
@@ -711,9 +598,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
 
   const handleSave = useCallback(async () => {
     if (isCreate) return;
-    const flushResult = flushEnvironmentDraft();
-    if (flushResult.status === "blocked") return;
-    const flushedEnv = flushResult.status === "flushed" ? flushResult.value : null;
+    const flushedEnv = flushEnvironmentDraft();
     const nextOverlay = flushedEnv
       ? {
           ...overlay,
@@ -746,16 +631,9 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
 
   // ---- Resolve values ----
   const config = !isCreate ? ((props.agent.adapterConfig ?? {}) as Record<string, unknown>) : {};
-  const effectiveSecretsAdapterConfig = useMemo(
-    () => ({ ...config, ...overlay.adapterConfig }),
-    [config, overlay.adapterConfig],
-  );
   const runtimeConfig = !isCreate ? ((props.agent.runtimeConfig ?? {}) as Record<string, unknown>) : {};
-  const runtimeOverlay = overlay.runtime.runtimeConfig as Record<string, unknown> | undefined;
-  const currentAiConnection = (runtimeOverlay ?? runtimeConfig).aiConnection;
   const heartbeat = !isCreate ? ((runtimeConfig.heartbeat ?? {}) as Record<string, unknown>) : {};
   const debug = !isCreate ? ((runtimeConfig.debug ?? {}) as Record<string, unknown>) : {};
-  displayedOriginals.set("runtime.runtimeConfig", { ...runtimeConfig, aiConnection: runtimeConfig.aiConnection });
 
   const adapterType = isCreate
     ? props.values.adapterType
@@ -887,9 +765,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
   // existing agent's own page fails to save the binding.
   const handleClaudeLoginStoredEdit = async () => {
     if (isCreate) return;
-    const flushResult = flushEnvironmentDraft();
-    if (flushResult.status === "blocked") return;
-    const flushedEnv = flushResult.status === "flushed" ? flushResult.value : null;
+    const flushedEnv = flushEnvironmentDraft();
     const baseEnv =
       flushedEnv ??
       (eff("adapterConfig", "env", (config.env ?? EMPTY_ENV) as Record<string, EnvBinding>));
@@ -918,9 +794,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
   // secret-reference binding through the normal agent-update patch.
   const handleCodexAccountBindingEdit = async (claim: CodexAccountBindingClaim) => {
     if (isCreate || !claim.companyIdentityDiffers) return;
-    const flushResult = flushEnvironmentDraft();
-    if (flushResult.status === "blocked") return;
-    const flushedEnv = flushResult.status === "flushed" ? flushResult.value : null;
+    const flushedEnv = flushEnvironmentDraft();
     const baseEnv =
       flushedEnv ??
       (eff("adapterConfig", "env", (config.env ?? EMPTY_ENV) as Record<string, EnvBinding>));
@@ -973,9 +847,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
   // pending editor draft first and keep every unrelated binding.
   const handleApplyStoredClaudeLoginEdit = async () => {
     if (isCreate) return;
-    const flushResult = flushEnvironmentDraft();
-    if (flushResult.status === "blocked") return;
-    const flushedEnv = flushResult.status === "flushed" ? flushResult.value : null;
+    const flushedEnv = flushEnvironmentDraft();
     const baseEnv =
       flushedEnv ??
       (eff("adapterConfig", "env", (config.env ?? EMPTY_ENV) as Record<string, EnvBinding>));
@@ -1079,19 +951,17 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
     && (runnerAvailability?.defaultRunner === "paperclip" || canQualifyRunnerUpgrade);
   const upgradeRunner = async () => {
     if (isCreate || runnerUpgradePending || upgradeEnvironmentChanged) return;
-    const flushResult = flushEnvironmentDraft();
-    if (flushResult.status === "blocked") return;
-    const flushedEnv = flushResult.status === "flushed" ? flushResult.value : null;
     const agentId = props.agent.id;
     setRunnerUpgrade({ agentId, status: "pending" });
     try {
+      const flushedEnv = flushEnvironmentDraft();
       const nextOverlay = flushedEnv
         ? { ...overlay, adapterConfig: { ...overlay.adapterConfig, env: flushedEnv } }
         : overlay;
       const pendingTarget = runnerSettingsTargetRef.current;
       if (runnerAvailability?.defaultRunner !== "paperclip") {
         if (!canQualifyRunnerUpgrade || !upgradeEnvironmentId || !selectedCompanyId) {
-          throw new Error("Could not determine which environment to verify. Retry the upgrade.");
+          throw new Error(adapterCopy("Could not determine which environment to verify. Retry the upgrade."));
         }
         const qualified = await qualifyRunnerEnvironment({
           adapterType: harnessType,
@@ -1099,9 +969,9 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
           probeEnvironment: () => agentsApi.qualifyRunner(agentId, upgradeEnvironmentId, selectedCompanyId),
           isCurrent: () => runnerSettingsTargetRef.current === pendingTarget,
         });
-        if (!qualified) throw new Error("Agent settings changed during verification. Retry the upgrade with the current settings.");
+        if (!qualified) throw new Error(adapterCopy("Agent settings changed during verification. Retry the upgrade with the current settings."));
         queryClient.setQueryData(queryKeys.adapters.availability(selectedCompanyId, rawCurrentDefaultEnvironmentId || null), qualified.adapters);
-        if (qualified.runner !== "paperclip") throw new Error("This environment does not support Paperclip Runner. Your agent still uses Legacy runner.");
+        if (qualified.runner !== "paperclip") throw new Error(adapterCopy("This environment does not support Paperclip Runner. Your agent still uses Legacy runner."));
       }
       await props.onSave({ ...buildAgentUpdatePatch(props.agent, nextOverlay), runner: "paperclip" });
       setRunnerUpgrade(current => current?.agentId === agentId ? { agentId, status: "upgraded" } : current);
@@ -1167,50 +1037,15 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       ? "Paperclip Sandbox"
       : "Local";
 
-  const modelProvider = adapterType === "opencode_local" && aiConnectionBindingSchema.safeParse(currentAiConnection).data?.provider === "openrouter" ? "openrouter" : runnerProvider;
+  const modelProvider = adapterType === "opencode_local" && aiConnectionBindingSchema.safeParse(
+    (overlay.runtime.runtimeConfig as Record<string, unknown> | undefined)?.aiConnection ?? runtimeConfig.aiConnection,
+  ).data?.provider === "openrouter" ? "openrouter" : runnerProvider;
   const runnerAcpxAgent = adapterType === "paperclip_runner" && runnerProvider === "acpx"
     ? String(isCreate ? props.values.adapterSchemaValues?.acpxAgent ?? "claude" : eff("adapterConfig", "acpxAgent", config.acpxAgent ?? "claude")) : undefined;
-  const cloud = Boolean(useCloudInstance());
-  const harnessPolicy = useCloudHarnessPolicy();
-  const cloudHarnessAllowed = !cloud || harnessPolicy.isCloudHarnessAllowed(adapterType, { provider: runnerProvider, acpxAgent: runnerAcpxAgent });
-  const modelAiBinding = aiConnectionBindingSchema.safeParse(currentAiConnection).data;
-  const aiAccounts = useQuery({
-    queryKey: ["ai-connections", selectedCompanyId, isCreate ? undefined : props.agent.id],
-    queryFn: () => aiConnectionsApi.list(selectedCompanyId!, isCreate ? undefined : props.agent.id),
-    enabled: !isCreate && Boolean(selectedCompanyId && currentAiConnection),
-  });
-  const selectedHarness = aiRoutingHarness(adapterType, runnerProvider, runnerAcpxAgent);
-  const selectedConnectionModel = isCreate ? undefined : String(eff("adapterConfig", "model", config.model) ?? "");
-  useEffect(() => {
-    if (isCreate || agentHarnessType(props.agent.adapterType, props.agent.adapterConfig)
-      === agentHarnessType(adapterType, { provider: runnerProvider, acpxAgent: runnerAcpxAgent })) return;
-    const binding = aiRuntimeConnectionBindingSchema.safeParse(currentAiConnection).data;
-    if (!binding) return;
-    let compatible: boolean;
-    if (binding.mode === "router") {
-      const pool = aiAccounts.data?.pools?.find(pool => pool.id === binding.connectionId);
-      if (!pool) return;
-      compatible = pool.members.some(member => isAiConnectionCompatible(member.binding, adapterType,
-        member.profile.model, member.profile.provider, member.profile.acpxAgent));
-    } else {
-      const accounts = aiAccounts.data;
-      const account = binding.mode === "responsible_user"
-        ? personalAiDefault(accounts?.connections ?? [], { companyId: selectedCompanyId!, provider: binding.provider }, accounts?.currentUserId ?? "")
-        : accounts?.connections.find(account => account.id === binding.connectionId && account.grantId === binding.grantId);
-      // Fixed API bindings carry no routing metadata. Wait for the account
-      // before deciding whether its endpoint supports the new harness.
-      if (!account && binding.mode !== "responsible_user" && binding.method === "api_key" && !accounts) return;
-      compatible = isAiConnectionCompatibleForSelection(account ?? binding, selectedHarness, selectedConnectionModel);
-    }
-    if (!compatible) setOverlay(prev => {
-      const { aiConnection: _removed, ...nextRuntime } = (prev.runtime.runtimeConfig as Record<string, unknown> | undefined) ?? runtimeConfig;
-      return { ...prev, runtime: { ...prev.runtime, runtimeConfig: nextRuntime } };
-    });
-  }, [isCreate, adapterType, runnerProvider, runnerAcpxAgent, props, selectedHarness, selectedConnectionModel, currentAiConnection, aiAccounts.data, selectedCompanyId, runtimeConfig]);
+  const modelAiBinding = aiConnectionBindingSchema.safeParse((overlay.runtime.runtimeConfig as Record<string, unknown> | undefined)?.aiConnection ?? runtimeConfig.aiConnection).data;
   const accountBoundCatalog = isAccountBoundAcpxAgent(runnerAcpxAgent);
-  const antigravityPickerGroup = useMemo(() => antigravityModelGroup(modelAiBinding?.method), [modelAiBinding?.method]);
   const modelCacheIdentity = accountBoundCatalog ? `${modelProvider}:${runnerAcpxAgent}:${isCreate ? "new" : props.agent.id}:${JSON.stringify(modelAiBinding ?? null)}` : runnerAcpxAgent ? `${modelProvider}:${runnerAcpxAgent}` : modelProvider;
-  const connectionModels = useConnectionModels(isExternalRunner || !cloudHarnessAllowed ? null : selectedCompanyId, isCreate ? undefined : modelAiBinding, aiRoutingHarness(adapterType, runnerProvider, runnerAcpxAgent));
+  const connectionModels = useConnectionModels(isExternalRunner ? null : selectedCompanyId, isCreate ? undefined : modelAiBinding, aiRoutingHarness(adapterType, runnerProvider, runnerAcpxAgent));
   // Fetch adapter models for the effective provider, including unsaved changes.
   const modelAdapterType = accountBoundCatalog ? "paperclip_runner" : isRunnerHarness ? harnessType : adapterType;
   const modelQueryKey = selectedCompanyId
@@ -1226,14 +1061,14 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       agentId: isCreate ? undefined : props.agent.id,
     }),
     ...(accountBoundCatalog ? ACCOUNT_BOUND_MODEL_DISCOVERY_QUERY_OPTIONS : {}),
-    enabled: Boolean(selectedCompanyId) && cloudHarnessAllowed && !isExternalRunner && !connectionModels,
+    enabled: Boolean(selectedCompanyId) && !isExternalRunner && !connectionModels,
   });
   const { data: fetchedModels, error: fetchedModelsError, isLoading: fetchingModels, refetch: refreshConnectionModels } = fetchedModelsQuery;
   const fetchedModelsView = useQueryView(fetchedModelsQuery);
   const accountModelScope = accountBoundCatalog ? JSON.stringify(modelQueryKey) : null;
   useEffect(() => {
-    if (accountModelScope && selectedCompanyId && cloudHarnessAllowed && !isExternalRunner && !connectionModels) void refreshConnectionModels();
-  }, [accountModelScope, selectedCompanyId, cloudHarnessAllowed, isExternalRunner, connectionModels, refreshConnectionModels]);
+    if (accountModelScope && selectedCompanyId && !isExternalRunner && !connectionModels) void refreshConnectionModels();
+  }, [accountModelScope, selectedCompanyId, isExternalRunner, connectionModels, refreshConnectionModels]);
   const [refreshModelsError, setRefreshModelsError] = useState<string | null>(null);
   const [refreshingModels, setRefreshingModels] = useState(false);
   const models = connectionModels?.models ?? fetchedModels ?? externalModels ?? [];
@@ -1251,11 +1086,11 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       : ["agents", "none", "detect-model", adapterType],
     queryFn: () => {
       if (!selectedCompanyId) {
-        throw new Error("Select an organization to detect the model");
+        throw new Error(adapterCopy("Select an organization to detect the model"));
       }
       return agentsApi.detectModel(selectedCompanyId, adapterType);
     },
-    enabled: Boolean(selectedCompanyId && cloudHarnessAllowed && isLocal && adapterType !== "opencode_local" && adapterType !== "paperclip_runner"),
+    enabled: Boolean(selectedCompanyId && isLocal && adapterType !== "opencode_local" && adapterType !== "paperclip_runner"),
   });
   const detectedModel = detectedModelData?.model ?? null;
   const detectedModelCandidates = detectedModelData?.candidates ?? [];
@@ -1288,7 +1123,6 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
     // every adapter without a per-adapter edit.
     hideInstructionsFile: hideInstructionsFile || hideHostPaths || isExternalRunner,
     managedSandboxOnly: hideHostPaths || isExternalRunner,
-    availableHarnesses: cloud ? harnessPolicy.availableHarnesses : undefined,
     openAiDotEnabled: experimentalSettings?.enableOpenAiDot === true,
     museEnabled: experimentalSettings?.enableMuse === true && experimentalSettings?.enableNativeRunner === true,
   };
@@ -1331,13 +1165,9 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
   const testEnvironment = useMutation({
     mutationFn: async () => {
       if (!selectedCompanyId) {
-        throw new Error("Select an organization to test adapter environment");
+        throw new Error(adapterCopy("Select an organization to test adapter environment"));
       }
-      const flushResult = flushEnvironmentDraft();
-      if (flushResult.status === "blocked") {
-        throw new Error(flushResult.reason);
-      }
-      const flushedEnv = flushResult.status === "flushed" ? flushResult.value : null;
+      const flushedEnv = flushEnvironmentDraft();
       const adapterConfigPatch = flushedEnv ? { env: flushedEnv } : undefined;
       // Probe where a real run would actually execute: the agent's own
       // environment, else the instance default. Testing the host for an
@@ -1385,7 +1215,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
           managedSandboxOnly = resolvedExperimental?.enableManagedSandboxOnly === true;
         } catch {
           throw new Error(
-            "Could not load environment settings to determine which environment to test in. Retry the test.",
+            adapterCopy("Could not load environment settings to determine which environment to test in. Retry the test."),
           );
         }
       }
@@ -1409,7 +1239,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       const adapterConfig = buildAdapterConfigForTest(adapterConfigPatch);
       const agentId = isCreate ? undefined : props.agent.id;
       const aiConnection = isCreate ? undefined : aiRuntimeConnectionBindingSchema.safeParse(
-        currentAiConnection,
+        (overlay.runtime.runtimeConfig as Record<string, unknown> | undefined)?.aiConnection ?? props.agent.runtimeConfig.aiConnection,
       ).data;
       const testRunnerSelection = isCursorCloudRunner
         ? { runner: "paperclip" as const }
@@ -1421,9 +1251,9 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
         // Qualify only the saved computer. The strict agent-scoped endpoint
         // accepts no draft provider config, credentials or replacement target.
         const qualification = await agentsApi.qualifyRunner(props.agent.id, environmentId, selectedCompanyId);
-        if (runnerSettingsTargetRef.current !== target) throw new Error("Agent settings changed during the test. Run test again.");
+        if (runnerSettingsTargetRef.current !== target) throw new Error(adapterCopy("Agent settings changed during the test. Run test again."));
         if (qualification.ok !== true || qualification.details?.platformQualificationRecorded !== true) {
-          throw new Error(qualification.summary || "Could not verify the saved computer. Run test again.");
+          throw new Error(qualification.summary || adapterCopy("Could not verify the saved computer. Run test again."));
         }
       }
       if (props.compactTestFeedback) {
@@ -1502,19 +1332,25 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
   // advertises the login pseudo-terminal capability. Read the capability for the
   // effective environment provider. The form reads the adapter login capability,
   // not the adapter name: every adapter login gates on this provider capability.
-  const providerSupportsLoginPty = environmentSupportsLoginPty(effectiveLoginEnvironment, environmentCapabilities, isRunnerHarness ? harnessType : adapterType);
+  const effectiveLoginProvider =
+    typeof effectiveLoginEnvironment?.config?.provider === "string"
+      ? effectiveLoginEnvironment.config.provider
+      : null;
+  const providerSupportsLoginPty =
+    effectiveLoginProvider != null &&
+    environmentCapabilities?.sandboxProviders?.[effectiveLoginProvider]?.supportsLoginPty === true;
   const loginNeedsPty = adapterCaps.login != null;
   const showAdapterLogin =
-    (isCreate || !currentAiConnection) &&
+    (isCreate || !((overlay.runtime.runtimeConfig as Record<string, unknown> | undefined)?.aiConnection ?? runtimeConfig.aiConnection)) &&
     adapterSupportsSandboxLogin &&
-    (effectiveLoginEnvironment?.driver === "sandbox" || (effectiveLoginEnvironment?.driver === "plugin" && !isCreate)) &&
+    effectiveLoginEnvironment?.driver === "sandbox" &&
     Boolean(effectiveLoginEnvironmentId) &&
     Boolean(selectedCompanyId) &&
     Boolean(authMissingCheck) &&
     (!loginNeedsPty || providerSupportsLoginPty);
   const runEnvironmentTest = useCallback(async () => {
     if (!selectedCompanyId) {
-      throw new Error("Select an organization to test adapter environment");
+      throw new Error(adapterCopy("Select an organization to test adapter environment"));
     }
     setTestActionPending(true);
     setTestActionError(null);
@@ -1685,15 +1521,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
     };
   }, [isCreate, overlay.heartbeat, runtimeConfig, val]);
   const effectiveHeartbeat = asObject(effectiveRuntimeConfig.heartbeat);
-  const savedContinuation = asObject(heartbeat.maxTurnContinuation);
-  const continuationDefaults = {
-    ...savedContinuation,
-    enabled: asBoolean(savedContinuation.enabled, true),
-    maxAttempts: clampInteger(asFiniteNumber(savedContinuation.maxAttempts, MAX_TURN_CONTINUATION_DEFAULT_MAX_ATTEMPTS), 0, MAX_TURN_CONTINUATION_MAX_ATTEMPTS_CAP),
-    delayMs: clampInteger(asFiniteNumber(savedContinuation.delayMs, MAX_TURN_CONTINUATION_DEFAULT_DELAY_SEC * 1000) / 1000, 0, MAX_TURN_CONTINUATION_MAX_DELAY_SEC) * 1000,
-  };
-  const maxTurnContinuation = isCreate ? asObject(effectiveHeartbeat.maxTurnContinuation)
-    : eff("heartbeat", "maxTurnContinuation", continuationDefaults);
+  const maxTurnContinuation = asObject(effectiveHeartbeat.maxTurnContinuation);
   const maxTurnContinuationEnabled = asBoolean(maxTurnContinuation.enabled, true);
   const maxTurnContinuationMaxAttempts = clampInteger(
     asFiniteNumber(maxTurnContinuation.maxAttempts, MAX_TURN_CONTINUATION_DEFAULT_MAX_ATTEMPTS),
@@ -1731,7 +1559,6 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
         const created = await createSecret.mutateAsync({ name, value });
         return created;
       }}
-      onRotateSecret={(secretId, value) => rotateSecret.mutateAsync({ secretId, value })}
       onChange={(env) =>
         isCreate
           ? set!({ envBindings: env ?? {}, envVars: "" })
@@ -1747,9 +1574,9 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
         {isDirty && !props.hideInlineSave && (
           <div className="sticky top-0 z-10 flex items-center justify-end border-b border-primary/20 bg-background/90 px-4 py-2 backdrop-blur-sm">
             <div className="flex items-center gap-3">
-              <span className="text-xs text-muted-foreground">Unsaved changes</span>
+              <span className="text-xs text-muted-foreground">{translateUi("interfaceCopy.unsavedChanges")}</span>
               <Button size="sm" onClick={handleSave} disabled={props.isSaving}>
-                {props.isSaving ? "Saving..." : "Save"}
+                {props.isSaving ? pageText("saving_ae7e88") : pageText("save_efc007")}
               </Button>
             </div>
           </div>
@@ -1758,8 +1585,8 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
         {props.environmentVariablesPlacement === "secrets" && (
           <div data-config-section="environment-variables" className={cn(!cards && "border-b border-border")}>
             {cards
-              ? <h3 className="mb-3 text-sm font-medium">Environment variables</h3>
-              : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">Environment variables</div>
+              ? <h3 className="mb-3 text-sm font-medium">{translateUi("interfaceCopy.environmentVariables")}</h3>
+              : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">{translateUi("interfaceCopy.environmentVariables")}</div>
             }
             <div data-agent-tile={panels ? "" : undefined} className={cn(cards ? (panels ? "rounded-lg bg-(--agent-detail-tile) p-(--agent-detail-module-inset)" : "rounded-lg border border-border p-4") : "px-4 pb-3")}>
               {environmentVariablesEditor}
@@ -1769,82 +1596,21 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
 
         <div data-config-section="secrets" className={cn(!cards && "border-b border-border")}>
           {cards
-            ? <h3 className="mb-3 text-sm font-medium">Secret access</h3>
-            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">Secret access</div>
+            ? <h3 className="mb-3 text-sm font-medium">{pageText("secretAccess_b1b805")}</h3>
+            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">{pageText("secretAccess_b1b805")}</div>
           }
           <div data-agent-tile={panels ? "" : undefined} className={cn(cards ? cardBody : "space-y-3 px-4 pb-3")}>
-            <p className="text-xs text-muted-foreground">{help.secretAccess}</p>
+            <p className="text-xs text-muted-foreground">{adapterCopy(help.secretAccess)}</p>
             <AgentSecretAccessEditor
-              config={effectiveSecretsAdapterConfig}
+              config={{ ...config, ...overlay.adapterConfig }}
               secrets={availableSecrets}
               onChange={applyAccessGrants}
               onCreateSecret={(name, value) => createSecret.mutateAsync({ name, value })}
-              onRotateSecret={(secretId, value) => rotateSecret.mutateAsync({ secretId, value })}
-              onBindAsEnvVar={bindSecretAsEnvVar}
               proposals={agentBindingProposals}
               onApproveProposal={proposalReview.requestApprove}
               onRejectProposal={proposalReview.requestReject}
             />
             {proposalReview.dialogs}
-            <Dialog
-              open={pendingEnvBindConflict !== null}
-              onOpenChange={(open) => {
-                if (!open) setPendingEnvBindConflict(null);
-              }}
-            >
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Environment variable already exists</DialogTitle>
-                  <DialogDescription>
-                    <code className="font-mono">{pendingEnvBindConflict?.binding.envKey}</code> is already set as{" "}
-                    {pendingEnvBindConflict?.existingKind === "secret_ref"
-                      ? "another company secret"
-                      : pendingEnvBindConflict?.existingKind === "user_secret_ref"
-                        ? "a user secret"
-                        : "a plain value"}
-                    . Choose <code className="font-mono">{pendingEnvBindConflict?.availableEnvKey}</code> to keep the
-                    existing variable, or confirm replacing it.
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogFooter className="sm:justify-between">
-                  <Button type="button" variant="ghost" onClick={() => setPendingEnvBindConflict(null)}>
-                    Cancel
-                  </Button>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        if (!pendingEnvBindConflict) return;
-                        commitSecretEnvBinding(
-                          pendingEnvBindConflict.availableEnvKey,
-                          pendingEnvBindConflict.binding.secretId,
-                          pendingEnvBindConflict.binding.version,
-                        );
-                        setPendingEnvBindConflict(null);
-                      }}
-                    >
-                      Bind as {pendingEnvBindConflict?.availableEnvKey}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      onClick={() => {
-                        if (!pendingEnvBindConflict) return;
-                        commitSecretEnvBinding(
-                          pendingEnvBindConflict.binding.envKey,
-                          pendingEnvBindConflict.binding.secretId,
-                          pendingEnvBindConflict.binding.version,
-                        );
-                        setPendingEnvBindConflict(null);
-                      }}
-                    >
-                      Replace {pendingEnvBindConflict?.binding.envKey}
-                    </Button>
-                  </div>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
           </div>
         </div>
       </div>
@@ -1855,30 +1621,27 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
     <div className="space-y-6">
       {showRunnerUpgrade && !runnerUpgraded ? (
         <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-4">
-          <div className="agent-runner-upgrade flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+          <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
             <div className="min-w-0 flex-1 space-y-1">
-              <p className="text-sm font-medium">Upgrade to Paperclip Runner</p>
-              <p className="text-sm text-muted-foreground">
-                Keep your harness, model, account, and compatible settings.
-                New sessions start fresh; past runs stay available.
-              </p>
+              <p className="text-sm font-medium">{pageText("upgradeToPaperclipRunner_d9ce8a")}</p>
+              <p className="text-sm text-muted-foreground">{pageText("keepYourHarnessModelAccountAndCompatibleSettings_306f99")}</p>
               {canQualifyRunnerUpgrade && runnerAvailability?.defaultRunner !== "paperclip" ? (
-                <p className="text-xs text-muted-foreground">The upgrade will verify your computer first. This can take a few minutes.</p>
+                <p className="text-xs text-muted-foreground">{pageText("theUpgradeWillVerifyYourComputerFirstThis_e1847a")}</p>
               ) : null}
               {upgradeWarnings.map(warning => <p key={warning.field} className="text-xs text-muted-foreground">{warning.message}</p>)}
               {upgradeEnvironmentChanged ? (
-                <p className="text-xs text-muted-foreground">Save your computer change before upgrading the runner.</p>
-              ) : isDirty ? <p className="text-xs text-muted-foreground">Your unsaved changes will be included.</p> : null}
+                <p className="text-xs text-muted-foreground">{pageText("saveYourComputerChangeBeforeUpgradingTheRunner_e11698")}</p>
+              ) : isDirty ? <p className="text-xs text-muted-foreground">{pageText("yourUnsavedChangesWillBeIncluded_5840d1")}</p> : null}
             </div>
             <Button size="sm" className="self-end sm:self-auto" onClick={upgradeRunner} disabled={runnerUpgradePending || upgradeEnvironmentChanged || (!isCreate && props.isSaving)}>
               {runnerUpgradePending ? <Loader2 className="size-4 animate-spin" /> : null}
-              {runnerUpgradePending ? "Upgrading…" : "Upgrade runner"}
+              {runnerUpgradePending ? pageText("upgrading_8bc158") : pageText("upgradeRunner_da83d2")}
             </Button>
           </div>
           {runnerUpgradeError ? <p role="alert" className="text-sm text-destructive">{runnerUpgradeError}</p> : null}
         </div>
       ) : null}
-      {runnerUpgraded ? <p role="status" className="text-sm text-muted-foreground">Upgraded to Paperclip Runner.</p> : null}
+      {runnerUpgraded ? <p role="status" className="text-sm text-muted-foreground">{pageText("upgradedToPaperclipRunner_30aaa9")}</p> : null}
       {adapterType === "paperclip_runner" && upgradeWarnings.length > 0 ? (
         <div role="status" className="space-y-1 rounded-lg border border-border bg-muted/30 p-4">
           {upgradeWarnings.map(warning => <p key={warning.field} className="text-sm text-muted-foreground">{warning.message}</p>)}
@@ -1889,13 +1652,13 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       {isDirty && !props.hideInlineSave && (
         <div className="sticky top-0 z-10 flex items-center justify-end px-4 py-2 bg-background/90 backdrop-blur-sm border-b border-primary/20">
           <div className="flex items-center gap-3">
-            <span className="text-xs text-muted-foreground">Unsaved changes</span>
+            <span className="text-xs text-muted-foreground">{translateUi("interfaceCopy.unsavedChanges")}</span>
             <Button
               size="sm"
               onClick={handleSave}
               disabled={!isCreate && props.isSaving}
             >
-              {!isCreate && props.isSaving ? "Saving..." : "Save"}
+              {!isCreate && props.isSaving ? pageText("saving_ae7e88") : pageText("save_efc007")}
             </Button>
           </div>
         </div>
@@ -1905,29 +1668,29 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       {!isCreate && (
         <div data-config-section="identity" className={cn(!cards && "border-b border-border")}>
           {cards
-            ? <h3 className="text-sm font-medium mb-3">{props.sectionTitles?.["identity"] ?? "Identity"}</h3>
-            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">Identity</div>
+            ? <h3 className="text-sm font-medium mb-3">{props.sectionTitles?.["identity"] ?? pageText("identity_7e5a97")}</h3>
+            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">{pageText("identity_7e5a97")}</div>
           }
           <div data-agent-tile={panels ? "" : undefined} className={cn(cards ? cardBody : "px-4 pb-3 space-y-3")}>
-            <Field label="Name" hint={help.name}>
+            <Field label={translateUi("interfaceCopy.name")} hint={help.name}>
               <DraftInput
                 value={eff("identity", "name", props.agent.name)}
                 onCommit={(v) => mark("identity", "name", v)}
                 immediate
                 className={inputClass}
-                placeholder="Agent name"
+                placeholder={translateUi("interfaceCopy.agentName")}
               />
             </Field>
-            <Field label="Title" hint={help.title}>
+            <Field label={translateUi("interfaceCopy.title")} hint={help.title}>
               <DraftInput
                 value={eff("identity", "title", props.agent.title ?? "")}
                 onCommit={(v) => mark("identity", "title", v || null)}
                 immediate
                 className={inputClass}
-                placeholder="e.g. VP of Engineering"
+                placeholder={pageText("eGVPOfEngineering_949edc")}
               />
             </Field>
-            <Field label="Reports to" hint={help.reportsTo}>
+            <Field label={pageText("reportsTo_655fe3")} hint={help.reportsTo}>
               <ReportsToPicker
                 agents={companyAgents}
                 value={eff("identity", "reportsTo", props.agent.reportsTo ?? null)}
@@ -1938,7 +1701,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
             </Field>
             {isLocal && !props.hidePromptTemplate && (
               <>
-                <Field label="Prompt Template" hint={help.promptTemplate}>
+                <Field label={pageText("promptTemplate_5bb6cd")} hint={help.promptTemplate}>
                   <MarkdownEditor
                     value={eff(
                       "adapterConfig",
@@ -1955,9 +1718,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                     }}
                   />
                 </Field>
-                <div className="rounded-md border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs text-amber-900 dark:text-amber-100">
-                  Prompt template is replayed on every heartbeat. Keep it compact and dynamic to avoid recurring token cost and cache churn.
-                </div>
+                <div className="rounded-md border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs text-amber-900 dark:text-amber-100">{pageText("promptTemplateIsReplayedOnEveryHeartbeatKeep_30fa0e")}</div>
               </>
             )}
           </div>
@@ -1971,24 +1732,19 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
         // Render the environment read-only instead of the selectable picker.
         <div data-config-section="environment" className={cn(!cards && (isCreate ? "border-t border-border" : "border-b border-border"))}>
           {cards
-            ? (untitled("environment") ? null : <h3 className="text-sm font-medium mb-3">Environment</h3>)
-            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">Environment</div>
+            ? (untitled("environment") ? null : <h3 className="text-sm font-medium mb-3">{translateUi("interfaceCopy.environment")}</h3>)
+            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">{translateUi("interfaceCopy.environment")}</div>
           }
           <div data-agent-tile={panels ? "" : undefined} className={cn(cards ? cardBody : "px-4 pb-3 space-y-3")}>
             <Field
-              label="Default environment"
-              hint="This instance runs all agents in the Kubernetes sandbox. Local execution is disabled."
+              label={pageText("defaultEnvironment_4fa302")}
+              hint={pageText("thisInstanceRunsAllAgentsInTheKubernetes_d7ca55")}
             >
               {kubernetesEnvironment ? (
                 <div className={cn(inputClass, "flex items-center text-muted-foreground")}>
-                  {kubernetesEnvironment.name} · Kubernetes sandbox
-                </div>
+                  {kubernetesEnvironment.name}{" " + pageText("kubernetesSandbox_d6ebb4")}</div>
               ) : (
-                <div className="rounded-md border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-200">
-                  This instance requires the Kubernetes sandbox, but no managed Kubernetes
-                  environment is available for this organization yet. Configure one before creating
-                  agents; execution will not fall back to local.
-                </div>
+                <div className="rounded-md border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-200">{pageText("thisInstanceRequiresTheKubernetesSandboxButNo_6032f8")}</div>
               )}
             </Field>
           </div>
@@ -1996,14 +1752,14 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       ) : showEnvironmentOverrideControl ? (
         <div data-config-section="environment" className={cn(!cards && (isCreate ? "border-t border-border" : "border-b border-border"))}>
           {cards
-            ? (untitled("environment") ? null : <h3 className="text-sm font-medium mb-3">Environment</h3>)
-            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">Environment</div>
+            ? (untitled("environment") ? null : <h3 className="text-sm font-medium mb-3">{translateUi("interfaceCopy.environment")}</h3>)
+            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">{translateUi("interfaceCopy.environment")}</div>
           }
           <div data-agent-tile={panels ? "" : undefined} className={cn(cards ? cardBody : "px-4 pb-3 space-y-3")}>
-            <Field label="Environment override">
+            <Field label={pageText("environmentOverride_e941be")}>
               <div className="space-y-2">
                 <SelectPopover
-                  aria-label="Environment override"
+                  aria-label={pageText("environmentOverride_e941be")}
                   value={currentDefaultEnvironmentId}
                   onValueChange={(nextValue) => {
                     if (isCreate) {
@@ -2013,7 +1769,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                     mark("identity", "defaultEnvironmentId", nextValue || null);
                   }}
                   options={[
-                    { value: "", label: `Default: ${inheritedEnvironmentLabel}` },
+                    { value: "", label: pageText("adapter:inheritedEnvironment", { environment: inheritedEnvironmentLabel }) },
                     ...environmentOptions.map((environment) => ({
                       value: environment.id,
                       label: environmentDisplayLabel(environment),
@@ -2030,8 +1786,8 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       <div data-config-section="adapter" className={cn(!cards && (isCreate ? "border-t border-border" : "border-b border-border"))}>
         {untitled("adapter") && !showInlineAdapterTestEnvironmentButton ? null : <div className={cn(cards ? "flex items-center justify-between mb-3" : "px-4 py-2 flex items-center justify-between gap-2")}>
           {cards
-            ? (untitled("adapter") ? <span /> : <h3 className="text-sm font-medium">{props.sectionTitles?.["adapter"] ?? "Adapter"}</h3>)
-            : <span className="text-xs font-medium text-muted-foreground">Adapter</span>
+            ? (untitled("adapter") ? <span /> : <h3 className="text-sm font-medium">{props.sectionTitles?.["adapter"] ?? pageText("adapter_e6b461")}</h3>)
+            : <span className="text-xs font-medium text-muted-foreground">{translateUi("interfaceCopy.adapter")}</span>
           }
           {showInlineAdapterTestEnvironmentButton && (
             <Button
@@ -2048,7 +1804,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
         </div>}
         <div data-agent-tile={panels ? "" : undefined} className={cn(cards ? cardBody : "px-4 pb-3 space-y-3")}>
           {showAdapterTypeField && isGrokBotRunner && (
-            <Field label="Harness" hint={help.adapterType}>
+            <Field label={pageText("harness_2b7cfd")} hint={help.adapterType}>
               <div className="inline-flex items-center gap-1.5">
                 <AdapterMark type="grok_bot" className="size-4" />
                 <span>Grok Bot</span>
@@ -2057,7 +1813,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
             </Field>
           )}
           {showAdapterTypeField && !isGrokBotRunner && (
-            <Field label="Harness" hint={help.adapterType}>
+            <Field label={pageText("harness_2b7cfd")} hint={help.adapterType}>
               <AdapterTypeDropdown
                 value={isDotRunner ? "openai_dot" : isMuseRunner ? "muse" : isRunnerHarness ? harnessType : adapterType}
                 disabledTypes={adapterPickerDisabledTypes}
@@ -2138,10 +1894,10 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
               onRetry={runnerDiscoveryView.retry} />
           )}
           {!isExternalRunner && !isCreate && selectedCompanyId && <AiConnectionField companyId={selectedCompanyId} agentId={props.agent.id} agentName={props.agent.name} adapterType={aiRoutingHarness(adapterType, eff("adapterConfig", "provider", config.provider), eff("adapterConfig", "acpxAgent", config.acpxAgent))}
-            routerAdapterType={adapterType} value={aiRuntimeConnectionBindingSchema.safeParse(currentAiConnection).data}
+            routerAdapterType={adapterType} value={aiRuntimeConnectionBindingSchema.safeParse((overlay.runtime.runtimeConfig as Record<string, unknown> | undefined)?.aiConnection ?? runtimeConfig.aiConnection).data}
             model={String(eff("adapterConfig", "model", config.model) ?? "")} environmentId={currentDefaultEnvironmentId || undefined} legacy
             onChange={binding => {
-              mark("runtime", "runtimeConfig", { ...(runtimeOverlay ?? runtimeConfig), aiConnection: binding });
+              mark("runtime", "runtimeConfig", { ...runtimeConfig, aiConnection: binding });
               if (accountBoundCatalog && hashKey([modelAiBinding ?? null]) === hashKey([binding ?? null])) void refreshConnectionModels();
             }} />}
 
@@ -2157,8 +1913,6 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
 
           {showInlineAdapterTestEnvironmentFeedback && showAdapterLogin && (
             <AdapterLoginPanel
-              requiresAgent={effectiveLoginEnvironment?.driver === "plugin"}
-              agentId={!isCreate && effectiveLoginEnvironment?.driver === "plugin" ? props.agent.id : undefined}
               key={`${adapterType}:${effectiveLoginEnvironmentId}`}
               companyId={selectedCompanyId!}
               adapterType={isRunnerHarness ? harnessType : adapterType}
@@ -2173,7 +1927,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
 
           {/* Working directory */}
           {showLegacyWorkingDirectoryField && (
-            <Field label="Working directory (deprecated)" hint={help.cwd}>
+            <Field label={pageText("workingDirectoryDeprecated_735096")} hint={help.cwd}>
               <div className="flex items-center gap-2 rounded-md border border-border px-2.5 py-1.5">
                 <FolderOpen className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                 <DraftInput
@@ -2197,7 +1951,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
           )}
 
           {renderAdapterFields("adapter")}
-          {isLocal && cloudHarnessAllowed && (<>
+          {isLocal && (<>
               <ModelDropdown
                 models={models}
                 loadingModels={connectionModels?.isLoading ?? (fetchingModels || fetchedModelsView.kind === "reconnecting")}
@@ -2225,8 +1979,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                 allowDefault={adapterType !== "opencode_local" && adapterType !== "pi_local" && adapterType !== "paperclip_runner" && !isCursorCloudRunner}
                 required={adapterType === "opencode_local" || adapterType === "pi_local" || isCursorCloudRunner || runnerAcpxAgent === "antigravity"}
                 groupByProvider={!connectionModels && (adapterType === "opencode_local" || adapterType === "pi_local")}
-                preserveOrder={Boolean(connectionModels) || adapterCuratesModelOrder(adapterType) || runnerAcpxAgent === "antigravity"}
-                groupModel={runnerAcpxAgent === "antigravity" && !connectionModels ? antigravityPickerGroup : undefined}
+                preserveOrder={Boolean(connectionModels) || adapterCuratesModelOrder(adapterType)}
                 creatable
                 detectedModel={connectionModels ? undefined : detectedModel}
                 detectedModelCandidates={[]}
@@ -2262,8 +2015,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                 && !connectionModels
                 && currentDefaultEnvironment
                 && currentDefaultEnvironment.driver !== "local" && (
-                <p className="text-xs text-muted-foreground">
-                  Live OpenCode model discovery only runs for Local environments. Using the curated list and manual entry for {currentDefaultEnvironment.name}.
+                <p className="text-xs text-muted-foreground">{pageText("liveOpenCodeModelDiscoveryOnlyRunsForLocal_660fce") + " "}{currentDefaultEnvironment.name}.
                 </p>
               )}
 
@@ -2288,9 +2040,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                   {adapterType === "codex_local" &&
                     codexSearchEnabled &&
                     currentThinkingEffort === "minimal" && (
-                      <p className="text-xs text-amber-400">
-                        Codex may reject `minimal` thinking when search is enabled.
-                      </p>
+                      <p className="text-xs text-amber-400">{pageText("codexMayRejectMinimalThinkingWhenSearchIs_828560")}</p>
                     )}
                 </>
               )}
@@ -2303,13 +2053,13 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       {(
         <div data-config-section="configuration" className={cn(!cards && "border-b border-border")}>
           {cards
-            ? (untitled("configuration") ? null : <h3 className="text-sm font-medium mb-3">Configuration</h3>)
-            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">Configuration</div>
+            ? (untitled("configuration") ? null : <h3 className="text-sm font-medium mb-3">{translateUi("interfaceCopy.configuration")}</h3>)
+            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">{translateUi("interfaceCopy.configuration")}</div>
           }
           <div data-agent-tile={panels ? "" : undefined} className={cn(cards ? cardBody : "px-4 pb-3 space-y-3")}>
               {!isCreate && typeof config.bootstrapPromptTemplate === "string" && config.bootstrapPromptTemplate && (
                 <>
-                  <Field label="Bootstrap prompt (legacy)" hint={help.bootstrapPrompt}>
+                  <Field label={pageText("bootstrapPromptLegacy_76d473")} hint={help.bootstrapPrompt}>
                     <MarkdownEditor
                       value={eff(
                         "adapterConfig",
@@ -2319,7 +2069,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                       onChange={(v) =>
                         mark("adapterConfig", "bootstrapPromptTemplate", v || undefined)
                       }
-                      placeholder="Optional initial setup prompt for the first run"
+                      placeholder={pageText("optionalInitialSetupPromptForTheFirstRun_47f5d6")}
                       contentClassName="min-h-(--sz-44px) text-sm font-mono"
                       imageUploadHandler={async (file) => {
                         const namespace = `agents/${props.agent.id}/bootstrap-prompt`;
@@ -2328,15 +2078,13 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                       }}
                     />
                   </Field>
-                  <div className="rounded-md border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-200">
-                    Bootstrap prompt is legacy and will be removed in a future release. Consider moving this content into the agent&apos;s prompt template or instructions file instead.
-                  </div>
+                  <div className="rounded-md border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs text-amber-800 dark:text-amber-200">{pageText("bootstrapPromptIsLegacyAndWillBeRemoved_588cd5")}</div>
                 </>
               )}
               {renderAdapterFields("configuration")}
               {hasConfigurationAdvancedFields && (
               <CollapsibleSection
-                title="Advanced"
+                title={translateUi("interfaceCopy.advanced")}
                 open={configurationAdvancedOpen}
                 onToggle={() => setConfigurationAdvancedOpen(!configurationAdvancedOpen)}
               >
@@ -2353,7 +2101,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                 flashes on a managed instance.
               */}
               {!hideHostPaths && (
-                <Field label="Command" hint={help.localCommand}>
+                <Field label={pageText("command_890189")} hint={help.localCommand}>
                   <DraftInput
                     value={
                       isCreate
@@ -2388,7 +2136,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                 </Field>
               )}
 
-              <Field label="Extra args (comma-separated)" hint={help.extraArgs}>
+              <Field label={pageText("extraArgsCommaSeparated_e8b152")} hint={help.extraArgs}>
                 <DraftInput
                   value={
                     isCreate
@@ -2401,7 +2149,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                       : mark("adapterConfig", "extraArgs", v?.trim() ? parseCommaArgs(v) : null)
                   }
                   className={inputClass}
-                  placeholder="e.g. --verbose, --foo=bar"
+                  placeholder={pageText("eGVerboseFooBar_c5b288")}
                 />
               </Field>
 
@@ -2418,8 +2166,8 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       {props.environmentVariablesPlacement !== "secrets" && (isLocal || configSchema?.fields.some((field) => schemaFieldSection(field.key) === "environment")) && (
         <div data-config-section="environment-variables" className={cn(!cards && "border-b border-border")}>
           {cards
-            ? <h3 className="text-sm font-medium mb-3">Environment variables</h3>
-            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">Environment variables</div>
+            ? <h3 className="text-sm font-medium mb-3">{translateUi("interfaceCopy.environmentVariables")}</h3>
+            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">{translateUi("interfaceCopy.environmentVariables")}</div>
           }
           <div data-agent-tile={panels ? "" : undefined} className={cn(cards ? cardBody : "px-4 pb-3 space-y-3")}>
             {isLocal ? environmentVariablesEditor : renderAdapterFields("environment")}
@@ -2431,12 +2179,12 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       {isCreate && showCreateRunPolicySection ? (
         <div data-config-section="run-policy" className={cn(!cards && "border-b border-border")}>
           {cards
-            ? <h3 className="text-sm font-medium flex items-center gap-2 mb-3"><Heart className="h-3 w-3" /> Run Policy</h3>
-            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground flex items-center gap-2"><Heart className="h-3 w-3" /> Run Policy</div>
+            ? <h3 className="text-sm font-medium flex items-center gap-2 mb-3"><Heart className="h-3 w-3" />{" " + pageText("runPolicy_379354")}</h3>
+            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground flex items-center gap-2"><Heart className="h-3 w-3" />{" " + pageText("runPolicy_379354")}</div>
           }
           <div data-agent-tile={panels ? "" : undefined} className={cn(cards ? cardBody : "px-4 pb-3 space-y-3")}>
             <ToggleWithNumber
-              label="Heartbeat on interval"
+              label={pageText("heartbeatOnInterval_c75daa")}
               hint={help.heartbeatInterval}
               checked={val!.heartbeatEnabled}
               onCheckedChange={(v) => set!({ heartbeatEnabled: v })}
@@ -2447,7 +2195,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
               numberHint={help.intervalSec}
               showNumber={val!.heartbeatEnabled}
             />
-            <CollapsibleSection title="Advanced Run Policy" open={runPolicyAdvancedOpen} onToggle={() => setRunPolicyAdvancedOpen(!runPolicyAdvancedOpen)}>
+            <CollapsibleSection title={pageText("advancedRunPolicy_67cdd9")} open={runPolicyAdvancedOpen} onToggle={() => setRunPolicyAdvancedOpen(!runPolicyAdvancedOpen)}>
               <div className="space-y-3">{renderAdapterFields("runPolicy")}</div>
             </CollapsibleSection>
           </div>
@@ -2455,13 +2203,13 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       ) : !isCreate ? (
         <div data-config-section="run-policy" className={cn(!cards && "border-b border-border")}>
           {cards
-            ? <h3 className="text-sm font-medium flex items-center gap-2 mb-3"><Heart className="h-3 w-3" /> Run Policy</h3>
-            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground flex items-center gap-2"><Heart className="h-3 w-3" /> Run Policy</div>
+            ? <h3 className="text-sm font-medium flex items-center gap-2 mb-3"><Heart className="h-3 w-3" />{" " + pageText("runPolicy_379354")}</h3>
+            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground flex items-center gap-2"><Heart className="h-3 w-3" />{" " + pageText("runPolicy_379354")}</div>
           }
           <div className={cn(cards ? "border border-border rounded-lg overflow-hidden" : "")}>
             <div className={cn(cards ? "p-4 space-y-3" : "px-4 pb-3 space-y-3")}>
               <ToggleWithNumber
-                label="Heartbeat on interval"
+                label={pageText("heartbeatOnInterval_c75daa")}
                 hint={help.heartbeatInterval}
                 checked={eff("heartbeat", "enabled", heartbeat.enabled === true)}
                 onCheckedChange={(v) => mark("heartbeat", "enabled", v)}
@@ -2474,7 +2222,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
               />
             </div>
             <CollapsibleSection
-              title="Advanced Run Policy"
+              title={pageText("advancedRunPolicy_67cdd9")}
               bordered={cards}
               open={runPolicyAdvancedOpen}
               onToggle={() => setRunPolicyAdvancedOpen(!runPolicyAdvancedOpen)}
@@ -2486,7 +2234,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
               {!isCreate && (
                 <>
                   {!configSchema?.fields.some((field) => field.key === "timeoutSec") && (
-                  <Field label="Timeout (sec)" hint={help.timeoutSec}>
+                  <Field label={pageText("timeoutSec_622803")} hint={help.timeoutSec}>
                     <DraftNumberInput
                       value={eff(
                         "adapterConfig",
@@ -2500,7 +2248,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                   </Field>
                   )}
                   {!configSchema?.fields.some((field) => field.key === "graceSec") && (
-                  <Field label="Interrupt grace period (sec)" hint={help.graceSec}>
+                  <Field label={pageText("interruptGracePeriodSec_eec9bc")} hint={help.graceSec}>
                     <DraftNumberInput
                       value={eff(
                         "adapterConfig",
@@ -2517,7 +2265,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
               )}
               </>)}
               <ToggleField
-                label="Wake on demand"
+                label={pageText("wakeOnDemand_a2a58d")}
                 hint={help.wakeOnDemand}
                 checked={eff(
                   "heartbeat",
@@ -2526,7 +2274,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                 )}
                 onChange={(v) => mark("heartbeat", "wakeOnDemand", v)}
               />
-              <Field label="Cooldown (sec)" hint={help.cooldownSec}>
+              <Field label={pageText("cooldownSec_153a9c")} hint={help.cooldownSec}>
                 <DraftNumberInput
                   value={eff(
                     "heartbeat",
@@ -2538,7 +2286,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                   className={inputClass}
                 />
               </Field>
-              <Field label="Max concurrent runs" hint={help.maxConcurrentRuns}>
+              <Field label={pageText("maxConcurrentRuns_0a3f9f")} hint={help.maxConcurrentRuns}>
                 <DraftNumberInput
                   value={eff(
                     "heartbeat",
@@ -2552,14 +2300,14 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
               </Field>
               <div className="rounded-md border border-border/70 px-3 py-2">
                 <ToggleField
-                  label="Continue after max-turn stop"
+                  label={pageText("continueAfterMaxTurnStop_a094ee")}
                   hint={help.maxTurnContinuationEnabled}
                   checked={maxTurnContinuationEnabled}
                   onChange={(v) => updateMaxTurnContinuation({ enabled: v })}
                 />
                 {maxTurnContinuationEnabled ? (
                   <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                    <Field label="Continuation attempts" hint={help.maxTurnContinuationMaxAttempts}>
+                    <Field label={pageText("continuationAttempts_b4637d")} hint={help.maxTurnContinuationMaxAttempts}>
                       <DraftNumberInput
                         value={maxTurnContinuationMaxAttempts}
                         onCommit={(v) =>
@@ -2570,7 +2318,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                         className={inputClass}
                       />
                     </Field>
-                    <Field label="Continuation delay (sec)" hint={help.maxTurnContinuationDelaySec}>
+                    <Field label={pageText("continuationDelaySec_af45f5")} hint={help.maxTurnContinuationDelaySec}>
                       <DraftNumberInput
                         value={maxTurnContinuationDelaySec}
                         onCommit={(v) =>
@@ -2595,12 +2343,10 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
         <div className={cn(!cards && "border-b border-border")}>
           {cards ? (
             <h3 className="mb-3 flex items-center gap-2 text-sm font-medium">
-              <Bug className="h-3 w-3" /> Debugging
-            </h3>
+              <Bug className="h-3 w-3" />{" " + pageText("debugging_895b27")}</h3>
           ) : (
             <div className="flex items-center gap-2 px-4 py-2 text-xs font-medium text-muted-foreground">
-              <Bug className="h-3 w-3" /> Debugging
-            </div>
+              <Bug className="h-3 w-3" />{" " + pageText("debugging_895b27")}</div>
           )}
           <div
             className={cn(
@@ -2611,8 +2357,8 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
             )}
           >
             <ToggleField
-              label="Capture raw provider traces"
-              hint="Stores exact provider traffic for every future run until disabled. Traces may contain sensitive prompts and tool arguments, are administrator-only, and expire after 24 hours."
+              label={pageText("captureRawProviderTraces_16e29e")}
+              hint={pageText("storesExactProviderTrafficForEveryFutureRun_df37ea")}
               checked={eff<unknown>("debug", "providerTrace", debug.providerTrace) === "raw"}
               onChange={(enabled) =>
                 mark("debug", "providerTrace", enabled ? "raw" : undefined)
@@ -2621,9 +2367,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
             {eff<unknown>("debug", "providerTrace", debug.providerTrace) === "raw" ? (
               <div className="mt-3 flex items-start gap-2 rounded-md border border-border bg-background/60 px-3 py-2 text-xs text-foreground">
                 <Bug className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                <span>
-                  Raw tracing is on for future runs. Paperclip keeps at most 64 MiB per run and automatically deletes it after 24 hours.
-                </span>
+                <span>{pageText("rawTracingIsOnForFutureRunsPaperclip_520e4a")}</span>
               </div>
             ) : null}
           </div>
@@ -2704,11 +2448,12 @@ function AdapterLoginTerminalState({
   status: AdapterAuthSessionStatus;
   message: string | null;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (status === "authenticated") {
     return (
       <div className="flex items-center gap-2 text-(length:--text-micro) text-foreground">
         <Check className="size-3 shrink-0" />
-        <span>Authenticated. The environment has credentials now.</span>
+        <span>{pageText("authenticatedTheEnvironmentHasCredentialsNow_d06d85")}</span>
       </div>
     );
   }
@@ -2741,7 +2486,6 @@ function AdapterLoginTerminalState({
 // environment for one company. A parent that lifts the test feedback renders
 // the panel from this descriptor.
 export type AdapterLoginDescriptor = {
-  agentId?: string;
   companyId: string;
   adapterType: string;
   environmentId: string;
@@ -2764,7 +2508,6 @@ export type AdapterLoginDescriptor = {
 // correctly, and the first thing to rot would have been the timeout and
 // cleanup paths, which are the ones nobody exercises by hand.
 export type AdapterLoginPanelProps = AdapterLoginDescriptor & {
-  requiresAgent?: boolean;
   active?: boolean;
   aiConnection?: import("@paperclipai/shared").AiConnectionLoginIntent;
   onStored?: (storedSessionId: string) => void;
@@ -2795,10 +2538,6 @@ export type AdapterLoginPanelProps = AdapterLoginDescriptor & {
   // the completion failed, or the session failed or ran out of time. The pair
   // of `onCodeSubmitted`, so a caller that showed work can stop showing it.
   onSubmitFailed?: () => void;
-  // Fires once per failed sign-in attempt across both displayed-code and
-  // submitted-code panels (start failure, poll error, session failure, or
-  // timeout), excluding user cancellations and in-flight retries.
-  onLoginFailed?: () => void;
   onOpenAuthorization?: () => void;
   onSubmitReady?: (submit: (() => void) | null) => void;
   onRetryReady?: (retry: (() => void) | null) => void;
@@ -2832,36 +2571,13 @@ function adapterLoginTitle(adapterType: string): string {
   return provider ? `Sign in to ${provider}` : "Sign in to the environment";
 }
 
-export function isReportableAdapterLoginFailure(input: {
-  active: boolean;
-  retrying: boolean;
-  status: AdapterAuthSessionStatus | null | undefined;
-  hasFailure: boolean;
-}): boolean {
-  return input.active && !input.retrying && input.status !== "cancelled" && input.hasFailure;
-}
-
-function useReportLoginFailureOnce(failed: boolean, onLoginFailed?: () => void) {
-  const onLoginFailedRef = useRef(onLoginFailed);
-  onLoginFailedRef.current = onLoginFailed;
-  const reportedFailureRef = useRef(false);
-  useEffect(() => {
-    if (!failed) {
-      reportedFailureRef.current = false;
-      return;
-    }
-    if (reportedFailureRef.current) return;
-    reportedFailureRef.current = true;
-    onLoginFailedRef.current?.();
-  }, [failed]);
-}
-
 export function AdapterLoginPanel(props: AdapterLoginPanelProps) {
   const getCapabilities = useAdapterCapabilities();
-  const Panel = getCapabilities(props.adapterType).login?.panelMode === "submitted_browser_code"
-    ? SubmittedBrowserCodeLoginPanel : DisplayedCodeLoginPanel;
-  const agentId = props.requiresAgent ? props.agentId : undefined;
-  return <Panel key={agentId} {...props} agentId={agentId} />;
+  const panelMode = getCapabilities(props.adapterType).login?.panelMode;
+  if (panelMode === "submitted_browser_code") {
+    return <SubmittedBrowserCodeLoginPanel {...props} />;
+  }
+  return <DisplayedCodeLoginPanel {...props} />;
 }
 
 class AdapterLoginConflictError extends Error {
@@ -2872,11 +2588,9 @@ class AdapterLoginConflictError extends Error {
 
 function DisplayedCodeLoginPanel({
   active: loginActive = true,
-  requiresAgent,
   companyId,
   adapterType,
   environmentId,
-  agentId,
   autoStart,
   onConnected,
   onAccountBinding,
@@ -2885,10 +2599,10 @@ function DisplayedCodeLoginPanel({
   onPromptReady,
   onOpenAuthorization,
   onRetryReady,
-  onLoginFailed,
 }: AdapterLoginPanelProps) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const automaticComputer = Boolean(requiresAgent && !agentId && aiConnection);
   const cancellation = useAdapterLoginCancellation(loginActive, companyId, adapterType, false, sessionId, { environmentId, aiConnection });
   const [retrying, setRetrying] = useState(false);
   const [startError, setStartError] = useState<string | null>(null);
@@ -2912,7 +2626,7 @@ function DisplayedCodeLoginPanel({
   const resumedRef = useRef(false);
 
   const startLogin = useMutation({
-    mutationFn: () => cancellation.accept(() => agentsApi.startAdapterAuthLogin(companyId, adapterType, { environmentId, ...(agentId ? { agentId } : {}), ...(aiConnection ? { aiConnection } : {}) })),
+    mutationFn: () => cancellation.accept(() => agentsApi.startAdapterAuthLogin(companyId, adapterType, { environmentId, aiConnection })),
     onSuccess: (session) => {
       if (!session || !cancellation.isActive()) return;
       resumedRef.current = false;
@@ -2951,16 +2665,12 @@ function DisplayedCodeLoginPanel({
   // browser rediscovers its own session after a reload with no local state. A
   // 404 means no active session for the caller.
   const activeSessionQuery = useQuery({
-    queryKey: ["adapter-login-active-session", companyId, adapterType, environmentId, agentId],
+    queryKey: ["adapter-login-active-session", companyId, adapterType],
     queryFn: async ({ signal }) => {
       try {
         const active = await cancellation.resume(() => agentsApi.getActiveAdapterAuthLoginSession(companyId, adapterType, { signal }));
         if (!active) return null;
-        const wrongComputer = !automaticComputer && active.agentId !== agentId;
-        const wrongConnection = aiConnection
-          ? !matchesAdapterLoginTarget(active, { environmentId, aiConnection })
-          : Boolean(active.aiConnection);
-        if (wrongComputer || wrongConnection) throw new AdapterLoginConflictError(active.sessionId);
+        if ((aiConnection && active.environmentId !== environmentId) || Boolean(active.aiConnection) !== Boolean(aiConnection) || (aiConnection && (active.aiConnection?.provider !== aiConnection.provider || active.aiConnection?.method !== aiConnection.method || active.aiConnection?.connectionId !== aiConnection.connectionId || active.aiConnection?.ownership !== aiConnection.ownership || active.aiConnection?.allAgents !== aiConnection.allAgents || JSON.stringify(active.aiConnection?.agentIds) !== JSON.stringify(aiConnection.agentIds)))) throw new AdapterLoginConflictError(active.sessionId);
         return active;
       } catch (error) {
         if (error instanceof ApiError && error.status === 404) return null;
@@ -3076,7 +2786,7 @@ function DisplayedCodeLoginPanel({
       setStartError(null);
       await activeSessionQuery.refetch();
     },
-    onError: () => setStartError("Could not cancel the previous sign-in. Retry before starting a new one."),
+    onError: () => setStartError(interfaceNotice("interface:couldNotCancelThePreviousSignInRetry_ec256a")),
   });
   const startLoginRef = useRef(startLogin.mutate);
   startLoginRef.current = startLogin.mutate;
@@ -3207,16 +2917,6 @@ function DisplayedCodeLoginPanel({
     return () => onRetryReadyRef.current?.(null);
   }, [retryReady]);
 
-  useReportLoginFailureOnce(
-    isReportableAdapterLoginFailure({
-      active: loginActive,
-      retrying: retrying || retryLogin.isPending,
-      status,
-      hasFailure: Boolean(startError || (isTerminal && status !== "authenticated")),
-    }),
-    onLoginFailed,
-  );
-
   if (chrome === "onboarding") {
     const failure = !retryLogin.isPending && (startError || failed)
       ? status === "timed_out" ? "expired" : "failed"
@@ -3225,7 +2925,6 @@ function DisplayedCodeLoginPanel({
       <ProviderSubscriptionCard
         loading={retryLogin.isPending || (!prompt && !failure)}
         failure={failure}
-        failureMessage={automaticComputer ? startError ?? undefined : undefined}
         onRetry={!onRetryReady && retryReady ? retryAction : undefined}
         providerName={connectSourceName(adapterType)}
         authorizationUrl={prompt?.url}
@@ -3235,9 +2934,7 @@ function DisplayedCodeLoginPanel({
         {failure ? (
           activeSessionQuery.error instanceof AdapterLoginConflictError && (
             <Button type="button" variant="outline" disabled={cancelConflictingLogin.isPending}
-              onClick={() => cancelConflictingLogin.mutate()}>
-              Cancel previous sign-in and retry
-            </Button>
+              onClick={() => cancelConflictingLogin.mutate()}>{pageText("cancelPreviousSignInAndRetry_331795")}</Button>
           )
         ) : !retryLogin.isPending && <OnboardingLoginCodeRow code={prompt?.code ?? ""} autoCopy />}
       </ProviderSubscriptionCard>
@@ -3262,9 +2959,7 @@ function DisplayedCodeLoginPanel({
               className="h-7 px-2.5 text-xs text-muted-foreground hover:text-foreground"
               disabled={cancelLogin.isPending}
               onClick={() => cancelLogin.mutate()}
-            >
-              Cancel
-            </Button>
+            >{translateUi("interfaceCopy.cancel")}</Button>
           )}
           <Button
             type="button"
@@ -3273,9 +2968,7 @@ function DisplayedCodeLoginPanel({
             className="h-7 px-2.5 text-xs"
             disabled={startDisabled}
             onClick={() => startLogin.mutate()}
-          >
-            Sign in
-          </Button>
+          >{translateUi("interfaceCopy.signIn")}</Button>
         </div>
       </div>
 
@@ -3291,15 +2984,13 @@ function DisplayedCodeLoginPanel({
         {isActive && !prompt && (
           <div className="flex items-center gap-2 text-(length:--text-micro) text-muted-foreground">
             <Loader2 className="size-3 animate-spin shrink-0" />
-            <span>Preparing...</span>
+            <span>{pageText("preparing_f440b5")}</span>
           </div>
         )}
 
         {isActive && prompt && (
           <div className="space-y-2">
-            <div className="text-(length:--text-micro) text-muted-foreground">
-              Copy the code, then open the authentication page.
-            </div>
+            <div className="text-(length:--text-micro) text-muted-foreground">{pageText("copyTheCodeThenOpenTheAuthenticationPage_800f76")}</div>
           {/* Code first, then the URL, and the sentence and the numbering both
               say so.
 
@@ -3317,29 +3008,25 @@ function DisplayedCodeLoginPanel({
               does come first. */}
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
-              <div className="text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">
-                1. Code
-              </div>
-              <span className={cn("font-mono text-xs text-foreground break-all", ANALYTICS_NO_CAPTURE_CLASS)}>{prompt.code}</span>
+              <div className="text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">{pageText("1Code_432592")}</div>
+              <span className="font-mono text-xs text-foreground break-all">{prompt.code}</span>
             </div>
-            <AdapterLoginCopyButton value={prompt.code} label="Copy code" />
+            <AdapterLoginCopyButton value={prompt.code} label={pageText("copyCode_6c1069")} />
           </div>
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
-              <div className="text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">
-                2. Authentication URL
-              </div>
+              <div className="text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">{pageText("2AuthenticationURL_34484a")}</div>
               <span className="font-mono text-xs text-foreground break-all">{prompt.url}</span>
             </div>
             <div className="flex items-center">
-              <AdapterLoginCopyButton value={prompt.url} label="Copy URL" />
+              <AdapterLoginCopyButton value={prompt.url} label={pageText("copyURL_1ad646")} />
               <Button
                 asChild
                 type="button"
                 variant="ghost"
                 size="icon-xs"
-                aria-label="Open the authentication page"
-                title="Open the authentication page"
+                aria-label={pageText("openTheAuthenticationPage_8ab579")}
+                title={pageText("openTheAuthenticationPage_8ab579")}
                 className="text-muted-foreground hover:text-foreground"
               >
                 <a href={prompt.url} target="_blank" rel="noreferrer noopener">
@@ -3361,21 +3048,19 @@ function DisplayedCodeLoginPanel({
         {status === "authenticated" && accountBindState === "saving" && (
           <div className="flex items-center gap-2 text-(length:--text-micro) text-muted-foreground">
             <Loader2 className="size-3 animate-spin shrink-0" />
-            <span>Binding this agent to the signed-in account...</span>
+            <span>{pageText("bindingThisAgentToTheSignedInAccount_7cf995")}</span>
           </div>
         )}
         {status === "authenticated" && accountBindState === "bound" && (
           <div className="flex items-center gap-2 text-(length:--text-micro) text-foreground">
             <Check className="size-3 shrink-0" />
-            <span>Agent bound to the signed-in account.</span>
+            <span>{pageText("agentBoundToTheSignedInAccount_1bbf2c")}</span>
           </div>
         )}
         {status === "authenticated" && accountBindState === "failed" && (
           <div className="flex items-center gap-2 text-(length:--text-micro)">
             <TriangleAlert className="size-3 shrink-0 text-destructive" />
-            <span className="text-destructive">
-              Could not bind this agent to the signed-in account.
-            </span>
+            <span className="text-destructive">{pageText("couldNotBindThisAgentToTheSigned_fdf78a")}</span>
             <Button
               type="button"
               variant="outline"
@@ -3384,9 +3069,7 @@ function DisplayedCodeLoginPanel({
               onClick={() => {
                 if (accountBinding) void runAccountBinding(accountBinding);
               }}
-            >
-              Retry
-            </Button>
+            >{translateUi("interfaceCopy.retry")}</Button>
           </div>
         )}
       </div>
@@ -3431,18 +3114,15 @@ const CLAUDE_LOGIN_TIMED_OUT_MESSAGE = "The login timed out. Start the login aga
 // only the server `stored` state as success, and it never shows the OAuth token.
 function SubmittedBrowserCodeLoginPanel({
   active: loginActive = true,
-  requiresAgent,
   companyId,
   adapterType,
   environmentId,
-  agentId,
   onStored,
   onApplyStored,
   autoStart,
   onConnected,
   onCodeSubmitted,
   onSubmitFailed,
-  onLoginFailed,
   chrome = "panel",
   aiConnection,
   onPromptReady,
@@ -3450,8 +3130,9 @@ function SubmittedBrowserCodeLoginPanel({
   onSubmitReady,
   onRetryReady,
 }: AdapterLoginPanelProps) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [sessionId, setSessionId] = useState<string | null>(null);
-  const automaticComputer = Boolean(requiresAgent && !agentId && aiConnection);
   const cancellation = useAdapterLoginCancellation(loginActive, companyId, adapterType, true, sessionId, { environmentId, aiConnection });
   const [retrying, setRetrying] = useState(false);
   const [startError, setStartError] = useState<string | null>(null);
@@ -3536,8 +3217,7 @@ function SubmittedBrowserCodeLoginPanel({
     mutationFn: () => cancellation.accept(() =>
       agentsApi.startClaudeSetupTokenLogin(companyId, {
         environmentId,
-        ...(agentId ? { agentId } : {}),
-        ...(aiConnection ? { aiConnection } : {}),
+        aiConnection,
         // When the owner already has a stored token, the login rotates it under
         // the captured version, so a replacement login never conflicts with an
         // existing value. Without a stored token the login is a first write.
@@ -3614,16 +3294,12 @@ function SubmittedBrowserCodeLoginPanel({
   // session id, so the browser rediscovers its own session after a reload
   // with no local state. A 404 means no active session for the caller.
   const activeSessionQuery = useQuery({
-    queryKey: ["claude-setup-token-active-session", companyId, environmentId, agentId],
+    queryKey: ["claude-setup-token-active-session", companyId],
     queryFn: async ({ signal }) => {
       try {
         const active = await cancellation.resume(() => agentsApi.getActiveClaudeSetupTokenLoginSession(companyId, { signal }));
         if (!active) return null;
-        const wrongComputer = !automaticComputer && active.agentId !== agentId;
-        const wrongConnection = aiConnection
-          ? !matchesAdapterLoginTarget(active, { environmentId, aiConnection })
-          : Boolean(active.aiConnection);
-        if (wrongComputer || wrongConnection) throw new Error("Another sign-in attempt is active. Finish or cancel it in its original account setup before starting this one.");
+        if ((aiConnection && active.environmentId !== environmentId) || Boolean(active.aiConnection) !== Boolean(aiConnection) || (aiConnection && (active.aiConnection?.provider !== aiConnection.provider || active.aiConnection?.method !== aiConnection.method || active.aiConnection?.connectionId !== aiConnection.connectionId || active.aiConnection?.ownership !== aiConnection.ownership || active.aiConnection?.allAgents !== aiConnection.allAgents || JSON.stringify(active.aiConnection?.agentIds) !== JSON.stringify(aiConnection.agentIds)))) throw new Error(adapterCopy("Another sign-in attempt is active. Finish or cancel it in its original account setup before starting this one."));
         return active;
       } catch (error) {
         if (error instanceof ApiError && error.status === 404) return null;
@@ -3965,16 +3641,6 @@ function SubmittedBrowserCodeLoginPanel({
     onSubmitFailedRef.current?.();
   }, [codeSubmitted, startError, isFailure, timedOut]);
 
-  useReportLoginFailureOnce(
-    isReportableAdapterLoginFailure({
-      active: loginActive,
-      retrying,
-      status,
-      hasFailure: Boolean(startError || isFailure || timedOut),
-    }),
-    onLoginFailed,
-  );
-
   const onPromptReadyRef = useRef(onPromptReady);
   onPromptReadyRef.current = onPromptReady;
   useEffect(() => {
@@ -4038,7 +3704,6 @@ function SubmittedBrowserCodeLoginPanel({
       <ProviderSubscriptionCard
         loading={retryLogin.isPending || (!authorizationUrl && !failure)}
         failure={failure}
-        failureMessage={automaticComputer ? startError ?? undefined : undefined}
         onRetry={!onRetryReady && retryReady ? retryAction : undefined}
         providerName={connectSourceName(adapterType)}
         authorizationUrl={authorizationUrl ?? undefined}
@@ -4051,10 +3716,7 @@ function SubmittedBrowserCodeLoginPanel({
             clear text. */}
         {transportInsecure && (
           <p className="flex items-start gap-2 pl-2 text-xs text-amber-700 dark:text-amber-200">
-            <TriangleAlert className="mt-0.5 size-3 shrink-0" />
-            This connection is not encrypted. The login code travels in clear text on this
-            network. Continue only on a network you trust.
-          </p>
+            <TriangleAlert className="mt-0.5 size-3 shrink-0" />{pageText("thisConnectionIsNotEncryptedTheLoginCode_295d98")}</p>
         )}
         {!failure && !retryLogin.isPending && (
           <OnboardingCardField
@@ -4093,9 +3755,7 @@ function SubmittedBrowserCodeLoginPanel({
               className="h-7 px-2.5 text-xs text-muted-foreground hover:text-foreground"
               disabled={cancelLogin.isPending}
               onClick={() => cancelLogin.mutate()}
-            >
-              Cancel
-            </Button>
+            >{translateUi("interfaceCopy.cancel")}</Button>
           )}
           {/* Apply the existing stored login with no new login round trip. The
               affordance shows only when the status route reports a stored value
@@ -4110,9 +3770,7 @@ function SubmittedBrowserCodeLoginPanel({
                 onApplyStored();
                 setAppliedStored(true);
               }}
-            >
-              Use saved login
-            </Button>
+            >{pageText("useSavedLogin_394bf7")}</Button>
           )}
           <Button
             type="button"
@@ -4122,7 +3780,7 @@ function SubmittedBrowserCodeLoginPanel({
             disabled={startDisabled}
             onClick={() => startLogin.mutate()}
           >
-            {storedToken && !isActive && !isStored ? "Sign in to replace" : "Sign in"}
+            {storedToken && !isActive && !isStored ? pageText("signInToReplace_dfa9bc") : pageText("signIn_ada2e9")}
           </Button>
         </div>
       </div>
@@ -4131,16 +3789,13 @@ function SubmittedBrowserCodeLoginPanel({
           first and does not force a fresh login. Use saved login binds the stored
           token; a replacement login rotates it under the captured version. */}
       {storedToken && !isActive && !isStored && !appliedStored && (
-        <div className="text-(length:--text-micro) text-muted-foreground">
-          You have a saved Claude login. Use it to bind this agent, or log in again to replace the
-          stored token.
-        </div>
+        <div className="text-(length:--text-micro) text-muted-foreground">{pageText("youHaveASavedClaudeLoginUseIt_7bc581")}</div>
       )}
 
       {appliedStored && (
         <div className="flex items-center gap-2 text-(length:--text-micro) text-foreground">
           <Check className="size-3 shrink-0" />
-          <span>The saved Claude login is bound to this agent now.</span>
+          <span>{pageText("theSavedClaudeLoginIsBoundToThis_2393c8")}</span>
         </div>
       )}
 
@@ -4156,7 +3811,7 @@ function SubmittedBrowserCodeLoginPanel({
         {isActive && !authorizationUrl && !isCompleting && (
           <div className="flex items-center gap-2 text-(length:--text-micro) text-muted-foreground">
             <Loader2 className="size-3 animate-spin shrink-0" />
-            <span>Preparing...</span>
+            <span>{pageText("preparing_f440b5")}</span>
           </div>
         )}
 
@@ -4167,31 +3822,24 @@ function SubmittedBrowserCodeLoginPanel({
                 className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 px-2 py-1.5 text-(length:--text-micro) text-amber-800 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200"
               >
                 <TriangleAlert className="size-3 shrink-0 mt-0.5" />
-                <span>
-                  This connection is not encrypted. The login code travels in clear text on this
-                  network. Continue only on a network you trust.
-                </span>
+                <span>{pageText("thisConnectionIsNotEncryptedTheLoginCode_295d98")}</span>
               </div>
             )}
-            <div className="text-(length:--text-micro) text-muted-foreground">
-              Open the authorization page, then enter the browser code it shows.
-            </div>
+            <div className="text-(length:--text-micro) text-muted-foreground">{pageText("openTheAuthorizationPageThenEnterTheBrowser_7c96f5")}</div>
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">
-                <div className="text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">
-                  1. Authorization URL
-                </div>
+                <div className="text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">{pageText("1AuthorizationURL_896b2d")}</div>
                 <span className="font-mono text-xs text-foreground break-all">{authorizationUrl}</span>
               </div>
               <div className="flex items-center">
-                <AdapterLoginCopyButton value={authorizationUrl} label="Copy URL" />
+                <AdapterLoginCopyButton value={authorizationUrl} label={pageText("copyURL_1ad646")} />
                 <Button
                   asChild
                   type="button"
                   variant="ghost"
                   size="icon-xs"
-                  aria-label="Open the authorization page"
-                  title="Open the authorization page"
+                  aria-label={pageText("openTheAuthorizationPage_08d2a1")}
+                  title={pageText("openTheAuthorizationPage_08d2a1")}
                   className="text-muted-foreground hover:text-foreground"
                 >
                   <a href={authorizationUrl} target="_blank" rel="noreferrer noopener">
@@ -4201,12 +3849,10 @@ function SubmittedBrowserCodeLoginPanel({
               </div>
             </div>
             <div className="space-y-1">
-              <div className="text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">
-                2. Browser code
-              </div>
+              <div className="text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">{pageText("2BrowserCode_592d0f")}</div>
               <div className="flex items-center gap-2">
                 <input
-                  aria-label="Browser code"
+                  aria-label={pageText("browserCode_d38eba")}
                   type="text"
                   autoComplete="off"
                   spellCheck={false}
@@ -4227,9 +3873,7 @@ function SubmittedBrowserCodeLoginPanel({
                   className="h-7 px-2.5 text-xs"
                   disabled={!canSubmit}
                   onClick={handleSubmit}
-                >
-                  Submit
-                </Button>
+                >{pageText("submit_2dacf6")}</Button>
               </div>
             </div>
           </div>
@@ -4238,14 +3882,14 @@ function SubmittedBrowserCodeLoginPanel({
         {isCompleting && (
           <div className="flex items-center gap-2 text-(length:--text-micro) text-muted-foreground">
             <Loader2 className="size-3 animate-spin shrink-0" />
-            <span>Completing the login…</span>
+            <span>{pageText("completingTheLogin_82c297")}</span>
           </div>
         )}
 
         {isStored && (
           <div className="flex items-center gap-2 text-(length:--text-micro) text-foreground">
             <Check className="size-3 shrink-0" />
-            <span>Authenticated. The environment has credentials now.</span>
+            <span>{pageText("authenticatedTheEnvironmentHasCredentialsNow_d06d85")}</span>
           </div>
         )}
 
@@ -4268,6 +3912,7 @@ function SubmittedBrowserCodeLoginPanel({
 }
 
 export function AdapterEnvironmentResult({ result }: { result: AdapterEnvironmentTestResult }) {
+  const { t: pageText } = usePageTranslation("interface");
   const statusLabel =
     result.status === "pass" ? "Passed" : result.status === "warn" ? "Warnings" : "Failed";
   const statusClass =
@@ -4294,7 +3939,7 @@ export function AdapterEnvironmentResult({ result }: { result: AdapterEnvironmen
             <span className="mx-1 opacity-60">·</span>
             <span>{check.message}</span>
             {check.detail && <span className="block opacity-75 break-all">({check.detail})</span>}
-            {check.hint && <span className="block opacity-90 break-words">Hint: {check.hint}</span>}
+            {check.hint && <span className="block opacity-90 break-words">{pageText("hint_7de196") + " "}{check.hint}</span>}
           </div>
         ))}
       </div>
@@ -4319,17 +3964,16 @@ export function AdapterTypeDropdown({
   museEnabled?: boolean;
   nativeRunnerEnabled?: boolean;
 }) {
-  const cloud = Boolean(useCloudInstance());
-  const harnessPolicy = useCloudHarnessPolicy();
+  const { t: pageText } = usePageTranslation("interface");
   const selectedDisplay = getAdapterDisplay(value);
   const adapterList = useMemo(() =>
     [...listAdapterOptions(type => adapterLabels[type] ?? getAdapterLabel(type)),
       ...(openAiDotEnabled ? [{ value: "openai_dot", label: "OpenAI Dot", experimental: true, comingSoon: false }] : []),
-      ...(museEnabled ? [{ value: "muse", label: "Muse — Personal agent", experimental: true, comingSoon: false }] : []),
-    ].filter(item => (!cloud || harnessPolicy.isCloudHarnessAllowed(item.value)) && !item.comingSoon && (item.value !== "paperclip_runner" || nativeRunnerEnabled) && !disabledTypes.has(item.value))
+      ...(museEnabled ? [{ value: "muse", label: adapterCopy("Muse — Personal agent"), experimental: true, comingSoon: false }] : []),
+    ].filter(item => !item.comingSoon && (item.value !== "paperclip_runner" || nativeRunnerEnabled) && !disabledTypes.has(item.value))
       .sort((a, b) => Number(a.value === "paperclip_runner") - Number(b.value === "paperclip_runner")),
-    [cloud, harnessPolicy, disabledTypes, openAiDotEnabled, nativeRunnerEnabled, museEnabled]);
-  return <SelectPopover aria-label="Harness" value={value} onValueChange={onChange}
+    [disabledTypes, openAiDotEnabled, nativeRunnerEnabled, museEnabled]);
+  return <SelectPopover aria-label={pageText("harness_2b7cfd")} value={value} onValueChange={onChange}
     displayValue={<span className="inline-flex min-w-0 items-center gap-1.5">
       <span aria-hidden="true" className="inline-flex shrink-0"><AdapterMark type={value} className="size-4" /></span>
       <span className="truncate">{adapterLabels[value] ?? getAdapterLabel(value)}</span>
@@ -4342,14 +3986,11 @@ export function AdapterTypeDropdown({
 }
 
 function ExperimentalBadge() {
+  const { t: pageText } = usePageTranslation("interface");
   return (
-    <span className="shrink-0 rounded border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-(length:--text-nano) font-medium leading-none text-amber-700 dark:text-amber-200">
-      Experimental
-    </span>
+    <span className="shrink-0 rounded border border-amber-500/30 bg-amber-500/10 px-1.5 py-0.5 text-(length:--text-nano) font-medium leading-none text-amber-700 dark:text-amber-200">{pageText("experimental_b718f8")}</span>
   );
 }
-
-export type ModelGroupEntry = { group: string; label: string; note?: string };
 
 export function ModelDropdown({
   models,
@@ -4372,7 +4013,6 @@ export function ModelDropdown({
   emptyDetectHint,
   defaultLabel,
   presentation = "searchable",
-  groupModel,
 }: {
   models: AdapterModel[];
   value: string;
@@ -4395,10 +4035,9 @@ export function ModelDropdown({
   emptyDetectHint?: string;
   defaultLabel?: string;
   presentation?: "searchable" | "native";
-  /** Groups a curated list by model family, keeping its order; each entry shows
-   * the variant (for example a thinking level) and an optional note. */
-  groupModel?: (model: AdapterModel) => ModelGroupEntry | null;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [modelSearch, setModelSearch] = useState("");
   const [enteringCustomModel, setEnteringCustomModel] = useState(false);
   const [detectingModel, setDetectingModel] = useState(false);
@@ -4432,18 +4071,7 @@ export function ModelDropdown({
       );
     });
   }, [models, modelSearch, promotedModelIds]);
-  const groupedModels = useMemo((): Array<{ provider: string; heading?: string; entries: AdapterModel[] }> => {
-    if (groupModel && !groupByProvider) {
-      const groups = new Map<string, AdapterModel[]>();
-      const other: AdapterModel[] = [];
-      for (const model of filteredModels) {
-        const group = groupModel(model)?.group;
-        if (!group) { other.push(model); continue; }
-        groups.set(group, [...(groups.get(group) ?? []), model]);
-      }
-      return [...[...groups].map(([group, entries]) => ({ provider: group, heading: group, entries })),
-        ...(other.length ? [{ provider: "other", heading: groups.size ? "Other models" : undefined, entries: other }] : [])];
-    }
+  const groupedModels = useMemo(() => {
     if (!groupByProvider) {
       // A hand-ordered list (newest release of each family first, older releases at the end) is
       // shown as the adapter ordered it; a discovered list has no stable order, so sort it.
@@ -4463,11 +4091,7 @@ export function ModelDropdown({
         provider,
         entries: [...entries].sort((a, b) => a.id.localeCompare(b.id)),
       }));
-  }, [filteredModels, groupByProvider, preserveOrder, groupModel]);
-  const entryLabel = (model: AdapterModel) => {
-    const entry = groupModel?.(model);
-    return entry ? (entry.note ? `${entry.label} · ${entry.note}` : entry.label) : model.label;
-  };
+  }, [filteredModels, groupByProvider, preserveOrder]);
 
   async function handleDetectModel() {
     if (!onDetectModel) return;
@@ -4488,9 +4112,9 @@ export function ModelDropdown({
     const customOption = "__paperclip_custom_model__";
     const extraModels = [...new Set([value, ...promotedModelIds])].filter(id => id && (!models.some(model => model.id === id) || promotedModelIds.has(id)));
     return (
-      <Field label="Model" hint={help.model}>
+      <Field label={translateUi("interfaceCopy.model")} hint={help.model}>
         <NativeSelect
-          aria-label="Model"
+          aria-label={translateUi("interfaceCopy.model")}
           aria-busy={loadingModels || refreshingModels}
           value={enteringCustomModel ? customOption : value}
           required={required && !enteringCustomModel}
@@ -4501,35 +4125,33 @@ export function ModelDropdown({
           }}
         >
           <option value="" disabled={!allowDefault}>
-            {allowDefault ? (defaultLabel ?? "Default") : loadingModels ? "Loading models…" : required ? "Select model (required)" : "Select model"}
+            {allowDefault ? (defaultLabel ?? pageText("default_808d7d")) : loadingModels ? pageText("loadingModels_d23f24") : required ? pageText("selectModelRequired_c4343b") : pageText("selectModel_426e99")}
           </option>
           {extraModels.map(id => <option key={id} value={id}>{models.find(model => model.id === id)?.label ?? id}</option>)}
-          {groupedModels.map(({ provider, heading, entries }) => groupByProvider || heading ? (
-            <optgroup key={provider} label={heading ?? provider}>
-              {entries.map(model => <option key={model.id} value={model.id}>{groupByProvider ? model.label : entryLabel(model)}</option>)}
+          {groupedModels.map(({ provider, entries }) => groupByProvider ? (
+            <optgroup key={provider} label={provider}>
+              {entries.map(model => <option key={model.id} value={model.id}>{model.label}</option>)}
             </optgroup>
-          ) : entries.map(model => <option key={model.id} value={model.id}>{entryLabel(model)}</option>))}
-          {creatable && <option value={customOption}>Enter custom model…</option>}
+          ) : entries.map(model => <option key={model.id} value={model.id}>{model.label}</option>))}
+          {creatable && <option value={customOption}>{pageText("enterCustomModel_54eae6")}</option>}
         </NativeSelect>
         {enteringCustomModel && (
-          <label className="mt-3 block space-y-1 text-xs text-muted-foreground">
-            Model ID
-            <Input aria-label="Model ID" value={value} onChange={event => onChange(event.target.value)}
-              placeholder="Enter model ID or alias" autoFocus required={required} />
+          <label className="mt-3 block space-y-1 text-xs text-muted-foreground">{pageText("modelID_c7eb22")}<Input aria-label={pageText("modelID_c7eb22")} value={value} onChange={event => onChange(event.target.value)}
+              placeholder={pageText("enterModelIDOrAlias_743dd0")} autoFocus required={required} />
           </label>
         )}
-        {loadingModels && <p role="status" className="mt-2 text-xs text-muted-foreground">Loading models…</p>}
+        {loadingModels && <p role="status" className="mt-2 text-xs text-muted-foreground">{pageText("loadingModels_d23f24")}</p>}
         {onRefreshModels && <Button type="button" variant="ghost" size="sm" disabled={refreshingModels}
-          onClick={() => void onRefreshModels()}>{refreshingModels ? "Refreshing…" : "Refresh models"}</Button>}
+          onClick={() => void onRefreshModels()}>{refreshingModels ? pageText("refreshing_961411") : pageText("refreshModels_ba6da3")}</Button>}
       </Field>
     );
   }
 
   return (
-    <Field label="Model" hint={help.model}>
-      <SelectPopover aria-label="Model" value={value}
+    <Field label={translateUi("interfaceCopy.model")} hint={help.model}>
+      <SelectPopover aria-label={translateUi("interfaceCopy.model")} value={value}
         displayValue={<span className={cn("truncate", !value && "text-muted-foreground")}>
-          {selected?.label ?? (value || (allowDefault ? (defaultLabel ?? "Default") : required ? "Select model (required)" : "Select model"))}
+          {selected?.label ?? (value || (allowDefault ? (defaultLabel ?? pageText("default_808d7d")) : required ? pageText("selectModelRequired_c4343b") : pageText("selectModel_426e99")))}
         </span>}
         open={open}
         onOpenChange={(nextOpen) => {
@@ -4537,11 +4159,11 @@ export function ModelDropdown({
           if (!nextOpen) setModelSearch("");
         }}
       >
-        <div role="listbox" aria-label="Model">
+        <div role="listbox" aria-label={translateUi("interfaceCopy.model")}>
           <div className="relative mb-1">
             <input
               className="w-full px-2 py-1.5 pr-6 text-xs bg-transparent outline-none border-b border-border placeholder:text-muted-foreground/50"
-              placeholder={creatable ? "Search models... (type to create)" : "Search models..."}
+              placeholder={creatable ? pageText("searchModelsTypeToCreate_e7540d") : pageText("searchModels_61c1b9")}
               value={modelSearch}
               onChange={(e) => setModelSearch(e.target.value)}
               autoFocus
@@ -4572,7 +4194,7 @@ export function ModelDropdown({
                 <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
                 <path d="M3 3v5h5" />
               </svg>
-              {detectingModel ? "Detecting..." : detectedModel ? (detectModelLabel?.replace(/^Detect\b/, "Re-detect") ?? "Re-detect from config") : (detectModelLabel ?? "Detect from config")}
+              {detectingModel ? pageText("detecting_955260") : detectedModel ? (detectModelLabel?.replace(/^Detect\b/, "Re-detect") ?? pageText("reDetectFromConfig_7d7cfe")) : (detectModelLabel ?? pageText("detectFromConfig_f48b09"))}
             </button>
           )}
           {onRefreshModels && !modelSearch.trim() && (
@@ -4590,7 +4212,7 @@ export function ModelDropdown({
                 <path d="M21 12a9 9 0 0 1-15.28 6.36L3 16" />
                 <path d="M8 16H3v5" />
               </svg>
-              {refreshingModels ? "Refreshing..." : "Refresh models"}
+              {refreshingModels ? pageText("refreshing_5b7bdb") : pageText("refreshModels_ba6da3")}
             </button>
           )}
           {value && (!models.some((m) => m.id === value) || promotedModelIds.has(value)) && (
@@ -4607,9 +4229,7 @@ export function ModelDropdown({
               <span className="block w-full text-left truncate font-mono text-xs" title={value}>
                 {models.find((m) => m.id === value)?.label ?? value}
               </span>
-              <Badge variant="outline" className="ml-auto text-(length:--text-nano) px-1.5 bg-green-500/15 text-green-400 border-green-500/20">
-                current
-              </Badge>
+              <Badge variant="outline" className="ml-auto text-(length:--text-nano) px-1.5 bg-green-500/15 text-green-400 border-green-500/20">{pageText("current_405ab5")}</Badge>
             </button>
           )}
           {detectedModel && detectedModel !== value && (
@@ -4627,9 +4247,7 @@ export function ModelDropdown({
               <span className="block w-full text-left truncate font-mono text-xs" title={detectedModel}>
                 {models.find((m) => m.id === detectedModel)?.label ?? detectedModel}
               </span>
-              <Badge variant="outline" className="ml-auto text-(length:--text-nano) px-1.5 bg-blue-500/15 text-blue-400 border-blue-500/20">
-                detected
-              </Badge>
+              <Badge variant="outline" className="ml-auto text-(length:--text-nano) px-1.5 bg-blue-500/15 text-blue-400 border-blue-500/20">{pageText("detected_bcbfff")}</Badge>
             </button>
           )}
           {detectedModelCandidates
@@ -4652,9 +4270,7 @@ export function ModelDropdown({
                   <span className="block w-full text-left truncate font-mono text-xs" title={candidate}>
                     {entry?.label ?? candidate}
                   </span>
-                  <Badge variant="outline" className="ml-auto text-(length:--text-nano) px-1.5 bg-sky-500/15 text-sky-400 border-sky-500/20">
-                    config
-                  </Badge>
+                  <Badge variant="outline" className="ml-auto text-(length:--text-nano) px-1.5 bg-sky-500/15 text-sky-400 border-sky-500/20">{pageText("config_dfba7a")}</Badge>
                 </button>
               );
             })}
@@ -4671,9 +4287,7 @@ export function ModelDropdown({
                   onChange("");
                   onOpenChange(false);
                 }}
-              >
-                Default
-              </button>
+              >{translateUi("interfaceCopy.default")}</button>
             )}
             {canCreateManualModel && (
               <button
@@ -4686,7 +4300,7 @@ export function ModelDropdown({
                   setModelSearch("");
                 }}
               >
-                <span>Use manual model</span>
+                <span>{pageText("useManualModel_18c9c0")}</span>
                 <span className="text-xs font-mono text-muted-foreground">{manualModel}</span>
               </button>
             )}
@@ -4695,11 +4309,6 @@ export function ModelDropdown({
                 {groupByProvider && (
                   <div className="px-2 py-1 text-(length:--text-nano) uppercase tracking-wide text-muted-foreground">
                     {group.provider} ({group.entries.length})
-                  </div>
-                )}
-                {!groupByProvider && group.heading && (
-                  <div role="presentation" className="px-2 py-1 text-xs font-medium text-muted-foreground">
-                    {group.heading}
                   </div>
                 )}
                 {group.entries.map((m) => (
@@ -4716,16 +4325,9 @@ export function ModelDropdown({
                       onOpenChange(false);
                     }}
                   >
-                    {groupByProvider ? (
-                      <span className="block w-full text-left truncate" title={m.id}>{extractModelName(m.id)}</span>
-                    ) : groupModel?.(m) ? (
-                      <span className="flex w-full min-w-0 items-baseline gap-2 text-left" title={m.id}>
-                        <span className="truncate">{groupModel(m)!.label}</span>
-                        {groupModel(m)!.note && <span className="truncate text-xs text-muted-foreground">{groupModel(m)!.note}</span>}
-                      </span>
-                    ) : (
-                      <span className="block w-full text-left truncate" title={m.id}>{m.label}</span>
-                    )}
+                    <span className="block w-full text-left truncate" title={m.id}>
+                      {groupByProvider ? extractModelName(m.id) : m.label}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -4733,9 +4335,9 @@ export function ModelDropdown({
             {filteredModels.length === 0 && !canCreateManualModel && promotedModelIds.size === 0 && (
               <div className="px-2 py-2 space-y-2">
                 <p className="text-xs text-muted-foreground">
-                  {loadingModels ? "Loading models…" : onDetectModel
-                    ? (emptyDetectHint ?? "No model detected yet. Enter a provider/model manually.")
-                    : "No models found."}
+                  {loadingModels ? pageText("loadingModels_d23f24") : onDetectModel
+                    ? (emptyDetectHint ?? pageText("noModelDetectedYetEnterAProviderModel_b4af8a"))
+                    : pageText("noModelsFound_159d88")}
                 </p>
               </div>
             )}
@@ -4759,10 +4361,11 @@ function ThinkingEffortDropdown({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  return <Field label="Thinking effort" hint={help.thinkingEffort}>
-    <SelectPopover aria-label="Thinking effort" value={value} onValueChange={onChange}
+  const { t: pageText } = usePageTranslation("interface");
+  return <Field label={pageText("thinkingEffort_ffa438")} hint={help.thinkingEffort}>
+    <SelectPopover aria-label={pageText("thinkingEffort_ffa438")} value={value} onValueChange={onChange}
       open={open} onOpenChange={onOpenChange}
-      options={options.map(option => ({ value: option.id, label: option.label,
+      options={options.map(option => ({ value: option.id, label: adapterCopy(option.label),
         suffix: option.id ? <span className="text-xs text-muted-foreground font-mono">{option.id}</span> : undefined,
       }))} />
   </Field>;

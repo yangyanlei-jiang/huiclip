@@ -1,4 +1,6 @@
-import { useEffect, useId, useRef, useState, type ClipboardEvent, type ReactNode } from "react";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Copy, Check, Loader2 } from "lucide-react";
 
@@ -12,9 +14,6 @@ import {
   COPIED_REVEAL_DELAY_MS,
   COPIED_REVEAL_TRAVEL,
 } from "./onboarding/onboarding-motion";
-import { ANALYTICS_MASK_CLASS, ANALYTICS_NO_CAPTURE_CLASS } from "@/lib/analytics/privacy";
-import { describeError } from "@/api/errors";
-import { cn } from "@/lib/utils";
 
 /**
  * Which shell a login panel draws itself in.
@@ -53,7 +52,7 @@ export const CONNECT_SOURCE_NAMES: Record<string, string> = {
   claude_local: "Claude",
   codex_local: "OpenAI",
   grok_local: "Grok",
-  antigravity_runtime: "Antigravity",
+  antigravity_runtime: "Google",
 };
 
 /** The provider name for a source, falling back to the type when unlisted. */
@@ -93,12 +92,13 @@ export function OnboardingLoginCard({
   loading?: boolean;
   children: ReactNode;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (loading) {
     return (
       <div
         className="flex min-h-(--sz-108px) items-center justify-center rounded-xl bg-muted/40"
         role="status"
-        aria-label="Preparing the sign-in"
+        aria-label={pageText("preparingTheSignIn_00266a")}
       >
         <Loader2 className="size-4 animate-spin text-muted-foreground" />
       </div>
@@ -228,6 +228,8 @@ export function OnboardingLoginCodeRow({
   code: string;
   autoCopy?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [copied, setCopied] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const autoCopiedRef = useRef(false);
@@ -296,7 +298,7 @@ export function OnboardingLoginCodeRow({
 
   return (
     <div className="flex h-(--sz-44px) items-center gap-2 rounded-lg bg-muted px-4">
-      <span className={cn("min-w-0 flex-1 truncate text-sm text-foreground", ANALYTICS_NO_CAPTURE_CLASS)}>
+      <span className="min-w-0 flex-1 truncate text-sm text-foreground">
         {code}
       </span>
       <AnimatePresence initial={false}>
@@ -307,14 +309,12 @@ export function OnboardingLoginCodeRow({
             initial={{ opacity: 0, y: COPIED_REVEAL_TRAVEL }}
             animate={{ opacity: 1, y: 0, transition: COPIED_REVEAL }}
             exit={{ opacity: 0, transition: COPIED_REVEAL }}
-          >
-            Copied!
-          </motion.span>
+          >{translateUi("interfaceCopy.copied")}</motion.span>
         )}
       </AnimatePresence>
       <LoginCardCopyButton
         value={code}
-        label="Copy the code"
+        label={pageText("copyTheCode_4413d7")}
         onCopied={() => {
           // No wait here. A press is a direct action, and delaying its
           // acknowledgement would read as the button having missed.
@@ -365,19 +365,16 @@ export function OnboardingCardField({
   onPaste,
   disabled,
   label = "Authorization code",
-  description,
   placeholder = "Paste authorization code here",
   masked = false,
   autoFocus = false,
-  className,
 }: {
   value: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
-  onPaste?: (event: ClipboardEvent<HTMLInputElement>) => void;
+  onPaste?: () => void;
   disabled?: boolean;
   label?: string;
-  description?: string;
   placeholder?: string;
   /**
    * Dots instead of the value. The key card asks for it because a provider key
@@ -395,15 +392,12 @@ export function OnboardingCardField({
    * not where the next action is.
    */
   autoFocus?: boolean;
-  className?: string;
 }) {
-  const descriptionId = useId();
-  const input = (
+  return (
     <input
       // eslint-disable-next-line jsx-a11y/no-autofocus -- see the prop's note
       autoFocus={autoFocus}
       aria-label={label}
-      aria-describedby={description ? descriptionId : undefined}
       type={masked ? "password" : "text"}
       autoComplete="off"
       spellCheck={false}
@@ -411,23 +405,15 @@ export function OnboardingCardField({
       value={value}
       disabled={disabled}
       onChange={(event) => onChange(event.target.value)}
-      onPaste={onPaste}
+      onPaste={() => onPaste?.()}
       onKeyDown={(event) => {
         if (event.key === "Enter") {
           event.preventDefault();
           onSubmit();
         }
       }}
-      className={className ? cn(onboardingCardInputClass, className) : onboardingCardInputClass}
+      className={onboardingCardInputClass}
     />
-  );
-  if (!description) return input;
-
-  return (
-    <div className="flex flex-col gap-2">
-      {input}
-      <p id={descriptionId} className="px-5 text-xs text-muted-foreground">{description}</p>
-    </div>
   );
 }
 
@@ -439,7 +425,6 @@ export function ProviderSubscriptionCard({
   mode,
   loading,
   failure,
-  failureMessage,
   onRetry,
   children,
 }: {
@@ -447,12 +432,12 @@ export function ProviderSubscriptionCard({
   authorizationUrl?: string;
   onOpenAuthorization?: () => void;
   failure?: "expired" | "failed";
-  failureMessage?: string;
   onRetry?: () => void;
-  mode: "submitted_code" | "displayed_code" | "browser_redirect" | "hosted_redirect";
+  mode: "submitted_code" | "displayed_code" | "browser_redirect";
   loading?: boolean;
   children: ReactNode;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <OnboardingLoginCard
       loading={loading}
@@ -468,21 +453,19 @@ export function ProviderSubscriptionCard({
             target="_blank"
             rel="noreferrer noopener"
             className="underline underline-offset-2 hover:text-foreground"
-          >
-            Sign in to {providerName}
+          >{pageText("signInTo_5d033b") + " "}{providerName}
           </a>
-          {mode === "hosted_redirect" ? " then paste the redirect URL below"
-            : mode === "browser_redirect" ? " then return here"
+          {mode === "browser_redirect" ? " " + pageText("thenReturnHere_c09578")
             : mode === "submitted_code"
-            ? " then come back and enter authorization code"
-            : " by providing the authorization code below"}
+            ? " " + pageText("thenComeBackAndEnterAuthorizationCode_42eff9")
+            : " " + pageText("byProvidingTheAuthorizationCodeBelow_51fdba")}
         </>
       )}
     >
       {failure && (
         <div className="flex flex-col items-start gap-3 px-2">
-          <p role="alert" className="text-sm text-muted-foreground">{failureMessage ?? "Retry sign-in to get a fresh code. Your setup is saved."}</p>
-          {onRetry && <Button type="button" variant="outline" onClick={onRetry}>Retry sign-in</Button>}
+          <p role="alert" className="text-sm text-muted-foreground">{pageText("retrySignInToGetAFreshCode_fa9fef")}</p>
+          {onRetry && <Button type="button" variant="outline" onClick={onRetry}>{pageText("retrySignIn_b5ab68")}</Button>}
         </div>
       )}
       {children}
@@ -496,129 +479,73 @@ export function ProviderApiKeyCard({
 }: Omit<Parameters<typeof OnboardingCardField>[0], "masked" | "label"> & {
   providerName: string;
 }) {
+  const { t } = useUiTranslation();
   return (
     <OnboardingLoginCard
-      instruction={`Provide your ${providerName} API key to connect`}
+      instruction={t("connectModel.provide", { provider: providerName })}
     >
-      <OnboardingCardField {...field} label="API key" masked />
+      <OnboardingCardField {...field} label={t("connectModel.api")} masked />
     </OnboardingLoginCard>
   );
 }
 
 /** Shared instructions for local subscription setup in every authentication host. */
-export function LocalProviderLoginInstructions({ adapterType, login, hostedRedirect = false }: {
+export function LocalProviderLoginInstructions({ adapterType, login }: {
   adapterType: string;
-  hostedRedirect?: boolean | "optional";
   login?: { isolated?: boolean; command?: string; authorizationUrl?: string | null; code?: string | null; accountLabel?: string | null; submitCode?: (code: string) => Promise<void>; preparing: boolean; status?: "ready" | "sign_in_required" | "expired" | null; error: string | null; retry: () => void };
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t } = useUiTranslation();
   const [showCommand, setShowCommand] = useState(false);
   const [browserCode, setBrowserCode] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [codeSubmitted, setCodeSubmitted] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const codeSubmissionRef = useRef<symbol | null>(null);
-  useEffect(() => {
-    codeSubmissionRef.current = null;
-    setBrowserCode("");
-    setSubmitting(false);
-    setCodeSubmitted(false);
-    setSubmitError(null);
-  }, [login?.authorizationUrl, login?.preparing]);
-  const provider = adapterType === "antigravity_runtime" ? "Antigravity" : adapterType === "claude_local" ? "Claude Code" : adapterType === "grok_local" ? "Grok CLI" : "Codex CLI";
+  const provider = adapterType === "antigravity_runtime" ? "Google Antigravity" : adapterType === "claude_local" ? "Claude Code" : adapterType === "grok_local" ? "Grok CLI" : "Codex CLI";
   const isolated = login?.isolated ?? (adapterType === "codex_local" || adapterType === "grok_local");
   const command = login?.command;
   const browserLogin = adapterType === "claude_local" || adapterType === "codex_local" || adapterType === "antigravity_runtime";
-  const hostedGoogleRedirect = adapterType === "antigravity_runtime" && Boolean(hostedRedirect);
-  const optionalHostedGoogleRedirect = adapterType === "antigravity_runtime" && hostedRedirect === "optional";
-  async function submitBrowserCode(value = browserCode) {
-    if (!value.trim() || !login?.submitCode || codeSubmissionRef.current) return;
-    const submission = Symbol();
-    codeSubmissionRef.current = submission;
+  async function submitBrowserCode() {
+    if (!browserCode.trim() || !login?.submitCode || submitting) return;
     setSubmitting(true);
-    setSubmitError(null);
     try {
-      await login.submitCode(value.trim());
-      if (codeSubmissionRef.current !== submission) return;
+      await login.submitCode(browserCode.trim());
       setBrowserCode("");
-      setCodeSubmitted(true);
-    } catch (cause) {
-      // The login hook presents attempt-level errors beside the sign-in card;
-      // hosted Google redirect keeps the field open for retryable paste errors.
-      if (codeSubmissionRef.current === submission) {
-        codeSubmissionRef.current = null;
-        if (hostedGoogleRedirect) setSubmitError(describeError(cause).body);
-      }
+    } catch {
+      // The login hook presents the request error beside the sign-in card.
     } finally {
-      if (codeSubmissionRef.current === submission || codeSubmissionRef.current === null) setSubmitting(false);
+      setSubmitting(false);
     }
   }
-  function pasteBrowserCode(event: ClipboardEvent<HTMLInputElement>) {
-    const pasted = event.clipboardData?.getData("text");
-    if (!pasted?.trim()) return;
-    const input = event.currentTarget;
-    const start = input.selectionStart ?? input.value.length;
-    const end = input.selectionEnd ?? start;
-    const value = input.value.slice(0, start) + pasted + input.value.slice(end);
-    event.preventDefault();
-    setSubmitError(null);
-    setBrowserCode(value);
-    void submitBrowserCode(value);
-  }
-  if (login?.preparing) return <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />Preparing sign-in…</p>;
+  if (login?.preparing) return <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />{t("connectModel.prepare")}</p>;
   const ready = login?.status === "ready";
-  const awaitingBrowserSignIn = browserLogin && !ready && !login?.authorizationUrl && !login?.error;
   return <div className="min-w-0 max-w-full space-y-3 text-sm text-muted-foreground">
     {ready ? <>
-      <p role="status" className={cn("flex items-center gap-2 text-foreground", ANALYTICS_MASK_CLASS)}><Check className="size-4 shrink-0 text-(--status-task-icon-done)" />{login?.accountLabel ?? provider} is signed in. Click Connect to use this account.</p>
-      {!showCommand && <button type="button" className="underline underline-offset-4" onClick={() => browserLogin ? login?.retry() : setShowCommand(true)}>Use a different account</button>}
+      <p role="status" className="flex items-center gap-2 text-foreground"><Check className="size-4 shrink-0 text-(--status-task-icon-done)" />{login?.accountLabel ?? provider}{" " + pageText("isSignedInClickConnectToUseThis_870cab")}</p>
+      {!showCommand && <button type="button" className="underline underline-offset-4" onClick={() => browserLogin ? login?.retry() : setShowCommand(true)}>{pageText("useADifferentAccount_9bdf70")}</button>}
     </> : !browserLogin && <p>{isolated ? `Sign in to ${provider} for this connection on the machine running Paperclip. Your existing terminal login stays separate.` : `Connect uses your local ${provider} account on the machine running Paperclip.`}</p>}
-    {awaitingBrowserSignIn && <p role="status">Preparing browser sign-in…</p>}
-    {(submitting || codeSubmitted) && !ready && !login?.error && <p role="status">Finishing sign-in…</p>}
-    {browserLogin && !ready && !submitting && !codeSubmitted && !login?.error && login?.authorizationUrl && <ProviderSubscriptionCard
+    {browserLogin && !ready && !login?.authorizationUrl && !login?.error && <p role="status">{t("connectModel.preparing")}</p>}
+    {browserLogin && !ready && !login?.error && login?.authorizationUrl && <ProviderSubscriptionCard
       providerName={connectSourceName(adapterType)}
       authorizationUrl={login.authorizationUrl}
-      mode={hostedGoogleRedirect && !optionalHostedGoogleRedirect ? "hosted_redirect" : adapterType === "antigravity_runtime" ? "browser_redirect" : adapterType === "claude_local" ? "submitted_code" : "displayed_code"}
+      mode={adapterType === "antigravity_runtime" ? "browser_redirect" : adapterType === "claude_local" ? "submitted_code" : "displayed_code"}
     >
       {adapterType === "claude_local" ? <div className="flex flex-col gap-2">
         <OnboardingCardField
           value={browserCode}
           onChange={setBrowserCode}
-          onPaste={pasteBrowserCode}
           onSubmit={() => void submitBrowserCode()}
           disabled={submitting}
         />
-        <Button type="button" disabled={!browserCode.trim() || submitting} onClick={() => void submitBrowserCode()}>Submit code</Button>
-      </div> : hostedGoogleRedirect ? <div className="flex flex-col gap-2">
-        <p className="px-2 text-xs text-muted-foreground">
-          {optionalHostedGoogleRedirect
-            ? <>Finish signing in in the Antigravity browser window, then return here. If your browser is on another machine and the <code className="font-mono">127.0.0.1</code> redirect page won’t load, copy the full URL from your address bar and paste it below.</>
-            : <>After signing in to Antigravity, your browser will redirect to a <code className="font-mono">127.0.0.1</code> page that won’t load. Copy the full URL from your browser’s address bar and paste it below.</>}
-        </p>
-        <OnboardingCardField
-          label="Antigravity redirect URL"
-          placeholder="Paste http://127.0.0.1:... URL here"
-          className={cn(ANALYTICS_MASK_CLASS, ANALYTICS_NO_CAPTURE_CLASS)}
-          value={browserCode}
-          onChange={(value) => {
-            setSubmitError(null);
-            setBrowserCode(value);
-          }}
-          onPaste={pasteBrowserCode}
-          onSubmit={() => void submitBrowserCode()}
-          disabled={submitting}
-        />
-        <Button type="button" disabled={!browserCode.trim() || submitting} onClick={() => void submitBrowserCode()}>Submit redirect URL</Button>
-        {submitError && <p role="alert" className="px-2 text-xs text-destructive">{submitError}</p>}
-      </div> : adapterType === "antigravity_runtime" ? <p>Finish signing in in the Antigravity browser window, then return here.</p> : <OnboardingLoginCodeRow code={login.code ?? ""} />}
+        <Button type="button" disabled={!browserCode.trim() || submitting} onClick={() => void submitBrowserCode()}>{pageText("submitCode_32aefb")}</Button>
+      </div> : adapterType === "antigravity_runtime" ? <p>{pageText("finishSigningInInTheGoogleBrowserWindow_9f6a08")}</p> : <OnboardingLoginCodeRow code={login.code ?? ""} />}
     </ProviderSubscriptionCard>}
     {!browserLogin && (!ready || showCommand) && !login?.error && <>
-      <p>Run this in a terminal on that machine and finish signing in in your browser. We’ll check automatically when you return.</p>
+      <p>{pageText("runThisInATerminalOnThatMachine_80a6bf")}</p>
       {command && <div className="flex min-w-0 max-w-full items-start gap-2 rounded-md border bg-muted p-3 text-foreground">
-        <pre className={cn("min-w-0 flex-1 whitespace-pre-wrap break-all font-mono text-xs", ANALYTICS_NO_CAPTURE_CLASS)}><code>{command}</code></pre>
-        <LoginCardCopyButton value={command} label="Copy sign-in command" />
+        <pre className="min-w-0 flex-1 whitespace-pre-wrap break-all font-mono text-xs"><code>{command}</code></pre>
+        <LoginCardCopyButton value={command} label={pageText("copySignInCommand_b017a9")} />
       </div>}
     </>}
     {login?.error && <p role="alert">{login.error}</p>}
-    {login && !login.preparing && !ready && !awaitingBrowserSignIn && (isolated || login.error) && <button type="button" className="underline underline-offset-4" onClick={login.retry}>{isolated ? "Start sign-in again" : "Check again"}</button>}
+    {login && !login.preparing && !ready && (isolated || login.error) && <button type="button" className="underline underline-offset-4" onClick={login.retry}>{t(isolated ? "connectModel.restart" : "connectModel.check")}</button>}
   </div>;
 }

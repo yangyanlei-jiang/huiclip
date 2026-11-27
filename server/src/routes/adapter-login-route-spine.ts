@@ -9,7 +9,6 @@ import type { z } from "zod";
 export interface AdapterLoginStartResolution<TData> {
   ownerUserId: string;
   data: TData;
-  targetAgentId: string | undefined;
 }
 
 /**
@@ -55,9 +54,10 @@ export interface AdapterLoginStartSpineInput<TData extends { environmentId: stri
    */
   guardAfterValidate?: (data: TData) => boolean | Promise<boolean>;
   /**
-   * Checks the sign-in environment and resolves its computer target, when required.
+   * Checks the sandbox environment. It throws a mapped HTTP error for a missing,
+   * archived, non-sandbox, or foreign environment.
    */
-  resolveTargetAgentId: (data: TData) => Promise<string | undefined>;
+  assertSandbox: (data: TData) => Promise<void>;
 }
 
 /**
@@ -71,9 +71,9 @@ export interface AdapterLoginStartSpineInput<TData extends { environmentId: stri
  *    400 and returns null on a failure.
  * 4. It runs the optional post-validation guard. It returns null when the guard
  *    sends a response.
- * 5. It checks the login environment and resolves the transport target.
+ * 5. It checks the sandbox environment.
  *
- * It returns the owner, validated body and transport target when every step passes. It returns
+ * It returns the owner and the validated body when every step passes. It returns
  * null when a step sends a response; the caller must then stop.
  */
 export async function runAdapterLoginStartSpine<TData extends { environmentId: string }>(
@@ -102,6 +102,6 @@ export async function runAdapterLoginStartSpine<TData extends { environmentId: s
     if (stop) return null;
   }
 
-  const targetAgentId = await input.resolveTargetAgentId(data);
-  return { ownerUserId, data, targetAgentId };
+  await input.assertSandbox(data);
+  return { ownerUserId, data };
 }

@@ -6,7 +6,7 @@ import type { AgentAvatarRequest } from "./agent-avatars.js";
 
 parentPort!.on("message", async (request: AgentAvatarRequest) => {
   try {
-    const svg = renderAgentSvg(request.appearance, request.size, request.scale, request.pose, request.muted, request.view);
+    const svg = renderAgentSvg(request.appearance, request.size, request.scale, request.pose, request.muted);
     const image = sharp(Buffer.from(svg));
     if (request.background === "paperclip-dark") image.flatten({ background: PAPERCLIP_DARK_AVATAR_BACKGROUND });
     const png = await image.png().toBuffer();

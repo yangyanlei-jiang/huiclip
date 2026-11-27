@@ -989,7 +989,7 @@ describe("company-and-environment setup-token route — strict request contract"
     const res = await startCompanySession(app, {
       environmentId: ENVIRONMENT_ID,
       adapterType: "claude_local",
-      unknownField: "unsupported",
+      agentId: "44444444-4444-4444-8444-444444444444",
     });
     expect(res.status).toBe(400);
     expect(transport.records).toEqual([]);

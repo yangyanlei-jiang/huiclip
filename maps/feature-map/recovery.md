@@ -27,8 +27,7 @@ Agent access: [companion](../agent-access-map/recovery.md).
   no duplicate dispatch, and later recovery after preparation leaves the registry.
 - `source-action`: `recovery/source-action` — source-scoped recovery actions remain attached to the task;
   independent repair work may have its own issue and return owner.
-- `exhaustion`: `recovery/exhaustion` — a run stopped for a reason only a person can resolve offers ordinary Retry;
-  exhausted infrastructure recovery instead continues in one fresh run from saved work.
+- `exhaustion`: `recovery/exhaustion` — an exhausted infrastructure attempt offers ordinary Retry.
   Internal repair stays system-owned; genuine user decisions retain their
   specific action.
 - `workspace`: `recovery/workspace` — workspace divergence/export failures show the applicable repair,
@@ -65,14 +64,6 @@ and the [disconnect recovery journey](../../tests/e2e/disconnect-write-recovery.
 
 ### `source-task`
 
-A Native run held for unknown controller process space remains blocked even
-after its lease expires. A company owner, company administrator, or instance
-administrator can record separate original-host controller and provider/tool stop confirmations with reviewed
-action outcomes through the existing task recovery card. Recording containment
-does not replay work. After normal settlement/cleanup, use a separate ordinary
-Retry; stale authority or unresolved cleanup must keep it blocked. This candidate
-path is source-only pending its focused real-owner qualification.
-
 Open the affected task from Tasks, Inbox/Blocked, search, or a direct task link.
 Observe one working, backoff, failed or waiting-for-user state. Use Retry after
 an infrastructure failure. No process or file certification is required.
@@ -104,7 +95,7 @@ stopped-run recovery checks.
 
 ### `operator-retry`
 
-The [connected-task regression](../../server/src/__tests__/chat-channels/github-retry-and-recovery.integration.test.ts)
+The [connected-task regression](../../server/src/__tests__/chat-channels.integration.test.ts)
 uses HTTP Retry after an accepted board message fails before provider startup.
 It checks the canonical intent, same-user identity and actual queue dispatch,
 then repeats Retry after another contained preparation failure with the same
@@ -122,10 +113,9 @@ needs containment. Observe a saved wait with no new executor. After verified
 containment, the same chat receipt must admit one successor with the original
 source batch. Reload and repeat reconciliation. Check that a paused endpoint,
 changed source, superseded request or revoked access cannot start that work.
-The connected-chat database regressions in
-[GitHub retry and recovery](../../server/src/__tests__/chat-channels/github-retry-and-recovery.integration.test.ts)
-and [board and shared core](../../server/src/__tests__/chat-channels/board-and-shared-core.integration.test.ts)
-exercise admission and queue continuation. They do not establish hosted
+The connected-chat database regression in
+[chat channel integration](../../server/src/__tests__/chat-channels.integration.test.ts)
+exercises admission and queue continuation. It does not establish hosted
 provider recovery or successful delivery.
 
 For GitHub, save a follow-up behind a failed run, then reconnect the same App.
@@ -288,7 +278,7 @@ the task becomes done or cancelled. Verify one unchanged action ID, attempt
 count, and timestamps; task completion must not authorize copyback. Clear only
 the exact receipt after operator stop verification, then confirm stale action
 cleanup. The [route regressions](../../server/src/__tests__/issue-recovery-actions.test.ts)
-and [heartbeat regression](../../server/src/__tests__/heartbeat-process-recovery-part-1.test.ts)
+and [heartbeat regression](../../server/src/__tests__/heartbeat-process-recovery.test.ts)
 cover this sequence without a live operator recovery claim.
 
 An intentionally Done onboarding parent can still need its validated
@@ -304,8 +294,8 @@ and the revised behavior still needs live qualification.
 
 ### `run-detail`
 
-Automated: none for mocked UI (`RunWorkspaceRecoverySurface` component tests were
-removed; verify the run workspace recovery host manually).
+Automated: [run workspace recovery](../../ui/src/components/RunWorkspaceRecoverySurface.test.tsx)
+tests this host; it is component coverage, not an end-to-end repair.
 
 Manual: prepare a failed run with error code `workspace_validation_failed`, a
 linked source task, and a live `workspace_validation` recovery action on that
@@ -336,10 +326,11 @@ provider stop reply, and verifies that HTTP Retry cannot admit a successor until
 the real temporary files are restored. Duplicate requests then admit one queued
 turn. GitHub and Telegram admission also retain the exact pending recovery.
 
-Automated: [IssueRecoveryActionCard](../../ui/src/components/IssueRecoveryActionCard.test.tsx)
-covers workspace divergence, reissue, reconcile, and confirmation (mocked UI tests
-for `DispositionRecoveryNotice` and `WorkspaceExportRecovery` were removed; verify
-those notice and export states via Storybook/manual checks).
+Automated: [disposition notices](../../ui/src/components/DispositionRecoveryNotice.test.tsx)
+tests pending/error/gated states and waiting for the real retry acknowledgement.
+The recovery-card suite covers workspace divergence, reissue, reconcile, and
+confirmation. [Workspace export](../../ui/src/components/WorkspaceExportRecovery.test.tsx)
+covers quiet restoration, legacy/operator assistance and resolved states.
 
 For a retained legacy or native file hold, open the source task after its recovery
 action has resolved but its files still need recovery. The shared task projection
@@ -348,9 +339,10 @@ infrastructure attention card. Unknown external outcomes remain fenced internall
 An authorized board operator can use the resolution API to record verified files
 and a backup link without changing task status or starting another run. The
 server independently validates the original stopped-execution receipt. Agent
-Chat retains the hold rather than suggesting another message. The [repair route](../../server/src/__tests__/workspace-restore-repair-route.test.ts)
-covers quiet live recovery, read-only access, stale or missing stop proof,
-(mocked `ExecutionBlockerNotice` UI tests were removed; verify notice UI manually) and
+Chat retains the hold rather than suggesting another message. The
+[notice](../../ui/src/components/ExecutionBlockerNotice.test.tsx) and
+[repair route](../../server/src/__tests__/workspace-restore-repair-route.test.ts)
+cover quiet live recovery, read-only access, stale or missing stop proof,
 source-only repair, and preserved task status. These tests use fixtures; separately
 verify original files and their attached artifact before recording a real repair.
 
@@ -374,9 +366,8 @@ Repeat source-only repair with a `succeeded` legacy run that still has a retaine
 file obligation. Its result must remain successful, its current task owner and
 status must stay unchanged, and later saved input must become eligible for normal
 admission. A running or queued source and a normal retry of a successful turn
-remain denied. Canonical workspace recovery coverage lives in
-[workspace recovery admission](../../server/src/services/workspace-recovery-admission.test.ts)
-and [workspace recovery warm handoff](../../server/src/services/workspace-recovery-warm-handoff.test.ts) without claiming live provider proof.
+remain denied. The [reconciliation regressions](../../server/src/services/workspace-restore-reconciliation.test.ts)
+cover these cases and stop-receipt validation without claiming live provider proof.
 
 For an abandoned native copyback owner, the harness verifies the exact stopped
 deployment and the reconciler restores saved work automatically. Task users see
@@ -408,7 +399,7 @@ files, successful lease cleanup, and one bounded continuation. Reload before
 checking the successor. Repeat with controller loss: the expired fence must
 retain the exact source and require repair, never claim restored files or start
 a second executor. The database-backed
-[shutdown regression](../../server/src/__tests__/heartbeat-process-recovery-part-1.test.ts)
+[shutdown regression](../../server/src/__tests__/heartbeat-process-recovery.test.ts)
 checks finalizer joining, release order, durable retry uniqueness, and reload.
 The [settlement regressions](../../server/src/services/heartbeat/recovery.test.ts)
 cover other-controller fencing and owner loss. Provider boundaries are controlled
@@ -429,8 +420,9 @@ while the second cannot use the operator API.
 
 Automated: [legacy continuation](../../server/src/services/recovery/legacy-continuation.test.ts),
 [queue routes](../../server/src/__tests__/issue-queued-comments-routes.test.ts), and
-[native runner restart recovery](../../server/src/services/native-runtime/native-runner-restart-recovery.integration.test.ts)
-cover their respective recovery paths.
+[native restart recovery](../../server/src/services/native-runtime/native-restart-recovery.test.ts)
+cover their respective recovery paths. [Legacy failure continuation](../../tests/e2e/legacy-failure-continuation.spec.ts)
+adds a browser journey; it is not native runtime proof.
 
 [Queued Stop database regressions](../../server/src/modules/wake-queue/adapters/queued-operator-stop-postgres.test.ts)
 verify that an operator cancellation before runtime selection releases its own
@@ -467,7 +459,8 @@ only. Separately inspect the underlying execution if it is still stuck.
   silently trigger recovery that fights the user's instruction.
 - Source inspection and mocked component tests do not qualify real server
   restart continuity. Use the appropriate runtime suite for that claim.
-- See [steering](./steering.md) for saved follow-ups.
+- See [execution semantics](../../doc/execution-semantics.md) for the governing
+  recovery contract and [steering](./steering.md) for saved follow-ups.
 
 ### Storybook verification
 
@@ -478,7 +471,7 @@ Capability ID: `recovery/exhaustion`.
 Scope: ui
 Storybook: Exhausted/overdue attempts, operator retry pending/error, blocked authority/gate and specific escalation.
 Production: Inspect durable attempt bounds and actual eligible retry/repair; acknowledgment alone does not prove continued execution.
-Sources: Source: [IssueRecoveryActionCard.tsx](../../ui/src/components/IssueRecoveryActionCard.tsx), [DispositionRecoveryNotice.tsx](../../ui/src/components/DispositionRecoveryNotice.tsx), [issue-recovery-actions.ts](../../server/src/services/issue-recovery-actions.ts). Tests: [IssueRecoveryActionCard.test.tsx](../../ui/src/components/IssueRecoveryActionCard.test.tsx), [issue-recovery-actions.test.ts](../../server/src/__tests__/issue-recovery-actions.test.ts), [recovery.spec.ts](../../tests/e2e/execution-recovery/recovery.spec.ts)
+Sources: Source: [IssueRecoveryActionCard.tsx](../../ui/src/components/IssueRecoveryActionCard.tsx), [DispositionRecoveryNotice.tsx](../../ui/src/components/DispositionRecoveryNotice.tsx), [issue-recovery-actions.ts](../../server/src/services/issue-recovery-actions.ts). Tests: [IssueRecoveryActionCard.test.tsx](../../ui/src/components/IssueRecoveryActionCard.test.tsx), [DispositionRecoveryNotice.test.tsx](../../ui/src/components/DispositionRecoveryNotice.test.tsx), [issue-recovery-actions.test.ts](../../server/src/__tests__/issue-recovery-actions.test.ts), [recovery.spec.ts](../../tests/e2e/execution-recovery/recovery.spec.ts)
 
 #### `unknown-outcome`
 
@@ -496,4 +489,4 @@ Capability ID: `recovery/user-continuation`.
 Scope: ui
 Storybook: Saved follow-up waiting on stop cleanup, pause/budget gate, one eligible continuation and result/failure.
 Production: Confirm previous execution stopped before delivery, preserve message, avoid duplicate wakes and honor actual task/ancestor/budget gate in separate legacy/native paths.
-Sources: Source: [TaskChatQueuedMessages.tsx](../../ui/src/components/task-chat/TaskChatQueuedMessages.tsx), [legacy-continuation.ts](../../server/src/services/recovery/legacy-continuation.ts), [native-restart-recovery.ts](../../server/src/services/native-runtime/native-restart-recovery.ts). Tests: [legacy-continuation.test.ts](../../server/src/services/recovery/legacy-continuation.test.ts), [native-runner-restart-recovery.integration.test.ts](../../server/src/services/native-runtime/native-runner-restart-recovery.integration.test.ts), [issue-queued-comments-routes.test.ts](../../server/src/__tests__/issue-queued-comments-routes.test.ts)
+Sources: Source: [TaskChatQueuedMessages.tsx](../../ui/src/components/task-chat/TaskChatQueuedMessages.tsx), [legacy-continuation.ts](../../server/src/services/recovery/legacy-continuation.ts), [native-restart-recovery.ts](../../server/src/services/native-runtime/native-restart-recovery.ts). Tests: [legacy-continuation.test.ts](../../server/src/services/recovery/legacy-continuation.test.ts), [native-restart-recovery.test.ts](../../server/src/services/native-runtime/native-restart-recovery.test.ts), [issue-queued-comments-routes.test.ts](../../server/src/__tests__/issue-queued-comments-routes.test.ts), [legacy-failure-continuation.spec.ts](../../tests/e2e/legacy-failure-continuation.spec.ts)

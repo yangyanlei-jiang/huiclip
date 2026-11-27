@@ -1,20 +1,14 @@
 import { agents } from "@paperclipai/db";
 import { asBoolean, parseObject } from "../adapters/utils.js";
 
-/** Runner work needs a task; unscoped heartbeats (timer or manual) have no task owner.
+/** Runner work needs a task; generic interval heartbeats have no task owner.
  * Task-bound schedules, monitors and external-provider assignments use their
- * existing wake paths and are unaffected by this policy.
+ * existing wake paths and are unaffected by this interval policy.
  */
-export function supportsUnscopedHeartbeat(
-  agent: Pick<typeof agents.$inferSelect, "adapterType">,
-) {
-  return agent.adapterType !== "paperclip_runner";
-}
-
 export function supportsUnscopedTimerHeartbeat(
   agent: Pick<typeof agents.$inferSelect, "adapterType">,
 ) {
-  return supportsUnscopedHeartbeat(agent);
+  return agent.adapterType !== "paperclip_runner";
 }
 
 export function isHeartbeatWakeOnDemandEnabled(

@@ -1,5 +1,4 @@
-import { currentPluginInteractionOrigin } from "../plugin-interaction-context.js";
-import { and, eq, inArray, or, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { agents, toolApplications, toolCatalogEntries, toolConnections, toolPolicies, toolProfiles } from "@paperclipai/db";
 import type { CreateToolProfileEntryForProfile } from "@paperclipai/shared";
 import type { ToolAccessMutationDb } from "./types.js";
@@ -11,14 +10,12 @@ export async function lockManagedAppPolicies(client: ToolAccessMutationDb, compa
   )).orderBy(toolPolicies.id).for("no key update");
 }
 
-export async function lockToolAssignmentAgents(client: ToolAccessMutationDb, companyId: string, targets: ReadonlyArray<{ targetType: string; targetId: string }>, actorAgentId?: string | null) {
+export async function lockToolAssignmentAgents(client: ToolAccessMutationDb, companyId: string, targets: ReadonlyArray<{ targetType: string; targetId: string }>) {
   const allAgents = targets.some(target => target.targetType === "company" && target.targetId === companyId);
   const ids = targets.filter(target => target.targetType === "agent").map(target => target.targetId);
-  const sourceAgentId = currentPluginInteractionOrigin()?.agentId ?? actorAgentId;
-  if (sourceAgentId) ids.push(sourceAgentId);
   if (!allAgents && !ids.length) return;
   await client.select({ id: agents.id }).from(agents)
-    .where(and(eq(agents.companyId, companyId), or(sql`${agents.status} NOT IN ('pending_approval', 'terminated')`, ids.length ? inArray(agents.id, ids) : undefined),
+    .where(and(eq(agents.companyId, companyId), sql`${agents.status} NOT IN ('pending_approval', 'terminated')`,
       allAgents ? undefined : inArray(agents.id, ids)))
     .orderBy(agents.id).for("no key update");
 }

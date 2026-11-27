@@ -1,7 +1,3 @@
-import { parseSlackFormOperation } from "./chat-channels/slack/cloud-forms.js";
-import { acknowledgeSlackFormDeliveries } from "./chat-channels/slack/form-normal-ack.js";
-import { readSlackFormRetainedConsumer } from "./chat-channels/slack/cloud-consumer.js";
-import { reconcileRegisteredSlackFormWork } from "./chat-channels/slack/form-owner.js";
 import { SlackCloudReceiptError } from "./chat-channels/slack/cloud-event.js";
 import { reconcilePendingSlackCloudEnrollments } from "./chat-channels/slack/cloud-enrollment.js";
 import { notifyExternalObjectRefresh } from "./external-object-refresh-notifications.js";
@@ -526,11 +522,6 @@ export function githubConnectionEventService(
           logger.warn({ reason: "enrollment_reconcile_unavailable" }, "Slack enrollment responsibility retained");
         }
       }
-      let formsAt: number | null = null;
-      try { formsAt = await reconcileRegisteredSlackFormWork(db, now()); }
-      catch { formsAt = now().getTime() + 5_000; }
-      const next = Math.min(nextEnrollmentAt ?? Number.POSITIVE_INFINITY, formsAt ?? Number.POSITIVE_INFINITY);
-      nextEnrollmentAt = Number.isFinite(next) ? next : null;
     }
   }
 
@@ -540,25 +531,7 @@ export function githubConnectionEventService(
     const slackBots = await db.select().from(chatEndpoints).where(and(eq(chatEndpoints.provider, "slack"), sql`${chatEndpoints.setup}->'slackCloudEvents' is not null`, sql`${chatEndpoints.status} in ('active','verifying','attention')`, sql`exists (select 1 from companies where id = ${chatEndpoints.companyId} and status <> 'archived')`));
     const bots = [...githubBots, ...slackBots];
     let identity: { subject: string; companyId: string } | null = bindings[0] ?? (bots[0] ? { subject: "github-bot-events", companyId: bots[0].companyId } : null);
-    let hasConsumer = bindings.length > 0 || bots.length > 0;
-    if (!identity) {
-      try {
-        const retained = await readSlackFormRetainedConsumer(db, connector);
-        identity = retained.owner;
-        hasConsumer ||= retained.owner !== null;
-        const time = now().getTime();
-        if (retained.attention.length && time >= nextEnrollmentDiagnosticAt) {
-          nextEnrollmentDiagnosticAt = time + 300_000;
-          logger.warn({ reason: "form_retained_owner_invalid", count: retained.attention.length }, "Slack form custody requires attention");
-        }
-      } catch {
-        const time = now().getTime();
-        if (time >= nextEnrollmentDiagnosticAt) {
-          nextEnrollmentDiagnosticAt = time + 300_000;
-          logger.warn({ reason: "form_retained_owner_unavailable" }, "Slack form custody requires attention");
-        }
-      }
-    }
+    const hasConsumer = bindings.length > 0 || bots.length > 0;
     if (!identity) {
       const [history] = await db.select({ grant: connectionGrants, connection: toolConnections }).from(connectionGrants)
         .innerJoin(toolConnections, and(eq(toolConnections.id, connectionGrants.connectionId), eq(toolConnections.companyId, connectionGrants.companyId)))
@@ -594,18 +567,9 @@ export function githubConnectionEventService(
       failed: lease.failedEventIds?.length ?? 0,
     };
     const acknowledge: string[] = [];
-    const formCompanies = new Map<string, string>();
     for (const event of lease.events) {
       if (event.provider === "slack") {
-        try {
-          await dispatchSlackCloudEvent(db, event);
-          if (/^slack_form_[a-f0-9]{64}$/.test(event.id)) {
-            const packet = event.payload.slackFormOpen;
-            if (!packet || typeof packet !== "object" || Array.isArray(packet)) throw new SlackCloudReceiptError("form_ack_company_missing", "attention");
-            formCompanies.set(event.id, parseSlackFormOperation(Reflect.get(packet, "operation")).binding.companyId);
-          }
-          acknowledge.push(event.id); result.processed += 1;
-        }
+        try { await dispatchSlackCloudEvent(db, event); acknowledge.push(event.id); result.processed += 1; }
         catch (error) {
           const code = error instanceof SlackCloudReceiptError ? error.code : "owner_or_admission_unavailable";
           const disposition = error instanceof SlackCloudReceiptError ? error.disposition : "retry";
@@ -646,8 +610,12 @@ export function githubConnectionEventService(
       }
     }
     if (acknowledge.length > 0) {
-      await acknowledgeSlackFormDeliveries(db, { connector,
-        values: { subject: first.subject, companyId: first.companyId, leaseId: lease.leaseId, deliveryIds: acknowledge }, companies: formCompanies });
+      await connector.acknowledgeEvents({
+        subject: first.subject,
+        companyId: first.companyId,
+        leaseId: lease.leaseId,
+        deliveryIds: acknowledge,
+      });
     }
     for (const deliveryId of lease.failedEventIds ?? []) {
       logger.warn({ deliveryId, reason: "inner_event_authentication_failed" },

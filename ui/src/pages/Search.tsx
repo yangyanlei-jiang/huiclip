@@ -1,4 +1,8 @@
-import { companyProjectsQuery } from "@/lib/company-projects-query";
+import { t as interfaceNotice } from "@/i18n";
+import { controlText } from "@/i18n/controls";
+import { t as translateDynamic } from "../i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Search as SearchIcon, AlertTriangle, FileQuestion, Plus, X } from "lucide-react";
@@ -26,6 +30,7 @@ import { useQueryView } from "../components/QueryView";
 import { agentsApi } from "../api/agents";
 import { authApi } from "../api/auth";
 import { issuesApi } from "../api/issues";
+import { projectsApi } from "../api/projects";
 import { queryKeys } from "../lib/queryKeys";
 import { loadRecentSearches, pushRecentSearch } from "../lib/recent-searches";
 import { PageTabBar, type PageTabItem } from "../components/PageTabBar";
@@ -74,8 +79,8 @@ function isCompanySearchScope(value: string | null): value is CompanySearchScope
 }
 
 function describeScope(scope: CompanySearchScope) {
-  if (scope === "all") return "All scopes";
-  return SCOPE_LABELS[scope];
+  if (scope === "all") return controlText("All scopes");
+  return controlText(SCOPE_LABELS[scope]);
 }
 
 function totalMatchCount(counts: Partial<Record<CompanySearchCountType, number>>): number {
@@ -133,6 +138,8 @@ function shapeError(error: unknown): { message: string; status?: number } {
 }
 
 export function Search() {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { openNewIssue } = useDialogActions();
@@ -158,7 +165,7 @@ export function Search() {
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Search" }]);
+    setBreadcrumbs([{ label: interfaceNotice("interface:search_bce064") }]);
   }, [setBreadcrumbs]);
 
   useEffect(() => {
@@ -187,7 +194,8 @@ export function Search() {
   });
 
   const { data: projects = [] } = useQuery({
-    ...companyProjectsQuery(selectedCompanyId!, { includeArchived: true }),
+    queryKey: queryKeys.projects.list(selectedCompanyId!, { includeArchived: true }),
+    queryFn: () => projectsApi.list(selectedCompanyId!, { includeArchived: true }),
     enabled: !!selectedCompanyId,
   });
 
@@ -483,7 +491,7 @@ export function Search() {
         value,
         label: (
           <span className="flex items-center">
-            {SCOPE_LABELS[value as CompanySearchScope]}
+            {controlText(SCOPE_LABELS[value as CompanySearchScope])}
             {dashOut ? (
               <span className="ml-1.5 text-(length:--text-nano) text-muted-foreground">—</span>
             ) : count !== null ? (
@@ -493,7 +501,7 @@ export function Search() {
         ),
       } satisfies PageTabItem;
     });
-  }, [counts, data, filtersActive]);
+  }, [counts, data, filtersActive, pageText]);
 
   const operatorPills = useMemo(() => searchFilterPills(draftFilters, parserContext), [draftFilters, parserContext]);
   const operatorSuggestions = useMemo(
@@ -550,7 +558,7 @@ export function Search() {
   return (
     <div className="flex h-full min-h-0 flex-col" data-page="search">
       <div className="border-b border-border px-4 py-3 sm:px-6">
-        <h1 className="sr-only">Search</h1>
+        <h1 className="sr-only">{translateUi("interfaceCopy.search")}</h1>
         <div className="relative">
           <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -570,15 +578,15 @@ export function Search() {
                 }
               }
             }}
-            placeholder="Search tasks, comments, documents, artifacts, agents, projects…"
-            aria-label="Search query"
+            placeholder={pageText("searchTasksCommentsDocumentsArtifactsAgentsProjects_cc67cd")}
+            aria-label={pageText("searchQuery_e5e053")}
             className="h-10 pl-9 pr-20 text-sm"
           />
           {draftQuery.length > 0 ? (
             <button
               type="button"
               onClick={handleClear}
-              aria-label="Clear search"
+              aria-label={translateUi("interfaceCopy.clearSearch")}
               className="absolute right-12 top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground hover:bg-accent/50"
             >
               <X className="h-3.5 w-3.5" />
@@ -607,7 +615,7 @@ export function Search() {
                 <button
                   key={suggestion.token}
                   type="button"
-                  aria-label={`Insert operator ${suggestion.token}`}
+                  aria-label={translateDynamic("dynamic:insertOperator", { value1: suggestion.token })}
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => {
                     setDraftQuery(applySearchOperatorSuggestion(draftQuery, suggestion.token));
@@ -616,15 +624,13 @@ export function Search() {
                   className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-0.5 hover:bg-accent/60"
                 >
                   <span className="font-mono text-(length:--text-micro)">{suggestion.token}</span>
-                  <span className="hidden text-(length:--text-micro) sm:inline">{suggestion.description}</span>
+                  <span className="hidden text-(length:--text-micro) sm:inline">{controlText(suggestion.description)}</span>
                 </button>
               ))}
             </div>
           ) : (
-            <span className="truncate">
-              Try <code className="rounded bg-muted px-1 py-0.5 text-(length:--text-micro)">status:todo</code>,{" "}
-              <code className="rounded bg-muted px-1 py-0.5 text-(length:--text-micro)">assignee:me</code>,{" "}
-              or <code className="rounded bg-muted px-1 py-0.5 text-(length:--text-micro)">updated:&gt;7d</code>.
+            <span className="truncate">{pageText("try_726770") + " "}<code className="rounded bg-muted px-1 py-0.5 text-(length:--text-micro)">status:todo</code>,{" "}
+              <code className="rounded bg-muted px-1 py-0.5 text-(length:--text-micro)">assignee:me</code>,{" "}{pageText("or_175835") + " "}<code className="rounded bg-muted px-1 py-0.5 text-(length:--text-micro)">updated:&gt;7d</code>.
             </span>
           )}
         </div>
@@ -764,20 +770,18 @@ function SearchTabContent({
   isFetching,
   agentsById,
 }: SearchTabContentProps) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   if (showInitialState) {
     return (
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 py-10 sm:px-6">
         <div>
-          <h2 className="text-lg font-semibold">Type to search organization memory.</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Tasks, comments, plan documents, artifacts, agents, projects — same surface, ranked by relevance.
-          </p>
+          <h2 className="text-lg font-semibold">{pageText("typeToSearchOrganizationMemory_94ca4a")}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{pageText("tasksCommentsPlanDocumentsArtifactsAgentsProjectsSame_7a93f8")}</p>
         </div>
         {recentSearches.length > 0 ? (
           <div>
-            <div className="mb-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-              Recent searches
-            </div>
+            <div className="mb-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">{pageText("recentSearches_a73d29")}</div>
             <ul className="flex flex-col divide-y divide-border rounded-md border border-border">
               {recentSearches.map((entry) => (
                 <li key={entry}>
@@ -796,17 +800,12 @@ function SearchTabContent({
         ) : null}
         <ul className="space-y-1 text-xs text-muted-foreground">
           <li>
-            <span className="font-medium text-foreground">Identifier lookup:</span> type{" "}
-            <code className="rounded bg-muted px-1 py-0.5 text-(length:--text-micro)">PAP-123</code> to jump straight to a task.
-          </li>
+            <span className="font-medium text-foreground">{pageText("identifierLookup_ea4cc4")}</span>{" " + pageText("type_d0a3e7")}{" "}
+            <code className="rounded bg-muted px-1 py-0.5 text-(length:--text-micro)">PAP-123</code>{" " + pageText("toJumpStraightToATask_9a9892")}</li>
           <li>
-            <span className="font-medium text-foreground">Quoted phrases:</span> wrap a phrase in quotes to match the
-            exact sequence.
-          </li>
+            <span className="font-medium text-foreground">{pageText("quotedPhrases_87b050")}</span>{" " + pageText("wrapAPhraseInQuotesToMatchThe_cb5506")}</li>
           <li>
-            <span className="font-medium text-foreground">⌘K:</span> reopens the command palette pre-seeded with your
-            current query.
-          </li>
+            <span className="font-medium text-foreground">⌘K:</span>{" " + pageText("reopensTheCommandPalettePreSeededWithYour_a400d1")}</li>
         </ul>
       </div>
     );
@@ -817,18 +816,12 @@ function SearchTabContent({
     return (
       <div className="mx-auto flex w-full max-w-xl flex-col items-center justify-center gap-3 px-4 py-12 text-center">
         <AlertTriangle className="h-10 w-10 text-destructive" aria-hidden />
-        <div className="text-base font-semibold">Couldn’t run that search</div>
+        <div className="text-base font-semibold">{pageText("couldnTRunThatSearch_9b0627")}</div>
         <p className="text-sm text-muted-foreground">
-          {status ? `The server returned ${status}.` : "The request failed."} Your input and filters are still here, so
-          you can retry or fall back to the Tasks filter.
-        </p>
+          {status ? `The server returned ${status}.` : pageText("theRequestFailed_9f2e68")}{" " + pageText("yourInputAndFiltersAreStillHereSo_d5b61a")}</p>
         <div className="flex flex-wrap items-center justify-center gap-2">
-          <Button onClick={refetch} variant="default" size="sm">
-            Retry
-          </Button>
-          <Button onClick={navigateIssuesFallback} variant="outline" size="sm">
-            Open Tasks filter view
-          </Button>
+          <Button onClick={refetch} variant="default" size="sm">{translateUi("interfaceCopy.retry")}</Button>
+          <Button onClick={navigateIssuesFallback} variant="outline" size="sm">{pageText("openTasksFilterView_1dc83f")}</Button>
         </div>
       </div>
     );
@@ -837,8 +830,7 @@ function SearchTabContent({
   if (isLoading) {
     return (
       <div className="flex flex-col gap-2 px-2 py-3 sm:px-4">
-        <div className="px-3 text-xs text-muted-foreground" data-testid="search-loading">
-          Searching for &ldquo;{trimmedQuery}&rdquo;…
+        <div className="px-3 text-xs text-muted-foreground" data-testid="search-loading">{pageText("searchingFor_62dede")}{trimmedQuery}&rdquo;…
         </div>
         <div className="flex flex-col">
           <div className="px-3 py-2">
@@ -865,31 +857,21 @@ function SearchTabContent({
     return (
       <div className="mx-auto flex w-full max-w-xl flex-col items-center justify-center gap-3 px-4 py-12 text-center">
         <FileQuestion className="h-10 w-10 text-muted-foreground" aria-hidden />
-        <div className="text-base font-semibold">No results for &ldquo;{trimmedQuery}&rdquo;</div>
-        <p className="text-sm text-muted-foreground">
-          We couldn’t find a match in {describeScope(scope).toLowerCase()}. Try widening the scope or rephrasing your
-          query.
-        </p>
+        <div className="text-base font-semibold">{pageText("noResultsFor_2a5f91")}{trimmedQuery}&rdquo;</div>
+        <p className="text-sm text-muted-foreground">{pageText("weCouldnTFindAMatchIn_62a08d") + " "}{describeScope(scope).toLowerCase()}{pageText("tryWideningTheScopeOrRephrasingYourQuery_1b8048")}</p>
         <div className="flex flex-wrap items-center justify-center gap-2">
           {scope !== "all" ? (
-            <Button onClick={showAllScope} size="sm" variant="outline">
-              Search all scopes
-            </Button>
+            <Button onClick={showAllScope} size="sm" variant="outline">{pageText("searchAllScopes_57fc96")}</Button>
           ) : null}
           <Button onClick={openNewIssue} size="sm" variant="default">
-            <Plus className="mr-1.5 h-4 w-4" />
-            Create task from this query
-          </Button>
-          <Button onClick={navigateIssuesFallback} size="sm" variant="ghost">
-            Open Tasks filter view
-          </Button>
+            <Plus className="mr-1.5 h-4 w-4" />{pageText("createTaskFromThisQuery_46ce20")}</Button>
+          <Button onClick={navigateIssuesFallback} size="sm" variant="ghost">{pageText("openTasksFilterView_1dc83f")}</Button>
         </div>
         <ul className="mt-2 space-y-0.5 text-xs text-muted-foreground">
-          <li>Try fewer tokens or a single distinctive term.</li>
-          <li>
-            Use an identifier shortcut like <code className="rounded bg-muted px-1 py-0.5">PAP-123</code>.
+          <li>{pageText("tryFewerTokensOrASingleDistinctiveTerm_8dafb4")}</li>
+          <li>{pageText("useAnIdentifierShortcutLike_76f102") + " "}<code className="rounded bg-muted px-1 py-0.5">PAP-123</code>.
           </li>
-          <li>Wrap multi-word phrases in quotes.</li>
+          <li>{pageText("wrapMultiWordPhrasesInQuotes_cf28a3")}</li>
         </ul>
       </div>
     );
@@ -904,14 +886,14 @@ function SearchTabContent({
           {allMatchTotal > totalResults
             ? `${totalResults} of ${allMatchTotal} results`
             : totalResults === 1
-              ? "1 result"
+              ? pageText("1Result_4e6338")
               : `${totalResults} results`}
           {` · sorted by ${sortLabel}`}
           {activeFilterCount > 0
             ? ` · ${activeFilterCount} ${activeFilterCount === 1 ? "filter" : "filters"} active`
             : ""}
         </span>
-        {isFetching ? <span aria-live="polite" className="normal-case tracking-normal">Updating…</span> : null}
+        {isFetching ? <span aria-live="polite" className="normal-case tracking-normal">{pageText("updating_3ab0d7")}</span> : null}
       </div>
       <div className="flex flex-col gap-y-1 pb-10">
         {results.map((result) => (

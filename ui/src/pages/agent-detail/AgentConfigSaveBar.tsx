@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -9,6 +10,7 @@ export function AgentConfigSaveBar({ dirty, saving, savedVersion = 0, onDiscard,
   onDiscard: () => void;
   onSave: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const anchor = useRef<HTMLDivElement>(null);
   const [bounds, setBounds] = useState<{ left: number; width: number } | null>(null);
   const lastSave = useRef(savedVersion);
@@ -55,23 +57,21 @@ export function AgentConfigSaveBar({ dirty, saving, savedVersion = 0, onDiscard,
     return () => { observer?.disconnect(); window.removeEventListener("resize", measure); };
   }, []);
   return <div ref={anchor}>
-    <footer aria-label="Unsaved agent changes" aria-hidden={!visible} inert={!visible}
+    <footer aria-label={pageText("unsavedAgentChanges_939cd2")} aria-hidden={!visible} inert={!visible}
       data-visible={visible} style={bounds ?? undefined}
       className="agent-config-save-bar flex flex-wrap items-center justify-between gap-3">
       <p role="status" className="agent-save-status text-xs text-muted-foreground">
         <span aria-hidden={showSuccess} className={showSuccess ? "agent-save-status-out flex items-center gap-2" : "flex items-center gap-2"}>
           <span aria-hidden className="size-2 shrink-0 rounded-full bg-(--agent-save-dot-unsaved)" />
-          {saving ? "Saving changes…" : "Unsaved changes"}
+          {saving ? pageText("savingChanges_804053") : pageText("unsavedChanges_292672")}
         </span>
         {showSuccess && <span key={savedVersion} className="agent-save-status-in flex items-center gap-2"
           onAnimationEnd={(event) => { if (event.target === event.currentTarget) setSuccess("holding"); }}>
-          <span aria-hidden className="size-2 shrink-0 rounded-full bg-(--agent-detail-dot-saved)" />
-          Saved changes
-        </span>}
+          <span aria-hidden className="size-2 shrink-0 rounded-full bg-(--agent-detail-dot-saved)" />{pageText("savedChanges_97f74e")}</span>}
       </p>
       <div className="flex gap-2">
-        <Button variant="ghost" disabled={!dirty || saving} onClick={onDiscard}>Discard</Button>
-        <Button disabled={!dirty || saving} onClick={onSave}>{saving ? "Saving…" : "Save changes"}</Button>
+        <Button variant="ghost" disabled={!dirty || saving} onClick={onDiscard}>{pageText("discard_36fff6")}</Button>
+        <Button disabled={!dirty || saving} onClick={onSave}>{saving ? pageText("saving_56a228") : pageText("saveChanges_179359")}</Button>
       </div>
     </footer>
   </div>;

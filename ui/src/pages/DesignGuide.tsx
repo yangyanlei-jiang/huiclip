@@ -1,3 +1,6 @@
+import { controlText } from "@/i18n/controls";
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { SpekoPhoneLineForm } from "@/components/voice/SpekoPhoneLine";
 import { SpekoIncomingCallCard } from "@/components/voice/SpekoIncomingCalls";
 import { SpekoCallHistoryView, SpekoCallActivityItem, SpekoUnapprovedCallActivityItem } from "@/components/voice/SpekoCallHistory";
@@ -440,6 +443,7 @@ function Swatch({ name, cssVar }: { name: string; cssVar: string }) {
 /* ------------------------------------------------------------------ */
 
 function TaskExecutionControlsExample() {
+  const { t: pageText } = usePageTranslation("interface");
   const [running, setRunning] = useState(true);
   const [dialogMode, setDialogMode] = useState<"resume" | "cancel" | "restore" | null>(null);
   const [wake, setWake] = useState(true);
@@ -449,7 +453,7 @@ function TaskExecutionControlsExample() {
         onPause={() => setRunning(false)} onResume={() => setDialogMode("resume")}
         onCancel={() => setDialogMode("cancel")} onRestore={() => setDialogMode("restore")} />
     </div>
-    <p className="text-sm text-muted-foreground">{running ? "Running: type to switch Stop to Send." : "Paused: resume from the menu."}</p>
+    <p className="text-sm text-muted-foreground">{running ? pageText("runningTypeToSwitchStopToSend_43a0a0") : pageText("pausedResumeFromTheMenu_83f191")}</p>
     <TaskChatProjectCreatedCard item={{ id: "design-project", kind: "project_created", projectId: "example-project", name: "Onboarding improvements", description: "Help new teams reach their first useful result.", timestamp: "2026-09-11T00:00:00Z", repositories: [{ id: "1", name: "paperclipai/paperclip", url: "https://github.com/paperclipai/paperclip" }] }} />
     {!running ? <TaskChatMarker item={{ id: "design-cancelled", kind: "marker", variant: "interrupted", tone: "neutral", label: "Run cancelled", detail: "The run was cancelled before returning an answer.", collapsible: true }} /> : null}
     <TaskChatComposer pause={!running ? { scope: "subtree", onResume: () => setDialogMode("resume") } : null} onAdd={async () => {}} workMode="standard" stopScope="subtree" onStop={running ? async () => setRunning(false) : undefined} />
@@ -461,6 +465,7 @@ function TaskExecutionControlsExample() {
 }
 
 function TaskPendingInputExample() {
+  const { t: pageText } = usePageTranslation("interface");
   const [open, setOpen] = useState(true);
   const [pending, setPending] = useState(true);
   return <div className="max-w-xl">
@@ -472,10 +477,10 @@ function TaskPendingInputExample() {
         label: "Question",
         pendingCount: 1,
         content: <div className="space-y-3 text-sm">
-          <p>Should the agent use the existing draft?</p>
+          <p>{pageText("shouldTheAgentUseTheExistingDraft_04da32")}</p>
           <div className="flex gap-2">
-            <Button size="sm" onClick={() => setPending(false)}>Use draft</Button>
-            <Button size="sm" variant="outline" onClick={() => setPending(false)}>Start fresh</Button>
+            <Button size="sm" onClick={() => setPending(false)}>{pageText("useDraft_a98d81")}</Button>
+            <Button size="sm" variant="outline" onClick={() => setPending(false)}>{pageText("startFresh_e321d4")}</Button>
           </div>
         </div>,
         onDismiss: () => setOpen(false),
@@ -487,26 +492,38 @@ function TaskPendingInputExample() {
 }
 
 function AgentChatPickerExample() {
+  const { t: pageText } = usePageTranslation("interface");
   const [state, setState] = useState<"closed" | "empty" | "loading" | "error">("closed");
   return <div className="flex flex-wrap gap-2">
-    <Button variant="outline" onClick={() => setState("empty")}>Empty picker</Button>
-    <Button variant="outline" onClick={() => setState("loading")}>Loading picker</Button>
-    <Button variant="outline" onClick={() => setState("error")}>Failed picker</Button>
+    <Button variant="outline" onClick={() => setState("empty")}>{pageText("emptyPicker_c7a87c")}</Button>
+    <Button variant="outline" onClick={() => setState("loading")}>{pageText("loadingPicker_3095b7")}</Button>
+    <Button variant="outline" onClick={() => setState("error")}>{pageText("failedPicker_fb76fd")}</Button>
     <AgentChatPicker agents={[]} open={state !== "closed"} onOpenChange={(open) => { if (!open) setState("closed"); }} onSelect={() => {}}
       loading={state === "loading"} error={state === "error" ? new Error("Unavailable") : null} onRetry={() => setState("empty")} />
   </div>;
 }
 
 function ComposerActionsExample() {
+  const { t: pageText } = usePageTranslation("interface");
   const [mode, setMode] = useState<IssueWorkMode>("standard");
   return <div className="flex max-w-xl items-center gap-2 rounded-xl border border-border bg-card p-3">
     <ComposerAddMenu mode={mode} onModeChange={setMode} onAttachFile={() => {}} onGoal={() => {}} />
     <ComposerModeChip mode={mode} onRemove={() => setMode("standard")} />
-    <span className="ml-auto text-xs text-muted-foreground">Plus menu · removable mode chip</span>
+    <span className="ml-auto text-xs text-muted-foreground">{pageText("plusMenuRemovableModeChip_762e95")}</span>
   </div>;
 }
 
 export function DesignGuide() {
+  const { t: pageText } = usePageTranslation("interface");
+  const preview = {
+    ...announcementPreview,
+    eyebrow: pageText("demoAnnouncementEyebrow"),
+    title: pageText("demoAnnouncementTitle"),
+    description: pageText("demoAnnouncementDescription"),
+    image: announcementPreview.image && { ...announcementPreview.image, alt: pageText("demoAnnouncementHero") },
+    secondaryLink: announcementPreview.secondaryLink && { ...announcementPreview.secondaryLink, label: pageText("demoAnnouncementLearn") },
+    primaryAction: announcementPreview.primaryAction && { ...announcementPreview.primaryAction, label: pageText("demoAnnouncementProjects") },
+  };
   const [agentmailDemoKey, setAgentmailDemoKey] = useState("");
   const [wizardStep, setWizardStep] = useState(0);
   const [status, setStatus] = useState("todo");
@@ -520,7 +537,7 @@ export function DesignGuide() {
     "This is an editable description. Click to edit it — the textarea auto-sizes to fit the content without layout shift."
   );
   const [filters, setFilters] = useState<FilterValue[]>([
-    { key: "status", label: "Status", value: "Active" },
+    { key: "status", label: controlText("Status"), value: controlText("Active") },
     // PAP-411: priority filter demo row suppressed while SHOW_TASK_PRIORITY_UI is off.
     ...(SHOW_TASK_PRIORITY_UI
       ? [{ key: "priority", label: "Priority", value: "High" } as FilterValue]
@@ -534,21 +551,17 @@ export function DesignGuide() {
     <div className="space-y-10 max-w-4xl">
       {/* Page header */}
       <div>
-        <h2 className="text-xl font-bold">Design Guide</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Every component, style, and pattern used across Paperclip.
-        </p>
+        <h2 className="text-xl font-bold">{pageText("designGuide_cb3ab8")}</h2>
+        <p className="text-sm text-muted-foreground mt-1">{pageText("everyComponentStyleAndPatternUsedAcrossPaperclip_c91451")}</p>
       </div>
 
       {/* ============================================================ */}
       {/*  COVERAGE                                                     */}
       {/* ============================================================ */}
-      <Section title="Component Coverage">
-        <p className="text-sm text-muted-foreground">
-          This page should be updated when new UI primitives or app-level patterns ship.
-        </p>
+      <Section title={pageText("componentCoverage_87527f")}>
+        <p className="text-sm text-muted-foreground">{pageText("thisPageShouldBeUpdatedWhenNewUI_9ebbb9")}</p>
         <div className="grid gap-6 md:grid-cols-2">
-          <SubSection title="UI primitives">
+          <SubSection title={pageText("uiPrimitives_88cf68")}>
             <div className="flex flex-wrap gap-2">
               {[
                 "avatar", "badge", "breadcrumb", "button", "card", "checkbox", "collapsible",
@@ -561,7 +574,7 @@ export function DesignGuide() {
               ))}
             </div>
           </SubSection>
-          <SubSection title="App components">
+          <SubSection title={pageText("appComponents_ddd90c")}>
             <div className="flex flex-wrap gap-2">
               {[
                 "StatusBadge", "StatusIcon", "PriorityIcon", "EntityRow", "EmptyState", "MetricCard",
@@ -579,48 +592,44 @@ export function DesignGuide() {
         </div>
       </Section>
 
-      <Section title="Announcements">
+      <Section title={pageText("announcements_06b01c")}>
         <div className="grid gap-4 md:grid-cols-2">
-          <AnnouncementCard announcement={announcementAnimationPreview} imageSrc="/announcement-preview.svg" animationSrc={announcementAnimationPreviewSrc} onDismiss={() => {}} />
-          <AnnouncementCard announcement={announcementPreview} imageSrc="/announcement-preview.svg" onDismiss={() => {}} />
-          <AnnouncementCard announcement={{ ...announcementPreview, image: undefined, secondaryLink: undefined }} onDismiss={() => {}} />
+          <AnnouncementCard announcement={{ ...announcementAnimationPreview, ...preview, animation: announcementAnimationPreview.animation && { ...announcementAnimationPreview.animation, alt: pageText("demoAnnouncementAnimation") } }} imageSrc="/announcement-preview.svg" animationSrc={announcementAnimationPreviewSrc} onDismiss={() => {}} />
+          <AnnouncementCard announcement={preview} imageSrc="/announcement-preview.svg" onDismiss={() => {}} />
+          <AnnouncementCard announcement={{ ...preview, image: undefined, secondaryLink: undefined }} onDismiss={() => {}} />
         </div>
       </Section>
 
-      <Section title="Task Execution Controls">
+      <Section title={pageText("taskExecutionControls_4e0919")}>
         <TaskExecutionControlsExample />
       </Section>
 
-      <Section title="Composer actions">
+      <Section title={pageText("composerActions_4432df")}>
         <ComposerActionsExample />
       </Section>
 
-      <Section title="Task Collection">
-        <p className="max-w-prose text-sm text-muted-foreground">
-          CollectionToolbar owns shared geometry while each page owns its state and behavior.
-          The canonical task row is opt-in during migration: status leads, unread work uses
-          title emphasis, metadata remains stable, and the task identifier trails.
-        </p>
+      <Section title={pageText("taskCollection_458dad")}>
+        <p className="max-w-prose text-sm text-muted-foreground">{pageText("collectiontoolbarOwnsSharedGeometryWhileEachPageOwns_20b149")}</p>
         <CollectionToolbar
-          context={<span className="text-sm font-medium">Recent tasks</span>}
-          search={<Input aria-label="Search task collection example" placeholder="Search tasks..." />}
-          controls={<Button variant="outline" size="sm">Filter</Button>}
-          actions={<Button size="sm">New task</Button>}
-          feedback={<span className="text-xs text-muted-foreground">1 task · Updated newest first</span>}
+          context={<span className="text-sm font-medium">{pageText("recentTasks_21bcad")}</span>}
+          search={<Input aria-label={pageText("searchTaskCollectionExample_2dbf22")} placeholder={pageText("searchTasks_927df1")} />}
+          controls={<Button variant="outline" size="sm">{pageText("filter_d7decf")}</Button>}
+          actions={<Button size="sm">{pageText("newTask_17b2b8")}</Button>}
+          feedback={<span className="text-xs text-muted-foreground">{pageText("1TaskUpdatedNewestFirst_05294e")}</span>}
         />
         <div className="overflow-hidden rounded-lg border border-border">
           <IssueRow
             issue={DESIGN_GUIDE_TASK}
             presentation="task"
             unreadState="visible"
-            metadata={<span className="text-xs text-muted-foreground">Updated 12m ago</span>}
-            actions={<Button variant="ghost" size="xs">More</Button>}
+            metadata={<span className="text-xs text-muted-foreground">{pageText("updated12mAgo_b85323")}</span>}
+            actions={<Button variant="ghost" size="xs">{pageText("more_4bab2d")}</Button>}
           />
         </div>
       </Section>
 
-      <Section title="Theme Toggle">
-        <SubSection title="Variants">
+      <Section title={pageText("themeToggle_0dbc86")}>
+        <SubSection title={pageText("variants_1bc3d3")}>
           <div className="flex max-w-sm flex-col items-start gap-3">
             <ThemeToggle />
             <ThemeToggle variant="menu-action" />
@@ -632,8 +641,8 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  COLORS                                                       */}
       {/* ============================================================ */}
-      <Section title="Colors">
-        <SubSection title="Core">
+      <Section title={pageText("colors_88d5e4")}>
+        <SubSection title={pageText("core_68836c")}>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <Swatch name="Background" cssVar="--background" />
             <Swatch name="Foreground" cssVar="--foreground" />
@@ -650,14 +659,14 @@ export function DesignGuide() {
           </div>
         </SubSection>
 
-        <SubSection title="Sidebar">
+        <SubSection title={pageText("sidebar_f5171c")}>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <Swatch name="Sidebar" cssVar="--sidebar" />
             <Swatch name="Sidebar border" cssVar="--sidebar-border" />
           </div>
         </SubSection>
 
-        <SubSection title="Chart">
+        <SubSection title={pageText("chart_66c773")}>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <Swatch name="Chart 1" cssVar="--chart-1" />
             <Swatch name="Chart 2" cssVar="--chart-2" />
@@ -671,7 +680,7 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  TYPOGRAPHY                                                   */}
       {/* ============================================================ */}
-      <Section title="Runner activity">
+      <Section title={pageText("runnerActivity_a4496d")}>
         <TaskChatRunnerActivityGroup item={{ id: "design-runner-activity", kind: "activity_phase", active: true, summary: "", interstitial: { id: "design-runner-commentary", kind: "message", author: "agent", text: "I’ll inspect the activity feed and check the layout.", interstitial: true }, items: [
           { id: "design-runner-read", kind: "tool", name: "read", target: "TaskChatRunnerTurn.tsx", status: "completed", detail: "Found the activity groups." },
           { id: "design-runner-check", kind: "tool", name: "exec_command", target: "pnpm check:token-gates", status: "in_progress" },
@@ -682,34 +691,26 @@ export function DesignGuide() {
         ] }} />
       </Section>
 
-      <Section title="Typography">
+      <Section title={pageText("typography_f4beb9")}>
         <div className="space-y-3">
-          <h2 className="text-xl font-bold">Page Title — text-xl font-bold</h2>
-          <h2 className="text-lg font-semibold">Section Title — text-lg font-semibold</h2>
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-            Section Heading — text-sm font-semibold uppercase tracking-wide
-          </h3>
-          <p className="text-sm font-medium">Card Title — text-sm font-medium</p>
-          <p className="text-sm font-semibold">Card Title Alt — text-sm font-semibold</p>
-          <p className="text-sm">Body text — text-sm</p>
-          <p className="text-sm text-muted-foreground">
-            Muted description — text-sm text-muted-foreground
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Tiny label — text-xs text-muted-foreground
-          </p>
-          <p className="text-sm font-mono text-muted-foreground">
-            Mono identifier — text-sm font-mono text-muted-foreground
-          </p>
-          <p className="text-2xl font-bold">Large stat — text-2xl font-bold</p>
-          <p className="font-mono text-xs">Log/code text — font-mono text-xs</p>
+          <h2 className="text-xl font-bold">{pageText("pageTitleTextXlFontBold_d661f1")}</h2>
+          <h2 className="text-lg font-semibold">{pageText("sectionTitleTextLgFontSemibold_a06b26")}</h2>
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">{pageText("sectionHeadingTextSmFontSemiboldUppercaseTracking_3cbb18")}</h3>
+          <p className="text-sm font-medium">{pageText("cardTitleTextSmFontMedium_974411")}</p>
+          <p className="text-sm font-semibold">{pageText("cardTitleAltTextSmFontSemibold_f0b066")}</p>
+          <p className="text-sm">{pageText("bodyTextTextSm_bb6828")}</p>
+          <p className="text-sm text-muted-foreground">{pageText("mutedDescriptionTextSmTextMutedForeground_9c5567")}</p>
+          <p className="text-xs text-muted-foreground">{pageText("tinyLabelTextXsTextMutedForeground_8f51c0")}</p>
+          <p className="text-sm font-mono text-muted-foreground">{pageText("monoIdentifierTextSmFontMonoTextMuted_bd3bf5")}</p>
+          <p className="text-2xl font-bold">{pageText("largeStatText2xlFontBold_86e0d1")}</p>
+          <p className="font-mono text-xs">{pageText("logCodeTextFontMonoTextXs_936ef6")}</p>
         </div>
       </Section>
 
       {/* ============================================================ */}
       {/*  SPACING & RADIUS                                             */}
       {/* ============================================================ */}
-      <Section title="Radius">
+      <Section title={pageText("radius_e5aaea")}>
         <div className="flex items-end gap-4 flex-wrap">
           {[
             ["sm", "var(--radius-sm)"],
@@ -723,7 +724,7 @@ export function DesignGuide() {
                 className="h-12 w-12 bg-primary"
                 style={{ borderRadius: radius }}
               />
-              <span className="text-xs text-muted-foreground">{label}</span>
+              <span className="text-xs text-muted-foreground">{controlText(label)}</span>
             </div>
           ))}
         </div>
@@ -732,28 +733,28 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  BUTTONS                                                      */}
       {/* ============================================================ */}
-      <Section title="Buttons">
-        <SubSection title="Variants">
+      <Section title={pageText("buttons_503d46")}>
+        <SubSection title={pageText("variants_1bc3d3")}>
           <div className="flex items-center gap-2 flex-wrap">
-            <Button variant="default">Default</Button>
-            <Button variant="secondary">Secondary</Button>
-            <Button variant="outline">Outline</Button>
-            <Button variant="ghost">Ghost</Button>
-            <Button variant="destructive">Destructive</Button>
-            <Button variant="link">Link</Button>
+            <Button variant="default">{pageText("default_808d7d")}</Button>
+            <Button variant="secondary">{pageText("secondary_025de5")}</Button>
+            <Button variant="outline">{pageText("outline_cdd629")}</Button>
+            <Button variant="ghost">{pageText("ghost_bf44c9")}</Button>
+            <Button variant="destructive">{pageText("destructive_f58c83")}</Button>
+            <Button variant="link">{pageText("link_d05170")}</Button>
           </div>
         </SubSection>
 
-        <SubSection title="Sizes">
+        <SubSection title={pageText("sizes_96de48")}>
           <div className="flex items-center gap-2 flex-wrap">
-            <Button size="xs">Extra Small</Button>
-            <Button size="sm">Small</Button>
-            <Button size="default">Default</Button>
-            <Button size="lg">Large</Button>
+            <Button size="xs">{pageText("extraSmall_4e149d")}</Button>
+            <Button size="sm">{pageText("small_c74fd9")}</Button>
+            <Button size="default">{pageText("default_808d7d")}</Button>
+            <Button size="lg">{pageText("large_738fd1")}</Button>
           </div>
         </SubSection>
 
-        <SubSection title="Icon buttons">
+        <SubSection title={pageText("iconButtons_19e3d4")}>
           <div className="flex items-center gap-2 flex-wrap">
             <Button variant="ghost" size="icon-xs"><Search /></Button>
             <Button variant="ghost" size="icon-sm"><Search /></Button>
@@ -762,19 +763,19 @@ export function DesignGuide() {
           </div>
         </SubSection>
 
-        <SubSection title="With icons">
+        <SubSection title={pageText("withIcons_b3dc01")}>
           <div className="flex items-center gap-2 flex-wrap">
-            <Button><Plus /> New Issue</Button>
-            <Button variant="outline"><Upload /> Upload</Button>
-            <Button variant="destructive"><Trash2 /> Delete</Button>
-            <Button size="sm"><Plus /> Add</Button>
+            <Button><Plus />{" " + pageText("newIssue_d1e1f6")}</Button>
+            <Button variant="outline"><Upload />{" " + pageText("upload_8bdf05")}</Button>
+            <Button variant="destructive"><Trash2 />{" " + pageText("delete_f6fdbe")}</Button>
+            <Button size="sm"><Plus />{" " + pageText("add_61cc55")}</Button>
           </div>
         </SubSection>
 
-        <SubSection title="States">
+        <SubSection title={pageText("states_6e6975")}>
           <div className="flex items-center gap-2 flex-wrap">
-            <Button disabled>Disabled</Button>
-            <Button variant="outline" disabled>Disabled Outline</Button>
+            <Button disabled>{pageText("disabled_f4f447")}</Button>
+            <Button variant="outline" disabled>{pageText("disabledOutline_71399b")}</Button>
           </div>
         </SubSection>
       </Section>
@@ -782,14 +783,14 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  BADGES                                                       */}
       {/* ============================================================ */}
-      <Section title="Badges">
-        <SubSection title="Variants">
+      <Section title={pageText("badges_2c578d")}>
+        <SubSection title={pageText("variants_1bc3d3")}>
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant="default">Default</Badge>
-            <Badge variant="secondary">Secondary</Badge>
-            <Badge variant="outline">Outline</Badge>
-            <Badge variant="destructive">Destructive</Badge>
-            <Badge variant="ghost">Ghost</Badge>
+            <Badge variant="default">{pageText("default_808d7d")}</Badge>
+            <Badge variant="secondary">{pageText("secondary_025de5")}</Badge>
+            <Badge variant="outline">{pageText("outline_cdd629")}</Badge>
+            <Badge variant="destructive">{pageText("destructive_f58c83")}</Badge>
+            <Badge variant="ghost">{pageText("ghost_bf44c9")}</Badge>
           </div>
         </SubSection>
       </Section>
@@ -797,8 +798,8 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  STATUS BADGES & ICONS                                        */}
       {/* ============================================================ */}
-      <Section title="Status System">
-        <SubSection title="StatusBadge (all statuses)">
+      <Section title={pageText("statusSystem_9ed1f3")}>
+        <SubSection title={pageText("statusbadgeAllStatuses_edbef4")}>
           <div className="flex items-center gap-2 flex-wrap">
             {[
               "active", "running", "paused", "idle", "archived", "planned",
@@ -812,7 +813,7 @@ export function DesignGuide() {
           </div>
         </SubSection>
 
-        <SubSection title="IssueStatusBadge (brand chip + glyph — PAP-75)">
+        <SubSection title={pageText("issuestatusbadgeBrandChipGlyphPAP75_0086a7")}>
           <div className="flex items-center gap-2 flex-wrap">
             {["backlog", "todo", "in_progress", "in_review", "done", "blocked", "cancelled"].map(
               (s) => (
@@ -822,63 +823,63 @@ export function DesignGuide() {
           </div>
         </SubSection>
 
-        <SubSection title="Monitoring task">
+        <SubSection title={pageText("monitoringTask_9bfb2c")}>
           <StatusIcon status="in_progress" displayStatus="monitoring" showLabel />
           <IssueStatusBadge status="in_progress" displayStatus="monitoring" />
         </SubSection>
-        <SubSection title="Idle Slack conversation">
+        <SubSection title={pageText("idleSlackConversation_308613")}>
           <StatusIcon status="in_review" externalConversationState="waiting" showLabel />
           <IssueStatusBadge status="in_review" externalConversationState="waiting" />
         </SubSection>
-        <SubSection title="StatusIcon (interactive)">
+        <SubSection title={pageText("statusiconInteractive_f9eba8")}>
           <div className="flex items-center gap-3 flex-wrap">
             {["backlog", "todo", "in_progress", "in_review", "done", "cancelled", "blocked"].map(
               (s) => (
                 <div key={s} className="flex items-center gap-1.5">
                   <StatusIcon status={s} />
-                  <span className="text-xs text-muted-foreground">{s}</span>
+                  <span className="text-xs text-muted-foreground">{controlText(s.replaceAll("_", " "))}</span>
                 </div>
               )
             )}
           </div>
           <div className="flex items-center gap-2 mt-2">
             <StatusIcon status={status} onChange={setStatus} />
-            <span className="text-sm">Click the icon to change status (current: {status})</span>
+            <span className="text-sm">{pageText("clickTheIconToChangeStatusCurrent_00c9d7") + " "}{controlText(status.replaceAll("_", " "))})</span>
           </div>
         </SubSection>
 
         {/* PAP-411: PriorityIcon showcase gated behind SHOW_TASK_PRIORITY_UI per board decision. */}
         {SHOW_TASK_PRIORITY_UI && (
-        <SubSection title="PriorityIcon (interactive)">
+        <SubSection title={pageText("priorityiconInteractive_28430e")}>
           <div className="flex items-center gap-3 flex-wrap">
             {["critical", "high", "medium", "low"].map((p) => (
               <div key={p} className="flex items-center gap-1.5">
                 <PriorityIcon priority={p} />
-                <span className="text-xs text-muted-foreground">{p}</span>
+                <span className="text-xs text-muted-foreground">{controlText(p)}</span>
               </div>
             ))}
           </div>
           <div className="flex items-center gap-2 mt-2">
             <PriorityIcon priority={priority} onChange={setPriority} />
-            <span className="text-sm">Click the icon to change (current: {priority})</span>
+            <span className="text-sm">{pageText("clickTheIconToChangeCurrent_223e21") + " "}{controlText(priority)})</span>
           </div>
         </SubSection>
         )}
 
-        <SubSection title="Agent status dots">
+        <SubSection title={pageText("agentStatusDots_aa0952")}>
           <div className="flex items-center gap-4 flex-wrap">
             {(["running", "active", "paused", "error", "archived"] as const).map((label) => (
               <div key={label} className="flex items-center gap-2">
                 <span className="relative flex h-2.5 w-2.5">
                   <span className={`inline-flex h-full w-full rounded-full ${agentStatusDot[label] ?? agentStatusDotDefault}`} />
                 </span>
-                <span className="text-xs text-muted-foreground">{label}</span>
+                <span className="text-xs text-muted-foreground">{controlText(label)}</span>
               </div>
             ))}
           </div>
         </SubSection>
 
-        <SubSection title="Run invocation badges">
+        <SubSection title={pageText("runInvocationBadges_a71720")}>
           <div className="flex items-center gap-2 flex-wrap">
             {[
               ["timer", "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"],
@@ -894,30 +895,20 @@ export function DesignGuide() {
         </SubSection>
 
         <SubSection title="IssueReferencePill">
-          <p className="text-xs text-muted-foreground">
-            Used wherever a task is referenced — in markdown, the Related Work tab, and activity summaries.
-            Pass <code className="font-mono">status</code> to show the target issue&apos;s state at a glance.
-            Use <code className="font-mono">variant="property"</code> for compact badges with direct navigation.
-            Pass <code className="font-mono">onRemove</code> for a separate blocker removal control with reserved space.
-            Use <code className="font-mono">strikethrough</code> for &quot;removed&quot; contexts.
-          </p>
+          <p className="text-xs text-muted-foreground">{pageText("usedWhereverATaskIsReferencedInMarkdown_2b9955") + " "}<code className="font-mono">status</code>{" " + pageText("toShowTheTargetIssueSStateAt_43e3ad") + " "}<code className="font-mono">variant="property"</code>{" " + pageText("forCompactBadgesWithDirectNavigationPass_0e116d") + " "}<code className="font-mono">onRemove</code>{" " + pageText("forASeparateBlockerRemovalControlWithReserved_15cd3a") + " "}<code className="font-mono">strikethrough</code>{" " + pageText("forRemovedContexts_ac8bf4")}</p>
           <div className="flex items-center gap-2 flex-wrap">
             <IssueReferencePill issue={{ id: "demo-1", identifier: "PAP-123", title: "Identifier only — no status yet" }} />
             <IssueReferencePill issue={{ id: "demo-2", identifier: "PAP-456", title: "With in_progress status", status: "in_progress" }} />
             <IssueReferencePill issue={{ id: "demo-3", identifier: "PAP-789", title: "Done status", status: "done" }} />
             <IssueReferencePill issue={{ id: "demo-4", identifier: "PAP-101", title: "Blocked status", status: "blocked" }} />
-            <IssueReferencePill onRemove={() => window.alert("Blocker removed")} issue={{ id: "demo-blocker", identifier: "PAP-303", title: "Hover or focus to remove blocker", status: "in_review" }} />
+            <IssueReferencePill onRemove={() => window.alert(interfaceNotice("interface:blockerRemoved_c23e95"))} issue={{ id: "demo-blocker", identifier: "PAP-303", title: "Hover or focus to remove blocker", status: "in_review" }} />
             <IssueReferencePill strikethrough issue={{ id: "demo-5", identifier: "PAP-202", title: "Removed (strikethrough)", status: "todo" }} />
           </div>
         </SubSection>
 
         <SubSection title="LockedIssueChip">
-          <p className="text-xs text-muted-foreground">
-            Existence-only reference to a private task shown from a surface the viewer can see
-            (a blocker edge, a mention). Mono id + lock, dashed muted border,{" "}
-            <strong>no title, never a link</strong>. Falls back to &quot;Private&quot; when even the
-            identifier is withheld.
-          </p>
+          <p className="text-xs text-muted-foreground">{pageText("existenceOnlyReferenceToAPrivateTaskShown_b733f7")}{" "}
+            <strong>{pageText("noTitleNeverALink_e0d7ef")}</strong>{pageText("fallsBackToPrivateWhenEvenTheIdentifier_0f8172")}</p>
           <div className="flex items-center gap-2 flex-wrap">
             <LockedIssueChip identifier="PAP-1234" />
             <LockedIssueChip identifier={null} />
@@ -928,35 +919,30 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  AGENT CAPSULE                                                */}
       {/* ============================================================ */}
-      <Section title="Agent Capsule">
-        <p className="text-sm text-muted-foreground max-w-prose">
-          The brand &quot;capsule is the agent&quot; motif. A single agent reads as a tall
-          pill that moves through three states as it comes to life. The online fill uses
-          the live brand agent-gradient tokens (<code className="font-mono">--agent-Na</code> →{" "}
-          <code className="font-mono">--agent-Nb</code>); <code className="font-mono">prefers-reduced-motion</code>{" "}
-          skips the liquid rise and pulses and renders the final state.
-        </p>
-        <SubSection title="States">
+      <Section title={pageText("agentCapsule_514324")}>
+        <p className="text-sm text-muted-foreground max-w-prose">{pageText("theBrandCapsuleIsTheAgentMotifA_3a97ca")}<code className="font-mono">--agent-Na</code> →{" "}
+          <code className="font-mono">--agent-Nb</code>); <code className="font-mono">prefers-reduced-motion</code>{" "}{pageText("skipsTheLiquidRiseAndPulsesAndRenders_0512fe")}</p>
+        <SubSection title={pageText("states_6e6975")}>
           <div className="flex items-end gap-10">
             <div className="flex flex-col items-center gap-2">
               <AgentCapsule state="slot" />
-              <span className="text-xs text-muted-foreground">slot</span>
+              <span className="text-xs text-muted-foreground">{pageText("slot_462854")}</span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <AgentCapsule state="configured" />
-              <span className="text-xs text-muted-foreground">configured</span>
+              <span className="text-xs text-muted-foreground">{pageText("configured_3be9f9")}</span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <AgentCapsule state="online" gradient={5} />
-              <span className="text-xs text-muted-foreground">online</span>
+              <span className="text-xs text-muted-foreground">{pageText("online_2dbc2f")}</span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <AgentCapsule state="online" gradient={5} glow="blue" />
-              <span className="text-xs text-muted-foreground">online · blue glow</span>
+              <span className="text-xs text-muted-foreground">{pageText("onlineBlueGlow_434a4f")}</span>
             </div>
           </div>
         </SubSection>
-        <SubSection title="Sizes">
+        <SubSection title={pageText("sizes_96de48")}>
           <div className="flex items-end gap-8">
             <div className="flex flex-col items-center gap-2">
               <AgentCapsule state="online" size="sm" gradient={1} />
@@ -972,11 +958,11 @@ export function DesignGuide() {
             </div>
             <div className="flex flex-col items-center gap-2">
               <AgentCapsule state="online" size={{ width: 28, height: 96 }} gradient={6} />
-              <span className="text-xs text-muted-foreground">custom px</span>
+              <span className="text-xs text-muted-foreground">{pageText("customPx_f9b311")}</span>
             </div>
           </div>
         </SubSection>
-        <SubSection title="Gradients">
+        <SubSection title={pageText("gradients_80401d")}>
           <div className="flex items-end gap-3 flex-wrap">
             {Array.from({ length: AGENT_GRADIENT_COUNT }, (_, i) => (
               <div key={i} className="flex flex-col items-center gap-1.5">
@@ -991,38 +977,38 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  FORM ELEMENTS                                                */}
       {/* ============================================================ */}
-      <Section title="Form Elements">
+      <Section title={pageText("formElements_73c76e")}>
         <div className="grid gap-6 md:grid-cols-2">
-          <SubSection title="Input">
-            <Input placeholder="Default input" />
-            <Input placeholder="Disabled input" disabled className="mt-2" />
+          <SubSection title={pageText("input_b568d4")}>
+            <Input placeholder={pageText("defaultInput_5fd94a")} />
+            <Input placeholder={pageText("disabledInput_d43d1b")} disabled className="mt-2" />
           </SubSection>
 
-          <SubSection title="Textarea">
-            <Textarea placeholder="Write something..." />
+          <SubSection title={pageText("textarea_181339")}>
+            <Textarea placeholder={pageText("writeSomething_705621")} />
           </SubSection>
 
-          <SubSection title="Checkbox & Label">
+          <SubSection title={pageText("checkboxLabel_61823f")}>
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Checkbox id="check1" defaultChecked />
-                <Label htmlFor="check1">Checked item</Label>
+                <Label htmlFor="check1">{pageText("checkedItem_5b67ec")}</Label>
               </div>
               <div className="flex items-center gap-2">
                 <Checkbox id="check2" />
-                <Label htmlFor="check2">Unchecked item</Label>
+                <Label htmlFor="check2">{pageText("uncheckedItem_d9c765")}</Label>
               </div>
               <div className="flex items-center gap-2">
                 <Checkbox id="check3" disabled />
-                <Label htmlFor="check3">Disabled item</Label>
+                <Label htmlFor="check3">{pageText("disabledItem_f3e166")}</Label>
               </div>
             </div>
           </SubSection>
 
-          <SubSection title="Inline Editor">
+          <SubSection title={pageText("inlineEditor_851fc3")}>
             <div className="space-y-4">
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Title (single-line)</p>
+                <p className="text-xs text-muted-foreground mb-1">{pageText("titleSingleLine_ab2426")}</p>
                 <InlineEditor
                   value={inlineTitle}
                   onSave={setInlineTitle}
@@ -1031,7 +1017,7 @@ export function DesignGuide() {
                 />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Body text (single-line)</p>
+                <p className="text-xs text-muted-foreground mb-1">{pageText("bodyTextSingleLine_65e16a")}</p>
                 <InlineEditor
                   value={inlineText}
                   onSave={setInlineText}
@@ -1040,13 +1026,13 @@ export function DesignGuide() {
                 />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Description (multiline, auto-sizing)</p>
+                <p className="text-xs text-muted-foreground mb-1">{pageText("descriptionMultilineAutoSizing_a10044")}</p>
                 <InlineEditor
                   value={inlineDesc}
                   onSave={setInlineDesc}
                   as="p"
                   className="text-sm text-muted-foreground"
-                  placeholder="Add a description..."
+                  placeholder={pageText("addADescription_8c1d83")}
                   multiline
                 />
               </div>
@@ -1058,34 +1044,34 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  SELECT                                                       */}
       {/* ============================================================ */}
-      <Section title="Select">
-        <p className="mb-4 text-sm text-muted-foreground">Native single-value dropdowns share an inset, theme-aware caret and reserve room for it in the base stylesheet. Multiple-selection lists and controls with a custom icon keep their own appearance.</p>
+      <Section title={pageText("select_859822")}>
+        <p className="mb-4 text-sm text-muted-foreground">{pageText("nativeSingleValueDropdownsShareAnInsetTheme_eb27aa")}</p>
         <div className="grid gap-6 md:grid-cols-2">
-          <SubSection title="Default size">
+          <SubSection title={pageText("defaultSize_ebe275")}>
             <Select value={selectValue} onValueChange={setSelectValue}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select status" />
+                <SelectValue placeholder={pageText("selectStatus_033201")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="backlog">Backlog</SelectItem>
-                <SelectItem value="todo">Todo</SelectItem>
-                <SelectItem value="in_progress">In Progress</SelectItem>
-                <SelectItem value="in_review">In Review</SelectItem>
-                <SelectItem value="done">Done</SelectItem>
+                <SelectItem value="backlog">{pageText("backlog_1fe3af")}</SelectItem>
+                <SelectItem value="todo">{pageText("todo_fdebf6")}</SelectItem>
+                <SelectItem value="in_progress">{pageText("inProgress_f61ead")}</SelectItem>
+                <SelectItem value="in_review">{pageText("inReview_fc4be1")}</SelectItem>
+                <SelectItem value="done">{pageText("done_e9b450")}</SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">Current value: {selectValue}</p>
+            <p className="text-xs text-muted-foreground">{pageText("currentValue_1bc58c") + " "}{selectValue}</p>
           </SubSection>
-          <SubSection title="Small trigger">
+          <SubSection title={pageText("smallTrigger_8f106a")}>
             <Select defaultValue="high">
               <SelectTrigger size="sm" className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="critical">Critical</SelectItem>
-                <SelectItem value="high">High</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="critical">{pageText("critical_04b7b2")}</SelectItem>
+                <SelectItem value="high">{pageText("high_b1a595")}</SelectItem>
+                <SelectItem value="medium">{pageText("medium_d40496")}</SelectItem>
+                <SelectItem value="low">{pageText("low_a12494")}</SelectItem>
               </SelectContent>
             </Select>
           </SubSection>
@@ -1095,35 +1081,25 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  DROPDOWN MENU                                                */}
       {/* ============================================================ */}
-      <Section title="Dropdown Menu">
+      <Section title={pageText("dropdownMenu_c1e68d")}>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">
-              Quick Actions
-              <ChevronDown className="h-4 w-4" />
+            <Button variant="outline" size="sm">{pageText("quickActions_c40810")}<ChevronDown className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-56">
             <DropdownMenuItem>
-              <Check className="h-4 w-4" />
-              Mark as done
-              <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
+              <Check className="h-4 w-4" />{pageText("markAsDone_bdf91e")}<DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <BookOpen className="h-4 w-4" />
-              Open docs
-            </DropdownMenuItem>
+              <BookOpen className="h-4 w-4" />{pageText("openDocs_ed19bc")}</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuCheckboxItem
               checked={menuChecked}
               onCheckedChange={(value) => setMenuChecked(value === true)}
-            >
-              Watch issue
-            </DropdownMenuCheckboxItem>
+            >{pageText("watchIssue_b78529")}</DropdownMenuCheckboxItem>
             <DropdownMenuItem variant="destructive">
-              <Trash2 className="h-4 w-4" />
-              Delete issue
-            </DropdownMenuItem>
+              <Trash2 className="h-4 w-4" />{pageText("deleteIssue_91e845")}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </Section>
@@ -1131,17 +1107,15 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  POPOVER                                                      */}
       {/* ============================================================ */}
-      <Section title="Popover">
+      <Section title={pageText("popover_6c858e")}>
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm">Open Popover</Button>
+            <Button variant="outline" size="sm">{pageText("openPopover_3979cd")}</Button>
           </PopoverTrigger>
           <PopoverContent className="space-y-2">
-            <p className="text-sm font-medium">Agent heartbeat</p>
-            <p className="text-xs text-muted-foreground">
-              Last run succeeded 24s ago. Next timer run in 9m.
-            </p>
-            <Button size="xs">Wake now</Button>
+            <p className="text-sm font-medium">{pageText("agentHeartbeat_2bd5d6")}</p>
+            <p className="text-xs text-muted-foreground">{pageText("lastRunSucceeded24sAgoNextTimerRun_87704d")}</p>
+            <Button size="xs">{pageText("wakeNow_6de4dd")}</Button>
           </PopoverContent>
         </Popover>
       </Section>
@@ -1149,17 +1123,16 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  COLLAPSIBLE                                                  */}
       {/* ============================================================ */}
-      <Section title="Collapsible">
+      <Section title={pageText("collapsible_c932fa")}>
         <Collapsible open={collapsibleOpen} onOpenChange={setCollapsibleOpen} className="space-y-2">
           <CollapsibleTrigger asChild>
             <Button variant="outline" size="sm">
-              {collapsibleOpen ? "Hide" : "Show"} advanced filters
-            </Button>
+              {collapsibleOpen ? pageText("hide_34d8b6") : pageText("show_d97d1e")}{" " + pageText("advancedFilters_4b31bb")}</Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="rounded-md border border-border p-3">
             <div className="space-y-2">
-              <Label htmlFor="owner-filter">Owner</Label>
-              <Input id="owner-filter" placeholder="Filter by agent name" />
+              <Label htmlFor="owner-filter">{pageText("owner_89ff31")}</Label>
+              <Input id="owner-filter" placeholder={pageText("filterByAgentName_76810e")} />
             </div>
           </CollapsibleContent>
         </Collapsible>
@@ -1168,29 +1141,29 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  SHEET                                                        */}
       {/* ============================================================ */}
-      <Section title="Sheet">
+      <Section title={pageText("sheet_53bc47")}>
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="outline" size="sm">Open Side Panel</Button>
+            <Button variant="outline" size="sm">{pageText("openSidePanel_bafcb0")}</Button>
           </SheetTrigger>
           <SheetContent side="right">
             <SheetHeader>
-              <SheetTitle>Issue Properties</SheetTitle>
-              <SheetDescription>Edit metadata without leaving the current page.</SheetDescription>
+              <SheetTitle>{pageText("issueProperties_99500c")}</SheetTitle>
+              <SheetDescription>{pageText("editMetadataWithoutLeavingTheCurrentPage_6664e3")}</SheetDescription>
             </SheetHeader>
             <div className="space-y-4 px-4">
               <div className="space-y-1">
-                <Label htmlFor="sheet-title">Title</Label>
+                <Label htmlFor="sheet-title">{pageText("title_768e0c")}</Label>
                 <Input id="sheet-title" defaultValue="Improve onboarding docs" />
               </div>
               <div className="space-y-1">
-                <Label htmlFor="sheet-description">Description</Label>
+                <Label htmlFor="sheet-description">{pageText("description_55f8eb")}</Label>
                 <Textarea id="sheet-description" defaultValue="Capture setup pitfalls and screenshots." />
               </div>
             </div>
             <SheetFooter>
-              <Button variant="outline">Cancel</Button>
-              <Button>Save</Button>
+              <Button variant="outline">{pageText("cancel_77dfd2")}</Button>
+              <Button>{pageText("save_efc007")}</Button>
             </SheetFooter>
           </SheetContent>
         </Sheet>
@@ -1199,13 +1172,11 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  SCROLL AREA                                                  */}
       {/* ============================================================ */}
-      <Section title="Scroll Area">
+      <Section title={pageText("scrollArea_994b90")}>
         <ScrollArea className="h-36 rounded-md border border-border">
           <div className="space-y-2 p-3">
             {Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className="rounded-md border border-border p-2 text-sm">
-                Heartbeat run #{i + 1}: completed successfully
-              </div>
+              <div key={i} className="rounded-md border border-border p-2 text-sm">{pageText("heartbeatRun_0e2443")}{i + 1}{pageText("completedSuccessfully_8a6ecc")}</div>
             ))}
           </div>
         </ScrollArea>
@@ -1214,32 +1185,24 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  COMMAND                                                      */}
       {/* ============================================================ */}
-      <Section title="Command (CMDK)">
+      <Section title={pageText("commandCMDK_facb38")}>
         <div className="rounded-md border border-border">
           <Command>
-            <CommandInput placeholder="Type a command or search..." />
+            <CommandInput placeholder={pageText("typeACommandOrSearch_af3814")} />
             <CommandList>
-              <CommandEmpty>No results found.</CommandEmpty>
+              <CommandEmpty>{pageText("noResultsFound_e9cc6d")}</CommandEmpty>
               <CommandGroup heading="Pages">
                 <CommandItem>
-                  <LayoutDashboard className="h-4 w-4" />
-                  Dashboard
-                </CommandItem>
+                  <LayoutDashboard className="h-4 w-4" />{pageText("dashboard_d87f47")}</CommandItem>
                 <CommandItem>
-                  <CircleDot className="h-4 w-4" />
-                  Issues
-                </CommandItem>
+                  <CircleDot className="h-4 w-4" />{pageText("issues_30ce4c")}</CommandItem>
               </CommandGroup>
               <CommandSeparator />
               <CommandGroup heading="Actions">
                 <CommandItem>
-                  <CommandIcon className="h-4 w-4" />
-                  Open command palette
-                </CommandItem>
+                  <CommandIcon className="h-4 w-4" />{pageText("openCommandPalette_33c642")}</CommandItem>
                 <CommandItem>
-                  <Plus className="h-4 w-4" />
-                  Create new issue
-                </CommandItem>
+                  <Plus className="h-4 w-4" />{pageText("createNewIssue_74cf30")}</CommandItem>
               </CommandGroup>
             </CommandList>
           </Command>
@@ -1249,19 +1212,19 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  BREADCRUMB                                                   */}
       {/* ============================================================ */}
-      <Section title="Breadcrumb">
+      <Section title={pageText("breadcrumb_c766e6")}>
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="#">Projects</BreadcrumbLink>
+              <BreadcrumbLink href="#">{pageText("projects_53e890")}</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink href="#">Paperclip App</BreadcrumbLink>
+              <BreadcrumbLink href="#">{pageText("paperclipApp_cfeeac")}</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>Issue List</BreadcrumbPage>
+              <BreadcrumbPage>{pageText("issueList_75e99b")}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
@@ -1270,8 +1233,8 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  CARDS                                                        */}
       {/* ============================================================ */}
-      <Section title="Cards">
-        <SubSection title="Dashboard agent runs">
+      <Section title={pageText("cards_0f830b")}>
+        <SubSection title={pageText("dashboardAgentRuns_63a178")}>
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {["running", "queued", "succeeded", "failed", "timed_out", "cancelled", "interrupted"].map((status) => (
               <AgentRunCard
@@ -1286,30 +1249,30 @@ export function DesignGuide() {
               />
             ))}
           </div>
-          <p className="text-xs text-muted-foreground">The dashboard and Live runs page use the same compact cards. In-progress task icons animate across the app, including between runs, to represent task workflow status. Live indicators report active execution. Open a run to view its status and transcript.</p>
+          <p className="text-xs text-muted-foreground">{pageText("theDashboardAndLiveRunsPageUseThe_858ef0")}</p>
         </SubSection>
-        <SubSection title="Standard Card">
+        <SubSection title={pageText("standardCard_a043d5")}>
           <Card>
             <CardHeader>
-              <CardTitle>Card Title</CardTitle>
-              <CardDescription>Card description with supporting text.</CardDescription>
+              <CardTitle>{pageText("cardTitle_92f090")}</CardTitle>
+              <CardDescription>{pageText("cardDescriptionWithSupportingText_e11b67")}</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm">Card content goes here. This is the main body area.</p>
+              <p className="text-sm">{pageText("cardContentGoesHereThisIsTheMain_f79ab1")}</p>
             </CardContent>
             <CardFooter className="gap-2">
-              <Button size="sm">Action</Button>
-              <Button variant="outline" size="sm">Cancel</Button>
+              <Button size="sm">{pageText("action_97c89a")}</Button>
+              <Button variant="outline" size="sm">{pageText("cancel_77dfd2")}</Button>
             </CardFooter>
           </Card>
         </SubSection>
 
-        <SubSection title="Metric Cards">
+        <SubSection title={pageText("metricCards_4adf46")}>
           <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
-            <MetricCard icon={Bot} value={12} label="Active Agents" description="+3 this week" />
-            <MetricCard icon={CircleDot} value={48} label="Open Issues" />
-            <MetricCard icon={DollarSign} value="$1,234" label="Monthly Cost" description="Under budget" />
-            <MetricCard icon={Zap} value="99.9%" label="Uptime" />
+            <MetricCard icon={Bot} value={12} label={pageText("activeAgents_390652")} description={pageText("3ThisWeek_075673")} />
+            <MetricCard icon={CircleDot} value={48} label={pageText("openIssues_6c604c")} />
+            <MetricCard icon={DollarSign} value="$1,234" label={pageText("monthlyCost_ddfb9c")} description={pageText("underBudget_79ab4d")} />
+            <MetricCard icon={Zap} value="99.9%" label={pageText("uptime_6aafa8")} />
           </div>
         </SubSection>
       </Section>
@@ -1317,45 +1280,45 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  TABS                                                         */}
       {/* ============================================================ */}
-      <Section title="Tabs">
-        <SubSection title="Default (pill) variant">
+      <Section title={pageText("tabs_2a4d56")}>
+        <SubSection title={pageText("defaultPillVariant_9b6e2f")}>
           <Tabs defaultValue="overview">
             <TabsList>
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="runs">Runs</TabsTrigger>
-              <TabsTrigger value="config">Config</TabsTrigger>
-              <TabsTrigger value="costs">Costs</TabsTrigger>
+              <TabsTrigger value="overview">{pageText("overview_0efc2e")}</TabsTrigger>
+              <TabsTrigger value="runs">{pageText("runs_fcde5c")}</TabsTrigger>
+              <TabsTrigger value="config">{pageText("config_885114")}</TabsTrigger>
+              <TabsTrigger value="costs">{pageText("costs_799b3e")}</TabsTrigger>
             </TabsList>
             <TabsContent value="overview">
-              <p className="text-sm text-muted-foreground py-4">Overview tab content.</p>
+              <p className="text-sm text-muted-foreground py-4">{pageText("overviewTabContent_2c0453")}</p>
             </TabsContent>
             <TabsContent value="runs">
-              <p className="text-sm text-muted-foreground py-4">Runs tab content.</p>
+              <p className="text-sm text-muted-foreground py-4">{pageText("runsTabContent_f04ab4")}</p>
             </TabsContent>
             <TabsContent value="config">
-              <p className="text-sm text-muted-foreground py-4">Config tab content.</p>
+              <p className="text-sm text-muted-foreground py-4">{pageText("configTabContent_9773b0")}</p>
             </TabsContent>
             <TabsContent value="costs">
-              <p className="text-sm text-muted-foreground py-4">Costs tab content.</p>
+              <p className="text-sm text-muted-foreground py-4">{pageText("costsTabContent_90c7b2")}</p>
             </TabsContent>
           </Tabs>
         </SubSection>
 
-        <SubSection title="Line variant">
+        <SubSection title={pageText("lineVariant_55c110")}>
           <Tabs defaultValue="summary">
             <TabsList variant="line">
-              <TabsTrigger value="summary">Summary</TabsTrigger>
-              <TabsTrigger value="details">Details</TabsTrigger>
-              <TabsTrigger value="comments">Comments</TabsTrigger>
+              <TabsTrigger value="summary">{pageText("summary_12b71c")}</TabsTrigger>
+              <TabsTrigger value="details">{pageText("details_dc3dec")}</TabsTrigger>
+              <TabsTrigger value="comments">{pageText("comments_fce06e")}</TabsTrigger>
             </TabsList>
             <TabsContent value="summary">
-              <p className="text-sm text-muted-foreground py-4">Summary content with underline tabs.</p>
+              <p className="text-sm text-muted-foreground py-4">{pageText("summaryContentWithUnderlineTabs_3c1fb0")}</p>
             </TabsContent>
             <TabsContent value="details">
-              <p className="text-sm text-muted-foreground py-4">Details content.</p>
+              <p className="text-sm text-muted-foreground py-4">{pageText("detailsContent_1be352")}</p>
             </TabsContent>
             <TabsContent value="comments">
-              <p className="text-sm text-muted-foreground py-4">Comments content.</p>
+              <p className="text-sm text-muted-foreground py-4">{pageText("commentsContent_1ee88b")}</p>
             </TabsContent>
           </Tabs>
         </SubSection>
@@ -1364,7 +1327,7 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  ENTITY ROWS                                                  */}
       {/* ============================================================ */}
-      <Section title="Entity Rows">
+      <Section title={pageText("entityRows_fecc81")}>
         <div className="border border-border rounded-md">
           <EntityRow
             leading={
@@ -1375,7 +1338,7 @@ export function DesignGuide() {
               </>
             }
             identifier="PAP-001"
-            title="Implement authentication flow"
+            title={pageText("implementAuthenticationFlow_6c52a2")}
             subtitle="Responsible: Agent Alpha"
             trailing={<IssueStatusBadge status="in_progress" />}
             onClick={() => {}}
@@ -1388,7 +1351,7 @@ export function DesignGuide() {
               </>
             }
             identifier="PAP-002"
-            title="Set up CI/CD pipeline"
+            title={pageText("setUpCICDPipeline_2988de")}
             subtitle="Completed 2 days ago"
             trailing={<IssueStatusBadge status="done" />}
             onClick={() => {}}
@@ -1401,7 +1364,7 @@ export function DesignGuide() {
               </>
             }
             identifier="PAP-003"
-            title="Write API documentation"
+            title={pageText("writeAPIDocumentation_0fb190")}
             trailing={<IssueStatusBadge status="todo" />}
             onClick={() => {}}
           />
@@ -1413,16 +1376,16 @@ export function DesignGuide() {
               </>
             }
             identifier="PAP-004"
-            title="Deploy to production"
+            title={pageText("deployToProduction_4281af")}
             subtitle="Blocked by PAP-001"
             trailing={<IssueStatusBadge status="blocked" />}
             selected
           />
         </div>
-        <SubSection title="Membership action">
+        <SubSection title={pageText("membershipAction_68133b")}>
           <div className="border border-border rounded-md">
             <EntityRow
-              title="Joined resource"
+              title={pageText("joinedResource_69c117")}
               subtitle="Hover or focus the row to reveal the reserved action slot."
               className="group"
               trailing={
@@ -1435,7 +1398,7 @@ export function DesignGuide() {
               }
             />
             <EntityRow
-              title="Left resource"
+              title={pageText("leftResource_26353e")}
               subtitle="Persistent action with dimmed row content."
               className="group text-foreground/55"
               trailing={
@@ -1448,7 +1411,7 @@ export function DesignGuide() {
               }
             />
             <EntityRow
-              title="Leaving resource"
+              title={pageText("leavingResource_665a60")}
               subtitle="Disabled while the optimistic mutation is pending."
               className="group text-foreground/55"
               trailing={
@@ -1463,7 +1426,7 @@ export function DesignGuide() {
               }
             />
             <EntityRow
-              title="Joining resource"
+              title={pageText("joiningResource_70a4df")}
               subtitle="The target state is visible immediately while the server confirms."
               className="group"
               trailing={
@@ -1484,7 +1447,7 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  FILTER BAR                                                   */}
       {/* ============================================================ */}
-      <Section title="Filter Bar">
+      <Section title={pageText("filterBar_14b83b")}>
         <FilterBar
           filters={filters}
           onRemove={(key) => setFilters((f) => f.filter((x) => x.key !== key))}
@@ -1496,24 +1459,22 @@ export function DesignGuide() {
             size="sm"
             onClick={() =>
               setFilters([
-                { key: "status", label: "Status", value: "Active" },
+                { key: "status", label: controlText("Status"), value: controlText("Active") },
                 // PAP-411: priority filter demo row suppressed while SHOW_TASK_PRIORITY_UI is off.
                 ...(SHOW_TASK_PRIORITY_UI
                   ? [{ key: "priority", label: "Priority", value: "High" } as FilterValue]
                   : []),
               ])
             }
-          >
-            Reset filters
-          </Button>
+          >{pageText("resetFilters_565531")}</Button>
         )}
       </Section>
 
       {/* ============================================================ */}
       {/*  AVATARS                                                      */}
       {/* ============================================================ */}
-      <Section title="Avatars">
-        <SubSection title="Sizes">
+      <Section title={pageText("avatars_fc022e")}>
+        <SubSection title={pageText("sizes_96de48")}>
           <div className="flex items-center gap-3">
             <Avatar size="sm"><AvatarFallback>SM</AvatarFallback></Avatar>
             <Avatar><AvatarFallback>DF</AvatarFallback></Avatar>
@@ -1521,7 +1482,7 @@ export function DesignGuide() {
           </div>
         </SubSection>
 
-        <SubSection title="Group">
+        <SubSection title={pageText("group_171a06")}>
           <AvatarGroup>
             <Avatar><AvatarFallback>A1</AvatarFallback></Avatar>
             <Avatar><AvatarFallback>A2</AvatarFallback></Avatar>
@@ -1531,8 +1492,8 @@ export function DesignGuide() {
         </SubSection>
       </Section>
 
-      <Section title="App logos">
-        <SubSection title="Official marks and runtime fallback">
+      <Section title={pageText("appLogos_e9ab5b")}>
+        <SubSection title={pageText("officialMarksAndRuntimeFallback_544171")}>
           <div className="flex items-center gap-3">
             <AppLogo
               name="Notion"
@@ -1549,17 +1510,17 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  IDENTITY                                                     */}
       {/* ============================================================ */}
-      <Section title="Agent personas">
-        <SubSection title="Stable palette identities">
+      <Section title={pageText("agentPersonas_91969d")}>
+        <SubSection title={pageText("stablePaletteIdentities_e6c11d")}>
           <div className="flex flex-wrap gap-3">{AGENT_PALETTE_IDS.map(palette => <AgentAvatar key={palette} appearance={appearanceForPalette(palette)} size={48} label={palette} />)}</div>
         </SubSection>
-        <SubSection title="Onboarding and live character">
-          <p className="text-sm text-muted-foreground">Place one live character beside the agent name. Onboarding uses a larger padded frame. Onboarding and agent headers follow the pointer across the page; other placements track within their region. Full-page examples are in Storybook under Agents / Personas / Full pages.</p>
+        <SubSection title={pageText("onboardingAndLiveCharacter_f97be5")}>
+          <p className="text-sm text-muted-foreground">{pageText("placeOneLiveCharacterBesideTheAgentName_c7754b")}</p>
           <div className="flex gap-4"><AgentCharacter muted state="sleepy" motion="still" size={128} /><AgentCharacter size={128} /></div>
         </SubSection>
       </Section>
-      <Section title="Human identity">
-        <SubSection title="Sizes">
+      <Section title={pageText("humanIdentity_7e98d1")}>
+        <SubSection title={pageText("sizes_96de48")}>
           <div className="flex items-center gap-6">
             <Identity name="Alex Morgan" size="sm" />
             <Identity name="Alex Morgan" />
@@ -1567,7 +1528,7 @@ export function DesignGuide() {
           </div>
         </SubSection>
 
-        <SubSection title="Initials derivation">
+        <SubSection title={pageText("initialsDerivation_68d8d0")}>
           <div className="flex flex-col gap-2">
             <Identity name="Casey Jordan" size="sm" />
             <Identity name="Alpha" size="sm" />
@@ -1575,7 +1536,7 @@ export function DesignGuide() {
           </div>
         </SubSection>
 
-        <SubSection title="Custom initials">
+        <SubSection title={pageText("customInitials_07f632")}>
           <Identity name="Backend Service" initials="BS" size="sm" />
         </SubSection>
       </Section>
@@ -1583,19 +1544,19 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  TOOLTIPS                                                     */}
       {/* ============================================================ */}
-      <Section title="Tooltips">
+      <Section title={pageText("tooltips_45a025")}>
         <div className="flex items-center gap-4">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="outline" size="sm">Hover me</Button>
+              <Button variant="outline" size="sm">{pageText("hoverMe_dba6d2")}</Button>
             </TooltipTrigger>
-            <TooltipContent>This is a tooltip</TooltipContent>
+            <TooltipContent>{pageText("thisIsATooltip_a5577f")}</TooltipContent>
           </Tooltip>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button variant="ghost" size="icon-sm"><Settings /></Button>
             </TooltipTrigger>
-            <TooltipContent>Settings</TooltipContent>
+            <TooltipContent>{pageText("settings_c7f73b")}</TooltipContent>
           </Tooltip>
         </div>
       </Section>
@@ -1603,31 +1564,29 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  DIALOG                                                       */}
       {/* ============================================================ */}
-      <Section title="Dialog">
+      <Section title={pageText("dialog_a31bda")}>
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline">Open Dialog</Button>
+            <Button variant="outline">{pageText("openDialog_09b693")}</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Dialog Title</DialogTitle>
-              <DialogDescription>
-                This is a sample dialog showing the standard layout with header, content, and footer.
-              </DialogDescription>
+              <DialogTitle>{pageText("dialogTitle_d4b533")}</DialogTitle>
+              <DialogDescription>{pageText("thisIsASampleDialogShowingTheStandard_636c11")}</DialogDescription>
             </DialogHeader>
             <div className="space-y-3">
               <div>
-                <Label>Name</Label>
-                <Input placeholder="Enter a name" className="mt-1.5" />
+                <Label>{pageText("name_709a23")}</Label>
+                <Input placeholder={pageText("enterAName_7e5fe9")} className="mt-1.5" />
               </div>
               <div>
-                <Label>Description</Label>
-                <Textarea placeholder="Describe..." className="mt-1.5" />
+                <Label>{pageText("description_55f8eb")}</Label>
+                <Textarea placeholder={pageText("describe_0b86b1")} className="mt-1.5" />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline">Cancel</Button>
-              <Button>Save</Button>
+              <Button variant="outline">{pageText("cancel_77dfd2")}</Button>
+              <Button>{pageText("save_efc007")}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -1636,11 +1595,11 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  EMPTY STATE                                                  */}
       {/* ============================================================ */}
-      <Section title="Empty State">
+      <Section title={pageText("emptyState_0a8009")}>
         <div className="border border-border rounded-md">
           <EmptyState
             icon={Inbox}
-            message="No items to show. Create your first one to get started."
+            message={pageText("noItemsToShowCreateYourFirstOne_c71ad6")}
             action="Create Item"
             onAction={() => {}}
           />
@@ -1650,7 +1609,7 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  PROGRESS BARS                                                */}
       {/* ============================================================ */}
-      <Section title="Progress Bars (Budget)">
+      <Section title={pageText("progressBarsBudget_6c2b32")}>
         <div className="space-y-3">
           {[
             { label: "Under budget (40%)", pct: 40, color: "bg-green-400" },
@@ -1659,7 +1618,7 @@ export function DesignGuide() {
           ].map(({ label, pct, color }) => (
             <div key={label} className="space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">{label}</span>
+                <span className="text-xs text-muted-foreground">{controlText(label)}</span>
                 <span className="text-xs font-mono">{pct}%</span>
               </div>
               <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
@@ -1676,7 +1635,7 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  LOG VIEWER                                                   */}
       {/* ============================================================ */}
-      <Section title="Log Viewer">
+      <Section title={pageText("logViewer_05a3ad")}>
         <div className="bg-neutral-950 rounded-lg p-3 font-mono text-xs max-h-80 overflow-y-auto">
           <div className="text-foreground">[12:00:01] INFO  Agent started successfully</div>
           <div className="text-foreground">[12:00:02] INFO  Processing task PAP-001</div>
@@ -1690,7 +1649,7 @@ export function DesignGuide() {
               <span className="absolute inline-flex h-full w-full rounded-full bg-blue-400 animate-pulse" />
               <span className="inline-flex h-full w-full rounded-full bg-blue-500" />
             </span>
-            <span className="text-blue-600 dark:text-blue-400">Live</span>
+            <span className="text-blue-600 dark:text-blue-400">{pageText("live_65c821")}</span>
           </div>
         </div>
       </Section>
@@ -1698,29 +1657,29 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  PROPERTY ROW PATTERN                                         */}
       {/* ============================================================ */}
-      <Section title="Property Row Pattern">
+      <Section title={pageText("propertyRowPattern_6d60de")}>
         <div className="border border-border rounded-md p-4 space-y-1 max-w-sm">
           <div className="flex items-center justify-between py-1.5">
-            <span className="text-xs text-muted-foreground">Status</span>
+            <span className="text-xs text-muted-foreground">{pageText("status_bae7d5")}</span>
             <StatusBadge status="active" />
           </div>
           {/* PAP-411: priority metadata row hidden behind SHOW_TASK_PRIORITY_UI. */}
           {SHOW_TASK_PRIORITY_UI && (
             <div className="flex items-center justify-between py-1.5">
-              <span className="text-xs text-muted-foreground">Priority</span>
+              <span className="text-xs text-muted-foreground">{pageText("priority_886cbf")}</span>
               <PriorityIcon priority="high" />
             </div>
           )}
           <div className="flex items-center justify-between py-1.5">
-            <span className="text-xs text-muted-foreground">Responsible</span>
+            <span className="text-xs text-muted-foreground">{pageText("responsible_96cd62")}</span>
             <div className="flex items-center gap-1.5">
               <Avatar size="sm"><AvatarFallback>A</AvatarFallback></Avatar>
-              <span className="text-xs">Agent Alpha</span>
+              <span className="text-xs">{pageText("agentAlpha_23fc1b")}</span>
             </div>
           </div>
           <div className="flex items-center justify-between py-1.5">
-            <span className="text-xs text-muted-foreground">Created</span>
-            <span className="text-xs">Jan 15, 2025</span>
+            <span className="text-xs text-muted-foreground">{pageText("created_accf40")}</span>
+            <span className="text-xs">{pageText("jan152025_3949cb")}</span>
           </div>
         </div>
       </Section>
@@ -1728,21 +1687,21 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  NAVIGATION PATTERNS                                          */}
       {/* ============================================================ */}
-      <Section title="Navigation Patterns">
-        <SubSection title="Independent MCP connections">
-          <p className="text-sm text-muted-foreground">Zapier, Arcade, Composio and Executor each own a connection. Their controlled setup views share Access → Connect. Tool discovery completes setup. Saved connections reuse the standard Permissions action list and per-action Test dialog. Storybook’s Apps / Connections groups use in-memory provider fixtures.</p>
+      <Section title={pageText("navigationPatterns_3c5708")}>
+        <SubSection title={pageText("independentMCPConnections_349bdd")}>
+          <p className="text-sm text-muted-foreground">{pageText("zapierArcadeComposioAndExecutorEachOwnA_a1d550")}</p>
           <RemoteMcpDesignExample />
         </SubSection>
-        <SubSection title="Setup wizard">
-          <p className="text-sm text-muted-foreground">Shared by connection setup and trigger previews. Setup navigation takes over the section sidebar; each step owns a single footer.</p>
+        <SubSection title={pageText("setupWizard_739a95")}>
+          <p className="text-sm text-muted-foreground">{pageText("sharedByConnectionSetupAndTriggerPreviewsSetup_610777")}</p>
           <div className="max-w-sm space-y-6">
-            <SetupWizardNavigation inline labels={["Choose trigger", "Configure", "Review"]} step={wizardStep} availableStep={2} onSelect={setWizardStep} />
-            <SetupWizardFooter onSaveExit={() => setWizardStep(0)}><Button onClick={() => setWizardStep((wizardStep + 1) % 3)}>Continue</Button></SetupWizardFooter>
+            <SetupWizardNavigation inline labels={[controlText("Choose trigger"), controlText("Configure"), controlText("Review")]} step={wizardStep} availableStep={2} onSelect={setWizardStep} />
+            <SetupWizardFooter onSaveExit={() => setWizardStep(0)}><Button onClick={() => setWizardStep((wizardStep + 1) % 3)}>{pageText("continue_2e0262")}</Button></SetupWizardFooter>
           </div>
         </SubSection>
-        <SubSection title="Agent chat picker">
+        <SubSection title={pageText("agentChatPicker_8a787c")}>
           <AgentChatPickerExample />
-          <SubSection title="Agent conversation sidebar">
+          <SubSection title={pageText("agentConversationSidebar_4e1207")}>
             <div className="flex flex-wrap gap-4">
               <div className="h-96 w-60"><AgentConversationSidebar agents={[]} onSelect={() => {}} onBrowse={() => {}} /></div>
               <div className="h-96 w-60"><AgentConversationSidebar agents={[]} loading /></div>
@@ -1750,45 +1709,29 @@ export function DesignGuide() {
             </div>
           </SubSection>
         </SubSection>
-        <SubSection title="Sidebar nav items">
-          <p className="text-sm text-muted-foreground">
-            Layout accepts sidebarSections to compose additional SidebarSection groups inside the shared sidebar.
-            Use SidebarNavItem for each row, with sibling action buttons for starring or menus.
-            The Chats section shows starred agents, the earliest-created agent when unstarred, then four recent agents without duplicates. Compose and star controls share a vertical column. Compose appears on hover or keyboard focus and remains visible on touch; starred icons remain visible. The picker searches all company agents by name or role without a subtitle, count, continuation labels, or footer. Task breadcrumbs support leading identity and trailing actions beside the label, including single-item task headers; see the Agent chat Storybook.
-          </p>
+        <SubSection title={pageText("sidebarNavItems_934f1a")}>
+          <p className="text-sm text-muted-foreground">{pageText("layoutAcceptsSidebarSectionsToComposeAdditionalSidebarSectionGroups_908241")}</p>
           <Card className="block w-60 p-3 space-y-0.5">
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium bg-accent text-accent-foreground">
-              <LayoutDashboard className="h-4 w-4" />
-              Dashboard
-            </div>
+              <LayoutDashboard className="h-4 w-4" />{pageText("dashboard_d87f47")}</div>
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground cursor-pointer">
-              <CircleDot className="h-4 w-4" />
-              Issues
-              <Badge variant="ghost" className="ml-auto bg-primary text-primary-foreground px-1.5">
+              <CircleDot className="h-4 w-4" />{pageText("issues_30ce4c")}<Badge variant="ghost" className="ml-auto bg-primary text-primary-foreground px-1.5">
                 12
               </Badge>
             </div>
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground cursor-pointer">
-              <Bot className="h-4 w-4" />
-              Agents
-            </div>
+              <Bot className="h-4 w-4" />{pageText("agents_64acf7")}</div>
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground cursor-pointer">
-              <Hexagon className="h-4 w-4" />
-              Projects
-            </div>
+              <Hexagon className="h-4 w-4" />{pageText("projects_53e890")}</div>
           </Card>
         </SubSection>
 
-        <SubSection title="View toggle">
+        <SubSection title={pageText("viewToggle_dadf1f")}>
           <div className="flex items-center border border-border rounded-md w-fit">
             <button className="px-3 py-1.5 text-xs font-medium bg-accent text-foreground rounded-l-md">
-              <ListTodo className="h-3.5 w-3.5 inline mr-1" />
-              List
-            </button>
+              <ListTodo className="h-3.5 w-3.5 inline mr-1" />{pageText("list_a1fffa")}</button>
             <button className="px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-accent/50 rounded-r-md">
-              <Target className="h-3.5 w-3.5 inline mr-1" />
-              Org
-            </button>
+              <Target className="h-3.5 w-3.5 inline mr-1" />{pageText("org_972f71")}</button>
           </div>
         </SubSection>
       </Section>
@@ -1796,11 +1739,11 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  GROUPED LIST (Issues pattern)                                */}
       {/* ============================================================ */}
-      <Section title="Grouped List (Issues pattern)">
+      <Section title={pageText("groupedListIssuesPattern_fb6781")}>
         <div>
           <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-t-md">
             <StatusIcon status="in_progress" />
-            <span className="text-sm font-medium">In Progress</span>
+            <span className="text-sm font-medium">{pageText("inProgress_f61ead")}</span>
             <span className="text-xs text-muted-foreground ml-1">2</span>
           </div>
           <div className="border border-border rounded-b-md">
@@ -1808,13 +1751,13 @@ export function DesignGuide() {
             <EntityRow
               leading={SHOW_TASK_PRIORITY_UI ? <PriorityIcon priority="high" /> : undefined}
               identifier="PAP-101"
-              title="Build agent heartbeat system"
+              title={pageText("buildAgentHeartbeatSystem_ea3616")}
               onClick={() => {}}
             />
             <EntityRow
               leading={SHOW_TASK_PRIORITY_UI ? <PriorityIcon priority="medium" /> : undefined}
               identifier="PAP-102"
-              title="Add cost tracking dashboard"
+              title={pageText("addCostTrackingDashboard_86e402")}
               onClick={() => {}}
             />
           </div>
@@ -1824,28 +1767,28 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  COMMENT THREAD PATTERN                                       */}
       {/* ============================================================ */}
-      <Section title="Comment Thread Pattern">
+      <Section title={pageText("commentThreadPattern_733e30")}>
         <div className="space-y-3 max-w-2xl">
-          <h3 className="text-sm font-semibold">Comments (2)</h3>
+          <h3 className="text-sm font-semibold">{pageText("comments2_3c1f32")}</h3>
           <div className="space-y-3">
             <div className="rounded-md border border-border p-3">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium text-muted-foreground">Agent</span>
-                <span className="text-xs text-muted-foreground">Jan 15, 2025</span>
+                <span className="text-xs font-medium text-muted-foreground">{pageText("agent_5ce2e6")}</span>
+                <span className="text-xs text-muted-foreground">{pageText("jan152025_3949cb")}</span>
               </div>
-              <p className="text-sm">Started working on the authentication module. Will need API keys configured.</p>
+              <p className="text-sm">{pageText("startedWorkingOnTheAuthenticationModuleWillNeed_cace74")}</p>
             </div>
             <div className="rounded-md border border-border p-3">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium text-muted-foreground">Human</span>
-                <span className="text-xs text-muted-foreground">Jan 16, 2025</span>
+                <span className="text-xs font-medium text-muted-foreground">{pageText("human_e31663")}</span>
+                <span className="text-xs text-muted-foreground">{pageText("jan162025_01eedd")}</span>
               </div>
-              <p className="text-sm">API keys have been added to the vault. Please proceed.</p>
+              <p className="text-sm">{pageText("apiKeysHaveBeenAddedToTheVault_c4d3c7")}</p>
             </div>
           </div>
           <div className="space-y-2">
-            <Textarea placeholder="Leave a comment..." rows={3} />
-            <Button size="sm">Comment</Button>
+            <Textarea placeholder={pageText("leaveAComment_5b96fd")} rows={3} />
+            <Button size="sm">{pageText("comment_153d7a")}</Button>
           </div>
         </div>
       </Section>
@@ -1853,14 +1796,14 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  COST TABLE PATTERN                                           */}
       {/* ============================================================ */}
-      <Section title="Cost Table Pattern">
+      <Section title={pageText("costTablePattern_ddb191")}>
         <div className="border border-border rounded-lg overflow-hidden">
           <table className="w-full text-xs">
             <thead className="border-b border-border bg-accent/20">
               <tr>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground">Model</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground">Tokens</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground">Cost</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground">{pageText("model_68c2cc")}</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground">{pageText("tokens_c38c6c")}</th>
+                <th className="text-left px-3 py-2 font-medium text-muted-foreground">{pageText("cost_64ae43")}</th>
               </tr>
             </thead>
             <tbody>
@@ -1875,7 +1818,7 @@ export function DesignGuide() {
                 <td className="px-3 py-2 font-mono">$1.25</td>
               </tr>
               <tr>
-                <td className="px-3 py-2 font-medium">Total</td>
+                <td className="px-3 py-2 font-medium">{pageText("total_b25928")}</td>
                 <td className="px-3 py-2 font-mono">1.7M</td>
                 <td className="px-3 py-2 font-mono font-medium">$19.25</td>
               </tr>
@@ -1887,8 +1830,8 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  SKELETONS                                                    */}
       {/* ============================================================ */}
-      <Section title="Skeletons">
-        <SubSection title="Individual">
+      <Section title={pageText("skeletons_0bed18")}>
+        <SubSection title={pageText("individual_a7abed")}>
           <div className="space-y-2">
             <Skeleton className="h-4 w-48" />
             <Skeleton className="h-8 w-full max-w-sm" />
@@ -1896,18 +1839,18 @@ export function DesignGuide() {
           </div>
         </SubSection>
 
-        <SubSection title="Page Skeleton (list)">
+        <SubSection title={pageText("pageSkeletonList_c1a5b6")}>
           <div className="border border-border rounded-md p-4">
             <PageSkeleton variant="list" />
           </div>
         </SubSection>
 
-        <SubSection title="Page Skeleton (detail)">
+        <SubSection title={pageText("pageSkeletonDetail_c1d754")}>
           <div className="border border-border rounded-md p-4">
             <PageSkeleton variant="detail" />
           </div>
         </SubSection>
-        <SubSection title="Task conversation loading">
+        <SubSection title={pageText("taskConversationLoading_f32d5c")}>
           <div className="grid gap-6 md:grid-cols-2">
             <div className="relative h-96 overflow-hidden rounded-md border border-border">
               <TaskChatLoadingShell mobile={false} streamlined coordinator={false} />
@@ -1922,14 +1865,14 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  SEPARATOR                                                    */}
       {/* ============================================================ */}
-      <Section title="Separator">
+      <Section title={pageText("separator_b4b289")}>
         <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">Horizontal</p>
+          <p className="text-sm text-muted-foreground">{pageText("horizontal_4f57a1")}</p>
           <Separator />
           <div className="flex items-center gap-4 h-8">
-            <span className="text-sm">Left</span>
+            <span className="text-sm">{pageText("left_8ae1c3")}</span>
             <Separator orientation="vertical" />
-            <span className="text-sm">Right</span>
+            <span className="text-sm">{pageText("right_954daa")}</span>
           </div>
         </div>
       </Section>
@@ -1939,41 +1882,26 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  TEAM CATALOG                                                 */}
       {/* ============================================================ */}
-      <Section title="Team Catalog">
-        <p className="text-sm text-muted-foreground">
-          Components from the Team Catalog browse/install surface (<code className="font-mono text-xs">/teams-catalog</code>).
-          Fixtures are shared with the Storybook stories.
-        </p>
+      <Section title={pageText("teamCatalog_d49763")}>
+        <p className="text-sm text-muted-foreground">{pageText("componentsFromTheTeamCatalogBrowseInstallSurface_7cccfb")}<code className="font-mono text-xs">/teams-catalog</code>{pageText("fixturesAreSharedWithTheStorybookStories_d6c0cc")}</p>
 
-        <SubSection title="TeamRow (browse list)">
+        <SubSection title={pageText("teamrowBrowseList_ab8a29")}>
           <div className="w-(--sz-28rem) rounded-md border border-border">
-            <div className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-              Bundled · 1
-            </div>
+            <div className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">{pageText("bundled1_94d593")}</div>
             <TeamRow team={sampleTeam} selected onSelect={() => {}} />
-            <div className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-              Optional · 2
-            </div>
+            <div className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">{pageText("optional2_3e6c38")}</div>
             <TeamRow team={optionalTeam} selected={false} onSelect={() => {}} />
-            <div className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-              Installed · 2
-            </div>
+            <div className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">{pageText("installed2_5d4165")}</div>
             <TeamRow team={sampleTeam} selected={false} onSelect={() => {}} installed={outOfDateInstalledState} />
             <TeamRow team={warnTeam} selected={false} onSelect={() => {}} installed={currentInstalledState} />
           </div>
-          <p className="mt-2 text-xs text-muted-foreground">
-            Installed teams collapse under <code className="font-mono">INSTALLED · N</code>; an out-of-date
-            install (server <code className="font-mono">originHash</code> ≠ catalog <code className="font-mono">contentHash</code>)
-            shows the amber <code className="font-mono">↑</code> badge (PAP-10256).
-          </p>
+          <p className="mt-2 text-xs text-muted-foreground">{pageText("installedTeamsCollapseUnder_f0d44f") + " "}<code className="font-mono">INSTALLED · N</code>{pageText("anOutOfDateInstallServer_c6f84a") + " "}<code className="font-mono">originHash</code>{" " + pageText("catalog_5502fc") + " "}<code className="font-mono">contentHash</code>{pageText("showsTheAmber_ce9946") + " "}<code className="font-mono">↑</code>{" " + pageText("badgePAP10256_df417d")}</p>
         </SubSection>
 
-        <SubSection title="TeamCard (onboarding grid)">
-          <p className="text-xs text-muted-foreground">
-            Square tile for the onboarding &ldquo;Pick a starter team&rdquo; grid. Selected tile gets{" "}
-            <code className="font-mono">ring-2 ring-ring</code>. Drives the{" "}
-            <code className="font-mono">useInstallTeamCatalogEntry</code> simplified flow.
-          </p>
+        <SubSection title={pageText("teamcardOnboardingGrid_8ca5d0")}>
+          <p className="text-xs text-muted-foreground">{pageText("squareTileForTheOnboardingPickAStarter_8b9d58")}{" "}
+            <code className="font-mono">ring-2 ring-ring</code>{pageText("drivesThe_719792")}{" "}
+            <code className="font-mono">useInstallTeamCatalogEntry</code>{" " + pageText("simplifiedFlow_485eed")}</p>
           <TeamCardShowcase />
         </SubSection>
 
@@ -2001,7 +1929,7 @@ export function DesignGuide() {
           </div>
         </SubSection>
 
-        <SubSection title="Source policy step (StepSourcePolicy)">
+        <SubSection title={pageText("sourcePolicyStepStepSourcePolicy_24e19e")}>
           <div className="max-w-xl rounded-md border border-border p-4">
             <StepSourcePolicy
               team={warnTeam}
@@ -2017,7 +1945,7 @@ export function DesignGuide() {
           </div>
         </SubSection>
 
-        <SubSection title="Skill plan step (StepSkillPlan)">
+        <SubSection title={pageText("skillPlanStepStepSkillPlan_1aab3c")}>
           <div className="max-w-xl rounded-md border border-border p-4">
             <StepSkillPlan team={sampleTeam} preparations={sampleSkillPreparations} />
           </div>
@@ -2025,7 +1953,7 @@ export function DesignGuide() {
       </Section>
 
       {/* ============================================================ */}
-      <Section title="Common Icons (Lucide)">
+      <Section title={pageText("commonIconsLucide_5e4020")}>
         <div className="grid grid-cols-4 md:grid-cols-6 gap-4">
           {[
             ["Inbox", Inbox],
@@ -2060,7 +1988,7 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  KEYBOARD SHORTCUTS                                           */}
       {/* ============================================================ */}
-      <Section title="Keyboard Shortcuts">
+      <Section title={pageText("keyboardShortcuts_b46575")}>
         <div className="border border-border rounded-md divide-y divide-border text-sm">
           {[
             ["Cmd+K / Ctrl+K", "Open Command Palette"],
@@ -2080,63 +2008,54 @@ export function DesignGuide() {
         </div>
       </Section>
 
-      <Section title="Issue Output Surface">
-        <SubSection title="Multiple outputs (primary video + 'Also produced')">
+      <Section title={pageText("issueOutputSurface_139a6d")}>
+        <SubSection title={pageText("multipleOutputsPrimaryVideoAlsoProduced_8f3a52")}>
           <IssueOutputSection workProducts={DESIGN_GUIDE_OUTPUTS} />
         </SubSection>
-        <SubSection title="Degraded output (invalid / failed attachment metadata)">
+        <SubSection title={pageText("degradedOutputInvalidFailedAttachmentMetadata_ccc8a7")}>
           <IssueOutputSection workProducts={DESIGN_GUIDE_DEGRADED_OUTPUTS} />
         </SubSection>
-        <SubSection title="Empty state">
-          <p className="text-xs text-muted-foreground">
-            When an issue has produced no artifact work products, the Output section renders nothing
-            at all (no placeholder card).
-          </p>
+        <SubSection title={pageText("emptyState_41dac3")}>
+          <p className="text-xs text-muted-foreground">{pageText("whenAnIssueHasProducedNoArtifactWork_47d298")}</p>
         </SubSection>
       </Section>
 
       {/* ============================================================ */}
       {/*  TOOLS & ACCESS (PAP-10389)                                   */}
       {/* ============================================================ */}
-      <Section title="Tools & Access">
-        <SubSection title="EnforcementBanner — default / denied-detected">
+      <Section title={pageText("toolsAccess_76c359")}>
+        <SubSection title={pageText("enforcementbannerDefaultDeniedDetected_483445")}>
           <div className="space-y-3">
             <EnforcementBanner companyId="" forceVariant="default" recentDenialCount={0} />
             <EnforcementBanner companyId="" forceVariant="denied-detected" recentDenialCount={3} />
           </div>
-          <p className="mt-2 text-xs text-muted-foreground">
-            Persistent at the top of the Tools &amp; Access surface. Tints to <code>denied-detected</code> when
-            governed tool calls were denied or failed in the last hour. Observability only — enforcement lives
-            in the tool gateway.
-          </p>
+          <p className="mt-2 text-xs text-muted-foreground">{pageText("persistentAtTheTopOfTheToolsAccess_edab42") + " "}<code>denied-detected</code>{" " + pageText("whenGovernedToolCallsWereDeniedOrFailed_256b10")}</p>
         </SubSection>
 
-        <SubSection title="EnforcementBanner — presentational tones (info / warning / error)">
+        <SubSection title={pageText("enforcementbannerPresentationalTonesInfoWarningError_823bf0")}>
           <div className="space-y-3">
             <EnforcementBanner
               tone="info"
-              title="Effective access — server resolved."
+              title={pageText("effectiveAccessServerResolved_9e6466")}
               body="This is exactly what the tool gateway will accept. Profile and policy edits reflect within ~5s; the prompt cannot expand it."
             />
             <EnforcementBanner
               tone="warning"
-              title="Local stdio is local code execution, not a security sandbox."
+              title={pageText("localStdioIsLocalCodeExecutionNotA_55c6d5")}
               body="A local-stdio slot runs with the orchestrator's privileges. Only bind trusted commands; quarantine anything you would not run yourself."
             />
             <EnforcementBanner
               tone="error"
-              title="Runtime failed closed."
+              title={pageText("runtimeFailedClosed_5842c4")}
               body="The supervisor is restarting (attempt 2/3). The gateway returns runtime-error and the agent does not see partial output."
             />
           </div>
-          <p className="mt-2 text-xs text-muted-foreground">
-            Static governance copy with a tone. Used for the PAP-10400 trust-tier banner on Runtime and the
-            effective-access banner on Agent → Tools. Pass <code>title</code>/<code>body</code> and an optional{" "}
+          <p className="mt-2 text-xs text-muted-foreground">{pageText("staticGovernanceCopyWithAToneUsedFor_8f8e89") + " "}<code>title</code>/<code>body</code>{" " + pageText("andAnOptional_c0178b")}{" "}
             <code>icon</code>.
           </p>
         </SubSection>
 
-        <SubSection title="Action approval card — pending / stale (surfaces 11/12)">
+        <SubSection title={pageText("actionApprovalCardPendingStaleSurfaces1112_5b65f3")}>
           <div className="grid gap-4 lg:grid-cols-2">
             <ActionCard
               toolName="slack.post_message"
@@ -2173,15 +2092,11 @@ export function DesignGuide() {
               expiresInLabel="expires in 18h 02m"
             />
           </div>
-          <p className="mt-2 text-xs text-muted-foreground">
-            Signed payload sha256 + expiry surface on every variant (PAP-10400). The{" "}
-            <code>stale</code> variant tints the border amber, banners the catalog-hash mismatch, strikes through
-            the previous hash next to the current one, and renders <code>Approve</code> disabled until the request
-            is re-issued.
-          </p>
+          <p className="mt-2 text-xs text-muted-foreground">{pageText("signedPayloadSha256ExpirySurfaceOnEveryVariant_c7c996")}{" "}
+            <code>stale</code>{" " + pageText("variantTintsTheBorderAmberBannersTheCatalog_0221db") + " "}<code>Approve</code>{" " + pageText("disabledUntilTheRequestIsReIssued_d8595a")}</p>
         </SubSection>
 
-        <SubSection title="Action approval card — mobile (390×844, surface 99)">
+        <SubSection title={pageText("actionApprovalCardMobile390844Surface99_2cdd72")}>
           <div className="w-(--sz-390px) max-w-full rounded-xl border border-border bg-background p-3">
             <ActionCardMobile
               toolName="slack.post_message"
@@ -2200,13 +2115,10 @@ export function DesignGuide() {
               expiresInLabel="expires in 23h 51m"
             />
           </div>
-          <p className="mt-2 text-xs text-muted-foreground">
-            Identical content; the three buttons stack full-width in the order Approve / Deny / Edit &amp; re-sign,
-            and the bindings table uses a 70px label column.
-          </p>
+          <p className="mt-2 text-xs text-muted-foreground">{pageText("identicalContentTheThreeButtonsStackFullWidth_071c98")}</p>
         </SubSection>
 
-        <SubSection title="BindingsTable (reused in the audit row drilldown)">
+        <SubSection title={pageText("bindingstableReusedInTheAuditRowDrilldown_c8fbeb")}>
           <BindingsTable
             rows={[
               { label: "Application", value: "Slack · manifest v2.4.1" },
@@ -2215,13 +2127,10 @@ export function DesignGuide() {
               { label: "Payload", value: "sha256:2c26b46b…66e7ae", mono: true },
             ]}
           />
-          <p className="mt-2 text-xs text-muted-foreground">
-            Two-column key/value block with mono values. Lives inside <code>ActionCard</code> and is reused
-            standalone in the audit row drilldown.
-          </p>
+          <p className="mt-2 text-xs text-muted-foreground">{pageText("twoColumnKeyValueBlockWithMonoValues_94b92b") + " "}<code>ActionCard</code>{" " + pageText("andIsReusedStandaloneInTheAuditRow_959b28")}</p>
         </SubSection>
 
-        <SubSection title="Tool-access status keys (StatusBadge)">
+        <SubSection title={pageText("toolAccessStatusKeysStatusBadge_39a1f7")}>
           <div className="flex flex-wrap items-center gap-2">
             {[
               "allowed", "denied", "block", "require-approval", "redacted", "rate-limit",
@@ -2230,54 +2139,47 @@ export function DesignGuide() {
               <StatusBadge key={s} status={s} />
             ))}
           </div>
-          <p className="mt-2 text-xs text-muted-foreground">
-            Policy decisions, connection/runtime health, and catalog quarantine all route through the canonical{" "}
-            <code>StatusBadge</code> keys defined in <code>lib/status-colors</code>.
+          <p className="mt-2 text-xs text-muted-foreground">{pageText("policyDecisionsConnectionRuntimeHealthAndCatalogQuarantine_225594")}{" "}
+            <code>StatusBadge</code>{" " + pageText("keysDefinedIn_f0abca") + " "}<code>lib/status-colors</code>.
           </p>
         </SubSection>
 
-        <SubSection title="EmptyState (canonical, with description + action)">
+        <SubSection title={pageText("emptystateCanonicalWithDescriptionAction_6b00cb")}>
           <EmptyState
             icon={Inbox}
-            message="No connections yet"
-            description="Add a connection to an application to configure credentials and discover its tools."
+            message={pageText("noConnectionsYet_5bb01e")}
+            description={pageText("addAConnectionToAnApplicationToConfigure_009707")}
             action="New connection"
             onAction={() => {}}
           />
         </SubSection>
       </Section>
 
-      <Section title="GitHub skill sources">
-        <p className="text-sm text-muted-foreground">The shared FileTree explorer layout puts disclosure controls beside selection, with compact folder chains, equal-height rows, inline skill descriptions, and trailing status badges. Folders select descendant packages; package checkboxes select only that package, independently of nested skills. Included files use aligned rows without individual checkboxes (`getCheckboxState` returns null); package rows use `renderNodeExtra` for file counts and inspection. Use arrow keys to navigate and Space to select.</p>
+      <Section title={pageText("githubSkillSources_ac41b0")}>
+        <p className="text-sm text-muted-foreground">{pageText("theSharedFileTreeExplorerLayoutPutsDisclosureControls_16083c")}</p>
         <SkillSourceTreeShowcase />
         <SkillBinaryFile file={{ skillId: "example", path: "assets/example.bin", kind: "asset", content: "AAECAw==", encoding: "base64", language: null, markdown: false, editable: false }} />
       </Section>
 
-      <Section title="Source Repositories">
-        <SubSection title="Empty and disconnected">
+      <Section title={pageText("sourceRepositories_ae8ba8")}>
+        <SubSection title={pageText("emptyAndDisconnected_5cfc47")}>
           <RepositoryEditor selected={[]} onChange={() => {}} state="disconnected" onConnect={() => {}} onRetry={() => {}} />
         </SubSection>
-        <SubSection title="Selected and searchable">
+        <SubSection title={pageText("selectedAndSearchable_ee3812")}>
           <RepositoryEditor selected={[{ id: "1", fullName: "paperclipai/paperclip", url: "https://github.com/paperclipai/paperclip", connections: ["Your GitHub"] }]}
             available={[{ id: "2", fullName: "paperclipai/docs", url: "https://github.com/paperclipai/docs", connections: ["Company GitHub"] }]}
             onChange={() => {}} onConnect={() => {}} onRetry={() => {}} />
         </SubSection>
-        <p className="text-sm text-muted-foreground">Loading, errors, empty search, mobile, and short viewports are covered in the Project repos Storybook stories.</p>
+        <p className="text-sm text-muted-foreground">{pageText("loadingErrorsEmptySearchMobileAndShortViewports_720e7c")}</p>
       </Section>
 
-      <Section title="Environment Variables Editor">
-        <p className="text-sm text-muted-foreground">
-          Reusable env-var editor (agents, projects, environments, routines). One shared grid, an
-          in-field Text/Secret source switch, a fuzzy secret picker with a pinned “Create secret”
-          item, automatic sensitive-value detection, and inline secret-health warnings. See the
-          Storybook <span className="font-mono">Product/Environment Variables Editor</span> stories
-          for all 10 states.
-        </p>
+      <Section title={pageText("environmentVariablesEditor_1fae4a")}>
+        <p className="text-sm text-muted-foreground">{pageText("reusableEnvVarEditorAgentsProjectsEnvironmentsRoutines_741a4d") + " "}<span className="font-mono">{pageText("productEnvironmentVariablesEditor_0ca941")}</span>{" " + pageText("storiesForAll10States_cede2e")}</p>
         <EnvironmentVariablesEditorShowcase />
       </Section>
 
-      <Section title="Tasks created from a task">
-        <SubSection title="Subtasks and created work are independent">
+      <Section title={pageText("tasksCreatedFromATask_337f7e")}>
+        <SubSection title={pageText("subtasksAndCreatedWorkAreIndependent_40aebd")}>
           <div className="max-w-xl">
             <TaskDetailTasksPanel
               subtasks={[DESIGN_GUIDE_TASK]}
@@ -2289,54 +2191,44 @@ export function DesignGuide() {
             />
           </div>
         </SubSection>
-        <SubSection title="Empty, loading and failed">
+        <SubSection title={pageText("emptyLoadingAndFailed_7c862c")}>
           <TaskDetailTasksPanel subtasks={[]} createdTasks={[]} projects={[]} />
           <TaskDetailTasksPanel subtasks={[]} createdTasks={[]} projects={[]} isLoading />
           <TaskDetailTasksPanel subtasks={[]} createdTasks={[]} projects={[]} hasError onRetry={() => {}} />
         </SubSection>
       </Section>
 
-      <Section title="Disposition recovery notice">
-        <SubSection title="Needs attention, with inspectable details">
+      <Section title={pageText("dispositionRecoveryNotice_03d4e1")}>
+        <SubSection title={pageText("needsAttentionWithInspectableDetails_ad8e8d")}>
           <DispositionRecoveryNotice snapshot={{ kind: "disposition_repair_escalated", actionId: "design-recovery", attemptCount: 2, maxAttempts: 2, reason: "unchanged_source_state_exhausted", assigneeAgentId: null }} defaultExpanded />
         </SubSection>
-        <p className="text-sm text-muted-foreground">Storybook’s Recovery notice stories show the actionable, pending, acknowledged, unavailable, failed, and mobile states using this production component.</p>
+        <p className="text-sm text-muted-foreground">{pageText("storybookSRecoveryNoticeStoriesShowTheActionable_701343")}</p>
       </Section>
 
-      <Section title="Pending task input above composer">
-        <p className="mb-3 text-sm text-muted-foreground">A decision card sits above the ordinary message composer. Dismiss the card to keep a reopen control, or resolve it to clear the pending state.</p>
+      <Section title={pageText("pendingTaskInputAboveComposer_ddb925")}>
+        <p className="mb-3 text-sm text-muted-foreground">{pageText("aDecisionCardSitsAboveTheOrdinaryMessage_fb7636")}</p>
         <TaskPendingInputExample />
       </Section>
 
-      <Section title="Execution recovery">
-        <p className="text-sm text-muted-foreground">
-          Recovery runs in the background. Task lists keep their ordinary status without
-          execution badges. Active transcript headers keep saying Working during automatic
-          recovery. Recovery decisions and attempts belong in the run log;
-          there is no execution status card or reconciliation form.
-        </p>
-        <p className="text-sm text-muted-foreground">
-          When retained-file recovery needs another authorized request, the source task and
-          run inspector offer Recover saved files. This queues the existing file-preservation
-          worker. Work remains held until the server verifies the saved files; a queued
-          acknowledgement does not mean that recovery finished.
-        </p>
+      <Section title={pageText("executionRecovery_07ee13")}>
+        <p className="text-sm text-muted-foreground">{pageText("recoveryRunsInTheBackgroundTaskListsKeep_44b69b")}</p>
+        <p className="text-sm text-muted-foreground">{pageText("whenRetainedFileRecoveryNeedsAnotherAuthorizedRequest_3df03a")}</p>
       </Section>
 
-      <Section title="Cloud sign-in unavailable">
+      <Section title={pageText("cloudSignInUnavailable_2ce8e8")}>
         <CloudSignIn cloud={{ managed: true, managedBy: "paperclip-cloud", cloudBaseUrl: null, stackSlug: null }} returnTo="/" />
       </Section>
 
-      <Section title="Saved provider API keys">
+      <Section title={pageText("savedProviderAPIKeys_3c952b")}>
         <SavedProviderKeySelect options={[{ id: "example", label: "Claude API key (Your key)", binding: { type: "user_secret_ref", key: "ANTHROPIC_API_KEY", version: "latest" } }]} value="example" onChange={() => {}} loading={false} error={false} />
         <SavedProviderKeySelect options={[]} value="" onChange={() => {}} loading error={false} />
         <SavedProviderKeySelect options={[]} value="" onChange={() => {}} loading={false} error />
       </Section>
 
-      <Section title="Voice conversations">
+      <Section title={pageText("voiceConversations_d32a78")}>
         <div className="flex flex-col gap-6">
           <VoiceControls state="working" agentName="Company Phone Agent" onStart={() => {}} onMute={() => {}} onEnd={() => {}} onResumeAudio={() => {}} />
-          <VoiceControls state="failed" agentName="Company Phone Agent" error="Microphone access was denied. Allow access in your browser, then try again." onStart={() => {}} onMute={() => {}} onEnd={() => {}} onResumeAudio={() => {}} />
+          <VoiceControls state="failed" agentName="Company Phone Agent" error={controlText("Microphone access was denied")} onStart={() => {}} onMute={() => {}} onEnd={() => {}} onResumeAudio={() => {}} />
           <VoiceTranscript agentName="Company Phone Agent" entries={[
             { id: "ack", source: "agent", text: "I’m checking that now.", final: true },
             { id: "followup", source: "user", text: "Include the revised delivery address too.", final: true },
@@ -2344,7 +2236,7 @@ export function DesignGuide() {
         </div>
       </Section>
 
-      <Section title="Speko provider setup">
+      <Section title={pageText("spekoProviderSetup_e88071")}>
         <SpekoPhoneCallbackForm onSave={() => {}} />
         <SpekoCallHistoryView onRetry={() => {}} />
         <div className="divide-y divide-border border-y border-border">
@@ -2356,8 +2248,8 @@ export function DesignGuide() {
         <SpekoProviderSetup agentName="Company Phone Agent" callbackUrl="https://paperclip.example/api/voice-webhooks/example/tools" credentials={{}} onChange={() => {}} onConnect={() => {}} />
       </Section>
 
-      <Section title="External agent invitation">
-        <p className="text-sm text-muted-foreground">Match the harness picker with provider cards. Connection checks reflect confirmed server evidence. AnimatedDialogContent resizes to its content using motion tokens and respects reduced motion.</p>
+      <Section title={pageText("externalAgentInvitation_2aad8d")}>
+        <p className="text-sm text-muted-foreground">{pageText("matchTheHarnessPickerWithProviderCardsConnection_774ab2")}</p>
         <ExternalAgentPresetPicker onSelect={() => {}} />
         <DotConnectionChecks state={{ phase: "testing" }} />
         <ExternalAgentPresetPicker museEnabled onSelect={() => {}} />
@@ -2365,28 +2257,20 @@ export function DesignGuide() {
         <MuseConnectionChecks state={{ paired: true, receiverDetected: true, backgroundReplyVerified: true, ready: false, problem: "agent_unavailable" }} />
         <MuseConnectionChecks state={{ paired: true, receiverDetected: true, backgroundReplyVerified: true, ready: true }} />
         <MuseConnectionDetails connection={{ enabled: false, publicOrigin: null, agentStatus: "idle", agentLifecycleState: "ready", canConfigureConnection: true, binding: null, usage: null, cost: null }} onTest={() => {}} onRepair={() => {}} onPause={() => {}} onDisconnect={() => {}} onRefresh={() => {}} onAttest={() => {}} />
-        <Dialog><DialogTrigger asChild><Button variant="outline">Preview invitation modal</Button></DialogTrigger>
-          <AnimatedDialogContent><div className="space-y-4 p-6"><DialogTitle>Invite an external agent</DialogTitle><DialogDescription>Choose an agent you already use.</DialogDescription><ExternalAgentPresetPicker onSelect={() => {}} /></div></AnimatedDialogContent>
+        <Dialog><DialogTrigger asChild><Button variant="outline">{pageText("previewInvitationModal_61c18c")}</Button></DialogTrigger>
+          <AnimatedDialogContent><div className="space-y-4 p-6"><DialogTitle>{pageText("inviteAnExternalAgent_a382ae")}</DialogTitle><DialogDescription>{pageText("chooseAnAgentYouAlreadyUse_801a4b")}</DialogDescription><ExternalAgentPresetPicker onSelect={() => {}} /></div></AnimatedDialogContent>
         </Dialog>
       </Section>
 
-      <Section title="Browser setup prompt">
-        <p className="text-sm text-muted-foreground">Use AgentSetupPrompt for prompts handed to an external agent: connections, webhook setup, onboarding, and task handoffs. One click copies the complete prompt, opens its preview, and confirms success inline; clipboard failures offer selectable text.</p>
+      <Section title={pageText("browserSetupPrompt_677b94")}>
+        <p className="text-sm text-muted-foreground">{pageText("useAgentSetupPromptForPromptsHandedToAnExternal_67d0d4")}</p>
         <SetupPrompt prompt="Design guide example. This is a preview, not a real provider setup request." />
-        <p className="text-sm text-muted-foreground">For a named recipient, pass the optional agent name and logo. The same copy feedback, preview, and manual clipboard recovery apply.</p>
-        <SetupPrompt prompt="Design guide example for Dot. No live pairing code." label="Copy setup prompt" title="Connect your Dot" agent={{ name: "Dot", src: "/brands/adapters/openai-dot.svg" }} />
+        <p className="text-sm text-muted-foreground">{pageText("forANamedRecipientPassTheOptionalAgent_b41d91")}</p>
+        <SetupPrompt prompt="Design guide example for Dot. No live pairing code." label={pageText("copySetupPrompt_c42e18")} title={pageText("connectYourDot_d7cfc6")} agent={{ name: "Dot", src: "/brands/adapters/openai-dot.svg" }} />
       </Section>
 
-      <Section title="Connection Intent">
-        <p className="text-sm text-muted-foreground">
-          The task card is the dialog host for the shared connection setup flow. Provider forms,
-          validation, OAuth, access selection, and completion come from the same feature module as
-          the full-page Apps setup; this card owns only audience, dialog, and task refresh behavior.
-          Pending connections stay in the timeline beside a usable composer. The independently
-          addressable Connections/In-task connections stories cover access, OAuth recovery, narrow
-          layouts, completion, and historical outcomes. AgentMail uses an inline API-key field
-          with fixed access defaults; its field and direct key-page link are shared with Apps setup.
-        </p>
+      <Section title={pageText("connectionIntent_e69322")}>
+        <p className="text-sm text-muted-foreground">{pageText("theTaskCardIsTheDialogHostFor_afbc04")}</p>
         <div className="grid gap-4 xl:grid-cols-3">
           <IssueThreadInteractionCard
             interaction={pendingConnectionIntentInteraction}
@@ -2403,39 +2287,28 @@ export function DesignGuide() {
         </div>
       </Section>
 
-      <Section title="AgentMail API key">
-        <p className="text-sm text-muted-foreground">AgentMail setup has two steps: pick an agent, then pick an email address. Ask for the API key alongside the agent only when needed. Keep address errors beside the field and additional settings under Advanced options.</p>
-        <p className="text-sm text-muted-foreground">Preview only. This field does not save or submit a credential.</p>
+      <Section title={pageText("agentmailAPIKey_dbd487")}>
+        <p className="text-sm text-muted-foreground">{pageText("agentmailSetupHasTwoStepsPickAnAgent_621f41")}</p>
+        <p className="text-sm text-muted-foreground">{pageText("previewOnlyThisFieldDoesNotSaveOr_18b467")}</p>
         <div className="max-w-md">
           <AgentMailApiKeyField value={agentmailDemoKey} onChange={setAgentmailDemoKey} />
         </div>
       </Section>
 
-      <Section title="Resizable Panels">
-        <p className="text-sm text-muted-foreground">
-          Design-system wrapper over <span className="font-mono">react-resizable-panels</span>{" "}
-          (Skill Studio D2). Drag a handle to resize; panels accept percentage or pixel
-          (<span className="font-mono">minSize="240px"</span>) constraints and the middle panel is
-          collapsible. Use anywhere a split view is needed.
-        </p>
+      <Section title={pageText("resizablePanels_2368bc")}>
+        <p className="text-sm text-muted-foreground">{pageText("designSystemWrapperOver_90f81a") + " "}<span className="font-mono">react-resizable-panels</span>{" "}{pageText("skillStudioD2DragAHandleToResize_b9a334")}<span className="font-mono">minSize="240px"</span>{pageText("constraintsAndTheMiddlePanelIsCollapsibleUse_9413e1")}</p>
         <div className="h-48 max-w-2xl overflow-hidden rounded-md border border-border">
           <ResizablePanelGroup>
             <ResizablePanel id="a" minSize="120px" className="bg-muted/30">
-              <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-                Panel A
-              </div>
+              <div className="flex h-full items-center justify-center text-xs text-muted-foreground">{pageText("panelA_919115")}</div>
             </ResizablePanel>
             <ResizableHandle />
             <ResizablePanel id="b" minSize="120px" collapsible collapsedSize="40px" className="bg-muted/10">
-              <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-                Panel B (collapsible)
-              </div>
+              <div className="flex h-full items-center justify-center text-xs text-muted-foreground">{pageText("panelBCollapsible_e79a2c")}</div>
             </ResizablePanel>
             <ResizableHandle />
             <ResizablePanel id="c" minSize="120px" className="bg-muted/30">
-              <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
-                Panel C
-              </div>
+              <div className="flex h-full items-center justify-center text-xs text-muted-foreground">{pageText("panelC_c839f1")}</div>
             </ResizablePanel>
           </ResizablePanelGroup>
         </div>
@@ -2444,78 +2317,66 @@ export function DesignGuide() {
       {/* ============================================================ */}
       {/*  INLINE BANNER + BUILT-IN AGENTS                              */}
       {/* ============================================================ */}
-      <Section title="Webhook URL warnings">
+      <Section title={pageText("webhookURLWarnings_3f6f51")}>
         <div className="space-y-3">
           {["http://localhost:3100", "https://paperclip.internal", "https://paperclip.example-tailnet.ts.net", "http://paperclip.example.com", "not-a-url"].map((url) => <WebhookUrlWarning key={url} url={url} />)}
         </div>
       </Section>
 
-      <Section title="Inline Banner">
-        <p className="text-sm text-muted-foreground">
-          Token-backed full-width notice (<span className="font-mono">brandBanner</span> tones). Use{" "}
-          <span className="font-mono">info</span> for provenance/context and{" "}
-          <span className="font-mono">warning</span> for paused/attention. Supports an optional bold
-          title and a trailing actions slot. Replaces hand-rolled{" "}
-          <span className="font-mono">bg-yellow-*</span>/<span className="font-mono">bg-blue-*</span>{" "}
-          banners.
-        </p>
+      <Section title={pageText("inlineBanner_f9a122")}>
+        <p className="text-sm text-muted-foreground">{pageText("tokenBackedFullWidthNotice_837774")}<span className="font-mono">brandBanner</span>{" " + pageText("tonesUse_5bd993")}{" "}
+          <span className="font-mono">{pageText("info_59bd0a")}</span>{" " + pageText("forProvenanceContextAnd_8e14c3")}{" "}
+          <span className="font-mono">{pageText("warning_383fd7")}</span>{" " + pageText("forPausedAttentionSupportsAnOptionalBoldTitle_0deb8a")}{" "}
+          <span className="font-mono">bg-yellow-*</span>/<span className="font-mono">bg-blue-*</span>{" "}{pageText("banners_5fbe00")}</p>
         <div className="space-y-3">
           <InlineBanner
             tone="info"
-            title="Built-in agent"
-            actions={<Button variant="outline" size="sm">Reset to defaults</Button>}
-          >
-            Ships with Paperclip and powers <strong>Briefs</strong>. It can be paused but not deleted.
-          </InlineBanner>
+            title={pageText("builtInAgent_0941ba")}
+            actions={<Button variant="outline" size="sm">{pageText("resetToDefaults_ddefe4")}</Button>}
+          >{pageText("shipsWithPaperclipAndPowers_ddc880") + " "}<strong>{pageText("briefs_6a8639")}</strong>{pageText("itCanBePausedButNotDeleted_f7b913")}</InlineBanner>
           <InlineBanner
             tone="warning"
-            title="Briefs is paused."
+            title={pageText("briefsIsPaused_408692")}
             actions={
               <>
-                <Button variant="ghost" size="sm">View agent</Button>
-                <Button size="sm">Resume agent</Button>
+                <Button variant="ghost" size="sm">{pageText("viewAgent_98f8d9")}</Button>
+                <Button size="sm">{pageText("resumeAgent_4bfc7e")}</Button>
               </>
             }
-          >
-            Its built-in agent was paused 2 days ago, so new briefs aren't being generated.
-          </InlineBanner>
+          >{pageText("itsBuiltInAgentWasPaused2Days_d78316")}</InlineBanner>
           <InlineBanner
             tone="danger"
-            title="Summary generation failed."
-            actions={<Button size="sm">Retry</Button>}
-          >
-            The linked issue reached a terminal state before a summary was written.
-          </InlineBanner>
-          <InlineBanner tone="info" compact>
-            Compact variant for embedding inside dialogs and modals.
-          </InlineBanner>
+            title={pageText("summaryGenerationFailed_80317a")}
+            actions={<Button size="sm">{pageText("retry_9f5cd8")}</Button>}
+          >{pageText("theLinkedIssueReachedATerminalStateBefore_5bbcb7")}</InlineBanner>
+          <InlineBanner tone="info" compact>{pageText("compactVariantForEmbeddingInsideDialogsAndModals_225b44")}</InlineBanner>
         </div>
       </Section>
 
-      <Section title="Text attachment tabs">
-        <p className="text-sm text-muted-foreground">Uploaded text opens in a named task tab. Markdown offers Rendered and Raw icon controls; every text file has a download action.</p>
+      <Section title={pageText("textAttachmentTabs_5cef8d")}>
+        <p className="text-sm text-muted-foreground">{pageText("uploadedTextOpensInANamedTaskTab_e0ac96")}</p>
         <div className="grid gap-4 md:grid-cols-2">
           <TextAttachmentPreview title="README.md" text={"# Project notes\n\nReview the **original** file."} markdown downloadUrl="data:text/markdown,%23%20Project%20notes" />
           <TextAttachmentPreview title="notes.txt" text="Plain text stays literal: <example>" markdown={false} downloadUrl="data:text/plain,Plain%20text" />
         </div>
       </Section>
 
-      <Section title="Connection recovery">
-        <SubSection title="Waiting for server">
+      <Section title={pageText("connectionRecovery_99eb58")}>
+        <SubSection title={pageText("waitingForServer_3eb8fc")}>
           <CloudAccessError temporary retrying={false} onRetry={() => undefined} />
         </SubSection>
-        <SubSection title="Checking connection">
+        <SubSection title={pageText("checkingConnection_b54edd")}>
           <CloudAccessError temporary retrying onRetry={() => undefined} />
         </SubSection>
-        <SubSection title="Access check failed">
+        <SubSection title={pageText("accessCheckFailed_127827")}>
           <CloudAccessError temporary={false} retrying={false} onRetry={() => undefined} />
         </SubSection>
       </Section>
 
-      <Section title="Browser session footer">
-        <p className="text-sm text-muted-foreground">Fit to pane follows the visible panel. Fixed viewport presets and session actions live in the footer menu. Costs stay in task reporting. The idle countdown appears only in the final five minutes. Full panel, activity, and settings states are in Storybook under Browser Use.</p>
+      <Section title={pageText("browserSessionFooter_a02a21")}>
+        <p className="text-sm text-muted-foreground">{pageText("fitToPaneFollowsTheVisiblePanelFixed_f7abd0")}</p>
         {(["running", "idle", "closing-soon", "closed"] as const).map((state) => (
-          <SubSection key={state} title={state === "closing-soon" ? "Closing soon" : state}>
+          <SubSection key={state} title={state === "closing-soon" ? pageText("closingSoon_7ad45d") : state}>
             <TaskBrowserFooter
               browser={{
                 id: "design-browser", sessionId: "design-session", issueId: "design-task",
@@ -2533,8 +2394,8 @@ export function DesignGuide() {
         ))}
       </Section>
 
-      <Section title="Browser activity in the task feed">
-        <p className="text-sm text-muted-foreground">Each browser appears once at its opening time among the task messages. Its status updates in place; the action opens its side-panel tab.</p>
+      <Section title={pageText("browserActivityInTheTaskFeed_e77666")}>
+        <p className="text-sm text-muted-foreground">{pageText("eachBrowserAppearsOnceAtItsOpeningTime_6bc5da")}</p>
         {(["starting", "running", "idle", "closed", "failed"] as const).map((status) => (
           <SubSection key={status} title={status}>
             <TaskBrowserActivity browser={{
@@ -2546,22 +2407,20 @@ export function DesignGuide() {
         ))}
       </Section>
 
-      <Section title="Media artifacts">
-        <p className="text-sm text-muted-foreground">Images and videos use gallery tiles. The whole tile opens the task gallery; files and links keep compact, fully clickable rows. Task/Artifact Gallery in Storybook covers playable videos, mixed files, narrow panels, and unavailable previews.</p>
+      <Section title={pageText("mediaArtifacts_28b92f")}>
+        <p className="text-sm text-muted-foreground">{pageText("imagesAndVideosUseGalleryTilesTheWhole_5ed675")}</p>
         <div className="grid max-w-2xl grid-cols-1 gap-3 sm:grid-cols-2">
-          <MediaArtifactCard id="design-image" title="Launch artwork" contentPath="/announcement-preview.svg" contentType="image/svg+xml" originalFilename="launch.svg" detail="Image" />
-          <MediaArtifactCard id="design-video" title="Video preview unavailable" contentPath="" contentType="video/mp4" originalFilename="preview.mp4" detail="Video" />
+          <MediaArtifactCard id="design-image" title={pageText("launchArtwork_c7be23")} contentPath="/announcement-preview.svg" contentType="image/svg+xml" originalFilename="launch.svg" detail="Image" />
+          <MediaArtifactCard id="design-video" title={pageText("videoPreviewUnavailable_08a54b")} contentPath="" contentType="video/mp4" originalFilename="preview.mp4" detail="Video" />
         </div>
       </Section>
 
-      <Section title="AI Connections">
+      <Section title={pageText("aiConnections_c6ba99")}>
         <AiConnectionDesignExamples />
       </Section>
 
-      <Section title="Built-in Agent Lifecycle Chips">
-        <p className="text-sm text-muted-foreground">
-          A derived lifecycle chip (amber) for attention states. The lifecycle chip is separate from
-          the agent status vocabulary and only shows for{" "}
+      <Section title={pageText("builtInAgentLifecycleChips_ed59c5")}>
+        <p className="text-sm text-muted-foreground">{pageText("aDerivedLifecycleChipAmberForAttentionStates_9c4dc2")}{" "}
           <span className="font-mono">needs_setup</span> / <span className="font-mono">pending_approval</span>.
         </p>
         <div className="flex flex-wrap items-center gap-4">
@@ -2570,11 +2429,9 @@ export function DesignGuide() {
           <BuiltInLifecycleChip status="needs_setup" compact />
         </div>
         <p className="mt-3 text-sm text-muted-foreground">
-          <span className="font-mono">&lt;BuiltInAgentGate agentKey&gt;</span> composes{" "}
+          <span className="font-mono">&lt;BuiltInAgentGate agentKey&gt;</span>{" " + pageText("composes_c68a18")}{" "}
           <span className="font-mono">PageSkeleton</span> + <span className="font-mono">EmptyState</span>{" "}
-          + <span className="font-mono">InlineBanner</span> to render the loading / setup /
-          pending-approval / paused / ready states of a feature that depends on a built-in agent.
-        </p>
+          + <span className="font-mono">InlineBanner</span>{" " + pageText("toRenderTheLoadingSetupPendingApprovalPaused_cd3912")}</p>
       </Section>
     </div>
   );

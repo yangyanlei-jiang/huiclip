@@ -1,4 +1,5 @@
-import { companyProjectsQuery } from "@/lib/company-projects-query";
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Send } from "lucide-react";
@@ -10,6 +11,7 @@ import { useToast } from "@/context/ToastContext";
 import { queryKeys } from "@/lib/queryKeys";
 import { toolsApi } from "@/api/tools";
 import { agentsApi } from "@/api/agents";
+import { projectsApi } from "@/api/projects";
 import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -28,6 +30,7 @@ import { CopyableGatewayUrl } from "./CopyableGatewayUrl";
 import { describeError } from "@/api/errors";
 
 export function GatewayDetail() {
+  const { t: pageText } = usePageTranslation("interface");
   const { gatewayId = "", tab } = useParams<{ gatewayId: string; tab?: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -66,7 +69,8 @@ export function GatewayDetail() {
     enabled: !!selectedCompanyId,
   });
   const projectsQuery = useQuery({
-    ...companyProjectsQuery(selectedCompanyId ?? "__none__", { includeArchived: true }),
+    queryKey: queryKeys.projects.list(selectedCompanyId ?? "__none__", { includeArchived: true }),
+    queryFn: () => projectsApi.list(selectedCompanyId!, { includeArchived: true }),
     enabled: !!selectedCompanyId,
   });
   const gatewaysView = useQueryView(gatewaysQuery);
@@ -104,8 +108,8 @@ export function GatewayDetail() {
   useEffect(() => {
     if (!gateway) return;
     setBreadcrumbs([
-      { label: "Plugins", href: "/apps" },
-      { label: "Gateways", href: "/apps/gateways" },
+      { label: interfaceNotice("interface:connectors_4b1e95"), href: "/apps" },
+      { label: interfaceNotice("interface:gateways_822085"), href: "/apps/gateways" },
       { label: gateway.name },
     ]);
     return () => setBreadcrumbs([]);
@@ -118,7 +122,7 @@ export function GatewayDetail() {
       }),
     onSuccess: async (updated) => {
       pushToast({
-        title: updated.status === "active" ? "Gateway on" : "Gateway off",
+        title: updated.status === "active" ? interfaceNotice("interface:gatewayOn_000445") : interfaceNotice("interface:gatewayOff_c7a89c"),
         body:
           updated.status === "active"
             ? `${updated.name} is exposing its tools again.`
@@ -129,14 +133,14 @@ export function GatewayDetail() {
     },
     onError: (error) =>
       pushToast({
-        title: "Couldn't update the gateway",
+        title: interfaceNotice("interface:couldnTUpdateTheGateway_c98b69"),
         body: describeError(error).body,
         tone: "error",
       }),
   });
 
   if (!selectedCompanyId) {
-    return <div className="p-6 text-sm text-muted-foreground">Select an organization to manage gateways.</div>;
+    return <div className="p-6 text-sm text-muted-foreground">{pageText("selectAnOrganizationToManageGateways_78cafb")}</div>;
   }
   if (!activeTab) {
     return <Navigate replace to={gatewayTabHref(gatewayId, "overview")} />;
@@ -164,10 +168,8 @@ export function GatewayDetail() {
   if (!gateway) {
     return (
       <div className="max-w-3xl p-6">
-        <p className="text-sm text-muted-foreground">We couldn’t find that gateway.</p>
-        <Button className="mt-4" variant="outline" onClick={() => navigate("/apps/gateways")}>
-          Back to gateways
-        </Button>
+        <p className="text-sm text-muted-foreground">{pageText("weCouldnTFindThatGateway_b0d144")}</p>
+        <Button className="mt-4" variant="outline" onClick={() => navigate("/apps/gateways")}>{pageText("backToGateways_f784c4")}</Button>
       </div>
     );
   }
@@ -177,26 +179,20 @@ export function GatewayDetail() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="text-xs text-muted-foreground">
-            <Link to="/apps/gateways" className="hover:underline">
-              Apps · Gateways
-            </Link>
+            <Link to="/apps/gateways" className="hover:underline">{pageText("appsGateways_be1912")}</Link>
           </div>
           <h1 className="mt-1 text-2xl font-bold tracking-tight">{gateway.name}</h1>
           <CopyableGatewayUrl endpointPath={gateway.endpointPath} className="mt-1 max-w-xl" />
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={() => setEditing(true)}>
-            <Pencil className="mr-1.5 h-4 w-4" />
-            Edit
-          </Button>
+            <Pencil className="mr-1.5 h-4 w-4" />{pageText("edit_530164")}</Button>
           <Button onClick={() => setSnippetOpen(true)}>
-            <Send className="mr-1.5 h-4 w-4" />
-            Client snippets
-          </Button>
+            <Send className="mr-1.5 h-4 w-4" />{pageText("clientSnippets_088b2b")}</Button>
         </div>
       </div>
 
-      <nav className="flex items-center gap-6 overflow-x-auto border-b border-border text-sm" aria-label="Gateway tabs">
+      <nav className="flex items-center gap-6 overflow-x-auto border-b border-border text-sm" aria-label={pageText("gatewayTabs_76b67c")}>
         {GATEWAY_TABS.map((item) => {
           const isActive = item.key === activeTab;
           return (

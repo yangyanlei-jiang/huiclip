@@ -1,8 +1,9 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Network, Monitor } from "lucide-react";
 import {
-  aiConnectionCatalogSlug,
   aiProviderRoutingSchema,
   createAiConnectionSchema,
   type AiProvider,
@@ -27,8 +28,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AiConnectionCredentialStep } from "./AiConnectionCredentialStep";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
-import { cn } from "@/lib/utils";
 
 const providers = [
   {
@@ -41,7 +40,7 @@ const providers = [
     name: "Anthropic",
     description: "Claude subscription or API key",
   },
-  { id: "google", name: "Antigravity", description: "Antigravity sign-in or Gemini API key" },
+  { id: "google", name: "Google", description: "Antigravity sign-in or Gemini API key" },
   { id: "xai", name: "xAI", description: "Grok subscription or API key" },
   {
     id: "openrouter",
@@ -78,8 +77,6 @@ export function AiProviderSetup({
   initialProtocol,
   providerLabel,
   advancedOnly = false,
-  hideCancel = false,
-  hideProviderHeading = false,
   submitLabel,
   reconnect,
   onCancel,
@@ -92,8 +89,6 @@ export function AiProviderSetup({
   initialProtocol?: AiProviderRouting["protocol"];
   providerLabel?: string;
   advancedOnly?: boolean;
-  hideCancel?: boolean;
-  hideProviderHeading?: boolean;
   submitLabel?: string;
   reconnect?: AiManagedConnectionSummary;
   onCancel: () => void;
@@ -101,6 +96,8 @@ export function AiProviderSetup({
     binding: Exclude<AiConnectionBinding, { mode: "responsible_user" }>,
   ) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [provider, setProvider] = useState<ProviderChoice | undefined>(
     reconnect
       ? reconnect.routing?.kind === "gateway" ||
@@ -236,7 +233,7 @@ export function AiProviderSetup({
                 )}
               </span>
             ) : (
-              <AppLogo name={p.name} brandKey={aiConnectionCatalogSlug(p.id)} />
+              <AppLogo name={p.name} brandKey={p.id} />
             ),
         }))}
       onSelect={(id) => {
@@ -249,18 +246,13 @@ export function AiProviderSetup({
     />
   );
   const modelSettings = (
-    <label className="block space-y-2 text-xs text-muted-foreground">
-      Model IDs (comma separated)
-      <Input
-        aria-label="Model IDs"
+    <label className="block space-y-2 text-xs text-muted-foreground">{pageText("modelIDsCommaSeparated_c67e79")}<Input
+        aria-label={pageText("modelIDs_f47692")}
         value={models}
         onChange={(e) => setModels(e.target.value)}
         disabled={Boolean(reconnect)}
       />
-      <span className="block">
-        Use the provider’s model ID or your gateway’s alias. You can
-        also enter one on the agent.
-      </span>
+      <span className="block">{pageText("useTheProviderSModelIDOrYour_d15f11")}</span>
     </label>
   );
   const accessDefaults = !reconnect ? (
@@ -283,36 +275,28 @@ export function AiProviderSetup({
     />
   ) : undefined;
   const cancel = () => reconnect || initialProvider ? onCancel() : setStep("provider");
-  if (!reconnect && (accounts.isPending || accountsView.kind === "reconnecting")) return <p role="status">Loading connection permissions…</p>;
+  if (!reconnect && (accounts.isPending || accountsView.kind === "reconnecting")) return <p role="status">{pageText("loadingConnectionPermissions_a1e26e")}</p>;
   if (!reconnect && accountsView.kind === "error") return <QueryErrorState error={accounts.error} action="load connection permissions" onRetry={accountsView.retry} retrying={accountsView.isFetching} />;
   return (
     <div className="mx-auto w-full max-w-2xl space-y-6" onSubmit={(event) => event.stopPropagation()}>
-      {!(step === "provider" && hideProviderHeading) && (
-        <div className="space-y-2">
-          <h2 className="text-xl font-semibold">
-            {step === "provider"
-              ? "Connect a model provider"
-              : `${reconnect ? "Reconnect" : "Connect"} ${label}`}
-          </h2>
-        </div>
-      )}
+      <div className="space-y-2">
+        <h2 className="text-xl font-semibold">
+          {step === "provider"
+            ? pageText("connectAModelProvider_3447ed")
+            : `${reconnect ? "Reconnect" : "Connect"} ${label}`}
+        </h2>
+      </div>
       {agentsView.kind === "error" && <QueryErrorState size="inline" error={agents.error} action="load agents" onRetry={agentsView.retry} retrying={agentsView.isFetching} />}
       {step === "provider" ? (
         <>
           {advancedOnly ? choices(true) : <>
           {choices(false)}
           <details>
-            <summary className="cursor-pointer text-sm text-muted-foreground">
-              Advanced providers
-            </summary>
+            <summary className="cursor-pointer text-sm text-muted-foreground">{pageText("advancedProviders_376152")}</summary>
             <div className="pt-4">{choices(true)}</div>
           </details>
           </>}
-          {!hideCancel && (
-            <Button type="button" variant="ghost" onClick={onCancel}>
-              Cancel
-            </Button>
-          )}
+          <Button type="button" variant="ghost" onClick={onCancel}>{translateUi("interfaceCopy.cancel")}</Button>
         </>
       ) : !advanced ? (
         <AiConnectionCredentialStep
@@ -342,10 +326,8 @@ export function AiProviderSetup({
         >
           {(provider === "gateway" || provider === "local") && (
             <>
-              <label className="block space-y-2 text-xs text-muted-foreground">
-                Provider URL
-                <Input
-                  aria-label="Provider URL"
+              <label className="block space-y-2 text-xs text-muted-foreground">{pageText("providerURL_de1f83")}<Input
+                  aria-label={pageText("providerURL_de1f83")}
                   placeholder={
                     provider === "local"
                       ? "http://localhost:11434/v1"
@@ -356,9 +338,7 @@ export function AiProviderSetup({
                   disabled={Boolean(reconnect)}
                 />
               </label>
-              <label className="block space-y-2 text-xs text-muted-foreground">
-                API format
-                <Select
+              <label className="block space-y-2 text-xs text-muted-foreground">{pageText("apiFormat_ba7636")}<Select
                   value={protocol}
                   onValueChange={(v) => {
                     setProtocol(v as typeof protocol);
@@ -367,10 +347,10 @@ export function AiProviderSetup({
                   }}
                   disabled={Boolean(reconnect) || Boolean(initialProtocol)}
                 >
-                  <SelectTrigger aria-label="API format" className={cn("w-full", ANALYTICS_MASK_CLASS)}>
+                  <SelectTrigger aria-label={pageText("apiFormat_ba7636")} className="w-full">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className={ANALYTICS_MASK_CLASS}>
+                  <SelectContent>
                     <SelectItem value="responses">
                       OpenAI Responses · Codex
                     </SelectItem>
@@ -386,10 +366,8 @@ export function AiProviderSetup({
             </>
           )}
           {provider === "bedrock" && (
-            <label className="block space-y-2 text-xs text-muted-foreground">
-              AWS region
-              <Input
-                aria-label="AWS region"
+            <label className="block space-y-2 text-xs text-muted-foreground">{pageText("awsRegion_81664b")}<Input
+                aria-label={pageText("awsRegion_81664b")}
                 value={region}
                 onChange={(e) => setRegion(e.target.value)}
                 disabled={Boolean(reconnect)}
@@ -397,30 +375,26 @@ export function AiProviderSetup({
             </label>
           )}
           {provider !== "openrouter" && (
-            <label className="block space-y-2 text-xs text-muted-foreground">
-              Authentication
-              <Select
+            <label className="block space-y-2 text-xs text-muted-foreground">{pageText("authentication_ee1acf")}<Select
                 value={auth}
                 onValueChange={(v) => setAuth(v as typeof auth)}
                 disabled={Boolean(reconnect)}
               >
-                <SelectTrigger aria-label="Authentication" className={cn("w-full", ANALYTICS_MASK_CLASS)}>
+                <SelectTrigger aria-label={pageText("authentication_ee1acf")} className="w-full">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className={ANALYTICS_MASK_CLASS}>
+                <SelectContent>
                   <SelectItem value="bearer">
                     {provider === "bedrock"
-                      ? "Bedrock API key"
-                      : "Bearer token"}
+                      ? pageText("bedrockAPIKey_59d65e")
+                      : pageText("bearerToken_ffa64b")}
                   </SelectItem>
                   {provider !== "bedrock" && (
                     <>
                       {protocol === "messages" && (
-                        <SelectItem value="api_key">
-                          API key · x-api-key
-                        </SelectItem>
+                        <SelectItem value="api_key">{pageText("apiKeyXApiKey_ded25b")}</SelectItem>
                       )}
-                      <SelectItem value="none">No authentication</SelectItem>
+                      <SelectItem value="none">{pageText("noAuthentication_9cd50f")}</SelectItem>
                     </>
                   )}
                 </SelectContent>
@@ -429,10 +403,8 @@ export function AiProviderSetup({
           )}
           {
             auth !== "none" && (
-              <label className="block space-y-2 text-xs text-muted-foreground">
-                API key
-                <Input
-                  aria-label="API key"
+              <label className="block space-y-2 text-xs text-muted-foreground">{pageText("apiKey_cf678c")}<Input
+                  aria-label={pageText("apiKey_cf678c")}
                   type="password"
                   autoComplete="new-password"
                   value={apiKey}
@@ -441,15 +413,12 @@ export function AiProviderSetup({
               </label>
             )
           }
-          {reconnect && <details><summary className="cursor-pointer text-sm text-muted-foreground">Model settings</summary>{modelSettings}</details>}
-          <p className="text-xs text-muted-foreground">
-            Test the connection with your chosen model in the agent’s execution
-            environment after connecting.
-          </p>
+          {reconnect && <details><summary className="cursor-pointer text-sm text-muted-foreground">{pageText("modelSettings_d96087")}</summary>{modelSettings}</details>}
+          <p className="text-xs text-muted-foreground">{pageText("testTheConnectionWithYourChosenModelIn_e91446")}</p>
           {save.error && (
             <p role="alert" className="text-sm text-destructive">
               {save.error instanceof Error && save.error.name === "ZodError"
-                ? "Check the URL, API format, and authentication fields."
+                ? pageText("checkTheURLAPIFormatAndAuthenticationFields_92b3eb")
                 : describeError(save.error).body}
             </p>
           )}
@@ -460,9 +429,7 @@ export function AiProviderSetup({
               variant="ghost"
               onClick={cancel}
               disabled={save.isPending}
-            >
-              Back
-            </Button>
+            >{translateUi("interfaceCopy.back")}</Button>
             <Button
               type="submit"
               disabled={
@@ -472,10 +439,10 @@ export function AiProviderSetup({
               }
             >
               {save.isPending
-                ? submitLabel ? "Saving…" : "Connecting…"
+                ? submitLabel ? pageText("saving_56a228") : pageText("connecting_fd3e79")
                 : reconnect
-                  ? "Reconnect"
-                  : submitLabel ?? "Connect"}
+                  ? pageText("reconnect_6988b1")
+                  : submitLabel ?? pageText("connect_b65463")}
             </Button>
           </div>
         </form>

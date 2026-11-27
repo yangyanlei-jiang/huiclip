@@ -1,3 +1,5 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useResilientFetch } from "@/hooks/useResilientFetch";
 import { QueryErrorState } from "@/components/QueryView";
 import { isTransientError } from "@/api/errors";
@@ -17,7 +19,6 @@ import { queryKeys } from "../../lib/queryKeys";
 import { toolsApi } from "../../api/tools";
 import { getUIAdapter, buildTranscript, onAdapterChange } from "../../adapters";
 import { cn } from "../../lib/utils";
-import { ProviderLimitMessage } from "../ProviderLimitMessage";
 import { Button } from "@/components/ui/button";
 import { RunTranscriptView, type TranscriptMode } from "../transcript/RunTranscriptView";
 import { LIVE_TRANSCRIPT_RENDER_LIMIT, MAX_LIVE_EVENTS, MAX_LIVE_LOG_LINES } from "../../lib/live-log-buffer";
@@ -40,9 +41,9 @@ import {
   RunInvocationCard,
   redactPathText,
 } from "./RunDetails";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 export function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { visible } = usePageVisibility();
   const connection = useConnectivityStore();
   const [events, setEvents] = useState<HeartbeatRunEvent[]>([]);
@@ -250,7 +251,7 @@ export function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType
       } catch (error) {
         failed = true; failedRead = { requested, catchup };
         connection.reportError(error);
-        if (!cancelled && !isTransientError(error)) setEventsError("Could not load events. Try again.");
+        if (!cancelled && !isTransientError(error)) setEventsError(interfaceNotice("interface:couldNotLoadEventsTryAgain_9023ab"));
       }
       if (cancelled) return;
       reading = false; setLoadingMoreEvents(false);
@@ -449,11 +450,11 @@ export function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType
   }, [run.id]);
 
   if (loading && logLoading && !eventsError && !logError) {
-    return <p className="text-xs text-muted-foreground">Loading run logs...</p>;
+    return <p className="text-xs text-muted-foreground">{pageText("loadingRunLogs_09d34f")}</p>;
   }
 
   if (events.length === 0 && logLines.length === 0 && !logError && !eventsError) {
-    return <p className="text-xs text-muted-foreground">{loading || logLoading ? "Loading run logs..." : "No log events."}</p>;
+    return <p className="text-xs text-muted-foreground">{loading || logLoading ? pageText("loadingRunLogs_09d34f") : pageText("noLogEvents_e378ee")}</p>;
   }
 
   const levelColors: Record<string, string> = {
@@ -479,8 +480,7 @@ export function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType
       )}
 
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-muted-foreground">
-          Transcript ({transcript.length})
+        <span className="text-xs font-medium text-muted-foreground">{pageText("transcript_901c5d")}{transcript.length})
         </span>
         <div className="flex items-center gap-2">
           <div className="inline-flex rounded-lg border border-border/70 bg-background/70 p-0.5">
@@ -511,18 +511,14 @@ export function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType
                 scrollToContainerBottom(container, "auto");
                 lastMetricsRef.current = readScrollMetrics(container);
               }}
-            >
-              Jump to live
-            </Button>
+            >{pageText("jumpToLive_9f84c5")}</Button>
           )}
           {isLive && (
             <span className="flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400">
               <span className="relative flex h-2 w-2">
                 <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
-              </span>
-              Live
-            </span>
+              </span>{pageText("live_65c821")}</span>
           )}
         </div>
       </div>
@@ -533,7 +529,7 @@ export function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType
           mode={transcriptMode}
           streaming={isLive}
           limit={isLive ? LIVE_TRANSCRIPT_RENDER_LIMIT : undefined}
-          emptyMessage={run.logRef ? "Waiting for transcript..." : "No persisted transcript for this run."}
+          emptyMessage={run.logRef ? pageText("waitingForTranscript_83ca5d") : pageText("noPersistedTranscriptForThisRun_6cc251")}
         />
         {hasMoreLog && (
           <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border/60 pt-3">
@@ -544,10 +540,9 @@ export function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType
               onClick={persistedLog.view.retry}
               disabled={loadingMoreLog}
             >
-              {loadingMoreLog ? "Loading..." : "Load more log"}
+              {loadingMoreLog ? pageText("loading_b04ba4") : pageText("loadMoreLog_d9a5a9")}
             </Button>
-            <span className="text-xs text-muted-foreground">
-              Showing the first {Math.round(logOffset / 1024).toLocaleString("en-US")} KB
+            <span className="text-xs text-muted-foreground">{pageText("showingTheFirst_cb16f8") + " "}{Math.round(logOffset / 1024).toLocaleString("en-US")} KB
               {typeof run.logBytes === "number" && run.logBytes > 0
                 ? ` of ${Math.round(run.logBytes / 1024).toLocaleString("en-US")} KB`
                 : ""}
@@ -559,34 +554,34 @@ export function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType
       </div>
 
       {(run.status === "failed" || run.status === "timed_out") && (
-        <div className={cn("rounded-lg border border-red-300 dark:border-red-500/30 bg-red-50 dark:bg-red-950/20 p-3 space-y-2", ANALYTICS_MASK_CLASS)}>
-          <div className="text-xs font-medium text-red-700 dark:text-red-300">Failure details</div>
+        <div className="rounded-lg border border-red-300 dark:border-red-500/30 bg-red-50 dark:bg-red-950/20 p-3 space-y-2">
+          <div className="text-xs font-medium text-red-700 dark:text-red-300">{pageText("failureDetails_c507ba")}</div>
           {run.error && (
             <div className="text-xs text-red-600 dark:text-red-200">
-              <span className="text-red-700 dark:text-red-300">Error: </span>
-              <ProviderLimitMessage>{redactPathText(run.error, censorUsernameInLogs)}</ProviderLimitMessage>
+              <span className="text-red-700 dark:text-red-300">{pageText("error_787aa1") + " "}</span>
+              {redactPathText(run.error, censorUsernameInLogs)}
             </div>
           )}
           {run.stderrExcerpt && run.stderrExcerpt.trim() && (
             <div>
-              <div className="text-xs text-red-700 dark:text-red-300 mb-1">stderr excerpt</div>
-              <pre className={cn("bg-red-50 dark:bg-neutral-950 rounded-md p-2 text-xs overflow-x-auto whitespace-pre-wrap text-red-800 dark:text-red-100", ANALYTICS_MASK_CLASS)}>
+              <div className="text-xs text-red-700 dark:text-red-300 mb-1">{pageText("stderrExcerpt_3ea4a4")}</div>
+              <pre className="bg-red-50 dark:bg-neutral-950 rounded-md p-2 text-xs overflow-x-auto whitespace-pre-wrap text-red-800 dark:text-red-100">
                 {redactPathText(run.stderrExcerpt, censorUsernameInLogs)}
               </pre>
             </div>
           )}
           {run.resultJson && (
             <div>
-              <div className="text-xs text-red-700 dark:text-red-300 mb-1">adapter result JSON</div>
-              <pre className={cn("bg-red-50 dark:bg-neutral-950 rounded-md p-2 text-xs overflow-x-auto whitespace-pre-wrap text-red-800 dark:text-red-100", ANALYTICS_MASK_CLASS)}>
+              <div className="text-xs text-red-700 dark:text-red-300 mb-1">{pageText("adapterResultJSON_624dd5")}</div>
+              <pre className="bg-red-50 dark:bg-neutral-950 rounded-md p-2 text-xs overflow-x-auto whitespace-pre-wrap text-red-800 dark:text-red-100">
                 {JSON.stringify(redactPathValue(run.resultJson, censorUsernameInLogs), null, 2)}
               </pre>
             </div>
           )}
           {run.stdoutExcerpt && run.stdoutExcerpt.trim() && !run.resultJson && (
             <div>
-              <div className="text-xs text-red-700 dark:text-red-300 mb-1">stdout excerpt</div>
-              <pre className={cn("bg-red-50 dark:bg-neutral-950 rounded-md p-2 text-xs overflow-x-auto whitespace-pre-wrap text-red-800 dark:text-red-100", ANALYTICS_MASK_CLASS)}>
+              <div className="text-xs text-red-700 dark:text-red-300 mb-1">{pageText("stdoutExcerpt_419be9")}</div>
+              <pre className="bg-red-50 dark:bg-neutral-950 rounded-md p-2 text-xs overflow-x-auto whitespace-pre-wrap text-red-800 dark:text-red-100">
                 {redactPathText(run.stdoutExcerpt, censorUsernameInLogs)}
               </pre>
             </div>
@@ -596,14 +591,14 @@ export function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType
 
       {(events.length > 0 || eventsError) && (
         <div>
-          <div className="mb-2 text-xs font-medium text-muted-foreground">Events ({events.length})</div>
+          <div className="mb-2 text-xs font-medium text-muted-foreground">{pageText("events_7e88b8")}{events.length})</div>
           {eventsError && <p className="text-sm text-destructive">{eventsError}</p>}
           {(hasMoreEvents || eventsError) && (
             <Button variant="outline" size="sm" disabled={loadingMoreEvents} onClick={() => loadMoreEventsRef.current?.()}>
-              {loadingMoreEvents ? "Loading..." : eventsError ? "Retry events" : "Load more events"}
+              {loadingMoreEvents ? pageText("loading_b04ba4") : eventsError ? pageText("retryEvents_dcd1ad") : pageText("loadMoreEvents_f63e0e")}
             </Button>
           )}
-          <div className={cn("bg-neutral-100 dark:bg-neutral-950 rounded-lg p-3 font-mono text-xs space-y-0.5", ANALYTICS_MASK_CLASS)}>
+          <div className="bg-neutral-100 dark:bg-neutral-950 rounded-lg p-3 font-mono text-xs space-y-0.5">
             {events.map((evt) => {
               const color = evt.color
                 ?? (evt.level ? levelColors[evt.level] : null)
@@ -620,7 +615,7 @@ export function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType
                   </span>
                   <span className={cn("break-all", color)}>
                     {evt.message
-                      ? <ProviderLimitMessage>{redactPathText(evt.message, censorUsernameInLogs)}</ProviderLimitMessage>
+                      ? redactPathText(evt.message, censorUsernameInLogs)
                       : evt.payload
                         ? JSON.stringify(redactPathValue(evt.payload, censorUsernameInLogs))
                         : ""}

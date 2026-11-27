@@ -60,7 +60,6 @@ export type WorktreeSeedPlan = {
 
 const MINIMAL_WORKTREE_EXCLUDED_TABLES = [
   "agent_identity_keys",
-  "company_workload_identity_keys",
   "activity_log",
   "agent_runtime_state",
   "agent_task_sessions",
@@ -123,7 +122,7 @@ export function resolveWorktreeSeedPlan(mode: WorktreeSeedMode): WorktreeSeedPla
   if (mode === "full") {
     return {
       mode,
-      excludedTables: ["agent_identity_keys", "company_workload_identity_keys"],
+      excludedTables: ["agent_identity_keys"],
       nullifyColumns: {},
     };
   }

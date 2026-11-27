@@ -117,7 +117,6 @@ def main():
 
 
 if __name__ == "__main__":
-    status = 0
     try:
         if len(sys.argv) == 5 and sys.argv[1] == "--cleanup":
             cleanup()
@@ -125,9 +124,4 @@ if __name__ == "__main__":
             main()
     except Exception:
         # Do not reflect subprocess arguments, ticket frames, or provider output.
-        status = 1
-    # The forward thread may still be blocked in stdin.readline holding the
-    # stdin buffer lock. Normal interpreter shutdown would then abort while
-    # closing stdin (SIGABRT plus a macOS crash dialog), so skip finalization.
-    # emit() already flushed every receipt.
-    os._exit(status)
+        sys.exit(1)

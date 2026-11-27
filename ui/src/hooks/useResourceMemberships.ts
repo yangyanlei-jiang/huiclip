@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
   ResourceMembershipResourceType,
@@ -178,7 +179,7 @@ export function useResourceMembershipMutation(companyId: string | null | undefin
         : variables.state === "left" ? "leave" : "join";
       pushToast({
         title: `Couldn't ${verb} ${variables.resourceName}.`,
-        body: error instanceof Error ? error.message : "Try again.",
+        body: error instanceof Error ? error.message : interfaceNotice("interface:tryAgain_624fb2"),
         tone: "error",
       });
     },

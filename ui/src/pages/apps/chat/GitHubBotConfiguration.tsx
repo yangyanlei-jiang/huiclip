@@ -1,3 +1,7 @@
+import { t as interfaceNotice } from "@/i18n";
+import { t as translateDynamic } from "../../../i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { copyTextToClipboard } from "@/lib/clipboard";
 import { useEffect, useId, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -9,8 +13,6 @@ import {
   type GitHubAllowedPerson,
 } from "@paperclipai/shared";
 import { accessApi } from "@/api/access";
-import { queryKeys } from "@/lib/queryKeys";
-import { GitHubSponsorSelect } from "./GitHubSponsorSelect";
 import { chatEndpointsApi } from "@/api/chatEndpoints";
 import { githubChatApi } from "@/api/githubChat";
 import { useOptionalCompany } from "@/context/CompanyContext";
@@ -51,8 +53,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { describeError } from "@/api/errors";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
-import { cn } from "@/lib/utils";
 
 export const githubSelectClass =
   "w-full rounded-md border border-input bg-background px-3 py-2 text-sm";
@@ -77,14 +77,14 @@ function GitHubHelp({
       <TooltipTrigger asChild>
         <button
           type="button"
-          aria-label={`About ${label}`}
+          aria-label={translateDynamic("dynamic:about", { value1: label })}
           className="inline-flex shrink-0 items-center text-muted-foreground hover:text-foreground"
           onClick={() => setOpen(true)}
         >
           <HelpCircle className="size-4" />
         </button>
       </TooltipTrigger>
-      <TooltipContent className={cn("max-w-xs", ANALYTICS_MASK_CLASS)}>{children}</TooltipContent>
+      <TooltipContent className="max-w-xs">{children}</TooltipContent>
     </Tooltip>
   );
 }
@@ -178,6 +178,7 @@ function GitHubPassingScore({
   onChange: (value: GitHubReviewPolicy["ratingThreshold"]) => void;
   onValidityChange?: (valid: boolean) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const id = useId();
   const [localText, setLocalText] = useState(String(value ?? 5));
   const text = controlledText ?? localText;
@@ -188,7 +189,7 @@ function GitHubPassingScore({
   useEffect(() => { onValidityChange?.(valid); }, [valid, onValidityChange]);
   return (
     <div className="space-y-3 py-3">
-      <Label htmlFor={id}>Passing score</Label>
+      <Label htmlFor={id}>{pageText("passingScore_e5cdc3")}</Label>
       <div className="flex flex-wrap items-center gap-4">
         <div className="flex items-center gap-2">
           <Input id={id} type="number" min={1} max={5} step={1} required
@@ -201,25 +202,22 @@ function GitHubPassingScore({
               if (next.trim() && Number.isInteger(score) && score >= 1 && score <= 5)
                 onChange(score as 1 | 2 | 3 | 4 | 5);
             }} />
-          <span className="text-sm text-muted-foreground">out of 5</span>
+          <span className="text-sm text-muted-foreground">{pageText("outOf5_02113f")}</span>
         </div>
         <Label className="flex items-center gap-2 text-sm font-normal">
-          <Checkbox aria-label="Report only" checked={value === null}
-            onCheckedChange={(checked) => { setText("5"); onChange(checked === true ? null : 5); }} />
-          Report only
-        </Label>
+          <Checkbox aria-label={pageText("reportOnly_f08b1e")} checked={value === null}
+            onCheckedChange={(checked) => { setText("5"); onChange(checked === true ? null : 5); }} />{pageText("reportOnly_f08b1e")}</Label>
       </div>
-      {!valid && <p id={`${id}-error`} role="alert" className="text-xs text-destructive">Enter a whole number from 1 to 5.</p>}
+      {!valid && <p id={`${id}-error`} role="alert" className="text-xs text-destructive">{pageText("enterAWholeNumberFrom1To5_60798e")}</p>}
       <p id={`${id}-help`} className="text-xs text-muted-foreground">
         {value === null
-          ? "Publishes a neutral check without a score requirement. GitHub can accept neutral checks for merging."
-          : "Paperclip passes the check when a complete review of the latest commit meets this score. Lower scores fail. This does not approve the PR."}
+          ? pageText("publishesANeutralCheckWithoutAScoreRequirement_d2a777")
+          : pageText("paperclipPassesTheCheckWhenACompleteReview_472758")}
       </p>
-      <p className="text-xs text-muted-foreground">
-        To block merging, require the <strong>Paperclip Review</strong> check from this App in your GitHub branch rules.{" "}
+      <p className="text-xs text-muted-foreground">{pageText("toBlockMergingRequireThe_9cf267") + " "}<strong>Paperclip Review</strong>{" " + pageText("checkFromThisAppInYourGitHubBranch_240808")}{" "}
         <a className="underline hover:text-foreground"
           href="https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/creating-rulesets-for-a-repository"
-          target="_blank" rel="noreferrer">Configure on GitHub</a>
+          target="_blank" rel="noreferrer">{pageText("configureOnGitHub_ce5a61")}</a>
       </p>
     </div>
   );
@@ -244,6 +242,7 @@ export function GitHubPolicyEditor({
   onChange: (policy: GitHubReviewPolicy) => void;
   onValidityChange?: (valid: boolean) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const id = useId();
   const automaticMode = useRef<"linked_authors" | "allowed_authors">(
     "linked_authors",
@@ -288,26 +287,19 @@ export function GitHubPolicyEditor({
         <h2
           id={`${id}-github-instructions-heading`}
           className="text-base font-semibold"
-        >
-          Instructions
-        </h2>
+        >{pageText("instructions_ed58f2")}</h2>
         <MarkdownEditor
           readOnly={readOnly}
-          ariaLabel="Agent instructions"
+          ariaLabel={interfaceNotice("interface:agentInstructions_07101b")}
           contentClassName="min-h-32"
           value={policy.instructions}
-          placeholder="What should this agent do on GitHub?"
+          placeholder={pageText("whatShouldThisAgentDoOnGitHub_4ec56e")}
           onChange={(value) => set("instructions", value)}
         />
-        <p className="text-xs text-muted-foreground">
-          Included in every GitHub task. Type / to select a skill for the agent
-          to use.
-        </p>
-        <GitHubSettingsDisclosure title="Event-specific instructions">
+        <p className="text-xs text-muted-foreground">{pageText("includedInEveryGitHubTaskTypeToSelect_44efa3")}</p>
+        <GitHubSettingsDisclosure title={pageText("eventSpecificInstructions_be77d8")}>
           <div className="grid gap-3 pt-3">
-            <Label htmlFor={`${id}-github-prompt-event`} className="sr-only">
-              Event
-            </Label>
+            <Label htmlFor={`${id}-github-prompt-event`} className="sr-only">{pageText("event_ad8919")}</Label>
             <select
               id={`${id}-github-prompt-event`}
               className={githubSelectClass}
@@ -319,7 +311,7 @@ export function GitHubPolicyEditor({
                   {eventLabels[event]}
                 </option>
               ))}
-              <option value="issue_opened">New issue</option>
+              <option value="issue_opened">{pageText("newIssue_051fba")}</option>
             </select>
             <MarkdownEditor
               key={prompt}
@@ -340,9 +332,7 @@ export function GitHubPolicyEditor({
                     })
               }
             />
-            <p className="text-xs text-muted-foreground">
-              Added to the main instructions for this event. Type / to select a skill for the agent to use.
-            </p>
+            <p className="text-xs text-muted-foreground">{pageText("addedToTheMainInstructionsForThisEvent_1276ff")}</p>
           </div>
         </GitHubSettingsDisclosure>
       </section>
@@ -353,26 +343,21 @@ export function GitHubPolicyEditor({
         <h2
           id={`${id}-github-triggers-heading`}
           className="text-base font-semibold"
-        >
-          When to run
-        </h2>
+        >{pageText("whenToRun_0926f6")}</h2>
         <div className="flex items-start gap-3 py-2">
           <AtSign className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
           <div className="space-y-1">
-            <p className="text-sm font-medium">When mentioned</p>
-            <p className="text-xs text-muted-foreground">
-              Authorized people can always @mention this bot.{" "}
+            <p className="text-sm font-medium">{pageText("whenMentioned_e04822")}</p>
+            <p className="text-xs text-muted-foreground">{pageText("authorizedPeopleCanAlwaysMentionThisBot_d9b481")}{" "}
               {accessHref && (
-                <Link className="underline underline-offset-4" to={accessHref}>
-                  Manage people in Access
-                </Link>
+                <Link className="underline underline-offset-4" to={accessHref}>{pageText("managePeopleInAccess_9635aa")}</Link>
               )}
             </p>
           </div>
         </div>
         <GitHubToggle
-          label="Run automatically"
-          description="Start work without a mention when an allowed person creates an issue or updates a pull request."
+          label={pageText("runAutomatically_c808aa")}
+          description={pageText("startWorkWithoutAMentionWhenAnAllowed_b8abfc")}
           checked={policy.invocation !== "mentions_only"}
           onChange={(enabled) =>
             set("invocation", enabled ? (rememberedAutomaticMode ?? automaticMode.current) : "mentions_only")
@@ -382,7 +367,7 @@ export function GitHubPolicyEditor({
           <div className="space-y-4">
             <div
               className="grid gap-x-6 gap-y-3 sm:grid-cols-2"
-              aria-label="Automatic events"
+              aria-label={pageText("automaticEvents_db4e0b")}
             >
               {GITHUB_REVIEW_EVENTS.slice(0, 4).map((event) => (
                 <Label
@@ -409,28 +394,24 @@ export function GitHubPolicyEditor({
                   onCheckedChange={(enabled) =>
                     set("issueOpened", enabled === true)
                   }
-                />
-                New issues
-              </Label>
+                />{pageText("newIssues_79760f")}</Label>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Runs for authorized authors in Access. Use the author filters below to limit whose issues and PRs start work.
-            </p>
-            <GitHubSettingsDisclosure title="Automatic review filters">
+            <p className="text-xs text-muted-foreground">{pageText("runsForAuthorizedAuthorsInAccessUseThe_0e8f2b")}</p>
+            <GitHubSettingsDisclosure title={pageText("automaticReviewFilters_a75be1")}>
               <div>
                 <GitHubToggle
-                  label="Include draft PRs"
+                  label={pageText("includeDraftPRs_1d89ae")}
                   checked={policy.reviewDrafts}
                   onChange={(value) => set("reviewDrafts", value)}
                 />
                 <GitHubToggle
-                  label="Include bot authors"
-                  description="The account also needs a sponsor and external-contributor automatic runs enabled in Access."
+                  label={pageText("includeBotAuthors_50e84f")}
+                  description={pageText("theAccountAlsoNeedsASponsorAndExternal_8764a8")}
                   checked={policy.reviewBotAuthors}
                   onChange={(value) => set("reviewBotAuthors", value)}
                 />
               </div>
-              <GitHubSettingsDisclosure title="Authors">
+              <GitHubSettingsDisclosure title={pageText("authors_d2a525")}>
                 <div className="grid gap-4 sm:grid-cols-2">
                   {filterField(
                     "includeAuthors",
@@ -444,7 +425,7 @@ export function GitHubPolicyEditor({
                   )}
                 </div>
               </GitHubSettingsDisclosure>
-              <GitHubSettingsDisclosure title="Branches">
+              <GitHubSettingsDisclosure title={pageText("branches_f57822")}>
                 <div className="grid gap-4 sm:grid-cols-2">
                   {filterField(
                     "targetBranches",
@@ -458,7 +439,7 @@ export function GitHubPolicyEditor({
                   )}
                 </div>
               </GitHubSettingsDisclosure>
-              <GitHubSettingsDisclosure title="Labels">
+              <GitHubSettingsDisclosure title={pageText("labels_222898")}>
                 <div className="grid gap-4 sm:grid-cols-2">
                   {filterField(
                     "requiredLabels",
@@ -472,10 +453,7 @@ export function GitHubPolicyEditor({
                   )}
                 </div>
               </GitHubSettingsDisclosure>
-              <p className="text-xs text-muted-foreground">
-                Reviews requested by @mention bypass these scheduling filters.
-                Repository access and ignored files still apply.
-              </p>
+              <p className="text-xs text-muted-foreground">{pageText("reviewsRequestedByMentionBypassTheseSchedulingFilters_51ebb2")}</p>
             </GitHubSettingsDisclosure>
           </div>
         )}
@@ -487,17 +465,15 @@ export function GitHubPolicyEditor({
         <h2
           id={`${id}-github-results-heading`}
           className="text-base font-semibold"
-        >
-          Review results
-        </h2>
+        >{pageText("reviewResults_0a1f1c")}</h2>
         <div className="grid gap-x-8 sm:grid-cols-2">
           <GitHubToggle
-            label="Post a review summary"
+            label={pageText("postAReviewSummary_79aa28")}
             checked={policy.publishSummary}
             onChange={(value) => set("publishSummary", value)}
           />
           <GitHubToggle
-            label="Post inline findings"
+            label={pageText("postInlineFindings_8e99c0")}
             checked={policy.publishInline}
             onChange={(value) => set("publishInline", value)}
           />
@@ -506,19 +482,17 @@ export function GitHubPolicyEditor({
           onChange={(value) => set("ratingThreshold", value)} onValidityChange={onValidityChange} />
       </section>
       <div className="divide-y divide-border">
-        <GitHubSettingsDisclosure title="Ignored files">
+        <GitHubSettingsDisclosure title={pageText("ignoredFiles_14c879")}>
           {filterField(
             "ignoredPaths",
             "File patterns",
             "Excluded from all reviews, including @mentions. One pattern per line; supports * and **.",
           )}
         </GitHubSettingsDisclosure>
-        <GitHubSettingsDisclosure title="Inline comment options">
+        <GitHubSettingsDisclosure title={pageText("inlineCommentOptions_beab8c")}>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor={`${id}-github-categories`}>
-                Finding categories
-              </Label>
+              <Label htmlFor={`${id}-github-categories`}>{pageText("findingCategories_6dfb83")}</Label>
               <GitHubListInput
                 id={`${id}-github-categories`}
                 values={policy.findingCategories}
@@ -527,9 +501,7 @@ export function GitHubPolicyEditor({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor={`${id}-github-severity`}>
-                Minimum inline severity
-              </Label>
+              <Label htmlFor={`${id}-github-severity`}>{pageText("minimumInlineSeverity_fe7159")}</Label>
               <select
                 id={`${id}-github-severity`}
                 className={githubSelectClass}
@@ -542,30 +514,25 @@ export function GitHubPolicyEditor({
                   )
                 }
               >
-                <option value="info">Info</option>
-                <option value="warning">Warning</option>
-                <option value="error">Error</option>
+                <option value="info">{pageText("info_4b631f")}</option>
+                <option value="warning">{pageText("warning_e9c455")}</option>
+                <option value="error">{pageText("error_7f2f6a")}</option>
               </select>
-              <p className="text-xs text-muted-foreground">
-                Hidden findings still count in the assessment.
-              </p>
+              <p className="text-xs text-muted-foreground">{pageText("hiddenFindingsStillCountInTheAssessment_174603")}</p>
             </div>
           </div>
         </GitHubSettingsDisclosure>
-        <GitHubSettingsDisclosure title="Approvals and change requests">
-          <p className="text-xs text-muted-foreground">
-            Optional formal decisions on GitHub. Scores, comments, and checks
-            still work when these are off.
-          </p>
+        <GitHubSettingsDisclosure title={pageText("approvalsAndChangeRequests_a61b33")}>
+          <p className="text-xs text-muted-foreground">{pageText("optionalFormalDecisionsOnGitHubScoresCommentsAnd_47141d")}</p>
           <div>
             <GitHubToggle
-              label="Allow approvals"
+              label={pageText("allowApprovals_75f8a1")}
               help="Lets the agent submit an Approve review on GitHub after a complete assessment. The agent must explicitly choose it; a 5/5 score or passing check does not approve the PR. Off still allows scores, comments, and checks."
               checked={policy.allowApprove}
               onChange={(value) => set("allowApprove", value)}
             />
             <GitHubToggle
-              label="Allow request changes"
+              label={pageText("allowRequestChanges_4fe5f2")}
               help="Lets the agent submit a Request changes review on GitHub after a complete assessment. This is a formal review decision and may prevent merging under your repository rules. Off still allows findings, comments, and a failing check."
               checked={policy.allowRequestChanges}
               onChange={(value) => set("allowRequestChanges", value)}
@@ -588,6 +555,8 @@ export function GitHubAccessEditor({
   configuration: GitHubChatConfiguration;
   onChange: (configuration: GitHubChatConfiguration) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const company = useOptionalCompany()?.companies.find((item) => item.id === companyId);
   const accountLink = useRef<HTMLAnchorElement>(null);
   const [linkCopied, setLinkCopied] = useState(false);
@@ -596,21 +565,15 @@ export function GitHubAccessEditor({
     queryKey: ["github-members", companyId],
     queryFn: () => accessApi.listMembers(companyId),
   });
-  const boardAccess = useQuery({
-    queryKey: queryKeys.access.currentBoardAccess,
-    queryFn: () => accessApi.getCurrentBoardAccess(),
-  });
   const links = useQuery({
     queryKey: ["github-linked-members", endpointId],
     queryFn: () => chatEndpointsApi.listPrincipals(endpointId),
   });
   const membersView = useQueryView(members);
   const linksView = useQueryView(links);
-  const boardAccessView = useQueryView(boardAccess);
   const linksLoaded = linksView.kind === "ready" || linksView.kind === "stale";
   const [login, setLogin] = useState("");
-  const [sponsor, setSponsor] = useState("");
-  const guestSponsor = sponsor || boardAccess.data?.userId || "";
+  const [sponsor, setSponsor] = useState(configuration.responsibleUserId);
   const [candidate, setCandidate] = useState<{
     githubUserId: string;
     login: string;
@@ -709,21 +672,19 @@ export function GitHubAccessEditor({
             className="flex flex-wrap items-center gap-x-4 gap-y-3 py-4"
           >
             <div className="min-w-0 flex-1 basis-32">
-              <p className={cn("break-words text-sm font-medium", ANALYTICS_MASK_CLASS)}>@{person.login}</p>
+              <p className="break-words text-sm font-medium">@{person.login}</p>
               <p className="text-xs text-muted-foreground">
                 {person.kind === "guest"
                   ? `Sponsored by ${memberName(person.sponsorUserId)}`
-                  : (identity?.paperclipUserLabel ?? "Company member")}
+                  : (identity?.paperclipUserLabel ?? pageText("companyMember_069970"))}
               </p>
               {!linked && (
-                <p className="mt-1 text-xs text-destructive">
-                  GitHub account needs linking.
-                </p>
+                <p className="mt-1 text-xs text-destructive">{pageText("githubAccountNeedsLinking_e93212")}</p>
               )}
             </div>
             <div className="flex items-center gap-5">
               <div className="flex flex-col items-center gap-2">
-                <span className="text-xs text-muted-foreground">Mentions</span>
+                <span className="text-xs text-muted-foreground">{pageText("mentions_85e12b")}</span>
                 {person.kind === "guest" ||
                 configuration.memberAccess === "all_linked" ? (
                   <span
@@ -733,7 +694,7 @@ export function GitHubAccessEditor({
                     {linked && (
                       <Check className="size-3.5 text-muted-foreground" />
                     )}
-                    {linked ? "Allowed" : "Unlinked"}
+                    {linked ? pageText("allowed_77c7b4") : pageText("unlinked_86998a")}
                   </span>
                 ) : (
                   <ToggleSwitch
@@ -756,19 +717,15 @@ export function GitHubAccessEditor({
                     <MoreHorizontal className="size-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className={ANALYTICS_MASK_CLASS} align="end">
+                <DropdownMenuContent align="end">
                   {removable && (
-                    <DropdownMenuItem onClick={() => removePerson(person)}>
-                      Remove access
-                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => removePerson(person)}>{pageText("removeAccess_a13a95")}</DropdownMenuItem>
                   )}
                   {identity && (
                     <DropdownMenuItem
                       disabled={busy}
                       onClick={() => void unlink(identity.principalId)}
-                    >
-                      Unlink GitHub account
-                    </DropdownMenuItem>
+                    >{pageText("unlinkGitHubAccount_4c064e")}</DropdownMenuItem>
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>}
@@ -779,17 +736,14 @@ export function GitHubAccessEditor({
     </div>
   );
   return (
-    <section className="space-y-6" aria-label="People">
+    <section className="space-y-6" aria-label={pageText("people_b37554")}>
       <div className="space-y-1">
-        <h2 className="text-base font-semibold">People</h2>
-        <p className="text-sm text-muted-foreground">
-          Choose who can mention this bot and whose activity can start work
-          automatically.
-        </p>
+        <h2 className="text-base font-semibold">{pageText("people_b37554")}</h2>
+        <p className="text-sm text-muted-foreground">{pageText("chooseWhoCanMentionThisBotAndWhose_6f5045")}</p>
       </div>
-      <section className="space-y-2" aria-label="Company members">
+      <section className="space-y-2" aria-label={pageText("companyMembers_f47cd5")}>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-sm font-semibold">Company members</h3>
+          <h3 className="text-sm font-semibold">{pageText("companyMembers_f47cd5")}</h3>
           <Button
             variant="outline"
             size="sm"
@@ -799,16 +753,14 @@ export function GitHubAccessEditor({
               setError("");
             }}
           >
-            <Plus className="size-4" />
-            Link a member
-          </Button>
+            <Plus className="size-4" />{pageText("linkAMember_b5a2c4")}</Button>
         </div>
         <GitHubToggle
-          label="Allow mentions from all linked members"
+          label={pageText("allowMentionsFromAllLinkedMembers_954e7f")}
           description={
             configuration.memberAccess === "all_linked"
               ? `Includes members from ${company?.name ?? "this company"} who link their GitHub account later.`
-              : "Only members you enable below can mention this bot."
+              : pageText("onlyMembersYouEnableBelowCanMentionThis_bdc34b")
           }
           checked={configuration.memberAccess === "all_linked"}
           onChange={(enabled) =>
@@ -820,73 +772,54 @@ export function GitHubAccessEditor({
         />
         {peopleRows(memberRows)}
         {(links.isPending || linksView.kind === "reconnecting") && (
-          <p role="status" className="py-4 text-sm text-muted-foreground">
-            Loading linked accounts…
-          </p>
+          <p role="status" className="py-4 text-sm text-muted-foreground">{pageText("loadingLinkedAccounts_ca37ce")}</p>
         )}
         {linksLoaded && memberRows.length === 0 && (
-          <p className="py-4 text-sm text-muted-foreground">
-            No members linked yet. Link an account to get started.
-          </p>
+          <p className="py-4 text-sm text-muted-foreground">{pageText("noMembersLinkedYetLinkAnAccountTo_1a5f90")}</p>
         )}
         <p className="text-xs text-muted-foreground">
           {automatic ? (
-            <>
-              Automatic runs use the events and author filters in{" "}
+            <>{pageText("automaticRunsUseTheEventsAndAuthorFilters_de1b43")}{" "}
               <Link
                 className="underline underline-offset-4"
                 to={`/apps/chat/${endpointId}/settings`}
-              >
-                Settings
-              </Link>
+              >{translateUi("interfaceCopy.settings")}</Link>
               .
             </>
           ) : (
-            <>
-              Automatic runs are off in{" "}
+            <>{pageText("automaticRunsAreOffIn_8ca91f")}{" "}
               <Link
                 className="underline underline-offset-4"
                 to={`/apps/chat/${endpointId}/settings`}
-              >
-                Settings
-              </Link>
-              . Authorized @mentions still work.
-            </>
+              >{translateUi("interfaceCopy.settings")}</Link>{pageText("authorizedMentionsStillWork_32cc2f")}</>
           )}
         </p>
       </section>
       <section
         className="space-y-2 border-t border-border pt-6"
-        aria-label="External contributors"
+        aria-label={pageText("externalContributors_6fe128")}
       >
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-sm font-semibold">External contributors</h3>
+          <h3 className="text-sm font-semibold">{pageText("externalContributors_6fe128")}</h3>
           <Button
             variant="outline"
             size="sm"
             onClick={() => {
-              setSponsor(boardAccess.data?.userId ?? "");
               setDialog("guest");
               setLookupError("");
             }}
           >
-            <Plus className="size-4" />
-            Add external contributor
-          </Button>
+            <Plus className="size-4" />{pageText("addExternalContributor_b3a010")}</Button>
         </div>
-        <p className="text-xs text-muted-foreground">
-          Allow specific GitHub users with a member as their sponsor. They
-          receive restricted access, without company membership or the sponsor’s
-          personal credentials.
-        </p>
+        <p className="text-xs text-muted-foreground">{pageText("allowSpecificGitHubUsersWithAMemberAs_c5df5d")}</p>
         {peopleRows(guests)}
         {guests.length > 0 && (
           <GitHubToggle
-            label="Allow automatic runs for external contributors"
+            label={pageText("allowAutomaticRunsForExternalContributors_082a70")}
             description={
               automatic
-                ? "Authorized contributors can trigger the events and author filters configured in Settings."
-                : "Turn on automatic runs in Settings first. Mentions remain available."
+                ? pageText("authorizedContributorsCanTriggerTheEventsAndAuthor_d03a08")
+                : pageText("turnOnAutomaticRunsInSettingsFirstMentions_23ce80")
             }
             checked={guestsAutomatic}
             disabled={!automatic}
@@ -902,37 +835,41 @@ export function GitHubAccessEditor({
           />
         )}
       </section>
-      <GitHubSettingsDisclosure title="Automatic task responsibility">
+      <GitHubSettingsDisclosure title={pageText("automaticTaskResponsibility_743c44")}>
         <div className="space-y-2">
           {activeMembers.length === 1 && responsible ? (
-            <p className="text-sm">
-              Responsible member: {memberName(configuration.responsibleUserId)}
+            <p className="text-sm">{pageText("responsibleMember_5815de") + " "}{memberName(configuration.responsibleUserId)}
             </p>
           ) : (
             <>
-              <Label>Responsible member</Label>
-              <GitHubSponsorSelect
-                label="Responsible member"
-                companyId={companyId}
-                members={activeMembers}
-                access={boardAccess.data}
+              <Label htmlFor="github-responsible">{pageText("responsibleMember_1c73f2")}</Label>
+              <select
+                id="github-responsible"
+                className={githubSelectClass}
                 value={configuration.responsibleUserId}
-                onChange={(userId) =>
+                onChange={(e) =>
                   onChange({
                     ...configuration,
-                    responsibleUserId: userId,
+                    responsibleUserId: e.target.value,
                   })
                 }
-              />
+              >
+                {!responsible && (
+                  <option value={configuration.responsibleUserId}>
+                    {configuration.responsibleUserId || pageText("selectAMember_6d5936")}
+                  </option>
+                )}
+                {activeMembers.map((member) => (
+                  <option key={member.principalId} value={member.principalId}>
+                    {member.user?.name ??
+                      member.user?.email ??
+                      member.principalId}
+                  </option>
+                ))}
+              </select>
             </>
           )}
-          <p className="text-xs text-muted-foreground">
-            The member accountable for automatically created Paperclip tasks.
-            GitHub authors remain recorded separately. This grants no access to
-            the member’s personal credentials.
-            Only company owners, company admins, and instance admins can select
-            another person as a sponsor or responsible member.
-          </p>
+          <p className="text-xs text-muted-foreground">{pageText("theMemberAccountableForAutomaticallyCreatedPaperclipTasks_39a84c")}</p>
         </div>
       </GitHubSettingsDisclosure>
       {error && (
@@ -940,16 +877,15 @@ export function GitHubAccessEditor({
           {error}
         </p>
       )}
-      {(membersView.kind === "error" || linksView.kind === "error" || boardAccessView.kind === "error") && (
+      {(membersView.kind === "error" || linksView.kind === "error") && (
         <QueryErrorState
-          error={membersView.kind === "error" ? members.error : linksView.kind === "error" ? links.error : boardAccess.error}
-          action="load members, linked accounts, and your access"
+          error={membersView.kind === "error" ? members.error : links.error}
+          action="load members and linked accounts"
           onRetry={() => {
             membersView.retry();
             linksView.retry();
-            boardAccessView.retry();
           }}
-          retrying={members.isFetching || links.isFetching || boardAccess.isFetching}
+          retrying={members.isFetching || links.isFetching}
         />
       )}
       <Dialog
@@ -958,45 +894,43 @@ export function GitHubAccessEditor({
           if (!open) setDialog(null);
         }}
       >
-        <DialogContent className={ANALYTICS_MASK_CLASS}>
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>
               {dialog === "member"
-                ? "Link a company member"
-                : "Add external contributor"}
+                ? pageText("linkACompanyMember_2427af")
+                : pageText("addExternalContributor_b3a010")}
             </DialogTitle>
             <DialogDescription>
               {dialog === "member"
-                ? "Each member confirms their own GitHub identity. Share this link with an existing company member, or link your own account."
-                : "Allow a GitHub user to mention this bot. A company member must sponsor their restricted access."}
+                ? pageText("eachMemberConfirmsTheirOwnGitHubIdentityShare_fc9945")
+                : pageText("allowAGitHubUserToMentionThisBot_5b4102")}
             </DialogDescription>
           </DialogHeader>
           {dialog === "member" ? (
             <>
               <Button
                 variant="outline"
-                aria-label="Copy account linking URL"
+                aria-label={pageText("copyAccountLinkingURL_6f748a")}
                 onClick={() => {
                   if (accountLink.current)
                     void copyTextToClipboard(accountLink.current.href).then(
                       () => setLinkCopied(true),
                       () =>
                         setError(
-                          "Could not copy the link. Open account linking and copy the address.",
+                          interfaceNotice("interface:couldNotCopyTheLinkOpenAccountLinking_7d723c"),
                         ),
                     );
                 }}
               >
                 <Copy className="size-4" />
-                {linkCopied ? "Copied" : "Copy invitation link"}
+                {linkCopied ? pageText("copied_8e3df4") : pageText("copyInvitationLink_ef359b")}
               </Button>
               <Link
                 ref={accountLink}
                 to={`/apps/chat/connect?provider=github&resume=${endpointId}&stage=identity`}
                 className="text-sm underline underline-offset-4"
-              >
-                Link your account
-              </Link>
+              >{pageText("linkYourAccount_761fce")}</Link>
               {error && (
                 <p role="alert" className="text-sm text-destructive">
                   {error}
@@ -1006,7 +940,7 @@ export function GitHubAccessEditor({
           ) : (
             <>
               <div className="space-y-2">
-                <Label htmlFor="github-guest-login">GitHub username</Label>
+                <Label htmlFor="github-guest-login">{pageText("githubUsername_7658eb")}</Label>
                 <div className="flex gap-2">
                   <Input
                     id="github-guest-login"
@@ -1039,23 +973,30 @@ export function GitHubAccessEditor({
                       }
                     }}
                   >
-                    {busy ? "Looking up…" : "Look up"}
+                    {busy ? pageText("lookingUp_27d9ea") : pageText("lookUp_6d7049")}
                   </Button>
                 </div>
               </div>
               <div className="space-y-2">
-                <Label>Sponsor</Label>
-                <GitHubSponsorSelect
-                  label="Sponsor"
-                  companyId={companyId}
-                  members={activeMembers}
-                  access={boardAccess.data}
-                  value={guestSponsor}
-                  onChange={setSponsor}
-                />
+                <Label htmlFor="github-guest-sponsor">{pageText("sponsor_fd0b74")}</Label>
+                <select
+                  id="github-guest-sponsor"
+                  className={githubSelectClass}
+                  value={sponsor}
+                  onChange={(e) => setSponsor(e.target.value)}
+                >
+                  {!activeMembers.some(
+                    (member) => member.principalId === sponsor,
+                  ) && <option value={sponsor}>{pageText("selectAMember_6d5936")}</option>}
+                  {activeMembers.map((member) => (
+                    <option key={member.principalId} value={member.principalId}>
+                      {member.user?.name ?? member.principalId}
+                    </option>
+                  ))}
+                </select>
               </div>
               {candidate && (
-                <p role="status" className={cn("text-sm", ANALYTICS_MASK_CLASS)}>
+                <p role="status" className="text-sm">
                   {configuration.people.some(
                     (p) => p.githubUserId === candidate.githubUserId,
                   ) ||
@@ -1072,14 +1013,12 @@ export function GitHubAccessEditor({
                 </p>
               )}
               <DialogFooter className="flex-row justify-between sm:justify-between">
-                <Button variant="ghost" onClick={() => setDialog(null)}>
-                  Cancel
-                </Button>
+                <Button variant="ghost" onClick={() => setDialog(null)}>{translateUi("interfaceCopy.cancel")}</Button>
                 <Button
                   disabled={
                     !candidate ||
                     !activeMembers.some(
-                      (member) => member.principalId === guestSponsor,
+                      (member) => member.principalId === sponsor,
                     ) ||
                     configuration.people.some(
                       (p) => p.githubUserId === candidate.githubUserId,
@@ -1093,7 +1032,7 @@ export function GitHubAccessEditor({
                       updatePerson({
                         ...candidate,
                         kind: "guest",
-                        sponsorUserId: guestSponsor,
+                        sponsorUserId: sponsor,
                         permissionProfile: "restricted",
                       });
                       setDialog(null);
@@ -1101,9 +1040,7 @@ export function GitHubAccessEditor({
                       setLogin("");
                     }
                   }}
-                >
-                  Add contributor
-                </Button>
+                >{pageText("addContributor_6b3fac")}</Button>
               </DialogFooter>
             </>
           )}

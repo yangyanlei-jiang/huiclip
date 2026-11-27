@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { ShieldAlert } from "lucide-react";
 import { Link } from "@/lib/router";
@@ -18,6 +19,7 @@ import { ToolsAccess } from "./ToolsAccess";
  * denial card is only for a loaded answer (or a real 403).
  */
 export function AdvancedToolsRoute() {
+  const { t: pageText } = usePageTranslation("interface");
   const { selectedCompanyId } = useCompany();
   const boardAccess = useQuery({
     queryKey: queryKeys.access.currentBoardAccess,
@@ -26,7 +28,7 @@ export function AdvancedToolsRoute() {
   const view = useQueryView(boardAccess);
 
   if (boardAccess.isLoading || view.kind === "reconnecting") {
-    return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">Loading…</div>;
+    return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">{pageText("loading_33ce41")}</div>;
   }
   if (view.kind === "error" && view.errorKind !== "forbidden") {
     return (
@@ -57,14 +59,10 @@ export function AdvancedToolsRoute() {
         <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-6">
           <div className="flex items-center gap-2 text-foreground">
             <ShieldAlert className="h-5 w-5 text-muted-foreground" />
-            <h1 className="text-lg font-semibold">Advanced setup requires editing access</h1>
+            <h1 className="text-lg font-semibold">{pageText("advancedSetupRequiresEditingAccess_49f444")}</h1>
           </div>
-          <p className="text-sm text-muted-foreground">
-            This area lets company editors wire up tools that aren't in the gallery. Ask a company editor if you
-            need a new app connected, or head back to{" "}
-            <Link to="/apps" className="font-medium text-primary hover:underline">
-              your apps
-            </Link>
+          <p className="text-sm text-muted-foreground">{pageText("thisAreaLetsCompanyEditorsWireUpTools_0af16c")}{" "}
+            <Link to="/apps" className="font-medium text-primary hover:underline">{pageText("yourApps_a4a5fe")}</Link>
             .
           </p>
         </div>

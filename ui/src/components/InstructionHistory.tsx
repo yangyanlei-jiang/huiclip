@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from "react";
 import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 import type { AgentInstructionsFileDetail } from "@paperclipai/shared";
@@ -5,8 +6,6 @@ import { agentsApi } from "../api/agents";
 import { describeError } from "../api/errors";
 import { Button } from "./ui/button";
 import { QueryErrorState, useQueryView } from "./QueryView";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
-import { cn } from "@/lib/utils";
 
 export function InstructionHistory({
   agentId,
@@ -23,6 +22,7 @@ export function InstructionHistory({
   disabled: boolean;
   onRestored: (file: AgentInstructionsFileDetail) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const history = useInfiniteQuery({
@@ -70,9 +70,7 @@ export function InstructionHistory({
         variant="outline"
         aria-expanded={open}
         onClick={() => setOpen(!open)}
-      >
-        History
-      </Button>
+      >{pageText("history_90ccd6")}</Button>
       {open && (
         <div className="space-y-3">
           {historyView.kind === "error" && (
@@ -97,7 +95,7 @@ export function InstructionHistory({
             <p role="alert" className="text-sm text-destructive">{describeError(restore.error).body}</p>
           )}
           {(historyView.kind === "loading" || historyView.kind === "reconnecting") && (
-            <p role="status" className="text-sm text-muted-foreground">Loading revisions…</p>
+            <p role="status" className="text-sm text-muted-foreground">{pageText("loadingRevisions_23548e")}</p>
           )}
           {history.data?.pages
             .flatMap((page) => page.revisions)
@@ -114,7 +112,7 @@ export function InstructionHistory({
                 <span className="text-sm text-muted-foreground">
                   {revision.source} ·{" "}
                   {new Date(revision.createdAt).toLocaleString()}
-                  {revision.id === currentRevisionId ? " · Current" : ""}
+                  {revision.id === currentRevisionId ? " " + pageText("current_493181") : ""}
                 </span>
               </div>
             ))}
@@ -124,20 +122,16 @@ export function InstructionHistory({
               variant="ghost"
               disabled={history.isFetchingNextPage}
               onClick={() => void history.fetchNextPage()}
-            >
-              Older revisions
-            </Button>
+            >{pageText("olderRevisions_cc0bb3")}</Button>
           )}
           {diff.data && (
             <>
-              <p className="text-sm text-muted-foreground">Selected revision</p>
-              <pre className={cn("whitespace-pre-wrap break-words rounded-md border border-border p-3 font-mono text-sm", ANALYTICS_MASK_CLASS)}>
+              <p className="text-sm text-muted-foreground">{pageText("selectedRevision_02bc9e")}</p>
+              <pre className="whitespace-pre-wrap break-words rounded-md border border-border p-3 font-mono text-sm">
                 {diff.data.from.content}
               </pre>
-              <p className="text-sm text-muted-foreground">
-                Changes from selected revision to current
-              </p>
-              <pre className={cn("whitespace-pre-wrap break-words rounded-md border border-border p-3 font-mono text-sm", ANALYTICS_MASK_CLASS)}>
+              <p className="text-sm text-muted-foreground">{pageText("changesFromSelectedRevisionToCurrent_ff1bbe")}</p>
+              <pre className="whitespace-pre-wrap break-words rounded-md border border-border p-3 font-mono text-sm">
                 {diff.data.removed && `Removed:\n${diff.data.removed}\n`}
                 {diff.data.added && `Added:\n${diff.data.added}`}
                 {!diff.data.removed &&
@@ -152,13 +146,9 @@ export function InstructionHistory({
                   selected === currentRevisionId
                 }
                 onClick={() => restore.mutate()}
-              >
-                Restore as new revision
-              </Button>
+              >{pageText("restoreAsNewRevision_414134")}</Button>
               {disabled && (
-                <p className="text-sm text-muted-foreground">
-                  Save or cancel your edits before restoring.
-                </p>
+                <p className="text-sm text-muted-foreground">{pageText("saveOrCancelYourEditsBeforeRestoring_faf925")}</p>
               )}
             </>
           )}

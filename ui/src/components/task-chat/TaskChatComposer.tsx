@@ -1,4 +1,8 @@
-import { createUuid } from "@/lib/uuid";
+import { controlText } from "@/i18n/controls";
+import { t as interfaceNotice } from "@/i18n";
+import { t as translateDynamic } from "../../i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCurrentAccountGuard } from "@/hooks/useAccountBoundMutation";
 import { ComposerFileDropTarget } from "./ComposerFileDropTarget";
 import { AgentAvatar } from "../AgentAvatar";
@@ -32,7 +36,7 @@ import {
   type ComposerSendRequest,
 } from "@/lib/composer-draft";
 import { classifySendFailure, type SendOutcome } from "@/lib/pending-send";
-import { describeError, errorStatus } from "@/api/errors";
+import { describeError } from "@/api/errors";
 import { useAutoResend } from "@/hooks/useDurableSubmit";
 import { useDraftOwner } from "@/hooks/useDraftOwner";
 import { useRequestOwnerBinding } from "@/hooks/useRequestOwnerBinding";
@@ -72,9 +76,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { MentionOption } from "@/components/MarkdownEditor";
 import type { IssueAttachment, IssueWorkMode } from "@paperclipai/shared";
 import type { RunnerGoalCapability } from "@paperclipai/shared";
-import { antigravitySwarmAvailable, SWARM_REQUEST_MAX_CHARS } from "@paperclipai/shared";
-import { useAntigravitySwarmSetting } from "@/hooks/useAntigravitySwarmSetting";
-import { parseRunnerGoalCommand, parseSwarmCommand, planSubmission, swarmRunSettingsRefusal, type RunnerGoalComposerCommand } from "./composer-commands";
 import type { ActionCommandOption } from "@/context/EditorAutocompleteContext";
 import { TaskChatComposerTakeoverActionsContext } from "./TaskChatComposerTakeoverContext";
 
@@ -117,8 +118,6 @@ interface TaskChatComposerProps {
     attachmentIds?: string[],
     clientRequestId?: string,
     runSettings?: ComposerRunSettings,
-    /** A native command the user started with a leading `/name`; only "swarm" exists. */
-    nativeCommand?: "swarm",
   ) => Promise<void> | void;
   /** New tasks share the editor and controls, but retain their draft until creation succeeds. */
   creation?: {
@@ -194,8 +193,68 @@ interface TaskChatComposerProps {
   ) => Promise<void> | void;
 }
 
-export { parsePlanCommand, parseRunnerGoalCommand } from "./composer-commands";
-export type { ParsedRunnerGoalCommand, RunnerGoalComposerCommand } from "./composer-commands";
+export type RunnerGoalComposerCommand =
+  | { action: "focus" }
+  | { action: "create"; objective: string }
+  | { action: "edit" }
+  | { action: "pause" }
+  | { action: "resume" }
+  | { action: "clear" };
+
+export type ParsedRunnerGoalCommand =
+  | { matched: false }
+  | { matched: true; command: RunnerGoalComposerCommand }
+  | { matched: true; error: string };
+
+function normalizeRunnerGoalCommandText(value: string): string {
+  const trimmed = value.trim();
+  // MDXEditor's link extension can reinterpret a selected action command plus
+  // its subsequently typed argument as one relative autolink. Accept only the
+  // exact whole-document shape it generates so the action still cannot fall
+  // through as a comment. Ordinary Markdown links remain ordinary comments.
+  const relativeAutolink = trimmed.match(
+    /^\[\/(?:go(?:al)?)?[ \t\u00a0]*\]\(<(\/goal(?:[ \t\u00a0].*)?)>\)$/s,
+  );
+  if (relativeAutolink) return relativeAutolink[1]!.replaceAll("\u00a0", " ");
+
+  const encodedAutolink = trimmed.match(
+    /^\[\/(?:go(?:al)?)?[ \t\u00a0]*\]\((\/goal(?:%20|%C2%A0).*)\)$/s,
+  );
+  if (encodedAutolink) {
+    try {
+      return decodeURIComponent(encodedAutolink[1]!).replaceAll("\u00a0", " ");
+    } catch {
+      return trimmed;
+    }
+  }
+  return trimmed.replaceAll("\u00a0", " ");
+}
+
+export function parseRunnerGoalCommand(value: string): ParsedRunnerGoalCommand {
+  const trimmed = normalizeRunnerGoalCommandText(value);
+  if (!trimmed) return { matched: false };
+  const firstWhitespace = trimmed.search(/\s/);
+  const firstToken =
+    firstWhitespace === -1 ? trimmed : trimmed.slice(0, firstWhitespace);
+  if (firstToken !== "/goal") return { matched: false };
+  const remainder =
+    firstWhitespace === -1 ? "" : trimmed.slice(firstWhitespace).trim();
+  if (!remainder) return { matched: true, command: { action: "focus" } };
+  const [subcommand, ...extra] = remainder.split(/\s+/);
+  if (["edit", "pause", "resume", "clear"].includes(subcommand)) {
+    if (extra.length > 0) {
+      return {
+        matched: true,
+        error: `/goal ${subcommand} does not accept extra arguments.`,
+      };
+    }
+    return {
+      matched: true,
+      command: { action: subcommand as "edit" | "pause" | "resume" | "clear" },
+    };
+  }
+  return { matched: true, command: { action: "create", objective: remainder } };
+}
 
 function identityInitials(label: string): string {
   const parts = label.trim().split(/\s+/).filter(Boolean);
@@ -265,17 +324,17 @@ function AssigneeIdentityAvatar({
 /** v7 per-mode placeholder copy; `{agent}` is the pending assignee's name. */
 function modePlaceholder(mode: IssueWorkMode, agentName: string, mobile: boolean): string {
   if (mobile) {
-    if (mode === "planning") return `Plan with ${agentName}…`;
-    if (mode === "ask") return `Ask ${agentName}…`;
-    return `Work with ${agentName}`;
+    if (mode === "planning") return controlText("planMobile", { agentName });
+    if (mode === "ask") return controlText("askMobile", { agentName });
+    return controlText("messageMobile", { agentName });
   }
   switch (mode) {
     case "planning":
-      return `Plan with ${agentName} — shapes the plan doc, no code changes…`;
+      return controlText("planDesktop", { agentName });
     case "ask":
-      return `Ask ${agentName} a question — read-only, nothing runs…`;
+      return controlText("askDesktop", { agentName });
     default:
-      return `Work with ${agentName}`;
+      return controlText("messageDesktop", { agentName });
   }
 }
 
@@ -300,7 +359,7 @@ type ComposerAttachment = {
 type QueuedEditBackup = {
   body: string;
   attachments: ComposerAttachment[];
-  pendingMode: IssueWorkMode | null;
+  pendingMode: IssueWorkMode;
   pendingAssignee: string | null;
 };
 
@@ -372,6 +431,8 @@ export function TaskChatComposer({
   onRunnerGoalCommand,
   onRunnerGoalReassign,
 }: TaskChatComposerProps) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const streamlined = useStreamlinedTaskChatPresentation();
   const submitKey = useComposerSubmitKey();
   const stopControl = useComposerStop(onStop, stopPending, confirmedStoppedRunIds);
@@ -397,10 +458,8 @@ export function TaskChatComposer({
     useState<HTMLElement | null>(null);
   const [takeoverControlsSlot, setTakeoverControlsSlot] =
     useState<HTMLElement | null>(null);
-  const [pendingModeOverride, setPendingMode] = useState<IssueWorkMode | null>(null);
-  const modeChoiceGeneration = useRef(0);
-  const sentModeChoice = useRef<{ attemptId: string; generation: number } | null>(null);
-  const pendingMode = creation ? workMode : pendingModeOverride ?? workMode;
+  const [localPendingMode, setPendingMode] = useState<IssueWorkMode>(workMode);
+  const pendingMode = creation ? workMode : localPendingMode;
   const [pendingAssignee, setPendingAssignee] = useState<string | null>(null);
   const coordinator = useCoordinatorPresentation();
   const [localRunSettings, setLocalRunSettings] = useState<ComposerRunSettings | null>(null);
@@ -419,9 +478,6 @@ export function TaskChatComposer({
         : [],
   );
   const attachmentsRef = useRef(attachments);
-  // Keep upload receipts durable while the optimistic message owns the preview.
-  // A rejected or uncertain send returns these same attachments to the draft.
-  const [sendingAttachmentIds, setSendingAttachmentIds] = useState<ReadonlySet<string> | null>(null);
   function setAttachments(
     update:
       | ComposerAttachment[]
@@ -498,15 +554,13 @@ export function TaskChatComposer({
     const previousId = previousQueuedEditIdRef.current;
     const nextEdit = queuedEdit;
     const nextId = nextEdit?.commentId ?? null;
-    // A save error belongs to the edit that produced it.
-    if (previousId !== nextId) setActionError(null);
 
     if (nextEdit && previousId !== nextId) {
       if (!queuedEditBackupRef.current) {
         queuedEditBackupRef.current = {
           body: bodyRef.current,
           attachments: attachmentsRef.current,
-          pendingMode: pendingModeOverride,
+          pendingMode,
           pendingAssignee: pendingAssigneeRef.current,
         };
         if (draftKey) saveDraft(draftKey, bodyRef.current);
@@ -534,7 +588,7 @@ export function TaskChatComposer({
     }
 
     previousQueuedEditIdRef.current = nextId;
-  }, [draftKey, pendingModeOverride, queuedEdit]);
+  }, [draftKey, pendingMode, queuedEdit]);
 
   useEffect(() => {
     if (!draftKey || queuedEdit) return;
@@ -619,27 +673,13 @@ export function TaskChatComposer({
   );
   const assigneeValue = creation || conversationMode ? currentAssigneeValue : pendingAssignee ?? suggestedAssigneeValue ?? currentAssigneeValue;
   const showConversationModel = coordinator && conversationMode && supportsComposerModel(modelAgents?.get(assigneeValue.slice(6)));
-  const swarmSetting = useAntigravitySwarmSetting();
-  // A light hint that the message will start a swarm (the server decides on send).
-  // A bare /swarm is refused on send, so it gets no hint.
-  const showSwarmHint = !creation && !queuedEdit && !conversationMode && assigneeValue.startsWith("agent:") &&
-    antigravitySwarmAvailable(modelAgents?.get(assigneeValue.slice(6)), swarmSetting, pendingMode) &&
-    Boolean(parseSwarmCommand(body)?.request);
   const assigneeLabel =
     reassignOptions?.find((o) => o.id === assigneeValue)?.label ?? "Unassigned";
   const assigneeName =
-    assigneeLabel === "Unassigned" ? "the agent" : assigneeLabel;
+    assigneeLabel === "Unassigned" ? controlText("genericAgent") : assigneeLabel;
   const effectivePlaceholder = queuedEdit
-    ? "Edit queued message…"
+    ? controlText("editQueued")
     : (placeholder ?? modePlaceholder(pendingMode, assigneeName, mobile));
-  const planCommandOption: ActionCommandOption = {
-    id: "action:plan",
-    kind: "action",
-    command: "plan",
-    name: "Plan",
-    description: "Plan before acting. Nothing changes until you accept the plan.",
-    aliases: ["plan", "planning"],
-  };
   const goalUnavailable = runnerGoalCapability?.availability !== "available";
   const goalCommandOption: ActionCommandOption = {
     id: "action:goal",
@@ -668,20 +708,12 @@ export function TaskChatComposer({
   }
 
   function changeMode(mode: IssueWorkMode) {
-    modeChoiceGeneration.current += 1;
     setPendingMode(mode);
     if (creation) void onWorkModeChange?.(mode);
   }
 
-  function settleSentMode(attemptId: string) {
-    const choice = sentModeChoice.current;
-    if (choice?.attemptId !== attemptId) return;
-    if (modeChoiceGeneration.current === choice.generation) setPendingMode(null);
-    sentModeChoice.current = null;
-  }
-
   async function uploadImage(file: File): Promise<string> {
-    const id = createUuid();
+    const id = crypto.randomUUID();
     setAttachments((prev) => [
       ...prev,
       {
@@ -844,9 +876,8 @@ export function TaskChatComposer({
   const attachedRefs = attachments.filter(
     (item) => item.status === "attached" && item.contentPath && !item.inline,
   );
-  const draftAttachments = attachments.filter(item => !sendingAttachmentIds?.has(item.id));
-  const imageAttachments = draftAttachments.filter(item => isImage(item) && !item.inline);
-  const visibleAttachments = draftAttachments.filter(
+  const imageAttachments = attachments.filter(item => isImage(item) && !item.inline);
+  const visibleAttachments = attachments.filter(
     (item) => (!item.inline || item.status !== "attached") && !isImage(item),
   );
   // Sending mid-upload would silently drop the pending file from the comment;
@@ -874,27 +905,12 @@ export function TaskChatComposer({
   async function submit() {
     if (disabled || (pause && !canResetPausedConversation)) return;
     if (creation) {
-      // A swarm is started from a comment on an existing task; never create an ordinary task from it.
-      if (parseSwarmCommand(bodyRef.current)) {
-        setActionError("Create the task first, then send /swarm in a comment on it.");
-        return;
-      }
-      // Only a composer that offers Plan mode reads /plan; elsewhere it stays text.
-      const plan = onWorkModeChange
-        ? planSubmission(bodyRef.current, Boolean(creation.canSubmitWithoutBody && creation.images?.length))
-        : ({ kind: "none" } as const);
-      if (plan.kind === "switch_mode" && !submittingRef.current) {
-        changeMode("planning");
-        creation.onChange("");
-        editorRef.current?.clear();
-        return;
-      }
       if (submittingRef.current || uploadPending || uploadFailed || creation.submitDisabled || (!bodyRef.current.trim() && !creation.canSubmitWithoutBody)) return;
       submittingRef.current = true;
       setSubmitting(true);
       setActionError(null);
       try {
-        await creation.onSubmit(plan.kind === "send" ? plan.text : bodyRef.current, plan.kind === "send" ? "planning" : pendingMode, runSettings);
+        await creation.onSubmit(bodyRef.current, pendingMode, runSettings);
       } catch (error) {
         setActionError(describeError(error, { action: "create the task" }).body);
       } finally {
@@ -913,45 +929,12 @@ export function TaskChatComposer({
     const submittedBody = bodyRef.current;
     const submittedAttachments = attachmentsRef.current;
     const submittedAssignee = pendingAssigneeRef.current;
-    const submittedModeGeneration = modeChoiceGeneration.current;
-    // Plan mode belongs to tasks; a queued edit keeps its exact text.
-    const planCommand = queuedEdit || conversationMode || !onWorkModeChange
-      ? ({ kind: "none" } as const)
-      : planSubmission(submittedBody, attachedRefs.length > 0);
-    if (planCommand.kind === "switch_mode") {
-      changeMode("planning");
-      bodyRef.current = "";
-      if (draftKey) clearDraft(draftKey);
-      setBody("");
-      editorRef.current?.clear();
-      return;
-    }
-    const sendMode = planCommand.kind === "send" ? "planning" : pendingMode;
-    // A queued edit keeps its exact text; everywhere else a leading /swarm is a request.
-    const swarmCommand = queuedEdit ? null : parseSwarmCommand(submittedBody);
-    if (swarmCommand && !swarmCommand.request) {
-      setActionError("Write what the swarm should do after /swarm.");
-      return;
-    }
-    if (swarmCommand && swarmCommand.request.length > SWARM_REQUEST_MAX_CHARS) {
-      setActionError(`This swarm request is too long. Keep what follows /swarm under ${SWARM_REQUEST_MAX_CHARS.toLocaleString("en-US")} characters.`);
-      return;
-    }
-    const swarmSettingsRefusal = swarmCommand ? swarmRunSettingsRefusal(runSettings) : null;
-    if (swarmSettingsRefusal) {
-      setActionError(swarmSettingsRefusal);
-      return;
-    }
-    if (swarmCommand && showAssignee && assigneeValue !== currentAssigneeValue) {
-      setActionError("Send /swarm without changing the assignee.");
-      return;
-    }
-    const trimmed = swarmCommand ? swarmCommand.request : planCommand.kind === "send" ? planCommand.text : submittedBody.trim();
+    const trimmed = submittedBody.trim();
     const goalCommand = queuedEdit
       ? ({ matched: false } as const)
       : parseRunnerGoalCommand(submittedBody);
     if (goalCommand.matched && conversationMode) {
-      setActionError("Create a separate task for work that needs an ongoing execution goal.");
+      setActionError(interfaceNotice("interface:createASeparateTaskForWorkThatNeeds_dd974d"));
       return;
     }
     if (goalCommand.matched) {
@@ -960,13 +943,13 @@ export function TaskChatComposer({
         return;
       }
       if (attachmentsRef.current.length > 0) {
-        setActionError("Remove attachments before using /goal.");
+        setActionError(interfaceNotice("interface:removeAttachmentsBeforeUsingGoal_1ead0a"));
         return;
       }
       if (!onRunnerGoalCommand) {
         setActionError(
           runnerGoalCapability?.reason ??
-            "Session goals are unsupported by this agent.",
+            interfaceNotice("interface:sessionGoalsAreUnsupportedByThisAgent_dc4d94"),
         );
         return;
       }
@@ -976,7 +959,7 @@ export function TaskChatComposer({
       ) {
         setActionError(
           runnerGoalCapability.reason ??
-            "Session goals are unsupported by this agent.",
+            interfaceNotice("interface:sessionGoalsAreUnsupportedByThisAgent_dc4d94"),
         );
         return;
       }
@@ -986,7 +969,7 @@ export function TaskChatComposer({
         if (hasReassignment && goalCommand.command.action !== "focus") {
           const reassignment = parseAssigneeValue(assigneeValue);
           if (!reassignment?.assigneeAgentId || !onRunnerGoalReassign) {
-            setActionError("Select an agent before starting a session goal.");
+            setActionError(interfaceNotice("interface:selectAnAgentBeforeStartingASessionGoal_ea9666"));
             return;
           }
           await onRunnerGoalReassign(reassignment);
@@ -1004,7 +987,7 @@ export function TaskChatComposer({
         setActionError(
           error instanceof Error
             ? error.message
-            : "The goal action could not be applied.",
+            : interfaceNotice("interface:theGoalActionCouldNotBeApplied_7eeef0"),
         );
       }
       return;
@@ -1054,30 +1037,19 @@ export function TaskChatComposer({
       else clearDraft(draftKey);
     }
     setBody("");
-    setSendingAttachmentIds(new Set(submittedAttachments.map(item => item.id)));
     setSubmitting(true);
-    // A new send replaces the previous refusal.
-    setActionError(null);
     let attemptId: string | null = null;
     let request: ComposerSendRequest | null = null;
     const requestOwner = draftOwner;
     try {
       if (queuedEdit) {
         if (!onSaveQueuedEdit) return;
-        setActionError(null);
-        try {
-          await onSaveQueuedEdit(queuedEdit.commentId, fullBody);
-        } catch (error) {
-          // A rejected edit keeps its text below; say why it was not saved.
-          if (mountedTaskKey.current === draftKey && queuedEditRef.current?.commentId === queuedEdit.commentId)
-            setActionError(describeError(error, { action: "save this queued message" }).body);
-          throw error;
-        }
+        await onSaveQueuedEdit(queuedEdit.commentId, fullBody);
         onCancelQueuedEdit?.();
         return;
       }
-      if (sendMode !== workMode && onWorkModeChange) {
-        await onWorkModeChange(sendMode);
+      if (pendingMode !== workMode && onWorkModeChange) {
+        await onWorkModeChange(pendingMode);
       }
       const retainedAfterMode = draftKey ? loadDraftSubmission(draftKey) : null;
       if (retainedAfterMode) {
@@ -1085,7 +1057,7 @@ export function TaskChatComposer({
         setBody(submittedBody);
         return;
       }
-      attemptId = createUuid();
+      attemptId = crypto.randomUUID();
       if (requestOwner === undefined) markRequestUnbound(attemptId);
       // IDs come only from this composer's upload receipts, never from parsing
       // arbitrary Markdown. A removed inline image no longer selects its receipt.
@@ -1111,7 +1083,6 @@ export function TaskChatComposer({
         ...(reassignment ? { reassignment } : {}),
         ...(attachmentIds.length ? { attachmentIds } : {}),
         ...(runSettings ? { runSettings: runSettings as unknown as Record<string, unknown> } : {}),
-        ...(swarmCommand ? { nativeCommand: "swarm" as const } : {}),
       };
       if (draftKey) {
         saveDraft(draftKey, submittedBody);
@@ -1119,10 +1090,7 @@ export function TaskChatComposer({
         pendingDraftRef.current = { draftKey, attemptId, submittedBody, submittedAttachmentIds: attachmentIds, request, requestOwner };
         changeBody(bodyRef.current);
       }
-      sentModeChoice.current = { attemptId, generation: submittedModeGeneration };
-      if (swarmCommand) {
-        await onAdd(fullBody, reopen, reassignment, attachmentIds.length ? attachmentIds : undefined, attemptId, undefined, "swarm");
-      } else if (runSettings) {
+      if (runSettings) {
         await onAdd(fullBody, reopen, reassignment, attachmentIds.length ? attachmentIds : undefined, attemptId, runSettings);
       } else {
         await onAdd(fullBody, reopen, reassignment, attachmentIds.length ? attachmentIds : undefined, attemptId);
@@ -1132,7 +1100,6 @@ export function TaskChatComposer({
       if (draftKey) settleDraftSubmission(draftKey, attemptId,
         mountedTaskKey.current === draftKey ? bodyRef.current : undefined);
       if (mountedTaskKey.current !== draftKey) return;
-      settleSentMode(attemptId);
       const submittedIds = new Set(submittedAttachments.map((item) => item.id));
       setAttachments((current) =>
         current.filter((item) => !submittedIds.has(item.id)),
@@ -1159,13 +1126,6 @@ export function TaskChatComposer({
           saveDraftSubmission(draftKey, uncertain);
       } else if (draftKey && attemptId)
         clearDraftSubmission(draftKey, attemptId);
-      // A refusal (for example /swarm while the task is in Plan mode) stays
-      // under the restored text until dismissed or the next send; a toast alone
-      // disappears before it can be read.
-      const status = errorStatus(error);
-      if (status !== null && status >= 400 && status < 500 && classifySendFailure(error) === "rejected") {
-        setActionError(describeError(error).body);
-      }
       // Restore the failed message for retry without discarding a next draft
       // that was entered while the request was pending.
       const restoredBody = nextDraft
@@ -1180,7 +1140,6 @@ export function TaskChatComposer({
       setBody(restoredBody);
     } finally {
       if (pendingDraftRef.current?.attemptId === attemptId) pendingDraftRef.current = null;
-      setSendingAttachmentIds(null);
       setSubmitting(false);
     }
   }
@@ -1191,7 +1150,6 @@ export function TaskChatComposer({
     const settlementKey = JSON.stringify([draftKey, submission.attemptId]);
     if (settledSubmissionIds.current.has(settlementKey)) return;
     settledSubmissionIds.current.add(settlementKey);
-    settleSentMode(submission.attemptId);
     const nextDraft = submission.nextDraftOffset === undefined
       ? "" : bodyRef.current.slice(submission.nextDraftOffset);
     if (draftKey) settleDraftSubmission(draftKey, submission.attemptId, nextDraft);
@@ -1224,8 +1182,7 @@ export function TaskChatComposer({
       submission.attemptId,
     ] as const;
     try {
-      if (request.nativeCommand === "swarm") await onAdd(...args, undefined, "swarm");
-      else if (request.runSettings) await onAdd(...args, request.runSettings as unknown as ComposerRunSettings);
+      if (request.runSettings) await onAdd(...args, request.runSettings as unknown as ComposerRunSettings);
       else await onAdd(...args);
     } catch (error) {
       if (!isCurrentAccount()) return "pending";
@@ -1270,7 +1227,7 @@ export function TaskChatComposer({
       setTakeoverError(
         cause instanceof Error
           ? cause.message
-          : "This request could not be skipped.",
+          : interfaceNotice("interface:thisRequestCouldNotBeSkipped_1dd742"),
       );
     });
   }
@@ -1285,9 +1242,7 @@ export function TaskChatComposer({
     >
       {takeoverBusy ? (
         <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-      ) : null}
-      Skip
-    </Button>
+      ) : null}{pageText("skip_3da474")}</Button>
   ) : null;
 
   if (pause && (!conversationMode || queuedEdit)) {
@@ -1337,12 +1292,11 @@ export function TaskChatComposer({
             <div className="ml-auto flex shrink-0 items-center gap-1">
               {takeover.pendingCount > 1 ? (
                 <Button type="button" size="sm" variant="ghost" className="h-7 px-2" onClick={takeover.onShowNext}>
-                  {takeover.pendingCount} pending
-                </Button>
+                  {takeover.pendingCount}{" " + pageText("pending_e22586")}</Button>
               ) : null}
               <div ref={setTakeoverControlsSlot} className="flex shrink-0 items-center" data-testid="task-chat-composer-takeover-controls-slot" />
               <Button type="button" size="icon-xs" variant="ghost" className="text-muted-foreground hover:text-foreground"
-                aria-label={`Dismiss ${takeover.label}`} disabled={takeoverBusy} onClick={takeover.onDismiss}>
+                aria-label={translateDynamic("dynamic:dismiss", { value1: takeover.label })} disabled={takeoverBusy} onClick={takeover.onDismiss}>
                 <X aria-hidden />
               </Button>
             </div>
@@ -1372,7 +1326,7 @@ export function TaskChatComposer({
           className="flex h-11 min-w-0 items-center gap-2 px-2.5"
           data-testid="task-chat-composer-context"
           role="group"
-          aria-label="Task project and worktrees"
+          aria-label={pageText("taskProjectAndWorktrees_3b47e5")}
         >
           {creation.contextBar}
         </TaskChatComposerBar>
@@ -1419,17 +1373,16 @@ export function TaskChatComposer({
         >
           <CircleHelp className="h-4 w-4 shrink-0" aria-hidden />
           <span className="min-w-0 flex-1 truncate">
-            {pendingTakeover?.label ?? takeover?.label ?? "Pending input"}
+            {pendingTakeover?.label ?? takeover?.label ?? pageText("pendingInput_8b017a")}
           </span>
           <span className="shrink-0 font-medium">
-            {pendingTakeover?.count ?? takeover?.pendingCount ?? 1} pending
-          </span>
+            {pendingTakeover?.count ?? takeover?.pendingCount ?? 1}{" " + pageText("pending_e22586")}</span>
         </button>
       ) : null}
           {pause && conversationMode ? (
             <div className="space-y-2">
               <TaskChatPausedTakeover {...pause} hasDraft={Boolean(body.trim() || attachments.length)} />
-              <p className="text-xs text-muted-foreground">Send /new to start a fresh session and resume this conversation.</p>
+              <p className="text-xs text-muted-foreground">{pageText("sendNewToStartAFreshSessionAnd_de0a77")}</p>
             </div>
           ) : null}
           <ComposerImageAttachments
@@ -1451,18 +1404,16 @@ export function TaskChatComposer({
               onChange={changeBody}
               placeholder={
                 disabled
-                  ? (disabledReason ?? "Composer disabled")
+                  ? (disabledReason ?? pageText("composerDisabled_1a701b"))
                   : effectivePlaceholder
               }
               readOnly={disabled || !!uncertainSubmission || Boolean(creation && (submitting || creation.readOnly))}
               mentions={mentions}
-              actionCommands={conversationMode ? [{
+              actionCommands={creation ? [] : conversationMode ? [{
                 id: "action:new", kind: "action", command: "new", name: "New session",
                 description: "Start fresh context here, preserving conversation history.", aliases: ["new"],
                 disabled,
-              }] : creation ? (onWorkModeChange ? [planCommandOption] : [])
-                // A queued edit keeps its exact text, so /plan cannot select Plan mode there.
-                : onWorkModeChange && !queuedEdit ? [planCommandOption, goalCommandOption] : [goalCommandOption]}
+              }] : [goalCommandOption]}
               onSubmit={() => void submit()}
               submitKey={submitKey}
               fileDropTarget="parent"
@@ -1477,29 +1428,12 @@ export function TaskChatComposer({
           </div>
 
           {actionError ? (
-            <div className="flex items-start gap-1 px-1">
-              <p
-                className="min-w-0 flex-1 text-xs text-destructive"
-                role="alert"
-                data-testid={creation ? "task-chat-create-error" : queuedEdit ? "task-chat-queued-edit-error" : "task-chat-goal-error"}
-              >
-                {actionError}
-              </p>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-xs"
-                className="shrink-0 text-muted-foreground"
-                aria-label="Dismiss"
-                data-testid="task-chat-composer-error-dismiss"
-                onClick={() => setActionError(null)}
-              >
-                <X aria-hidden />
-              </Button>
-            </div>
-          ) : showSwarmHint ? (
-            <p className="px-1 text-xs text-muted-foreground" data-testid="task-chat-swarm-hint">
-              Sends as a swarm: helpers work on this together in the task folder.
+            <p
+              className="px-1 text-xs text-destructive"
+              role="alert"
+              data-testid={creation ? "task-chat-create-error" : "task-chat-goal-error"}
+            >
+              {actionError}
             </p>
           ) : null}
 
@@ -1537,9 +1471,9 @@ export function TaskChatComposer({
                       </AttachmentTitle>
                       <AttachmentDescription className="max-w-48">
                         {attachment.status === "uploading"
-                          ? "Uploading…"
+                          ? pageText("uploading_d921a7")
                           : attachment.status === "error"
-                            ? (attachment.error ?? "Upload failed")
+                            ? (attachment.error ?? pageText("uploadFailed_ad0d06"))
                             : [kind.label, sizeLabel]
                                 .filter(Boolean)
                                 .join(" · ")}
@@ -1548,7 +1482,7 @@ export function TaskChatComposer({
                     <AttachmentActions>
                       {attachment.status === "error" && attachment.file ? (
                         <AttachmentAction
-                          aria-label={`Retry ${attachment.name}`}
+                          aria-label={translateDynamic("dynamic:retry", { value1: attachment.name })}
                           disabled={!!uncertainSubmission}
                           onClick={() => retryUpload(attachment)}
                         >
@@ -1556,7 +1490,7 @@ export function TaskChatComposer({
                         </AttachmentAction>
                       ) : null}
                       <AttachmentAction
-                        aria-label={`Remove ${attachment.name}`}
+                        aria-label={translateDynamic("dynamic:remove", { value1: attachment.name })}
                         disabled={!!uncertainSubmission}
                         onClick={() =>
                           setAttachments((prev) =>
@@ -1600,8 +1534,8 @@ export function TaskChatComposer({
             {queuedEdit ? (
               <span className="px-1 text-xs font-medium text-muted-foreground">
                 {queuedEdit.stale
-                  ? "Queued message changed"
-                  : "Editing queued message"}
+                  ? pageText("queuedMessageChanged_255fd8")
+                  : pageText("editingQueuedMessage_4f4e1c")}
               </span>
             ) : (
               <ComposerModeChip mode={pendingMode} onRemove={onWorkModeChange ? () => changeMode("standard") : undefined}
@@ -1639,11 +1573,11 @@ export function TaskChatComposer({
               <InlineEntitySelector
                 value={assigneeValue}
                 options={reassignOptions ?? []}
-                placeholder="Assignee"
+                placeholder={pageText("assignee_049e3c")}
                 mobileTitle="Select assignee"
-                noneLabel="No assignee"
-                searchPlaceholder="Search assignees…"
-                emptyMessage="No matches."
+                noneLabel={interfaceNotice("interface:noAssignee_2ad6e4")}
+                searchPlaceholder={pageText("searchAssignees_dc60b6")}
+                emptyMessage={pageText("noMatches_0be6a2")}
                 onChange={updatePendingAssignee}
                 disabled={disabled}
                 triggerTestId="task-chat-composer-assignee"
@@ -1689,9 +1623,7 @@ export function TaskChatComposer({
                 onClick={onCancelQueuedEdit}
                 disabled={submitting}
                 className="h-8 shrink-0 rounded-md px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50"
-              >
-                Cancel
-              </button>
+              >{translateUi("interfaceCopy.cancel")}</button>
             ) : null}
             <button
               type="button"
@@ -1711,28 +1643,28 @@ export function TaskChatComposer({
               title={
                 showStop
                   ? stopControl.stopping
-                    ? "Stopping…"
-                    : "Stop response"
+                    ? pageText("stopping_827c97")
+                    : pageText("stopResponse_68a76b")
                   : queuedEdit
                     ? queuedEdit.stale
-                      ? "Queue as new message"
-                      : "Save queued message"
+                      ? pageText("queueAsNewMessage_0b2f8c")
+                      : pageText("saveQueuedMessage_ed7f1b")
                     : uploadPending
-                      ? "Waiting for upload to finish"
+                      ? pageText("waitingForUploadToFinish_029afc")
                       : uploadFailed
-                        ? "Remove the failed attachment to send"
+                        ? pageText("removeTheFailedAttachmentToSend_4568ce")
                         : `${creation?.submitLabel ?? "Send"} (${submitKey === "mod-enter" ? "⌘/Ctrl+Enter" : "Enter"})`
               }
               aria-label={
                 showStop
                   ? stopControl.stopping
-                    ? "Stopping…"
-                    : "Stop"
+                    ? pageText("stopping_827c97")
+                    : pageText("stop_9e2534")
                   : queuedEdit
                     ? queuedEdit.stale
-                      ? "Queue as new message"
-                      : "Save queued message"
-                    : creation?.submitLabel ?? "Send"
+                      ? pageText("queueAsNewMessage_0b2f8c")
+                      : pageText("saveQueuedMessage_ed7f1b")
+                    : creation?.submitLabel ?? pageText("send_9bc257")
               }
               aria-busy={submitting}
               className={cn(

@@ -1,5 +1,6 @@
 import { type ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { SidebarNavExpandedProvider } from "./SidebarNavItem";
 
 /**
  * Content adapter for a contextual sidebar. Depending on the route, Layout
@@ -21,7 +22,7 @@ export function SecondarySidebar({
         className,
       )}
     >
-      {children}
+      <SidebarNavExpandedProvider>{children}</SidebarNavExpandedProvider>
     </div>
   );
 }

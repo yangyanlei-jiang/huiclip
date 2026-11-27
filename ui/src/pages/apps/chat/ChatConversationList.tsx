@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { MessageSquare } from "lucide-react";
 import type { ChatConversation, ChatProvider } from "@/api/chatEndpoints";
 import { EmptyState } from "@/components/EmptyState";
@@ -5,8 +6,6 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { Link } from "@/lib/router";
 import { formatDateTime } from "@/lib/utils";
 import { AppLogo } from "../AppLogo";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
-import { cn } from "@/lib/utils";
 
 export function conversationDestination(
   row: ChatConversation,
@@ -36,23 +35,24 @@ export function ChatConversationList({
   rows: ChatConversation[];
   provider: ChatProvider;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (!rows.length)
     return (
       <EmptyState
         icon={MessageSquare}
-        message="No conversations yet"
+        message={pageText("noConversationsYet_f58811")}
         description={
           provider === "speko"
-            ? "Open an assigned task and choose Talk to agent."
+            ? pageText("openAnAssignedTaskAndChooseTalkTo_e3dc1a")
             : provider === "agentmail"
-            ? "Send an email to this agent’s address to start one."
-            : "Mention the agent in an enabled destination to start one."
+            ? pageText("sendAnEmailToThisAgentSAddress_3caedd")
+            : pageText("mentionTheAgentInAnEnabledDestinationTo_cc798e")
         }
       />
     );
   return (
     <ul
-      aria-label="Conversations"
+      aria-label={pageText("conversations_07c59b")}
       className="divide-y divide-border border-y border-border"
     >
       {rows.map((row) => (
@@ -75,11 +75,11 @@ export function ChatConversationList({
                   className="break-words font-medium hover:underline"
                   to={`/issues/${row.issueId}`}
                 >
-                  {row.issueTitle ?? row.issueIdentifier ?? "Paperclip task"}
+                  {row.issueTitle ?? row.issueIdentifier ?? pageText("paperclipTask_678b33")}
                 </Link>
               ) : (
                 <span className="font-medium">
-                  {row.issueTitle ?? "Waiting for task"}
+                  {row.issueTitle ?? pageText("waitingForTask_a9e024")}
                 </span>
               )}
             </div>
@@ -89,19 +89,19 @@ export function ChatConversationList({
                   href={row.externalUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className={cn("break-words hover:text-foreground hover:underline", ANALYTICS_MASK_CLASS)}
+                  className="break-words hover:text-foreground hover:underline"
                 >
                   {conversationDestination(row, provider)}
                 </a>
               ) : (
-                <span className={cn("break-all", ANALYTICS_MASK_CLASS)}>{row.externalLabel}</span>
+                <span className="break-all">{row.externalLabel}</span>
               )}
               {row.updatedAt && (
                 <time dateTime={row.updatedAt}>
                   {formatDateTime(row.updatedAt)}
                 </time>
               )}
-              {row.state === "completed" && <span>Completed</span>}
+              {row.state === "completed" && <span>{pageText("completed_1798b3")}</span>}
             </div>
           </div>
           {row.state !== "active" && row.state !== "completed" && (

@@ -15,9 +15,10 @@ export const ONBOARDING_GREETING_AUTHORIZATION_REASON = "onboarding first-task g
 export async function renderOnboardingGreeting(input: {
   agentName?: string | null;
   organizationName?: string | null;
+  locale?: string;
 }): Promise<string> {
   return renderOnboardingFirstTaskGreeting({
     agentName: input.agentName,
     organizationName: input.organizationName,
-  });
+  }, input.locale);
 }

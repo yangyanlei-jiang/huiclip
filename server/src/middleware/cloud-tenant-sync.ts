@@ -32,10 +32,8 @@ function prune(states: Map<string, SyncState>, now: number) {
  * Only the last queued context can be shared: A -> B -> A must still apply A
  * after B. Failed/partial syncs never populate the successful-write debounce.
  * This caches writes only; callers must still resolve current authority.
- * Callers that share a pending sync receive the same promise object, so they
- * can track that sync once.
  */
-export function syncCloudTenantWrites(
+export async function syncCloudTenantWrites(
   db: Db,
   userId: string,
   fingerprint: string,

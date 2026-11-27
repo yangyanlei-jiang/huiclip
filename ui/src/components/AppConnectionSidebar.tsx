@@ -1,3 +1,5 @@
+import { controlText } from "@/i18n/controls";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { ChevronLeft } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { aiConnectionRouterPluginKey, aiConnectionRouterSlug, humanizeConnectionDisplayName } from "@paperclipai/shared";
@@ -24,14 +26,13 @@ import {
   type AppGalleryDisplayEntry,
 } from "@/pages/apps/app-definition-display";
 import { SidebarNavItem } from "./SidebarNavItem";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
-import { cn } from "@/lib/utils";
 
 type AppDetailSidebarProps =
   | { kind: "connection"; connectionId: string }
   | { kind: "application"; applicationId: string };
 
 export function AppDetailSidebar(props: AppDetailSidebarProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { selectedCompanyId } = useCompany();
   const { isMobile, setSidebarOpen } = useSidebar();
 
@@ -63,7 +64,7 @@ export function AppDetailSidebar(props: AppDetailSidebarProps) {
     ? (connectionsQuery.data?.connections ?? []).filter((candidate) => candidate.applicationId === props.applicationId)
     : [];
   const previousConnection = latestArchivedConnection(appConnections);
-  const appName = connection ? humanizeConnectionDisplayName(connection) : application?.name ?? "App";
+  const appName = connection ? humanizeConnectionDisplayName(connection) : application?.name ?? controlText("App");
   const logoEntry = galleryEntryFor(
     (galleryQuery.data?.apps ?? []) as AppGalleryDisplayEntry[],
     connection,
@@ -94,7 +95,7 @@ export function AppDetailSidebar(props: AppDetailSidebarProps) {
           className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
         >
           <ChevronLeft className="h-3.5 w-3.5 shrink-0" />
-          <span className="truncate">All connectors</span>
+          <span className="truncate">{pageText("allConnectors_c2363e")}</span>
         </Link>
         <div className="flex min-w-0 items-center gap-2 px-2 py-1">
           <AppLogo
@@ -105,7 +106,7 @@ export function AppDetailSidebar(props: AppDetailSidebarProps) {
             darkLogoUrl={appDefinitionDarkLogoUrl(logoEntry)}
             size={28}
           />
-          <span className={cn("flex-1 truncate text-sm font-bold text-foreground", ANALYTICS_MASK_CLASS)}>{appName}</span>
+          <span className="flex-1 truncate text-sm font-bold text-foreground">{appName}</span>
         </div>
       </div>
 
@@ -115,7 +116,7 @@ export function AppDetailSidebar(props: AppDetailSidebarProps) {
             <SidebarNavItem
               key={tab.key}
               to={tabHref(props, tab.key)}
-              label={poolPluginKey ? "Settings" : tab.label}
+              label={poolPluginKey ? pageText("settings_c7f73b") : controlText(tab.label)}
               icon={tab.icon}
               end
               badge={tab.key === "review" && reviewCount > 0 ? reviewCount : undefined}

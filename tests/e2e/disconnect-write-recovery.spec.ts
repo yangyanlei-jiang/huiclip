@@ -119,14 +119,9 @@ test("a cold task waits for the first session and retains a title saved during a
       await sessionReady;
       await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(session) });
     });
-    // The task arrives in the core read or, on a production build, in the
-    // chat bootstrap that the page's HTML starts.
     const coreReady = page.waitForResponse(response => {
       const url = new URL(response.url());
-      return response.ok() && (
-        (url.pathname === `/api/issues/${issue.identifier}` && url.searchParams.get("view") === "core")
-        || url.pathname === `/api/issues/${issue.identifier}/chat-bootstrap`
-      );
+      return url.pathname === `/api/issues/${issue.identifier}` && url.searchParams.get("view") === "core" && response.ok();
     });
     await page.goto(`/${company.issuePrefix}/issues/${issue.identifier}`);
     await coreReady;

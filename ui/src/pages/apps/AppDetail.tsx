@@ -1,6 +1,9 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { AppNotFound, AppReadError } from "./app-detail/AppReadError";
 import { AiConnectionPoolConnector } from "@/components/ai-connections/AiConnectionPoolConnector";
-import { aiConnectionRouterPluginKey, googleWorkspaceSelectedScopes, paperclipPeerFromMcpUrl, paperclipPeerInstructionTemplate, type GoogleWorkspaceServiceSelection } from "@paperclipai/shared";
+import { aiConnectionRouterPluginKey } from "@paperclipai/shared";
 import { ConnectionInstructionsSettings } from "@/features/connections/ConnectionInstructions";
 import { HonchoWorkspaceSettings } from "@/features/connections/HonchoWorkspaceSettings";
 import { BrowserUseSettingsPanel } from "./app-detail/BrowserUseSettingsPanel";
@@ -8,7 +11,7 @@ import { isRetiredComposioConnection, RETIRED_COMPOSIO_MESSAGE, isRemoteMcpConne
 import { RemoteMcpManagement } from "@/features/connections/remote-mcp/RemoteMcpManagement";
 import { remoteMcpProviders } from "@/features/connections/remote-mcp/providers";
 import { ManagedAiConnectionDetails } from "@/components/ai-connections/ManagedAiConnectionDetails";
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { EmailConnectionAccess } from "@/components/EmailConnectionAccess";
 import { EmailConnectionInboxes } from "./chat/EmailEndpointSetup";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -37,8 +40,6 @@ import { accessApi } from "@/api/access";
 import { buildCompanyUserProfileMap } from "@/lib/company-members";
 import { installStateFrom, type InstallState } from "@/lib/tool-installs";
 import { useAuthorizationWindow } from "@/hooks/useAuthorizationWindow";
-import { useGoogleWorkspaceServiceGate } from "@/features/connections/GoogleWorkspaceServices";
-import { connectionRemovalToast } from "@/features/connections/googleAccessRemoval";
 import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,7 +48,6 @@ import { cn } from "@/lib/utils";
 import { AppLogo } from "./AppLogo";
 import { UnverifiedServerBadge } from "./UnverifiedServerBadge";
 import {
-  aiConnectionSourceSlug,
   appApplicationSourceSlug,
   appConnectionSourceSlug,
   appDefinitionDarkLogoUrl,
@@ -64,13 +64,10 @@ import { PermissionsPanel } from "./app-detail/PermissionsPanel";
 import { AgentConnectionAccess } from "./app-detail/AgentConnectionAccess";
 import { ConnectedAggregatorApps } from "./app-detail/ConnectedAggregatorApps";
 import { isAppAggregator } from "@paperclipai/shared/aggregator-apps";
-import { useConnectionPermissionSave } from "./app-detail/useConnectionPermissionSave";
-import { accessFrom, accessIncludingInstalls, askFirstCatalogIds, enabledCatalogIds } from "./app-detail/saved-permissions";
 import { actionPermissionMutation } from "./app-detail/action-permissions";
 import { RailwayAccessPanel } from "./app-detail/RailwayAccessPanel";
 import { ReviewPanel } from "./app-detail/ReviewPanel";
 import { AccessRetryBanner } from "./app-detail/AccessRetryBanner";
-import { StoredContentDeletionRow } from "./app-detail/StoredContentDeletion";
 import {
   ReconnectCard,
   DangerZone,
@@ -83,15 +80,15 @@ import {
   connectionOwnerProfile,
 } from "./connection-owner";
 import { describeError } from "@/api/errors";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 export { connectionAddress, connectionTransportLabel };
 
 export function AppDetail(props: { renderActions?: (connection: ToolConnection) => ReactNode; renderAgentSettings?: (connection: ToolConnection) => ReactNode; renderConnectionSettings?: (connection: ToolConnection) => ReactNode; onReconnect?: (connection: ToolConnection) => void } = {}) {
+  const { t: pageText } = usePageTranslation("interface");
   const { connectionId = "" } = useParams<{ connectionId: string }>();
-  const connection = useQuery({ queryKey: queryKeys.tools.connection(connectionId), queryFn: ({ signal }) => toolsApi.getConnection(connectionId, { signal, fresh: true }), enabled: !!connectionId });
+  const connection = useQuery({ queryKey: queryKeys.tools.connection(connectionId), queryFn: () => toolsApi.getConnection(connectionId), enabled: !!connectionId });
   const view = useQueryView(connection);
-  if (connection.isPending || view.kind === "reconnecting") return <p role="status">Loading connection…</p>;
+  if (connection.isPending || view.kind === "reconnecting") return <p role="status">{pageText("loadingConnection_f1e853")}</p>;
   if (view.kind === "error" && view.errorKind === "not_found") return <AppNotFound />;
   if (view.kind === "error") {
     return <QueryErrorState size="page" error={connection.error} action="load the connection" onRetry={view.retry} retrying={view.isFetching} />;
@@ -109,6 +106,8 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
   renderConnectionSettings?: (connection: ToolConnection) => ReactNode;
   onReconnect?: (connection: ToolConnection) => void;
 } = {}) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const { connectionId = "", tab } = useParams<{ connectionId: string; tab?: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -122,7 +121,7 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
 
   const connectionQuery = useQuery({
     queryKey: queryKeys.tools.connection(connectionId),
-    queryFn: ({ signal }) => toolsApi.getConnection(connectionId, { signal, fresh: true }),
+    queryFn: () => toolsApi.getConnection(connectionId),
     enabled: !!connectionId && !!activeTab,
   });
   const applicationsQuery = useQuery({
@@ -132,7 +131,7 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
   });
   const installsQuery = useQuery({
     queryKey: queryKeys.tools.connectionInstalls(connectionId),
-    queryFn: ({ signal }) => toolsApi.getConnectionInstalls(connectionId, { signal, fresh: true }),
+    queryFn: () => toolsApi.getConnectionInstalls(connectionId),
     enabled: !!connectionId && activeTab === "permissions",
   });
   const galleryQuery = useQuery({
@@ -147,12 +146,12 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
   });
   const profilesQuery = useQuery({
     queryKey: queryKeys.tools.connectionProfileConfiguration(selectedCompanyId ?? "__none__", connectionId),
-    queryFn: ({ signal }) => toolsApi.listConnectionProfileConfiguration(connectionId, { signal, fresh: true }),
+    queryFn: () => toolsApi.listConnectionProfileConfiguration(connectionId),
     enabled: !!selectedCompanyId && !!connectionId && (activeTab === "review" || activeTab === "permissions"),
   });
   const policiesQuery = useQuery({
     queryKey: queryKeys.tools.policies(selectedCompanyId ?? "__none__"),
-    queryFn: ({ signal }) => toolsApi.listPolicies(selectedCompanyId!, { signal, fresh: true }),
+    queryFn: () => toolsApi.listPolicies(selectedCompanyId!),
     enabled: !!selectedCompanyId && (activeTab === "review" || activeTab === "permissions"),
   });
   const agentsQuery = useQuery({
@@ -236,15 +235,7 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
     () => galleryEntryFor((galleryQuery.data?.apps ?? []) as AppGalleryDisplayEntry[], connection, application),
     [galleryQuery.data, connection, application],
   );
-  // Curated apps carry their own template. A connection to another Paperclip
-  // gets one derived from its address, so its default guidance stays editable.
-  const instructionsTemplate = useMemo(() => {
-    if (logoEntry?.agentInstructions) return { provider: logoEntry.name, template: logoEntry.agentInstructions };
-    const peer = paperclipPeerFromMcpUrl(typeof connection?.config?.url === "string" ? connection.config.url : null);
-    return peer ? { provider: peer.host, template: paperclipPeerInstructionTemplate(peer) } : null;
-  }, [logoEntry, connection]);
-  const brandKey = aiConnectionSourceSlug(connection)
-    ?? appApplicationSourceSlug(application)
+  const brandKey = appApplicationSourceSlug(application)
     ?? appConnectionSourceSlug(connection)
     ?? (logoEntry ? appDefinitionSlug(logoEntry) : null);
   const userProfileById = useMemo(
@@ -275,7 +266,7 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
       : null;
     pushToast({
       title: `${appName} connected`,
-      body: skillSourcePath ? "Choose a repository to import your skills." : "The connection is ready. Review permissions or test an action below.",
+      body: skillSourcePath ? interfaceNotice("interface:chooseARepositoryToImportYourSkills_6eddeb") : interfaceNotice("interface:theConnectionIsReadyReviewPermissionsOrTest_9ba0a2"),
       tone: "success",
     });
     navigate(skillSourcePath ?? appTabHref(connection.id, "permissions"), { replace: true });
@@ -284,36 +275,20 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
   useEffect(() => {
     if (!activeTab) return;
     setBreadcrumbs([
-      { label: "Plugins", href: "/apps" },
+      { label: interfaceNotice("interface:connectors_4b1e95"), href: "/apps" },
       { label: appName, href: appTabHref(connectionId, "permissions") },
       { label: appTabLabel(activeTab) },
     ]);
     return () => setBreadcrumbs([]);
   }, [setBreadcrumbs, appName, connectionId, activeTab]);
 
-  const { catalog, active, quarantined, readOnly, canChange } = useMemo(() => {
-    const catalog = catalogQuery.data?.catalog ?? [];
-    const active = catalog.filter(entry => entry.status === "active");
-    return {
-      catalog, active,
-      quarantined: catalog.filter(entry => entry.status === "quarantined"),
-      readOnly: active.filter(entry => entry.isReadOnly),
-      canChange: active.filter(entry => !entry.isReadOnly),
-    };
-  }, [catalogQuery.data]);
-  const { draft: permissionDraft, pending, save: savePermissions } = useConnectionPermissionSave({
-    companyId: selectedCompanyId,
-    connectionId,
-    connection,
-    catalog,
-    onError: error => pushToast({ title: "Couldn't save that", body: describeError(error).body, tone: "error" }),
-  });
+  const catalog = catalogQuery.data?.catalog ?? [];
   const profile = useMemo(
     () => (profilesQuery.data?.profiles ?? []).find((p) => p.profileKey === `app:${connectionId}`),
     [profilesQuery.data, connectionId],
   );
-  const savedEnabledIds = useMemo(() => enabledCatalogIds(profile), [profile]);
-  const savedAskFirstIds = useMemo(
+  const enabledIds = useMemo(() => enabledCatalogIds(profile), [profile]);
+  const askFirstIds = useMemo(
     () => askFirstCatalogIds(policiesQuery.data?.policies ?? [], connectionId),
     [policiesQuery.data, connectionId],
   );
@@ -321,28 +296,57 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
     () => installStateFrom(installsQuery.data?.installs ?? connection?.installs),
     [connection?.installs, installsQuery.data?.installs],
   );
-  const savedAccess = useMemo(() => accessFrom(connection?.connectionPurpose === "ai" ? undefined : profile, install), [connection?.connectionPurpose, profile, install]);
-  const enabledIds = permissionDraft?.enabled ?? savedEnabledIds;
-  const askFirstIds = permissionDraft?.askFirst ?? savedAskFirstIds;
-  const access = permissionDraft?.access ?? savedAccess;
+  const access = useMemo(() => accessFrom(connection?.connectionPurpose === "ai" ? undefined : profile, install), [connection?.connectionPurpose, profile, install]);
   const managesRemoteMcpAccess = isRemoteMcpConnectorMethod(connection?.config?.sourceTemplateKey, connection?.config?.connectionMethodKey);
   const agents = agentsQuery.data ?? [];
   const disconnectRemote = useMutation({
     mutationFn: () => toolsApi.archiveConnection(connectionId),
-    onSuccess: (removed) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.tools.connections(selectedCompanyId!) });
       queryClient.invalidateQueries({ queryKey: queryKeys.tools.connection(connectionId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.tools.applications(selectedCompanyId!) });
       queryClient.invalidateQueries({ queryKey: queryKeys.apps.attention(selectedCompanyId!) });
-      pushToast(connectionRemovalToast({
-        title: "Disconnected",
-        body: "The connection was removed and agents can no longer use it.",
-        providerAccess: removed?.removal?.providerAccess,
-      }));
       navigate("/apps");
     },
-    onError: (error) => pushToast({ title: "Couldn't disconnect", body: describeError(error).body, tone: "error" }),
+    onError: (error) => pushToast({ title: interfaceNotice("interface:couldnTDisconnect_7daa76"), body: describeError(error).body, tone: "error" }),
   });
+  const [pending, setPending] = useState(false);
+  const persist = useMutation({
+    mutationFn: async (next: {
+      enabled: Set<string>;
+      askFirst: Set<string>;
+      access: AccessDraft;
+      reviewed?: Set<string>;
+    }) => {
+      return connection?.connectionPurpose === "ai"
+      ? toolsApi.putConnectionInstalls(connectionId, next.access.mode === "all" ? [{ targetType: "company", targetId: selectedCompanyId! }] : [...next.access.agentIds].map(targetId => ({ targetType: "agent" as const, targetId })))
+      : toolsApi.finishApp(selectedCompanyId!, connectionId, {
+        enabledCatalogEntryIds: [...next.enabled],
+        askFirstCatalogEntryIds: [...next.askFirst].filter((id) => next.enabled.has(id)),
+        ...(next.reviewed ? { reviewedCatalogEntryIds: [...next.reviewed] } : {}),
+        access: next.access.mode === "all" ? "all_agents" : { agentIds: [...next.access.agentIds] },
+      });
+    },
+    onMutate: () => setPending(true),
+    onSuccess: () => {
+      void installsQuery.refetch();
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.testAgentAccessesForConnection(connectionId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.connection(connectionId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.catalog(connectionId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.profiles(selectedCompanyId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.policies(selectedCompanyId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tools.connections(selectedCompanyId!) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.apps.attention(selectedCompanyId!) });
+    },
+    onError: (error) =>
+      pushToast({
+        title: interfaceNotice("interface:couldnTSaveThat_ea05af"),
+        body: describeError(error).body,
+        tone: "error",
+      }),
+    onSettled: () => setPending(false),
+  });
+
   const [renaming, setRenaming] = useState(false);
   const [nameDraft, setNameDraft] = useState("");
   const rename = useMutation({
@@ -355,22 +359,21 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
     },
     onError: (error) =>
       pushToast({
-        title: "Couldn't rename the app",
+        title: interfaceNotice("interface:couldnTRenameTheApp_024979"),
         body: describeError(error).body,
         tone: "error",
       }),
   });
 
   const authorization = useAuthorizationWindow();
-  const workspaceGate = useGoogleWorkspaceServiceGate();
   const startOAuth = useMutation({
-    mutationFn: (input?: { asAgentId?: string; workspaceServices?: GoogleWorkspaceServiceSelection }) => toolsApi.startOAuth(connectionId, input),
+    mutationFn: (input?: { asAgentId?: string }) => toolsApi.startOAuth(connectionId, input),
     onSuccess: async (start) => {
       try {
         await authorization.open(start);
       } catch (error) {
         pushToast({
-          title: "Couldn't start sign-in",
+          title: interfaceNotice("interface:couldnTStartSignIn_7ead71"),
           body: describeError(error).body,
           tone: "error",
         });
@@ -379,7 +382,7 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
     onError: (error) => {
       authorization.cancel();
       pushToast({
-        title: "Couldn't start sign-in",
+        title: interfaceNotice("interface:couldnTStartSignIn_7ead71"),
         body: describeError(error).body,
         tone: "error",
       });
@@ -397,13 +400,12 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
    * there is no path here to start consent on a coworker's behalf.
    */
   const startPersonalAuth = useMutation({
-    mutationFn: (scopes?: string[]) => {
+    mutationFn: () => {
       const subjectUserId = grantsQuery.data?.currentUserId;
       if (!subjectUserId) throw new Error("Sign in again to connect your own account.");
       return toolsApi.startPersonalAuthorization(selectedCompanyId!, connectionId, {
         subjectUserId,
         returnTo: appTabHref(connectionId, "permissions"),
-        ...(scopes ? { scopes } : {}),
       });
     },
     onSuccess: async ({ url, handoff }) => {
@@ -411,7 +413,7 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
         await authorization.open({ authorizationUrl: url, handoff });
       } catch (error) {
         pushToast({
-          title: "Couldn't start sign-in",
+          title: interfaceNotice("interface:couldnTStartSignIn_7ead71"),
           body: describeError(error).body,
           tone: "error",
         });
@@ -420,7 +422,7 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
     onError: (error) => {
       authorization.cancel();
       pushToast({
-        title: "Couldn't start sign-in",
+        title: interfaceNotice("interface:couldnTStartSignIn_7ead71"),
         body: describeError(error).body,
         tone: "error",
       });
@@ -439,9 +441,9 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
       invalidateGrants();
       setAudienceOpenGrantId(null);
       pushToast({
-        title: "Audience saved",
+        title: interfaceNotice("interface:audienceSaved_f96b2b"),
         body: (grant.members?.length ?? 0) === 0
-          ? "Every organization member can use this identity."
+          ? interfaceNotice("interface:everyOrganizationMemberCanUseThisIdentity_df3747")
           : `${grant.members?.length} ${grant.members?.length === 1 ? "member" : "members"} can use this identity.`,
         tone: "success",
       });
@@ -471,7 +473,7 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
     },
     onError: (error) =>
       pushToast({
-        title: "Couldn't refresh actions",
+        title: interfaceNotice("interface:couldnTRefreshActions_3aa059"),
         body: describeError(error).body,
         tone: "error",
       }),
@@ -483,8 +485,8 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
       queryClient.invalidateQueries({ queryKey: queryKeys.tools.connectionGrants(connectionId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.apps.attention(selectedCompanyId!) });
       pushToast({
-        title: "GitHub access refreshed",
-        body: "Account, installation, and repository access are current.",
+        title: interfaceNotice("interface:githubAccessRefreshed_a16018"),
+        body: interfaceNotice("interface:accountInstallationAndRepositoryAccessAreCurrent_801337"),
         tone: "success",
       });
     },
@@ -494,28 +496,25 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
       queryClient.invalidateQueries({ queryKey: queryKeys.tools.connection(connectionId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.apps.attention(selectedCompanyId!) });
       pushToast({
-        title: "Couldn't refresh GitHub access",
+        title: interfaceNotice("interface:couldnTRefreshGitHubAccess_890707"),
         body: describeError(error).body,
         tone: "error",
       });
     },
   });
 
-  const apply = useCallback((mutate: {
+  const apply = (mutate: {
     enabled?: Set<string>;
     askFirst?: Set<string>;
     access?: AccessDraft;
     reviewed?: Set<string>;
   }) =>
-    savePermissions({
+    persist.mutate({
       enabled: mutate.enabled ?? new Set(enabledIds),
       askFirst: mutate.askFirst ?? new Set(askFirstIds),
       access: mutate.access ?? access,
       reviewed: mutate.reviewed,
-    }), [savePermissions, enabledIds, askFirstIds, access]);
-  const setActionPermission = useCallback((ids: string[], next: "off" | "ask" | "allowed") => {
-    apply(actionPermissionMutation(ids, next, enabledIds, askFirstIds));
-  }, [apply, enabledIds, askFirstIds]);
+    });
 
   const reviewQuarantined = (allowedIds: string[]) => {
     const quarantinedIds = new Set(quarantined.map((entry) => entry.id));
@@ -539,7 +538,7 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
   }
 
   if (!selectedCompanyId) {
-    return <div className="p-6 text-sm text-muted-foreground">Select an organization to manage apps.</div>;
+    return <div className="p-6 text-sm text-muted-foreground">{translateUi("interfaceCopy.selectAnOrganizationToManageApps")}</div>;
   }
   if (connectionQuery.isLoading || connectionView.kind === "reconnecting") {
     return (
@@ -558,12 +557,12 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
 
   if (isRetiredComposioConnection(connection)) {
     return <div className="max-w-4xl space-y-6 pb-12">
-      <h1 className={cn("text-xl font-semibold", ANALYTICS_MASK_CLASS)}>{appName}</h1>
+      <h1 className="text-xl font-semibold">{appName}</h1>
       <section role="status" className="space-y-3 rounded-lg border border-border bg-muted p-4">
-        <h2 className="text-sm font-semibold">Connection retired</h2>
+        <h2 className="text-sm font-semibold">{pageText("connectionRetired_53d5eb")}</h2>
         <p className="text-sm text-muted-foreground">{RETIRED_COMPOSIO_MESSAGE}</p>
-        <p className="text-sm text-muted-foreground">Remove each obsolete connection separately. Removing this one does not remove other connections.</p>
-        <Button variant="outline" onClick={() => navigate("/apps/connect?source=composio")}>Add Composio MCP connection</Button>
+        <p className="text-sm text-muted-foreground">{pageText("removeEachObsoleteConnectionSeparatelyRemovingThisOne_bbbc9f")}</p>
+        <Button variant="outline" onClick={() => navigate("/apps/connect?source=composio")}>{pageText("addComposioMCPConnection_3fe190")}</Button>
       </section>
       {grantsQuery.data?.capabilities.canConfigure === true && <DangerZone
         appName={appName}
@@ -578,6 +577,10 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
   const status: StatusInfo = aiGrantRevoked ? { label: "Revoked", tone: "attention" } : statusFor(connection);
   const needsReconnect = connection.requiresReauthorization
     ?? (status.tone === "attention" && connection.healthStatus !== "unknown");
+  const quarantined = catalog.filter((e) => e.status === "quarantined");
+  const active = catalog.filter((e) => e.status === "active");
+  const readOnly = active.filter((e) => e.isReadOnly);
+  const canChange = active.filter((e) => !e.isReadOnly);
   const actionsContent = renderActions?.(connection) ?? (connection.connectionPurpose === "ai" ? <ManagedAiConnectionDetails connection={connection} /> : undefined);
   const actionCount = actionsContent !== undefined ? null : catalogQuery.data ? active.length : null;
   const reviewViews = [catalogView, profilesView, policiesView];
@@ -593,7 +596,6 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
   return (
     <div className="max-w-4xl space-y-10 pb-12">
       {authorization.fallback}
-      {workspaceGate.dialog}
       <AppDetailHeader
         appName={appName}
         connection={connection}
@@ -616,7 +618,6 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
           else setRenaming(false);
         }}
       />
-      <div className={cn("space-y-10", ANALYTICS_MASK_CLASS)}>
 
       {status.tone === "attention" && connection.requiresReauthorization === false && (
         <AccessRetryBanner
@@ -632,7 +633,7 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
           galleryEntry={logoEntry}
           canReconnect={canReconnect}
           reconnectUnavailableMessage={reconnectUnavailableMessage}
-          onReconnect={onReconnect ? () => onReconnect(connection) : (connection.connectionPurpose === "ai" || isRemoteMcpConnectorMethod(connection.config?.sourceTemplateKey, connection.config?.connectionMethodKey)) ? () => navigate(`/apps/connect?source=${aiConnectionSourceSlug(connection) ?? connection.config?.sourceTemplateKey}&reconnect=${connection.id}`) : undefined}
+          onReconnect={onReconnect ? () => onReconnect(connection) : (connection.connectionPurpose === "ai" || isRemoteMcpConnectorMethod(connection.config?.sourceTemplateKey, connection.config?.connectionMethodKey)) ? () => navigate(`/apps/connect?source=${connection.config?.sourceTemplateKey}&reconnect=${connection.id}`) : undefined}
           onReconnected={() => {
             queryClient.invalidateQueries({ queryKey: queryKeys.tools.connection(connectionId) });
             queryClient.invalidateQueries({ queryKey: queryKeys.tools.connections(selectedCompanyId) });
@@ -700,20 +701,18 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
                   setAudienceOpenGrantId(null);
                   setAudienceError(null);
                 }}
-                onConnectAsMe={() => { if (onReconnect) onReconnect(connection); else workspaceGate.run(connection, (services) => { authorization.reserve(); startPersonalAuth.mutate(services ? googleWorkspaceSelectedScopes(services) : undefined); }); }}
-                onConnectOrganization={() => { if (onReconnect) onReconnect(connection); else workspaceGate.run(connection, (services) => { authorization.reserve(); startOAuth.mutate(services ? { workspaceServices: services } : undefined); }); }}
-                onConnectAgent={(agentId) => workspaceGate.run(connection, (services) => { authorization.reserve(); startOAuth.mutate({ asAgentId: agentId, ...(services ? { workspaceServices: services } : {}) }); })}
+                onConnectAsMe={() => { if (onReconnect) onReconnect(connection); else { authorization.reserve(); startPersonalAuth.mutate(); } }}
+                onConnectOrganization={() => { if (onReconnect) onReconnect(connection); else { authorization.reserve(); startOAuth.mutate(); } }}
+                onConnectAgent={(agentId) => { authorization.reserve(); startOAuth.mutate({ asAgentId: agentId }); }}
                 onRefreshAccess={() => refreshGitHubAccess.mutate()}
                 refreshAccessPending={refreshGitHubAccess.isPending}
                 onReplaceAudience={(grant, memberUserIds) =>
                   replaceAudience.mutate({ grantId: grant.id, memberUserIds })}
               />
-              {connection.config?.sourceTemplateKey === "composio" ? <p className="text-sm text-muted-foreground">
-                These permissions apply to all apps available through this Composio connection. Manage app accounts and sign-in in Composio.
-              </p> : null}
-              {connection.config?.sourceTemplateKey !== "composio" && isRemoteMcpConnectorMethod(connection.config?.sourceTemplateKey, connection.config?.connectionMethodKey) && <p className="text-sm text-muted-foreground">Paperclip controls access to the tools listed here. App and action permissions inside these tools are managed in {baseAppName}.</p>}
+              {connection.config?.sourceTemplateKey === "composio" ? <p className="text-sm text-muted-foreground">{pageText("thesePermissionsApplyToAllAppsAvailableThrough_3734de")}</p> : null}
+              {connection.config?.sourceTemplateKey !== "composio" && isRemoteMcpConnectorMethod(connection.config?.sourceTemplateKey, connection.config?.connectionMethodKey) && <p className="text-sm text-muted-foreground">{pageText("paperclipControlsAccessToTheToolsListedHere_b2c91d") + " "}{baseAppName}.</p>}
               <PermissionsPanel
-                afterAgentAccess={<>{instructionsTemplate && <ConnectionInstructionsSettings key={connection.id} connection={connection} provider={instructionsTemplate.provider} template={instructionsTemplate.template} canConfigure={grantsQuery.data?.capabilities?.canConfigure ?? false} />}{renderAgentSettings?.(connection)}</>}
+                afterAgentAccess={<>{logoEntry?.agentInstructions && <ConnectionInstructionsSettings key={connection.id} connection={connection} provider={logoEntry.name} template={logoEntry.agentInstructions} canConfigure={grantsQuery.data?.capabilities?.canConfigure ?? false} />}{renderAgentSettings?.(connection)}</>}
                 actions={actionsContent}
                 connectionId={connectionId}
                 capabilities={grantsQuery.data?.capabilities}
@@ -735,7 +734,7 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
                 }
                 onSaveAccess={(next) => apply({ access: connection.connectionPurpose === "ai" || connection.connectionPurpose === "tool" ? next : accessIncludingInstalls(next, install) })}
                 onRefreshActions={() => refreshTools.mutate()}
-                onSetActionPermission={setActionPermission}
+                onSetActionPermission={(ids, next) => apply(actionPermissionMutation(ids, next, enabledIds, askFirstIds))}
                 onReviewQuarantined={reviewQuarantined}
               />
               <AgentConnectionAccess
@@ -758,15 +757,9 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
                 onManage={() => window.open(remoteMcpProviders[connection.config?.sourceTemplateKey as keyof typeof remoteMcpProviders].dashboardUrl, "_blank", "noopener,noreferrer")}
                 onDisconnect={() => disconnectRemote.mutateAsync()}
               />}
-              {grantsQuery.data?.capabilities.canConfigure === true && connection.connectionPurpose === "tool" && (
-                <section className="border-t border-border">
-                  <StoredContentDeletionRow connectionId={connectionId} appName={appName} />
-                </section>
-              )}
               </>}
             </div>
       )}
-      </div>
     </div>
   );
 }
@@ -804,6 +797,8 @@ export function AppDetailHeader({
   onRenameCancel: () => void;
   onRenameSubmit: (value: string) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const unverifiedHost = unverifiedRemoteHost(connection);
   return (
     <header>
@@ -826,27 +821,25 @@ export function AppDetailHeader({
               }}
             >
               <Input
-                aria-label="App name"
+                aria-label={pageText("appName_c877cb")}
                 value={nameDraft}
                 onChange={(event) => onNameDraftChange(event.target.value)}
                 className="h-9 w-64 text-lg font-bold"
                 autoFocus
               />
               <Button type="submit" size="sm" disabled={renamePending || !nameDraft.trim()}>
-                {renamePending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Save"}
+                {renamePending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : pageText("save_efc007")}
               </Button>
-              <Button type="button" size="sm" variant="ghost" onClick={onRenameCancel} disabled={renamePending}>
-                Cancel
-              </Button>
+              <Button type="button" size="sm" variant="ghost" onClick={onRenameCancel} disabled={renamePending}>{translateUi("interfaceCopy.cancel")}</Button>
             </form>
           ) : (
             <div className="flex items-center gap-1.5">
-              <h1 className={cn("truncate text-xl font-bold", ANALYTICS_MASK_CLASS)}>{appName}</h1>
+              <h1 className="truncate text-xl font-bold">{appName}</h1>
               <Button
                 variant="ghost"
                 size="icon"
                 className="h-7 w-7 text-muted-foreground"
-                aria-label="Rename app"
+                aria-label={pageText("renameApp_c5ca9d")}
                 disabled={!canRename}
                 onClick={onRenameStart}
               >
@@ -858,8 +851,7 @@ export function AppDetailHeader({
             <StatusBadge status={status} />
             {connection.config?.provider !== "agentmail" && actionCount !== null && (
               <span className="text-xs text-muted-foreground">
-                {actionCount} {actionCount === 1 ? "action" : "actions"} available
-              </span>
+                {actionCount} {actionCount === 1 ? pageText("action_34eb4c") : pageText("actions_326b42")}{" " + pageText("available_7b231a")}</span>
             )}
             {connectionDisplaySecondaryHint(connection) ? (
               <span className="text-xs text-muted-foreground">
@@ -876,10 +868,11 @@ export function AppDetailHeader({
 }
 
 function ToolsLoading({ mcpActions = false }: { mcpActions?: boolean }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="flex items-center gap-2 py-8 text-sm text-muted-foreground" role="status">
       <Loader2 className="h-4 w-4 animate-spin" />
-      {mcpActions ? "Loading MCP actions, this may take a minute." : "Loading tools…"}
+      {mcpActions ? pageText("loadingMCPActionsThisMayTakeAMinute_7e59d6") : pageText("loadingTools_8237fc")}
     </div>
   );
 }
@@ -936,4 +929,64 @@ function StatusBadge({ status }: { status: StatusInfo }) {
       {status.label}
     </span>
   );
+}
+
+function enabledCatalogIds(profile: ToolProfileConfiguration | undefined): Set<string> {
+  const ids = new Set<string>();
+  for (const entry of profile?.entries ?? []) {
+    if (entry.effect === "include" && entry.catalogEntryId) ids.add(entry.catalogEntryId);
+  }
+  return ids;
+}
+
+function askFirstCatalogIds(policies: ToolPolicy[], connectionId: string): Set<string> {
+  const ids = new Set<string>();
+  for (const policy of policies) {
+    if (policy.policyType !== "require_approval" || policy.enabled === false) continue;
+    const config = (policy.config ?? {}) as { source?: unknown; connectionId?: unknown; catalogEntryId?: unknown };
+    if (config.source === "app_gallery_finish" && config.connectionId === connectionId && typeof config.catalogEntryId === "string") {
+      ids.add(config.catalogEntryId);
+    }
+  }
+  return ids;
+}
+
+/**
+ * Who may use this connection, read back from the app profile's bindings.
+ *
+ * `finishApp` replaces a profile's whole binding set, so every save from this
+ * page — including an action-permission toggle — has to restate this. The
+ * Permissions tab exposes the bindings as Agent access, while installs remain
+ * a separate "always loaded" choice. If the profile has no bindings yet, the
+ * install state remains the safest legacy fallback.
+ *
+ * That fallback is the important part. It used to return "all agents" for an
+ * unbound profile, which turned any unrelated save into a silent company-wide
+ * grant from a control the reader could not see. Installs authorize their
+ * targets, so mirroring the install state is both the truthful reading and the
+ * one that agrees with what the tab displays.
+ */
+function accessFrom(
+  profile: ToolProfileConfiguration | undefined,
+  install: InstallState,
+): AccessDraft {
+  const bindings = profile?.bindings ?? [];
+  if (bindings.some((b) => b.targetType === "company")) {
+    return { mode: "all", agentIds: new Set() };
+  }
+  const agentIds = new Set(bindings.filter((b) => b.targetType === "agent").map((b) => b.targetId));
+  if (agentIds.size > 0) return { mode: "specific", agentIds };
+  return install.onAll
+    ? { mode: "all", agentIds: new Set() }
+    : { mode: "specific", agentIds: new Set(install.agentIds) };
+}
+
+function accessIncludingInstalls(next: AccessDraft, install: InstallState): AccessDraft {
+  if (install.onAll || next.mode === "all") {
+    return { mode: "all", agentIds: new Set() };
+  }
+  return {
+    mode: "specific",
+    agentIds: new Set([...next.agentIds, ...install.agentIds]),
+  };
 }

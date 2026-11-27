@@ -1,3 +1,5 @@
+import { t as plainText } from "@/i18n";
+import { t as translateDynamic } from "../../i18n";
 import {
   forwardRef,
   useCallback,
@@ -10,13 +12,12 @@ import {
 } from "react";
 import { flushSync } from "react-dom";
 import { AlertCircle, KeyRound, Plus, RotateCcw, Save, UserRound } from "lucide-react";
-import { SECRET_SHAPED_ENV_NAME_ERROR, type CompanySecret, type EnvBinding, type UserSecretDefinition } from "@paperclipai/shared";
+import type { CompanySecret, EnvBinding, UserSecretDefinition } from "@paperclipai/shared";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useOptionalToastActions } from "@/context/ToastContext";
 import { EnvironmentVariableRow } from "./Row";
 import { parseDotenv } from "./parse-dotenv";
-import { looksLikeCredentialToken } from "./sensitive";
 import {
   computeDuplicateNames,
   computeRowHealth,
@@ -82,10 +83,9 @@ function normalizedEnvKey(value: Record<string, EnvBinding> | null | undefined):
 const CHANGE_SUMMARY_MAX_NAMES = 3;
 
 function formatChangedNames(names: readonly string[]): string {
-  const safeNames = names.map((name) => (looksLikeCredentialToken(name) ? "[redacted]" : name));
-  const shown = safeNames.slice(0, CHANGE_SUMMARY_MAX_NAMES).join(", ");
-  return safeNames.length > CHANGE_SUMMARY_MAX_NAMES
-    ? `${shown} +${safeNames.length - CHANGE_SUMMARY_MAX_NAMES} more`
+  const shown = names.slice(0, CHANGE_SUMMARY_MAX_NAMES).join(", ");
+  return names.length > CHANGE_SUMMARY_MAX_NAMES
+    ? `${shown} +${names.length - CHANGE_SUMMARY_MAX_NAMES} more`
     : shown;
 }
 
@@ -127,7 +127,6 @@ export interface EnvironmentVariablesEditorProps {
    */
   userSecretDefinitions?: readonly UserSecretDefinition[];
   onCreateSecret: (name: string, value: string) => Promise<CompanySecret>;
-  onRotateSecret?: (secretId: string, value: string) => Promise<CompanySecret>;
   /** Optional "Recently used" picker group + quick-bind chips. */
   recentlyUsedSecrets?: readonly CompanySecret[];
   /** Read-only rendering. */
@@ -140,25 +139,14 @@ export interface EnvironmentVariablesEditorProps {
   onDirtyChange?: (dirty: boolean) => void;
   /** Parent owns Save/Discard and flushes the editor through its ref. */
   hideDraftActions?: boolean;
-  /** Open with one blank, focused row when there is nothing saved yet. */
-  startWithEmptyRow?: boolean;
-  /** Label for the add-row action. Defaults to "Add variable". */
-  addLabel?: string;
 }
-
-export type FlushPendingDraftResult =
-  | { status: "clean" }
-  | { status: "flushed"; value: Record<string, EnvBinding> }
-  | { status: "blocked"; reason: string };
 
 export interface EnvironmentVariablesEditorHandle {
   /**
    * Promote the editor-local draft into the controlled value before an outer
-   * action reads parent state. Returns `{ status: "blocked" }` when a draft row
-   * has a secret-shaped variable name so callers stop outer saves instead of
-   * silently saving stale state.
+   * action reads parent state. Returns the promoted value when a draft existed.
    */
-  flushPendingDraft: () => FlushPendingDraftResult;
+  flushPendingDraft: () => Record<string, EnvBinding> | null;
 }
 
 export const EnvironmentVariablesEditor = forwardRef<EnvironmentVariablesEditorHandle, EnvironmentVariablesEditorProps>(function EnvironmentVariablesEditor({
@@ -167,22 +155,16 @@ export const EnvironmentVariablesEditor = forwardRef<EnvironmentVariablesEditorH
   secrets,
   userSecretDefinitions,
   onCreateSecret,
-  onRotateSecret,
   recentlyUsedSecrets,
   disabled,
   reservedPrefixes = DEFAULT_RESERVED_PREFIXES,
   footerHint,
   onDirtyChange,
   hideDraftActions = false,
-  startWithEmptyRow = false,
-  addLabel = "Add variable",
 }: EnvironmentVariablesEditorProps, ref) {
   const toast = useOptionalToastActions();
   const editorRootRef = useRef<HTMLDivElement | null>(null);
-  const [rows, setRows] = useState<EnvRow[]>(() => {
-    const saved = rowsFromValue(value);
-    return saved.length === 0 && startWithEmptyRow ? [emptyRow()] : saved;
-  });
+  const [rows, setRows] = useState<EnvRow[]>(() => rowsFromValue(value));
   const rowsRef = useRef(rows);
   const [committedRows, setCommittedRows] = useState<EnvRow[]>(() => cloneRows(rows));
   const initialValueKey = useMemo(() => normalizedEnvKey(value), []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -195,9 +177,7 @@ export const EnvironmentVariablesEditor = forwardRef<EnvironmentVariablesEditorH
   const [touchedNames, setTouchedNames] = useState<ReadonlySet<string>>(
     () => new Set(rowsFromValue(value).map((row) => row.name.trim()).filter(Boolean)),
   );
-  const [pendingFocus, setPendingFocus] = useState<{ rowId: string; field: "name" | "value" } | null>(
-    () => (startWithEmptyRow && rows.length === 1 && !rows[0]!.name ? { rowId: rows[0]!.id, field: "name" } : null),
-  );
+  const [pendingFocus, setPendingFocus] = useState<{ rowId: string; field: "name" | "value" } | null>(null);
 
   useEffect(() => {
     rowsRef.current = rows;
@@ -304,23 +284,14 @@ export const EnvironmentVariablesEditor = forwardRef<EnvironmentVariablesEditorH
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [disabled, hasUnsavedChanges]);
 
-  const hasSecretShapedName = useMemo(
-    () => rows.some((row) => looksLikeCredentialToken(row.name)),
-    [rows],
-  );
-
-  const flushPendingDraft = useCallback((): FlushPendingDraftResult => {
-    if (disabled) return { status: "clean" };
-    if (hasSecretShapedName) {
-      return { status: "blocked", reason: SECRET_SHAPED_ENV_NAME_ERROR };
-    }
-    if (!hasUnsavedChanges) return { status: "clean" };
+  const flushPendingDraft = useCallback(() => {
+    if (disabled || !hasUnsavedChanges) return null;
     pendingSaveValueKeyRef.current = draftValueKey;
     flushSync(() => {
       onChange(draftValue);
     });
-    return { status: "flushed", value: draftValue ?? {} };
-  }, [disabled, draftValue, draftValueKey, hasSecretShapedName, hasUnsavedChanges, onChange]);
+    return draftValue ?? {};
+  }, [disabled, draftValue, draftValueKey, hasUnsavedChanges, onChange]);
 
   useImperativeHandle(ref, () => ({ flushPendingDraft }), [flushPendingDraft]);
 
@@ -328,11 +299,8 @@ export const EnvironmentVariablesEditor = forwardRef<EnvironmentVariablesEditorH
     const form = editorRootRef.current?.closest("form");
     if (!form) return;
 
-    function handleSubmit(event: SubmitEvent) {
-      if (flushPendingDraft().status === "blocked") {
-        event.preventDefault();
-        event.stopPropagation();
-      }
+    function handleSubmit() {
+      flushPendingDraft();
     }
 
     form.addEventListener("submit", handleSubmit, true);
@@ -430,7 +398,7 @@ export const EnvironmentVariablesEditor = forwardRef<EnvironmentVariablesEditorH
   }
 
   function saveDraft() {
-    if (!hasUnsavedChanges || hasSecretShapedName) return;
+    if (!hasUnsavedChanges) return;
     pendingSaveValueKeyRef.current = draftValueKey;
     onChange(draftValue);
   }
@@ -476,23 +444,21 @@ export const EnvironmentVariablesEditor = forwardRef<EnvironmentVariablesEditorH
       {attentionCount > 1 ? (
         <p className="inline-flex items-center gap-1.5 text-(length:--text-micro) font-medium text-amber-700 dark:text-amber-400">
           <AlertCircle className="size-3.5" />
-          {attentionCount} bindings need attention
-        </p>
+          {attentionCount}{" " + plainText("interface:bindingsNeedAttention_99c28e")}</p>
       ) : null}
 
       {hasRows ? (
         <>
           {/* Header (desktop only) */}
           <div className="hidden gap-x-1.5 @[40rem]/env:grid @[40rem]/env:grid-cols-(--gtc-14)">
-            <span className="text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">Name</span>
-            <span className="text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">Value</span>
+            <span className="text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">{plainText("interface:name_709a23")}</span>
+            <span className="text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">{plainText("interface:value_8dce17")}</span>
             <span />
           </div>
 
           {rows.map((row, index) => {
             const issue = validateName(row.name, duplicateNames, reservedPrefixes);
-            const trimmedName = row.name.trim();
-            const showIssue = touchedNames.has(trimmedName) || looksLikeCredentialToken(trimmedName);
+            const touched = touchedNames.has(row.name.trim());
             return (
               <EnvironmentVariableRow
                 key={row.id}
@@ -503,7 +469,7 @@ export const EnvironmentVariablesEditor = forwardRef<EnvironmentVariablesEditorH
                 recentlyUsedSecrets={recentlyUsedSecrets}
                 disabled={disabled}
                 nameIssue={issue}
-                showNameIssue={showIssue}
+                showNameIssue={touched}
                 dirtyFields={rowDirtyFields(row, committedRowsById.get(row.id))}
                 onPatch={(patch) => patchRow(row.id, patch)}
                 onRemove={() => removeRow(row.id)}
@@ -511,7 +477,6 @@ export const EnvironmentVariablesEditor = forwardRef<EnvironmentVariablesEditorH
                 onNamePaste={(text) => bulkImport(text, row.id)}
                 onEnterInValueLast={addRow}
                 onCreateSecret={onCreateSecret}
-                onRotateSecret={onRotateSecret}
                 onToast={(message) => toast?.pushToast({ title: message, tone: "success" })}
                 focusRequest={pendingFocus?.rowId === row.id ? pendingFocus.field : null}
                 onFocusConsumed={() => setPendingFocus(null)}
@@ -520,7 +485,7 @@ export const EnvironmentVariablesEditor = forwardRef<EnvironmentVariablesEditorH
           })}
         </>
       ) : (
-        <p className="text-sm text-muted-foreground">No environment variables</p>
+        <p className="text-sm text-muted-foreground">{plainText("interface:noEnvironmentVariables_8122ef")}</p>
       )}
 
       {/* Footer bar */}
@@ -531,23 +496,19 @@ export const EnvironmentVariablesEditor = forwardRef<EnvironmentVariablesEditorH
           disabled={disabled}
           className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
         >
-          <Plus className="size-3.5" />
-          {addLabel}
-        </button>
+          <Plus className="size-3.5" />{plainText("interface:addVariable_2969ff")}</button>
 
         {quickBind.length > 0 && !disabled ? (
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="inline-flex items-center gap-1 text-(length:--text-micro) text-muted-foreground/70">
-              <KeyRound className="size-3" />
-              Recently used:
-            </span>
+              <KeyRound className="size-3" />{plainText("interface:recentlyUsed_f824a0")}</span>
             {quickBind.map((secret) => (
               <button
                 key={secret.id}
                 type="button"
                 onClick={() => bindRecentSecret(secret)}
                 className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 font-mono text-(length:--text-micro) text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
-                title={`Bind ${secret.name}`}
+                title={translateDynamic("dynamic:bind", { value1: secret.name })}
               >
                 + {secret.name}
               </button>
@@ -565,7 +526,7 @@ export const EnvironmentVariablesEditor = forwardRef<EnvironmentVariablesEditorH
           <div className="flex min-w-0 flex-col gap-0.5">
             <div className="flex items-center gap-2 text-sm font-medium">
               <span className="size-2 rounded-full bg-amber-500 shadow-(--shadow-extract-13)" />
-              <span>Unsaved changes</span>
+              <span>{plainText("interface:unsavedChanges_292672")}</span>
             </div>
             {changeSummaryText ? (
               <p className="min-w-0 truncate pl-4 text-xs text-amber-950/80 dark:text-amber-100/80" title={changeSummaryText}>
@@ -579,18 +540,13 @@ export const EnvironmentVariablesEditor = forwardRef<EnvironmentVariablesEditorH
               onClick={revertDraft}
               className="inline-flex h-9 items-center gap-1.5 rounded-md border border-amber-500/30 bg-background px-3 text-sm font-medium text-foreground transition-colors hover:bg-amber-500/10 dark:bg-background/80"
             >
-              <RotateCcw className="size-4" />
-              Revert
-            </button>
+              <RotateCcw className="size-4" />{plainText("interface:revert_272607")}</button>
             <button
               type="button"
               onClick={saveDraft}
-              disabled={hasSecretShapedName}
-              className="inline-flex h-9 items-center gap-1.5 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
+              className="inline-flex h-9 items-center gap-1.5 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
-              <Save className="size-4" />
-              Save
-            </button>
+              <Save className="size-4" />{plainText("interface:save_efc007")}</button>
           </div>
         </div>
       ) : null}
@@ -599,10 +555,7 @@ export const EnvironmentVariablesEditor = forwardRef<EnvironmentVariablesEditorH
       {rows.some((row) => row.source === "user_secret" && row.userSecretKey) ? (
         <p className="inline-flex items-start gap-1 text-(length:--text-micro) text-muted-foreground/70">
           <UserRound className="mt-0.5 size-3 shrink-0" />
-          <span>
-            User secrets resolve from the user responsible for the run. Required bindings fail until that user
-            sets their value under Secrets → My secrets.
-          </span>
+          <span>{plainText("interface:userSecretsResolveFromTheUserResponsibleFor_373c3c")}</span>
         </p>
       ) : null}
       </div>

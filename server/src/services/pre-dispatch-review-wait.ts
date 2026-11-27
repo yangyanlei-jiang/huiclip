@@ -1,9 +1,8 @@
-import { and, eq, inArray, isNotNull, or } from "drizzle-orm";
+import { and, eq, inArray, isNotNull } from "drizzle-orm";
 import { environmentLeases, heartbeatRunEvents, heartbeatRuns, nativeRunFinalizations, type Db } from "@paperclipai/db";
 import { hasRemoteTerminationReceipt } from "./remote-execution-termination.js";
 import { hasRequiredWorkspaceRecovery } from "./workspace-restore-recovery-state.js";
-import { executionStartedEventPredicate, isUnclaimedControlPlaneCancellationCandidate, noRetainedExecutionPredicate,
-  unclaimedControlPlaneCancellationPredicate } from "./pre-dispatch-execution-evidence.js";
+import { executionStartedEventPredicate, noRetainedExecutionPredicate } from "./pre-dispatch-execution-evidence.js";
 import type { QueuedRunStalenessErrorCode } from "../modules/run-dispatch/index.js";
 
 type Run = typeof heartbeatRuns.$inferSelect;
@@ -22,7 +21,6 @@ const staleDispatchReconciliationExemptions = {
   issue_execution_lock_changed: true,
   issue_terminal_status: true,
   issue_review_participant_changed: true,
-  issue_in_backlog: true,
   // This code requires its own executionWait receipt in pre-dispatch-execution-wait.ts.
   execution_reconciliation_required: false,
 } satisfies Record<QueuedRunStalenessErrorCode, boolean>;
@@ -34,7 +32,7 @@ const staleDispatchErrorCodes = Object.entries(staleDispatchReconciliationExempt
 export function neverStartedDispatchCancellationPredicate() {
   return and(
     eq(heartbeatRuns.runtimeMode, "legacy"), eq(heartbeatRuns.status, "cancelled"),
-    or(inArray(heartbeatRuns.errorCode, staleDispatchErrorCodes), unclaimedControlPlaneCancellationPredicate()),
+    inArray(heartbeatRuns.errorCode, staleDispatchErrorCodes),
     isNotNull(heartbeatRuns.finishedAt),
     noRetainedExecutionPredicate(),
   );
@@ -72,7 +70,7 @@ export function isPreDispatchReviewWait(
  * checked against the same evidence that gates explicit user admission. */
 export async function isPreDispatchReviewWaitVerified(db: Db, run: Run): Promise<boolean> {
   if (run.runtimeMode === "legacy" && run.status === "cancelled" && run.finishedAt !== null &&
-      (staleDispatchErrorCodes.some(errorCode => errorCode === run.errorCode) || isUnclaimedControlPlaneCancellationCandidate(run)) &&
+      staleDispatchErrorCodes.some(errorCode => errorCode === run.errorCode) &&
       [run.startedAt, run.runtimeModeResolvedAt, run.processPid, run.processGroupId, run.processStartedAt,
         run.nativeIssueId, run.nativeSessionId, run.sessionIdAfter, run.controllerBootId,
         run.controllerLeaseExpiresAt, run.executionStage].every(value => value === null) &&

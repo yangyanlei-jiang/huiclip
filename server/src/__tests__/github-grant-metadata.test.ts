@@ -108,7 +108,6 @@ describe("GitHub grant metadata", () => {
       repositorySelection: "selected",
       installationIds: ["102"],
       installationOwnerLogins: ["octocat"],
-      suspendedInstallationOwnerLogins: ["paperclipai"],
       repositories: [{ id: "2", fullName: "octocat/b", installationId: "102" }],
     });
   });

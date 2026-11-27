@@ -1,5 +1,4 @@
 import { notifyActiveRunSilence } from "../live-run-recovery-notifications.js";
-import { retryThroughStorageOutage, storageOutageWaitFor } from "../../storage/storage-unavailable.js";
 import { eq } from "drizzle-orm";
 import { heartbeatRuns, type Db } from "@paperclipai/db";
 import type { AdapterInvocationMeta, AdapterRuntimeEvent } from "../../adapters/index.js";
@@ -35,8 +34,6 @@ export interface HeartbeatRunOutputInput {
   getCurrentUserRedactionOptions: () => Promise<CurrentUserRedactionOptions>;
   assertWriterAuthority?: () => Promise<void>;
   runtimeLogSecretValues?: readonly string[];
-  deferNativeLogRecovery?: boolean;
-  signal?: AbortSignal;
 }
 
 /**
@@ -85,7 +82,6 @@ export function createHeartbeatRunOutput(db: Db, input: HeartbeatRunOutputInput)
   let persistedLogBytes = Number(run.logBytes ?? 0);
   let progressWrite: Promise<void> | null = null;
   let recordingFailureReported = false;
-  let deferredLogRecovery: Promise<void> | null = null;
   const flushOutputProgress = async (opts?: { force?: boolean }) => {
     if (progressWrite) {
       await progressWrite;
@@ -128,16 +124,14 @@ export function createHeartbeatRunOutput(db: Db, input: HeartbeatRunOutputInput)
     const run = currentRun;
     if (run.logStore != null && !isRunLogStoreType(run.logStore))
       throw new Error("Run log backend is not supported");
-    const previousStore = run.logStore ?? undefined;
-    handle = await storageOutageWaitFor("starting the run log", () => retryThroughStorageOutage(() => runLogStore.begin({
+    handle = await runLogStore.begin({
       companyId: run.companyId,
       agentId: run.agentId,
       runId,
       newRun: isNewRunLog(run),
       assertWriterAuthority: input.assertWriterAuthority,
-      previousStore,
-      signal: input.signal,
-    }), input.signal));
+      previousStore: run.logStore ?? undefined,
+    });
 
     outputSeq = handle.initialSequence ?? outputSeq;
     persistedLogBytes = handle.initialBytes ?? persistedLogBytes;
@@ -294,11 +288,8 @@ export function createHeartbeatRunOutput(db: Db, input: HeartbeatRunOutputInput)
         flush: () => runLogStore.flush!(handle!),
       });
     })();
-    if (handle.store === "s3_segments" && run.runtimeMode === "native") {
-      const recovering = getNativeExporter().then(exporter => exporter.recover());
-      if (input.deferNativeLogRecovery) deferredLogRecovery = recovering.catch(reportRecordingFailure);
-      else await recovering;
-    }
+    if (handle.store === "s3_segments" && run.runtimeMode === "native")
+      await (await getNativeExporter()).recover();
     // Output begins before runtime selection persists native mode. Keep the
     // source-aware callback available without querying native sources for
     // ordinary legacy output.
@@ -355,7 +346,6 @@ export function createHeartbeatRunOutput(db: Db, input: HeartbeatRunOutputInput)
     },
     outputProgressState,
     flushOutputProgress,
-    settleDeferredLogRecovery: async () => { await deferredLogRecovery; },
     // Finalization awaits I/O and can receive more output before persisting excerpts.
     get stdoutExcerpt() {
       return stdoutExcerpt;

@@ -1,3 +1,5 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { describeError } from "@/api/errors";
@@ -9,9 +11,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import type { ToolConnection } from "@paperclipai/shared";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 export function ArcadeDiscoverySetup({ connection, onClose }: { connection: ToolConnection; onClose: () => void }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [apiKey, setApiKey] = useState("");
   const [userId, setUserId] = useState("");
   const queries = useQueryClient();
@@ -22,22 +25,22 @@ export function ArcadeDiscoverySetup({ connection, onClose }: { connection: Tool
     },
     onSuccess: onClose,
   });
-  return <Dialog open onOpenChange={open => { if (!open && !save.isPending) onClose(); }}><DialogContent className={ANALYTICS_MASK_CLASS}>
-    <DialogHeader><DialogTitle>Sync Arcade accounts</DialogTitle>
-      <DialogDescription>See apps available through <span className={ANALYTICS_MASK_CLASS}>“{connection.name}”</span>. Your gateway works without account sync.</DialogDescription>
+  return <Dialog open onOpenChange={open => { if (!open && !save.isPending) onClose(); }}><DialogContent>
+    <DialogHeader><DialogTitle>{pageText("syncArcadeAccounts_ca59b4")}</DialogTitle>
+      <DialogDescription>{pageText("seeAppsAvailableThrough_d5706f")}{connection.name}{pageText("yourGatewayWorksWithoutAccountSync_2f16ec")}</DialogDescription>
     </DialogHeader>
     <form className="space-y-4" onSubmit={event => { event.preventDefault(); save.mutate(); }}>
-      <div className="space-y-2"><Label htmlFor="arcade-discovery-key">Project API key</Label>
-        <p className="text-xs text-muted-foreground">Create a key in <a className="underline" href="https://app.arcade.dev" target="_blank" rel="noopener noreferrer">Arcade</a> for the same project as this gateway. The key is stored securely and used only for account sync.</p>
+      <div className="space-y-2"><Label htmlFor="arcade-discovery-key">{pageText("projectAPIKey_c5a01e")}</Label>
+        <p className="text-xs text-muted-foreground">{pageText("createAKeyIn_7f6057") + " "}<a className="underline" href="https://app.arcade.dev" target="_blank" rel="noopener noreferrer">Arcade</a>{" " + pageText("forTheSameProjectAsThisGatewayThe_853f96")}</p>
         <Input id="arcade-discovery-key" type="password" autoComplete="off" required value={apiKey} onChange={event => setApiKey(event.target.value)} />
       </div>
-      <div className="space-y-2"><Label htmlFor="arcade-discovery-user">Arcade user ID</Label>
-        <p className="text-xs text-muted-foreground">Use the end-user ID configured for this gateway’s sign-in. This may differ from your email address.</p>
+      <div className="space-y-2"><Label htmlFor="arcade-discovery-user">{pageText("arcadeUserID_aff47d")}</Label>
+        <p className="text-xs text-muted-foreground">{pageText("useTheEndUserIDConfiguredForThis_f5c6f3")}</p>
         <Input id="arcade-discovery-user" autoComplete="off" required value={userId} onChange={event => setUserId(event.target.value)} />
       </div>
       {save.error ? <p role="alert" className="text-sm text-destructive">{describeError(save.error).body}</p> : null}
-      <DialogFooter className="sm:justify-between"><Button type="button" variant="ghost" disabled={save.isPending} onClick={onClose}>Cancel</Button>
-        <Button type="submit" disabled={!settled || save.isPending || !apiKey.trim() || !userId.trim()}>{save.isPending ? "Saving…" : "Save and sync"}</Button>
+      <DialogFooter className="sm:justify-between"><Button type="button" variant="ghost" disabled={save.isPending} onClick={onClose}>{translateUi("interfaceCopy.cancel")}</Button>
+        <Button type="submit" disabled={!settled || save.isPending || !apiKey.trim() || !userId.trim()}>{save.isPending ? pageText("saving_56a228") : pageText("saveAndSync_d3d676")}</Button>
       </DialogFooter>
     </form>
   </DialogContent></Dialog>;

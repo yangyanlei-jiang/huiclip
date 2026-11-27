@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle } from "lucide-react";
@@ -31,6 +32,7 @@ export function MissingUserSecretsBanner({
   secretsPath?: string;
   className?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [dialogFor, setDialogFor] = useState<MyUserSecretEntry | null>(null);
 
   const mySecretsQuery = useQuery({
@@ -60,10 +62,7 @@ export function MissingUserSecretsBanner({
         <div className="min-w-0 flex-1">
           <p className="font-medium">{title}</p>
           <p className="mt-0.5 text-amber-700/90 dark:text-amber-300/90">
-            {missing.length} user secret{missing.length === 1 ? "" : "s"} you are responsible for
-            {missing.length === 1 ? " has" : " have"} no value yet. Runs that require
-            {missing.length === 1 ? " it" : " them"} will fail until you set your value.
-          </p>
+            {missing.length}{" " + pageText("userSecret_b9a68c")}{missing.length === 1 ? "" : "s"}{" " + pageText("youAreResponsibleFor_84530c")}{missing.length === 1 ? " " + pageText("has_f6f39f") : " " + pageText("have_ff87ce")}{" " + pageText("noValueYetRunsThatRequire_5bb084")}{missing.length === 1 ? " " + pageText("it_6c5522") : " " + pageText("them_98910a")}{" " + pageText("willFailUntilYouSetYourValue_2f4056")}</p>
           <ul className="mt-2 space-y-1.5">
             {missing.map((entry) => (
               <li
@@ -74,9 +73,7 @@ export function MissingUserSecretsBanner({
                   <span className="font-medium text-foreground">{entry.definition.name}</span>{" "}
                   <code className="text-(length:--text-micro) text-muted-foreground">{entry.definition.key}</code>
                 </span>
-                <Button size="sm" onClick={() => setDialogFor(entry)}>
-                  Set value
-                </Button>
+                <Button size="sm" onClick={() => setDialogFor(entry)}>{pageText("setValue_4bc799")}</Button>
               </li>
             ))}
           </ul>
@@ -84,9 +81,7 @@ export function MissingUserSecretsBanner({
             <Link
               to={secretsPath}
               className="mt-2 inline-block text-(length:--text-micro) font-medium underline underline-offset-2"
-            >
-              Manage all my secrets
-            </Link>
+            >{pageText("manageAllMySecrets_3a794c")}</Link>
           ) : null}
         </div>
       </div>

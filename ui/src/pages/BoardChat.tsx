@@ -1,3 +1,5 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import {
   useEffect,
@@ -69,6 +71,7 @@ function AgentBubbleHeader({ agent }: { agent: import("../components/AgentAvatar
 
 /** Agent-styled chat bubble containing the three-dot typing indicator. */
 function TypingBubble() {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="flex justify-start">
       <div
@@ -77,7 +80,7 @@ function TypingBubble() {
           "bg-card border border-border text-foreground [border-radius:14px_14px_14px_4px]",
         )}
       >
-        <span className="typing-dots" aria-label="typing">
+        <span className="typing-dots" aria-label={pageText("typing_02d7d3")}>
           <span />
           <span />
           <span />
@@ -88,12 +91,13 @@ function TypingBubble() {
 }
 
 export function BoardChat() {
+  const { t: pageText } = usePageTranslation("interface");
   const { selectedCompanyId, selectedCompany } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Conference Room" }]);
+    setBreadcrumbs([{ label: interfaceNotice("interface:conferenceRoom_5cf12c") }]);
   }, [setBreadcrumbs]);
 
   const splitContainerRef = useRef<HTMLDivElement>(null);
@@ -286,8 +290,8 @@ export function BoardChat() {
 
   // Find or detect the board operations issue
   const { data: issues } = useQuery({
-    queryKey: queryKeys.issues.listIndex(selectedCompanyId!),
-    queryFn: ({ signal }) => issuesApi.listCompact(selectedCompanyId!, { projection: "index" }, { signal }),
+    queryKey: queryKeys.issues.list(selectedCompanyId!),
+    queryFn: () => issuesApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
 
@@ -645,10 +649,8 @@ export function BoardChat() {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center max-w-sm">
-          <h2 className="text-lg font-semibold">No organization selected</h2>
-          <p className="text-sm text-muted-foreground mt-2">
-            Select an organization to start chatting with your board concierge.
-          </p>
+          <h2 className="text-lg font-semibold">{pageText("noOrganizationSelected_5685fd")}</h2>
+          <p className="text-sm text-muted-foreground mt-2">{pageText("selectAnOrganizationToStartChattingWithYour_8971eb")}</p>
         </div>
       </div>
     );
@@ -676,10 +678,10 @@ export function BoardChat() {
             />
             <div className="min-w-0 flex-1">
               <h3 className="text-sm font-semibold">
-                {ceoAgent?.name ?? "Conference Room"}
+                {ceoAgent?.name ?? pageText("conferenceRoom_5cf12c")}
               </h3>
               <p className="text-xs text-muted-foreground">
-                {selectedCompany?.name ?? "Your organization"}
+                {selectedCompany?.name ?? pageText("yourOrganization_3e5163")}
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-0.5">
@@ -690,12 +692,12 @@ export function BoardChat() {
                     variant="ghost"
                     size="icon-sm"
                     className="text-muted-foreground"
-                    aria-label="chat history"
+                    aria-label={pageText("chatHistory_76a853")}
                   >
                     <History className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent side="bottom">chat history</TooltipContent>
+                <TooltipContent side="bottom">{pageText("chatHistory_76a853")}</TooltipContent>
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -704,12 +706,12 @@ export function BoardChat() {
                     variant="ghost"
                     size="icon-sm"
                     className="text-muted-foreground"
-                    aria-label="new chat"
+                    aria-label={pageText("newChat_b3e788")}
                   >
                     <MessageSquarePlus className="h-4 w-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent side="bottom">new chat</TooltipContent>
+                <TooltipContent side="bottom">{pageText("newChat_b3e788")}</TooltipContent>
               </Tooltip>
             </div>
           </div>
@@ -893,7 +895,7 @@ export function BoardChat() {
               {sending && (
                 <div className="flex items-center gap-2 pl-1 text-xs text-muted-foreground">
                   <img src="/paperclip-thinking.svg" alt="" className="inline-block shrink-0" style={{ width: 14, height: 14 }} />
-                  <span>{statusText || "Thinking..."}</span>
+                  <span>{statusText || pageText("thinking_a7311e")}</span>
                   {elapsedSec > 0 && (
                     <span className="opacity-50">{elapsedSec.toFixed(1)}s</span>
                   )}
@@ -928,7 +930,7 @@ export function BoardChat() {
             <button
               type="button"
               onClick={() => scrollToLatest("smooth")}
-              aria-label="Jump to latest messages"
+              aria-label={pageText("jumpToLatestMessages_e308ce")}
               // design-allow(card-pattern): floating scroll-to-bottom <button>, not a content card (C5a Run 3)
               className="absolute bottom-24 left-1/2 z-20 grid h-8 w-8 -translate-x-1/2 place-items-center rounded-full border border-border bg-card text-foreground shadow-md transition-colors duration-150 hover:bg-accent hover:border-muted-foreground/30"
             >
@@ -954,7 +956,7 @@ export function BoardChat() {
               value={input}
               onChange={setInput}
               onSubmit={handleSend}
-              placeholder="Ask anything about your organization..."
+              placeholder={pageText("askAnythingAboutYourOrganization_8166cd")}
               submitKey="enter"
               surface="translucent"
               submitting={sending}
@@ -969,7 +971,7 @@ export function BoardChat() {
         <div
           role="separator"
           aria-orientation="vertical"
-          aria-label="Resize board chat and agent feed"
+          aria-label={pageText("resizeBoardChatAndAgentFeed_d02311")}
           className="group relative hidden w-3 shrink-0 cursor-col-resize bg-background md:flex"
           onMouseDown={handleSplitDragStart}
         >
@@ -994,7 +996,7 @@ export function BoardChat() {
               size="icon"
               variant="secondary"
               className="fixed bottom-20 right-4 z-20 h-10 w-10 rounded-full shadow-lg"
-              aria-label="Open agent feed"
+              aria-label={pageText("openAgentFeed_94f3db")}
             >
               <Activity className="h-4 w-4" />
             </Button>

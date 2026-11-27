@@ -1,5 +1,4 @@
-import { and, eq, inArray, or, sql } from "drizzle-orm";
-import { pendingFailedNativeRetryCancellationCondition } from "./native-runtime/native-cancellation-request.js";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { CANCELLABLE_HEARTBEAT_RUN_STATUSES } from "./heartbeat/recovery.js";
 import { promoteDeferredWorkIntents } from "./work-intent-outbox.js";
 import { agents, companies, environments, heartbeatRuns, plugins, pluginCompanySettings, type Db } from "@paperclipai/db";
@@ -11,20 +10,10 @@ import type { PluginWorkerManager } from "./plugin-worker-manager.js";
 import type { LifecycleDriver } from "../modules/agent-lifecycle/index.js";
 import { agentHarnessVerificationService } from "./agent-harness-verification.js";
 import { agentInstanceSecretService } from "./agent-instance-secrets.js";
-import { AGENT_LIFECYCLE_STOP_REASON, COMPANY_ARCHIVED_STOP_REASON } from "./governance-pause-stop.js";
 
 export function createLifecycleDriver(db: Db, manager: PluginWorkerManager): LifecycleDriver {
   const { verify } = agentHarnessVerificationService(db, manager);
   const heartbeat = heartbeatService(db, { pluginWorkerManager: manager });
-
-  async function resolveAgentEnvironment(agent: { id: string; companyId: string }) {
-    const [placement] = await db.select({ environmentId: agents.defaultEnvironmentId }).from(agents)
-      .where(and(eq(agents.id, agent.id), eq(agents.companyId, agent.companyId)));
-    const environmentId = placement?.environmentId ?? (await instanceSettingsService(db).get()).defaultEnvironmentId;
-    const [environment] = environmentId ? await db.select().from(environments).where(eq(environments.id, environmentId)) : [];
-    return environment;
-  }
-
   return {
     async onReady(agent) {
       await db.transaction(tx => promoteDeferredWorkIntents(tx, { companyId: agent.companyId, trigger: "pause_lifted" }));
@@ -37,7 +26,9 @@ export function createLifecycleDriver(db: Db, manager: PluginWorkerManager): Lif
         .where(and(eq(pluginCompanySettings.companyId, agent.companyId), eq(pluginCompanySettings.enabled, false)));
       const candidates = installed.filter(plugin => !disabled.some(row => row.pluginId === plugin.id) &&
         plugin.manifestJson.agentLifecycle && plugin.manifestJson.capabilities.includes("agents.lifecycle.manage"));
-      const environment = await resolveAgentEnvironment(agent);
+      const [row] = await db.select({ environmentId: agents.defaultEnvironmentId }).from(agents).where(eq(agents.id, agent.id));
+      const environmentId = row?.environmentId ?? (await instanceSettingsService(db).get()).defaultEnvironmentId;
+      const [environment] = environmentId ? await db.select().from(environments).where(eq(environments.id, environmentId)) : [];
       if (selected !== null) {
         const added = candidates.filter(plugin => pluginServesAgentEnvironment(plugin, environment) && !selected.includes(plugin.id));
         return [...selected, ...added.map(plugin => plugin.id)];
@@ -55,11 +46,8 @@ export function createLifecycleDriver(db: Db, manager: PluginWorkerManager): Lif
       const secrets = agentInstanceSecretService(db);
       const instanceSecrets = ["preparing", "resuming"].includes(agent.lifecycleState)
         ? await secrets.read({ companyId: agent.companyId, agentId: agent.id, pluginId }) : {};
-      const environment = await resolveAgentEnvironment(agent);
-      const environmentDriverKey = pluginServesAgentEnvironment(plugin, environment) && typeof environment?.config?.driverKey === "string"
-        ? environment.config.driverKey : undefined;
       const request = { companyId: agent.companyId, agentId: agent.id, operationId, version: agent.lifecycleVersion, phase: agent.lifecycleState,
-        ...(environmentDriverKey ? { environmentDriverKey } : {}), instanceSecrets };
+        instanceSecrets };
       const result = await manager.call(plugin.id, "agentLifecycle", request, 30_000);
       if (!result || result.operationId !== operationId || result.version !== agent.lifecycleVersion || !["complete", "pending"].includes(result.status)) {
         throw Object.assign(new Error("Invalid lifecycle result"), { code: "invalid_lifecycle_result" });
@@ -74,7 +62,7 @@ export function createLifecycleDriver(db: Db, manager: PluginWorkerManager): Lif
           : [agent.id, ...listInvalidOrgChainDescendantIds(agent.id,
             await db.select().from(agents).where(eq(agents.companyId, agent.companyId)))];
         const reason = agent.lifecycleHolds?.includes("company_archived")
-          ? COMPANY_ARCHIVED_STOP_REASON : AGENT_LIFECYCLE_STOP_REASON;
+          ? "Cancelled because the company was archived" : "Agent lifecycle stop requested";
         // Record what this pause stopped the runs for, so a budget resume
         // continues only the work its own budget stopped, never a manual pause.
         if (agent.lifecycleState === "pausing") {
@@ -88,13 +76,11 @@ export function createLifecycleDriver(db: Db, manager: PluginWorkerManager): Lif
           await db.update(heartbeatRuns).set({
             resultJson: sql`coalesce(${heartbeatRuns.resultJson}, '{}'::jsonb) || ${pauseStop}`,
           }).where(and(eq(heartbeatRuns.companyId, agent.companyId), eq(heartbeatRuns.agentId, agent.id),
-            or(inArray(heartbeatRuns.status, [...CANCELLABLE_HEARTBEAT_RUN_STATUSES]), pendingFailedNativeRetryCancellationCondition()),
+            inArray(heartbeatRuns.status, [...CANCELLABLE_HEARTBEAT_RUN_STATUSES]),
             sql`not (coalesce(${heartbeatRuns.resultJson}, '{}'::jsonb) ? 'pauseStop')`));
         }
-        const blocker = await heartbeat.agentInvocationStopBlocker(ids, reason,
-          { preservePauseDeferred: agent.lifecycleState === "pausing",
-            ...(agent.lifecycleOperation?.id ? { trigger: `lifecycle:${agent.lifecycleOperation.id}` } : {}) });
-        if (blocker) return { pending: blocker };
+        if (!await heartbeat.stopInvocationsForAgents(ids, reason,
+          { preservePauseDeferred: agent.lifecycleState === "pausing" })) return "pending";
       }
       return "complete";
     },

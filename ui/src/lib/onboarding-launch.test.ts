@@ -1,5 +1,13 @@
+import { ONBOARDING_FIRST_TASK_ORIGIN_KIND } from "@paperclipai/shared";
 import { describe, expect, it } from "vitest";
-import { selectDefaultCompanyGoalId } from "./onboarding-launch";
+import {
+  buildOnboardingIssuePayload,
+  displayOnboardingTaskTitle,
+  onboardingTaskTitle,
+  buildOnboardingProjectPayload,
+  selectDefaultCompanyGoalId,
+  selectReusableOnboardingProject,
+} from "./onboarding-launch";
 
 describe("selectDefaultCompanyGoalId", () => {
   it("prefers the earliest active root company goal", () => {
@@ -75,4 +83,89 @@ describe("selectDefaultCompanyGoalId", () => {
       ]),
     ).toBe("goal-1");
   });
+});
+
+describe("onboarding launch payloads", () => {
+  it("reuses a non-cancelled Onboarding project by name", () => {
+    expect(
+      selectReusableOnboardingProject([
+        { id: "cancelled", name: "Onboarding", status: "cancelled" },
+        { id: "active", name: " onboarding ", status: "in_progress" },
+      ]),
+    ).toEqual({ id: "active", name: " onboarding ", status: "in_progress" });
+
+    expect(
+      selectReusableOnboardingProject([
+        { id: "cancelled", name: "Onboarding", status: "cancelled" },
+        { id: "other", name: "Roadmap", status: "in_progress" },
+      ]),
+    ).toBeNull();
+  });
+
+  it("links the onboarding project and first issue to the selected goal", () => {
+    expect(buildOnboardingProjectPayload("goal-1")).toEqual({
+      name: "Onboarding",
+      status: "in_progress",
+      goalIds: ["goal-1"],
+    });
+
+    expect(
+      buildOnboardingIssuePayload({
+        title: "  Hire your first engineer  ",
+        assigneeAgentId: "agent-1",
+        projectId: "project-1",
+        goalId: "goal-1",
+      }),
+    ).toEqual({
+      title: "Hire your first engineer",
+      assigneeAgentId: "agent-1",
+      projectId: "project-1",
+      goalId: "goal-1",
+      status: "todo",
+      onboardingFirstTask: true,
+    });
+  });
+
+  it("sends no client description — the server owns the first task's brief", () => {
+    const payload = buildOnboardingIssuePayload({
+      title: "Task",
+      assigneeAgentId: "agent-1",
+      projectId: "project-1",
+      goalId: null,
+    });
+    expect(payload).not.toHaveProperty("description");
+    expect(payload.onboardingFirstTask).toBe(true);
+  });
+
+  it("omits goal links when no default company goal exists", () => {
+    expect(buildOnboardingProjectPayload(null)).toEqual({
+      name: "Onboarding",
+      status: "in_progress",
+    });
+
+    expect(
+      buildOnboardingIssuePayload({
+        title: "Task",
+        assigneeAgentId: "agent-1",
+        projectId: "project-1",
+        goalId: null,
+      }),
+    ).toEqual({
+      title: "Task",
+      assigneeAgentId: "agent-1",
+      projectId: "project-1",
+      status: "todo",
+      onboardingFirstTask: true,
+    });
+  });
+});
+
+it("localizes the system onboarding title without replacing an ordinary issue or custom title", () => {
+  const seeded = { title: "Paperclip onboarding", originKind: ONBOARDING_FIRST_TASK_ORIGIN_KIND } as const;
+  expect(displayOnboardingTaskTitle(seeded, "zh-CN")).toBe("Paperclip 新手引导");
+  expect(displayOnboardingTaskTitle(seeded, "en")).toBe("Paperclip onboarding");
+  expect(displayOnboardingTaskTitle({ ...seeded, title: "Custom title" }, "zh-CN")).toBe("Custom title");
+  expect(onboardingTaskTitle("zh-CN")).toBe("Paperclip 新手引导");
+  expect(buildOnboardingProjectPayload(null, "zh-CN").name).toBe("新手引导");
+  expect(selectReusableOnboardingProject([{ name: "新手引导", status: "in_progress" }])).not.toBeNull();
 });

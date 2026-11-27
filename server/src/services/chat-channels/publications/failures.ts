@@ -1,4 +1,3 @@
-import type { ChatPublicationPreparationWait } from "./preparation.js";
 import { notifyChatResponseAvailability } from "../../chat-response-availability.js";
 import { notifyChatEndpointConfiguration } from "../configuration-work-notifications.js";
 import { notifyChatConnectionHealth } from "../connection-health-notifications.js";
@@ -59,19 +58,14 @@ export function createChatPublicationFailures(db: Db, options: PublicationFailur
     providerAccepted = false,
     runtimeContext?: LifecycleRuntimeFence | null,
     credentialLease?: CredentialMutationLeaseGuard,
-    providerInvocation: "possible" | "not_started" = "possible",
-    preparationWait?: ChatPublicationPreparationWait,
   ): Promise<boolean> {
     const attempts = publication.attempts + 1;
-    const waitingBeforeSend = !providerAccepted && providerInvocation === "not_started" && preparationWait?.kind === "wait";
     const disposition = providerAccepted
       ? {
           kind: "delivery_unknown" as const,
           reason:
             "Provider accepted the publication, but Paperclip could not confirm its durable result",
         }
-      : waitingBeforeSend && preparationWait
-        ? { kind: "retry" as const, retryAfterMs: preparationWait.retryAfterMs, reason: preparationWait.reason }
       : error instanceof NativeChatReviewPresentationContentionError
         ? { kind: "retry" as const, retryAfterMs: 250, reason: error.message }
         : error instanceof FailedChatRetryPublicationReadError
@@ -94,7 +88,7 @@ export function createChatPublicationFailures(db: Db, options: PublicationFailur
                   ),
                   reason: error.message,
                 }
-              : classifyChatPublicationError(error, attempts, providerInvocation);
+              : classifyChatPublicationError(error, attempts);
     const failure = redactSensitiveText(disposition.reason).slice(
       0,
       MAX_ERROR_TEXT,
@@ -106,7 +100,6 @@ export function createChatPublicationFailures(db: Db, options: PublicationFailur
     const terminalRetry =
       disposition.kind === "retry" &&
       disposition.providerRateLimit !== true &&
-      !waitingBeforeSend &&
       attempts >= 5;
     const attachmentFailure = attachmentFailureKind(publication.payload);
     const attachmentFailureRuntimeContext =
@@ -134,7 +127,6 @@ export function createChatPublicationFailures(db: Db, options: PublicationFailur
         .update(chatPublications)
         .set({
           state,
-          ...(waitingBeforeSend ? { attempts: publication.attempts } : {}),
           nextAttemptAt:
             disposition.kind === "retry" && !terminalRetry
               ? new Date(Date.now() + disposition.retryAfterMs)
@@ -169,7 +161,7 @@ export function createChatPublicationFailures(db: Db, options: PublicationFailur
                   : state === "cancelled"
                     ? "task_control_destination_unavailable"
                     : "task_control_transport_failed",
-              attempts: waitingBeforeSend ? publication.attempts : attempts,
+              attempts,
               retryable: state === "retry",
             },
             updatedAt: new Date(),

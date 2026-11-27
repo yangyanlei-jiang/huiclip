@@ -67,7 +67,6 @@ import type { PluginToolDispatcher } from "../services/plugin-tool-dispatcher.js
 import { ToolGatewayHttpError, type ToolGatewayService } from "../services/tool-gateway.js";
 import type { PluginPerformActionActorContext, ToolRunContext } from "@paperclipai/plugin-sdk";
 import { JsonRpcCallError, PLUGIN_RPC_ERROR_CODES } from "@paperclipai/plugin-sdk";
-import { findPluginWorkerUnavailableError } from "../services/plugin-worker-unavailable-error.js";
 import {
   assertAuthenticated,
   assertBoard,
@@ -1375,11 +1374,7 @@ export function pluginRoutes(
     const message = err instanceof Error ? err.message : String(err);
 
     // Worker not running — surface as WORKER_UNAVAILABLE
-    if (
-      findPluginWorkerUnavailableError(err) ||
-      message.includes("not running") ||
-      message.includes("not registered")
-    ) {
+    if (message.includes("not running") || message.includes("not registered")) {
       return {
         code: "WORKER_UNAVAILABLE",
         message,

@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../i18n";
 import { useState } from "react";
 import type { IssueBlockerAttention } from "@paperclipai/shared";
 import { cn } from "../lib/utils";
@@ -68,7 +69,7 @@ export function StatusIcon({ status, displayStatus: presentationStatus, external
   const trigger = showLabel ? (
     <button
       type="button"
-      aria-label={`Change status (current: ${ariaLabel})`}
+      aria-label={translateDynamic("dynamic:changeStatusCurrent", { value1: ariaLabel })}
       className="inline-flex min-h-5 items-center gap-1.5 cursor-pointer hover:bg-accent/50 rounded px-1 -mx-1 py-0.5 transition-colors"
     >
       {glyph}
@@ -78,7 +79,7 @@ export function StatusIcon({ status, displayStatus: presentationStatus, external
     <button
       type="button"
       data-slot="icon-button"
-      aria-label={`Change status (current: ${ariaLabel})`}
+      aria-label={translateDynamic("dynamic:changeStatusCurrent", { value1: ariaLabel })}
       className="inline-flex cursor-pointer items-center justify-center rounded-sm focus-visible:outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-ring"
     >
       {glyph}
@@ -101,11 +102,7 @@ export function StatusIcon({ status, displayStatus: presentationStatus, external
             }}
           >
             {/* The current row is the task's state: draw it exactly like the trigger. */}
-            <StatusIcon
-              {...(s === status ? presentation : { status: s })}
-              size="lg"
-              className={s === "in_progress" && s !== status ? "motion-safe:animate-none" : undefined}
-            />
+            <StatusIcon {...(s === status ? presentation : { status: s })} size="lg" />
             {taskStatusLabel(s)}
           </Button>
         ))}

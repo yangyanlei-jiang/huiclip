@@ -41,7 +41,6 @@ import { useToastActions, type ToastInput } from "@/context/ToastContext";
 import { useSidebar } from "@/context/SidebarContext";
 import { isGlobalPath, normalizeCompanyPrefix } from "@/lib/company-routes";
 import { normalizeRememberedInstanceSettingsPath } from "@/lib/instance-settings";
-import { safeExternalHttpUrl } from "@/lib/safe-url";
 
 // ---------------------------------------------------------------------------
 // Bridge error type (mirrors the SDK's PluginBridgeError)
@@ -528,8 +527,7 @@ export function useHostNavigation(): HostNavigation {
       const href = resolveHref(to);
       const sameOriginPath = sameOriginPathFromHref(href);
       if (sameOriginPath === null) {
-        const safeHref = safeExternalHttpUrl(href);
-        if (safeHref) window.location.assign(safeHref);
+        window.location.assign(href);
         return;
       }
       routerNavigate(sameOriginPath, options as NavigateOptions | undefined);

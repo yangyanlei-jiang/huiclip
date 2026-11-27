@@ -1,7 +1,11 @@
-import { createUuid } from "@/lib/uuid";
-import { invalidateInteractionRecordViews } from "@/lib/attention-record-views";
-import { companyProjectsQuery } from "@/lib/company-projects-query";
-import { NativeControllerContainmentRecovery } from "../components/IssueRecoveryActionCard";
+import { displayOnboardingTaskTitle } from "@/lib/onboarding-launch";
+import { controlText } from "@/i18n/controls";
+import { t as plainText } from "@/i18n";
+import { t as interfaceNotice } from "@/i18n";
+import { t as translateDynamic } from "../i18n";
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useIssueIdBatches } from "@/hooks/useIssueIdBatches";
 import { TaskChatLoadingShell } from "@/components/task-chat/TaskChatLoadingShell";
 import { useConversationHistoryPages, type ConversationHistoryPage } from "@/hooks/useConversationHistoryPages";
@@ -31,14 +35,12 @@ import { mergeComposerRunSettings, type ComposerRunSettings } from "@/components
 import { AgentIdentity } from "@/components/AgentIdentity";
 import { clearLegacyChatMessageRequests } from "@/lib/chat-message-request";
 import { agentChatDraft } from "@/lib/agent-chat-draft";
-import { captureAgentChatMessageSent } from "@/lib/analytics/onboarding-analytics";
 import { trackRecentProject } from "@/lib/recent-projects";
 import { ExecutionBlockerNotice } from "../components/ExecutionBlockerNotice";
 import type { TaskComposerPause } from "../components/task-chat/TaskChatPausedTakeover";
 import { TaskDetailTasksPanel } from "@/components/task-detail/TaskDetailTasksPanel";
 import { IssueCreatedFromNote } from "@/components/task-detail/IssueCreatedFromNote";
 import { EmailThreadProvider } from "../components/EmailMessageCard";
-import { TaskTranscriptAgents } from "../components/task-chat/TaskChatBubble";
 import { EmailTaskActivity } from "../components/EmailTaskActivity";
 import { TaskChatScrollNavigation, taskChatScrollEntry } from "@/components/task-chat/scroll-navigation";
 import {
@@ -80,21 +82,9 @@ import { ApiError } from "../api/client";
 import { issuesApi } from "../api/issues";
 import { classifySendFailure } from "../lib/pending-send";
 import { useUpdateIssueMutation } from "../hooks/useUpdateIssueMutation";
-import { SubtaskCancellationError, TaskCancellationDismissedError, useTaskCancellation } from "../hooks/useTaskCancellation";
 import { describeInteractionResolutionFailure, interactionResolutionErrorMessage } from "../lib/interaction-resolution-error";
 import { approvalsApi } from "../api/approvals";
 import { activityApi, type RunForIssue } from "../api/activity";
-import {
-  fetchRecentIssueActivity,
-  fetchRecentIssueRunWindow,
-  issueCommentInputFactsQueryKey,
-  issueInputCommentIds,
-  recentIssueActivityQueryKey,
-  recentIssueRunWindowQueryKey,
-  type RecentIssueRunWindow,
-} from "../lib/issue-chat-history-queries";
-import { readFromIssueChatBootstrap, sameIds, startIssueChatBootstrap } from "../lib/issue-chat-bootstrap";
-import { isRestoredSavedRead, recordTaskOpen } from "../lib/persisted-query-cache";
 import {
   heartbeatsApi,
   type ActiveRunForIssue,
@@ -104,13 +94,13 @@ import { instanceSettingsApi } from "../api/instanceSettings";
 import { accessApi } from "../api/access";
 import {
   canBoardManageRuntime,
-  canBoardConfirmOwnerStop,
   canBoardResolveRecoveryAction,
   isRetainedWorkspaceExportCause,
   readRecoveryReconcileWorkspaceId,
 } from "../lib/recovery-reconcile";
 import { agentsApi } from "../api/agents";
 import { authApi } from "../api/auth";
+import { projectsApi } from "../api/projects";
 import { executionWorkspacesApi } from "../api/execution-workspaces";
 import { useCompany } from "../context/CompanyContext";
 import { useDialogActions } from "../context/DialogContext";
@@ -139,7 +129,6 @@ import { queryKeys } from "../lib/queryKeys";
 import { keepPreviousDataForSameQueryTail } from "../lib/query-placeholder-data";
 import { useIssueWorkProducts } from "../hooks/useIssueWorkProducts";
 import {
-  isQueuedInterruptHandoff,
   mergePendingIssueQueuedComments,
   normalizeIssueQueuedCommentQueue,
   startingQueuedCommentIds,
@@ -169,9 +158,7 @@ import {
   ISSUE_DETAIL_HEADER_PAINT_MARK,
   reportIssueDetailWebVitals,
   scheduleIssueDetailPaintMeasure,
-  useIssueDetailContentPaintedAt,
 } from "../lib/issue-detail-performance";
-import { usePageContentReady } from "../hooks/usePageContentReady";
 import {
   beginLocalInboxArchive,
   boundLocalInboxArchive,
@@ -215,7 +202,6 @@ import {
 } from "../lib/optimistic-issue-runs";
 import { useProjectOrder } from "../hooks/useProjectOrder";
 import { recordRecentTask } from "../lib/recent-tasks";
-import { modelStillUnavailableToast } from "../lib/model-retry-refusal";
 import {
   relativeTime,
   cn,
@@ -235,7 +221,6 @@ import {
   type IssueChatRunFinalizationAction,
 } from "../components/IssueChatThread";
 import { TaskChatThread } from "../components/TaskChatThread";
-import { hasVisibleRunAnswer } from "@/lib/run-answer-visibility";
 import type { TaskChatIssueBrief } from "../components/task-chat/TaskChatDescriptionBubble";
 import { useClassicTaskInterfaceEnabled } from "../hooks/useClassicTaskInterfaceEnabled";
 import { useStreamlinedUiEnabled } from "../hooks/useStreamlinedUiEnabled";
@@ -314,7 +299,6 @@ import {
   PopoverContent,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { usePageSettled } from "@/hooks/usePageSettled";
 import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { describeError, isTransientError } from "@/api/errors";
 import {
@@ -357,7 +341,7 @@ import {
   buildAnsweredQuestionsDeliveryText,
   buildIssueThreadInteractionSummary,
 } from "../lib/issue-thread-interactions";
-import { chatSidebarDocumentHash, resolveIssueDocumentDeepLink, sameIssueDocumentHash } from "../lib/issue-document-deep-link";
+import { resolveIssueDocumentDeepLink, sameIssueDocumentHash } from "../lib/issue-document-deep-link";
 import {
   buildIssueSiblingNavigation,
   shouldRenderRichSubIssuesSection,
@@ -423,12 +407,8 @@ import {
   type WorkspaceFileRef,
   workspaceFileRefSchema,
   isUuidLike,
-  type ExecutionAgentQueue,
 } from "@paperclipai/shared";
-import { AgentQueueWaitChip } from "@/components/AgentQueueWait";
-import { agentQueueWaitOf, isWaitingToStart } from "@/lib/agent-queue-wait";
 import { taskStatusIconProps } from "@/lib/task-status-presentation";
-import { openSafeUrl } from "@/lib/safe-url";
 
 // Stable empty array for React Query `data` defaults. A literal `= []` default
 // creates a new array reference on every render while `data` is undefined
@@ -516,7 +496,7 @@ function treeControlPreviewErrorCopy(error: unknown): string {
     if (error.status === 422)
       return "This subtree action is currently invalid for the selected tasks.";
   }
-  return error instanceof Error ? error.message : "Unable to load preview.";
+  return error instanceof Error ? error.message : interfaceMessage("interface:errorUnableToLoadPreviewSentence");
 }
 
 // `canBoardManageRuntime` and `readRecoveryReconcileWorkspaceId` moved to `@/lib/recovery-reconcile`
@@ -532,20 +512,6 @@ export function shouldScrollIssueDetailToTopOnNavigation(input: {
 }): boolean {
   if (input.navigationType === "POP") return false;
   return input.previousIssueId !== input.nextIssueId;
-}
-
-type LiveRunSummary = { count: number; waitingOnly: boolean; agentQueue: ExecutionAgentQueue | null };
-const EMPTY_LIVE_RUN_SUMMARY: LiveRunSummary = { count: 0, waitingOnly: false, agentQueue: null };
-
-function summarizeLiveRuns(
-  runs: ReadonlyArray<Pick<LiveRunForIssue | ActiveRunForIssue, "status" | "startedAt" | "execution">>,
-): LiveRunSummary {
-  if (!runs.length) return EMPTY_LIVE_RUN_SUMMARY;
-  return {
-    count: runs.length,
-    waitingOnly: runs.every(run => isWaitingToStart(run)),
-    agentQueue: runs.map(run => agentQueueWaitOf(run.execution)).find(Boolean) ?? null,
-  };
 }
 
 function resolveInterruptibleIssueRun(
@@ -773,9 +739,11 @@ function AttributionAvatar({
   actor: AttributionActor;
   via?: string | null;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const displayLabel = pageText(label === "Assignee" ? "assignee_049e3c" : "originating");
   const accessibleLabel = via
-    ? `${label}: ${actor.name} · via ${via}`
-    : `${label}: ${actor.name}`;
+    ? pageText("actorVia", { label: displayLabel, name: actor.name, via })
+    : pageText("actorName", { label: displayLabel, name: actor.name });
   const testIdLabel = label.toLowerCase();
 
   return (
@@ -803,14 +771,14 @@ function AttributionAvatar({
           )}
           <div className="min-w-0">
             <div className="text-(length:--text-nano) font-medium uppercase leading-none text-background/70">
-              {label}
+              {displayLabel}
             </div>
             <div className="max-w-48 truncate text-xs font-medium leading-4 text-background">
               {actor.name}
             </div>
             {via ? (
               <div className="max-w-48 truncate text-(length:--text-nano) leading-3 text-background/60">
-                via {via}
+                {pageText("viaSource", { via })}
               </div>
             ) : null}
           </div>
@@ -834,6 +802,7 @@ function IssueAttributionByline({
   >;
   userLabelMap: ReadonlyMap<string, string>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const assignee: AttributionActor | null = issue.assigneeAgentId
     ? {
         kind: "agent",
@@ -886,7 +855,7 @@ function IssueAttributionByline({
     <TooltipProvider>
       <AvatarGroup
         className="-space-x-1.5"
-        aria-label="Task people"
+        aria-label={pageText("taskPeople")}
         data-testid="issue-attribution-avatar-stack"
       >
         {assignee ? (
@@ -1006,6 +975,7 @@ export function IssueDetailLoadingState({
   headerSeed: ReturnType<typeof readIssueDetailHeaderSeed>;
   titleEditor?: React.ReactNode;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const identifier =
     headerSeed?.identifier ?? headerSeed?.id.slice(0, 8) ?? null;
   const { taskChatShellEnabled, streamlinedUiEnabled, coordinatorWorkspaceEnabled, loaded } = useTaskDetailInterfaceMode();
@@ -1013,13 +983,13 @@ export function IssueDetailLoadingState({
   if (titleEditor) {
     return <div className="max-w-3xl space-y-6">
       <div data-testid="issue-detail-header">{titleEditor}</div>
-      <div role="status" aria-label="Loading conversation" className="flex items-center justify-center">
+      <div role="status" aria-label={pageText("loadingConversation_22707c")} className="flex items-center justify-center">
         <Skeleton aria-hidden="true" className="h-4 w-24" />
       </div>
     </div>;
   }
   if (!loaded) {
-    return <div data-testid="task-detail-presentation-loading" role="status" aria-label="Loading conversation" className="flex h-full min-h-0 w-full flex-1 items-center justify-center">
+    return <div data-testid="task-detail-presentation-loading" role="status" aria-label={pageText("loadingConversation_22707c")} className="flex h-full min-h-0 w-full flex-1 items-center justify-center">
       <Skeleton aria-hidden="true" className="h-4 w-24" />
     </div>;
   }
@@ -1054,11 +1024,9 @@ export function IssueDetailLoadingState({
                 <Badge
                   variant="outline"
                   className="border-violet-500/30 bg-violet-500/10 text-(length:--text-nano) text-violet-600 dark:text-violet-400"
-                  title={`Routine execution from routine ${headerSeed.originId}`}
+                  title={translateDynamic("dynamic:routineExecutionFromRoutine", { value1: headerSeed.originId })}
                 >
-                  <Repeat className="h-3 w-3" />
-                  Routine
-                </Badge>
+                  <Repeat className="h-3 w-3" />{pageText("routine_482273")}</Badge>
               ) : null}
               {/* Seeded header — same anatomy as the resolved one below, so the
                   eyebrow does not change shape when the real issue arrives. */}
@@ -1071,9 +1039,7 @@ export function IssueDetailLoadingState({
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1 text-xs text-muted-foreground opacity-50 px-1 -mx-1 py-0.5">
-                  <ProjectTile size="xs" />
-                  No project
-                </span>
+                  <ProjectTile size="xs" />{pageText("noProject_c326b7")}</span>
               )}
             </>
           ) : (
@@ -1142,6 +1108,7 @@ function InboxMobileToolbar({
   onProperties,
   onHide,
 }: InboxMobileToolbarProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -1160,7 +1127,7 @@ function InboxMobileToolbar({
             navigate(backHref);
           }
         }}
-        aria-label="Back to inbox"
+        aria-label={pageText("backToInbox_0050d6")}
       >
         <ArrowLeft className="h-5 w-5" />
       </Button>
@@ -1172,7 +1139,7 @@ function InboxMobileToolbar({
             size="icon-sm"
             onClick={onArchive}
             disabled={archivePending}
-            aria-label="Archive from inbox"
+            aria-label={pageText("archiveFromInbox_01ebe7")}
           >
             <Archive className="h-5 w-5" />
           </Button>
@@ -1180,7 +1147,7 @@ function InboxMobileToolbar({
 
         <Popover open={menuOpen} onOpenChange={setMenuOpen}>
           <PopoverTrigger asChild>
-            <Button variant="ghost" size="icon-sm" aria-label="More actions">
+            <Button variant="ghost" size="icon-sm" aria-label={pageText("moreActions_a1e34f")}>
               <MoreVertical className="h-5 w-5" />
             </Button>
           </PopoverTrigger>
@@ -1192,9 +1159,7 @@ function InboxMobileToolbar({
                 setMenuOpen(false);
               }}
             >
-              <Copy className="h-3 w-3" />
-              Copy as markdown
-            </button>
+              <Copy className="h-3 w-3" />{pageText("copyAsMarkdown_87358c")}</button>
             <button
               className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50"
               onClick={() => {
@@ -1202,9 +1167,7 @@ function InboxMobileToolbar({
                 setMenuOpen(false);
               }}
             >
-              <SlidersHorizontal className="h-3 w-3" />
-              Properties
-            </button>
+              <SlidersHorizontal className="h-3 w-3" />{pageText("properties_bc6c88")}</button>
             {issueIdProp && (
               <button
                 className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50 text-destructive"
@@ -1213,15 +1176,18 @@ function InboxMobileToolbar({
                   setMenuOpen(false);
                 }}
               >
-                <EyeOff className="h-3 w-3" />
-                Hide this task
-              </button>
+                <EyeOff className="h-3 w-3" />{pageText("hideThisTask_25903a")}</button>
             )}
           </PopoverContent>
         </Popover>
       </div>
     </div>
   );
+}
+
+interface RecentIssueRunWindow {
+  runs: RunForIssue[];
+  hasEarlierRuns: boolean;
 }
 
 type IssueDetailChatTabProps = {
@@ -1523,26 +1489,22 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
     isError: activityError,
     refetch: refetchActivity,
   } = useQuery({
-    queryKey: historyExpanded ? queryKeys.issues.activity(issueQueryRef) : recentIssueActivityQueryKey(issueQueryRef),
-    queryFn: () => historyExpanded
-      ? activityApi.forIssue(issueQueryRef)
-      : fetchRecentIssueActivity(queryClient, issueQueryRef),
+    queryKey: historyExpanded ? queryKeys.issues.activity(issueQueryRef) : [...queryKeys.issues.activity(issueQueryRef), "recent"],
+    queryFn: async () => {
+      if (historyExpanded) return activityApi.forIssue(issueQueryRef);
+      const recent = await activityApi.recentForIssue(issueQueryRef);
+      const previous = queryClient.getQueryData<ActivityEvent[]>([...queryKeys.issues.activity(issueQueryRef), "recent"]) ?? [];
+      return [...new Map([...previous, ...recent].map((event) => [event.id, event])).values()];
+    },
     enabled: !!issueId,
     placeholderData: historyExpanded
       ? queryClient.getQueryData<ActivityEvent[]>([...queryKeys.issues.activity(issueQueryRef), "recent"])
       : undefined,
   });
-  const inputCommentIds = issueInputCommentIds(comments);
+  const inputCommentIds = comments.filter((comment) => !("clientStatus" in comment) || !comment.clientStatus).map((comment) => comment.id).sort();
   const inputFacts = useIssueIdBatches(
-    issueCommentInputFactsQueryKey(issueQueryRef), inputCommentIds,
-    ids => readFromIssueChatBootstrap(
-      queryClient,
-      [...issueCommentInputFactsQueryKey(issueQueryRef), "batch", ids],
-      issueQueryRef,
-      // The bootstrap answers exactly the saved recent-window comments.
-      (item) => sameIds(issueInputCommentIds(item.recentComments.comments), ids) ? item.commentInputFacts : undefined,
-      () => activityApi.inputFactsForIssue(issueQueryRef, ids),
-    ), !!issueId && !historyExpanded,
+    [...queryKeys.issues.activity(issueQueryRef), "comment-inputs"], inputCommentIds,
+    ids => activityApi.inputFactsForIssue(issueQueryRef, ids), !!issueId && !historyExpanded,
   );
   const {
     data: liveRuns,
@@ -1551,7 +1513,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
     refetch: refetchLiveRuns,
   } = useQuery({
     queryKey: queryKeys.issues.liveRuns(issueQueryRef),
-    queryFn: () => readFromIssueChatBootstrap(queryClient, queryKeys.issues.liveRuns(issueQueryRef), issueQueryRef, (item) => item.liveRuns, () => heartbeatsApi.liveRunsForIssue(issueQueryRef)),
+    queryFn: () => heartbeatsApi.liveRunsForIssue(issueQueryRef),
     enabled: !!issueId,
     refetchInterval: (query) => liveRunRefetchInterval(hasLiveConnection, query.state, 1000),
     placeholderData:
@@ -1568,7 +1530,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
     refetch: refetchActiveRun,
   } = useQuery({
     queryKey: queryKeys.issues.activeRun(issueQueryRef),
-    queryFn: () => readFromIssueChatBootstrap(queryClient, queryKeys.issues.activeRun(issueQueryRef), issueQueryRef, (item) => item.activeRun, () => heartbeatsApi.activeRunForIssue(issueQueryRef)),
+    queryFn: () => heartbeatsApi.activeRunForIssue(issueQueryRef),
     enabled: activeRunQueryEnabled,
     refetchInterval: (query) => liveRunCount > 0 ? false : liveRunRefetchInterval(hasLiveConnection, query.state, 1000),
     placeholderData: keepPreviousDataForSameQueryTail<ActiveRunForIssue | null>(
@@ -1648,7 +1610,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
   const hasLiveRuns = liveRunCount > 0 || !!resolvedActiveRun;
   const linkedRunsKey = historyExpanded
     ? queryKeys.issues.runs(issueQueryRef)
-    : recentIssueRunWindowQueryKey(issueQueryRef);
+    : [...queryKeys.issues.runs(issueQueryRef), "recent-window"];
   const {
     data: linkedRunHistory,
     isPending: linkedRunsPending,
@@ -1656,9 +1618,35 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
     refetch: refetchLinkedRuns,
   } = useQuery<RunForIssue[] | RecentIssueRunWindow>({
     queryKey: linkedRunsKey,
-    queryFn: () => historyExpanded
-      ? activityApi.runsForIssue(issueQueryRef)
-      : fetchRecentIssueRunWindow(queryClient, issueQueryRef, { conversationMode }),
+    queryFn: async () => {
+      if (historyExpanded) return activityApi.runsForIssue(issueQueryRef);
+      let recent = await activityApi.recentRunsForIssue(issueQueryRef);
+      const previousWindow = queryClient.getQueryData<RecentIssueRunWindow>(linkedRunsKey);
+      let previous = previousWindow?.runs ?? [];
+      let reconciledFullHistory = false;
+      if (previous.some((run) =>
+        (run.status === "running" || run.status === "queued") && !recent.some((next) => next.runId === run.runId),
+      )) {
+        // After a reconnect, several turns may have completed beyond the small
+        // window. Reconcile watched runs once against authoritative summaries.
+        recent = conversationMode
+          ? await activityApi.runsByIdsForIssue(issueQueryRef, [...new Set([...previous.map(run => run.runId), ...recent.map(run => run.runId)])])
+          : await activityApi.runsForIssue(issueQueryRef);
+        reconciledFullHistory = true;
+        const existingRunIds = new Set(recent.map((run) => run.runId));
+        previous = previous.filter((run) => existingRunIds.has(run.runId));
+      }
+      // The second row refreshes a just-finished predecessor. Start with only
+      // the latest run, then keep every run observed while this task is open.
+      const visible = new Set([...previous.map((run) => run.runId), ...recent.slice(0, 1).map((run) => run.runId)]);
+      return {
+        runs: [...new Map([...previous, ...recent].filter((run) => visible.has(run.runId)).map((run) => [run.runId, run])).values()],
+        // A first run is already visible. The disclosure needs evidence of an
+        // omitted run, and must retain that evidence as later turns arrive.
+        hasEarlierRuns: recent.some((run) => !visible.has(run.runId))
+          || (!reconciledFullHistory && recent.length >= 2 && previousWindow?.hasEarlierRuns === true),
+      };
+    },
     enabled: !!issueId,
     refetchInterval:
       hasLiveRuns || issueStatus === "in_progress" ? 1000 : false,
@@ -1676,10 +1664,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
     ...(Array.isArray(linkedRunHistory) ? linkedRunHistory : linkedRunHistory?.runs ?? []),
     ...(conversationMode && !historyExpanded ? commentRuns.data ?? [] : []),
   ].map(run => [run.runId, run])).values()], [linkedRunHistory, conversationMode, historyExpanded, commentRuns.data]);
-  const earlierRun = Array.isArray(linkedRunHistory) ? undefined : linkedRunHistory?.earlierRun;
-  const hasEarlierRuns = !Array.isArray(linkedRunHistory) && linkedRunHistory?.hasEarlierRuns === true && !(
-    earlierRun?.status === "succeeded" && hasVisibleRunAnswer(comments, earlierRun.runId, earlierRun.resultJson)
-  );
+  const hasEarlierRuns = !Array.isArray(linkedRunHistory) && linkedRunHistory?.hasEarlierRuns === true;
   const resolvedActivity = useMemo(
     () => [...new Map([...(activity ?? []), ...(inputFacts.data ?? [])].map((event) => [event.id, event])).values()],
     [activity, inputFacts.data],
@@ -1701,8 +1686,8 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
     onSuccess: (result) => {
       if (!result.runId) {
         pushToast({
-          title: "Retry queued",
-          body: "The exact request will retry when this task is ready.",
+          title: interfaceNotice("interface:retryQueued_c9a163"),
+          body: interfaceNotice("interface:theExactRequestWillRetryWhenThisTask_9390c0"),
           tone: "success",
         });
       }
@@ -1718,11 +1703,10 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
         queryKey: queryKeys.issues.activeRun(issueQueryRef),
       });
     },
-    onError: (error, runId) => {
-      const failedRun = resolvedLinkedRuns.find((run) => run.runId === runId);
-      pushToast(modelStillUnavailableToast(error, failedRun ? agentMap.get(failedRun.agentId) : undefined) ?? {
-        title: "Run retry failed",
-        body: error instanceof Error ? error.message : "Unable to retry run",
+    onError: (error) => {
+      pushToast({
+        title: interfaceNotice("interface:runRetryFailed_d86553"),
+        body: error instanceof Error ? error.message : interfaceMessage("interface:errorUnableToRetryRun"),
         tone: "error",
       });
     },
@@ -1802,16 +1786,8 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
               run.contextCommentId.length > 0
             ? run.contextCommentId
             : null;
-      // Messages posted while the run was starting, which its first turn took.
-      const firstTurnIds = Array.isArray(run.firstTurnCommentIds)
-        ? run.firstTurnCommentIds.filter(
-            (value): value is string => typeof value === "string" && value.length > 0,
-          )
-        : [];
-      const inputIds = [...new Set([
-        ...(batchedIds.length > 0 ? batchedIds : fallbackId ? [fallbackId] : []),
-        ...firstTurnIds,
-      ])];
+      const inputIds =
+        batchedIds.length > 0 ? batchedIds : fallbackId ? [fallbackId] : [];
       const anchorAt = run.startedAt ?? run.createdAt;
       const anchorMs = new Date(anchorAt).getTime();
       inputIds.forEach((commentId, sequence) => {
@@ -1891,26 +1867,6 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
         anchorMs,
         kind: "steer",
         queueIds: inputPlacementByCommentId.get(commentId)?.queueIds ?? new Set(),
-      });
-    }
-    // A run that is still starting (a booting sandbox, say) cannot be steered,
-    // but its first turn takes these messages. They are sent: show them at
-    // their submission time in the conversation, not in the queue.
-    const firstTurnRunId = authoritativeQueuedCommentQueue?.targetRunId ?? null;
-    if (firstTurnRunId) {
-      const createdAtById = new Map(comments.map((comment) => [comment.id, comment.createdAt]));
-      authoritativeQueuedCommentQueue?.firstTurnCommentIds?.forEach((commentId, sequence) => {
-        const createdAt = createdAtById.get(commentId);
-        if (inputPlacementByCommentId.has(commentId) || !createdAt) return;
-        const anchorAt = new Date(createdAt).toISOString();
-        inputPlacementByCommentId.set(commentId, {
-          runId: firstTurnRunId,
-          anchorAt,
-          sequence,
-          anchorMs: new Date(anchorAt).getTime(),
-          kind: "run_start",
-          queueIds: new Set(authoritativeQueuedCommentQueue.queueId ? [authoritativeQueuedCommentQueue.queueId] : []),
-        });
       });
     }
     for (const [commentId, placement] of localSteeringPlacements) {
@@ -2198,7 +2154,6 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
         });
     return [...projectedComments, ...responseComments];
   }, [
-    authoritativeQueuedCommentQueue,
     comments,
     classicTaskInterfaceEnabled,
     interactions,
@@ -2257,11 +2212,6 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
           : comment.queueState === "queued"
             ? (comment.queueTargetRunId ?? null)
             : null);
-      // A saved message the server queue never listed (a run's first turn
-      // took it) is not pending once that run settles. Keeping it would
-      // withhold the queue id, and with it Steer and Discard, from every
-      // later message. A request still in flight keeps its original target.
-      if (targetRunId && !liveRunIds.has(targetRunId) && !comment.id.startsWith("optimistic-")) return [];
       return targetRunId ? [{ comment, targetRunId }] : [];
     });
     const fallbackProtocol =
@@ -2281,7 +2231,6 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
     consumedQueuedCommentIds,
     discardedQueuedCommentIds,
     issueId,
-    liveRunIds,
     liveRuntimeRun,
     assigneeUsesPaperclipRunner,
     locallyQueuedCommentRunIds,
@@ -2388,17 +2337,9 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
           "The queued messages are awaiting server acknowledgement.",
         );
       try {
-        // The server orders its whole queue. Messages this view hides (inputs
-        // a starting run already admitted, or ones its first turn takes) keep
-        // their place; the person reorders only the rest.
-        const firstTurnIds = new Set(authoritativeQueuedCommentQueue?.firstTurnCommentIds ?? []);
-        const hidden = (id: string) => startingCommentIds.has(id) || firstTurnIds.has(id);
-        const serverEntries = authoritativeQueuedCommentQueue?.queueId === queueId
-          ? authoritativeQueuedCommentQueue.entries
-          : effectiveQueuedCommentQueue.entries;
         let nextPosition = 0;
-        const fullOrder = serverEntries.map(entry =>
-          hidden(entry.comment.id) ? entry.comment.id : orderedCommentIds[nextPosition++]!);
+        const fullOrder = effectiveQueuedCommentQueue.entries.map(entry =>
+          startingCommentIds.has(entry.comment.id) ? entry.comment.id : orderedCommentIds[nextPosition++]!);
         storeQueuedCommentQueue(
           await issuesApi.reorderQueuedComments(issueId, {
             orderedCommentIds: fullOrder,
@@ -2411,7 +2352,6 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
       }
     },
     [
-      authoritativeQueuedCommentQueue,
       effectiveQueuedCommentQueue,
       startingCommentIds,
       issueId,
@@ -2510,12 +2450,12 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
       });
       try {
         const updatedQueue = await onInterruptQueued(runId);
-        if (updatedQueue?.state === "deferred" && !isQueuedInterruptHandoff(updatedQueue)) {
+        if (updatedQueue?.state === "deferred") {
           const remaining = new Set(updatedQueue.entries.map(entry => entry.comment.id));
           setConsumedQueuedCommentIds(current => new Set([...current].filter(id => !remaining.has(id))));
           setLocalInterruptPlacements(current => new Map([...current].filter(([id]) => !remaining.has(id))));
           storeQueuedCommentQueue(updatedQueue);
-          if (classicTaskInterfaceEnabled) setClassicQueuedDeliveryError(updatedQueue.executionWait?.message ?? "Messages are still queued.");
+          if (classicTaskInterfaceEnabled) setClassicQueuedDeliveryError(updatedQueue.executionWait?.message ?? interfaceNotice("interface:messagesAreStillQueued_ca3786"));
         }
         return updatedQueue;
       } catch (error) {
@@ -2530,7 +2470,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
           return next;
         });
         if (classicTaskInterfaceEnabled) {
-          setClassicQueuedDeliveryError("Couldn’t interrupt. Message is still queued.");
+          setClassicQueuedDeliveryError(interfaceNotice("interface:couldnTInterruptMessageIsStillQueued_a4485e"));
           return;
         }
         await refreshQueueAfterConflict(error);
@@ -2550,25 +2490,20 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
   const discardQueuedComment = useCallback(
     async (commentId: string, revision: string) => {
       const queueId = effectiveQueuedCommentQueue?.queueId;
+      if (!queueId)
+        throw new Error(
+          "The queued message is awaiting server acknowledgement.",
+        );
       try {
-        if (queueId) {
-          storeQueuedCommentQueue(
-            await issuesApi.discardQueuedComment(issueId, commentId, {
-              queueId,
-              revision,
-            }),
-          );
-        } else {
-          await issuesApi.cancelComment(issueId, commentId);
-        }
+        storeQueuedCommentQueue(
+          await issuesApi.discardQueuedComment(issueId, commentId, {
+            queueId,
+            revision,
+          }),
+        );
         setDiscardedQueuedCommentIds((current) =>
           new Set(current).add(commentId),
         );
-        if (!queueId) {
-          void queryClient.invalidateQueries({
-            queryKey: queryKeys.issues.queuedComments(issueId),
-          });
-        }
         // Discard deletes the persisted comment. Update both history caches
         // and task aliases so the row stays removed after this view unmounts.
         await onRemoveCommentFromCache(commentId);
@@ -2596,8 +2531,8 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
               : null;
         if (code === "queued_comment_already_dispatching") {
           pushToast({
-            title: "Message is already being sent",
-            body: "The continuation started before the discard was confirmed, so Paperclip could not unsend it.",
+            title: interfaceNotice("interface:messageIsAlreadyBeingSent_4ca931"),
+            body: interfaceNotice("interface:theContinuationStartedBeforeTheDiscardWasConfirmed_0bc734"),
             tone: "error",
             ttlMs: 15_000,
             dedupeKey: `queued-comment-already-dispatching:${issueId}:${commentId}`,
@@ -2642,8 +2577,8 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
         onClick={onLoadOlderComments}
       >
         {commentsLoadingOlder
-          ? "Loading earlier comments..."
-          : "Load earlier comments"}
+          ? plainText("interface:loadingEarlierComments_79c77e")
+          : plainText("interface:loadEarlierComments_93f172")}
       </Button>
     </div>
   ) : null;
@@ -2672,16 +2607,13 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
           }}
         >
           <EmailThreadProvider companyId={companyId} issueId={issueId}>
-          <TaskTranscriptAgents.Provider value={conversationMode ? null : agentMap}>
           <ThreadComponent
             {...(!classicTaskInterfaceEnabled ? {
               compactHistory: !historyExpanded,
               onExpandHistory: conversationMode ? undefined : onExpandHistory,
               scrollingHistory,
               historyControl: conversationMode ? null : !historyExpanded && (hasEarlierMessages || hasEarlierRuns) ? (
-                <Button type="button" variant="ghost" size="sm" onClick={onExpandHistory}>
-                  More messages
-                </Button>
+                <Button type="button" variant="ghost" size="sm" onClick={onExpandHistory}>{plainText("interface:moreMessages_8c6897")}</Button>
               ) : null,
             } : {})}
             executionBlocked={executionBlocked}
@@ -2866,7 +2798,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
               tryAgainNoLiveExecutionPathPending
             }
             footer={grokWork || stopGrokWork.error || classicQueuedDeliveryError ? <>
-              {grokWork && <p className="text-xs text-muted-foreground">Runs in Grok Bot · Usage not reported. Stop Paperclip work revokes this session’s authority; remote execution may continue. Open the Grok Bot desktop app to inspect it.</p>}
+              {grokWork && <p className="text-xs text-muted-foreground">{plainText("interface:runsInGrokBotUsageNotReportedStop_718c4f")}</p>}
               {stopGrokWork.error && <p role="alert" className="text-sm text-destructive">{describeError(stopGrokWork.error).body}</p>}
               {classicQueuedDeliveryError && <p role="status" className="text-sm text-destructive">{classicQueuedDeliveryError}</p>}
               {footer}
@@ -2874,7 +2806,6 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
             externalReferences={externalReferences}
             linkCaseReferences={linkCaseReferences}
           />
-          </TaskTranscriptAgents.Provider>
           </EmailThreadProvider>
         </TaskChatScrollNavigation.Provider>
       )}
@@ -2934,6 +2865,7 @@ function IssueDetailActivityTab({
   handoffFocusSignal = 0,
   externalReferences,
 }: IssueDetailActivityTabProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { data: activity, isLoading: activityLoading } = useQuery({
     queryKey: queryKeys.issues.activity(issueId),
     queryFn: () => activityApi.forIssue(issueId),
@@ -3066,48 +2998,41 @@ function IssueDetailActivityTab({
     <>
       {shouldShowCostSummary && (
         <div className="mb-3 px-3 py-2 rounded-lg border border-border">
-          <div className="text-sm font-medium text-muted-foreground mb-1">
-            Cost Summary
-          </div>
+          <div className="text-sm font-medium text-muted-foreground mb-1">{pageText("costSummary_1a5d3e")}</div>
           {!issueCostSummary.hasCost &&
           !issueCostSummary.hasTokens &&
           !hasIssueTreeCost ? (
-            <div className="text-xs text-muted-foreground">
-              No cost data yet.
-            </div>
+            <div className="text-xs text-muted-foreground">{pageText("noCostDataYet_854cd2")}</div>
           ) : (
             <div className="space-y-1 text-xs text-muted-foreground tabular-nums">
               <div className="flex flex-wrap gap-3">
-                <span className="font-medium text-foreground">This task</span>
+                <span className="font-medium text-foreground">{pageText("thisTask_fe4214")}</span>
                 {issueCostSummary.hasCost ? (
                   <span className="font-medium text-foreground">
                     ${issueCostSummary.cost.toFixed(4)}
                   </span>
                 ) : null}
                 {issueCostSummary.hasTokens ? (
-                  <span>
-                    Tokens {formatTokens(issueCostSummary.totalTokens)}
+                  <span>{pageText("tokens_c38c6c") + " "}{formatTokens(issueCostSummary.totalTokens)}
                     {issueCostSummary.cached > 0
                       ? ` (in ${formatTokens(issueCostSummary.input)}, out ${formatTokens(issueCostSummary.output)}, cached ${formatTokens(issueCostSummary.cached)})`
                       : ` (in ${formatTokens(issueCostSummary.input)}, out ${formatTokens(issueCostSummary.output)})`}
                   </span>
                 ) : null}
                 {issueCostSummary.hasRuntime ? (
-                  <span>
-                    Runtime {formatDurationMs(issueCostSummary.runtimeMs)}
+                  <span>{pageText("runtime_c4740e") + " "}{formatDurationMs(issueCostSummary.runtimeMs)}
                     {` (${issueCostSummary.runCount} run${issueCostSummary.runCount === 1 ? "" : "s"})`}
                   </span>
                 ) : null}
                 {!issueCostSummary.hasCost &&
                 !issueCostSummary.hasTokens &&
                 !issueCostSummary.hasRuntime ? (
-                  <span>No direct cost data.</span>
+                  <span>{pageText("noDirectCostData_6794f7")}</span>
                 ) : null}
               </div>
               {hasIssueTreeCost && issueTreeCostSummary ? (
                 <div className="flex flex-wrap gap-3">
-                  <span className="font-medium text-foreground">
-                    Including sub-tasks{" "}
+                  <span className="font-medium text-foreground">{pageText("includingSubTasks_4b21c0")}{" "}
                     {(issueTreeCostSummary.costCents / 100).toLocaleString(
                       undefined,
                       {
@@ -3118,21 +3043,18 @@ function IssueDetailActivityTab({
                       },
                     )}
                   </span>
-                  <span>
-                    Tokens {formatTokens(issueTreeCostTokens)}
+                  <span>{pageText("tokens_c38c6c") + " "}{formatTokens(issueTreeCostTokens)}
                     {issueTreeCostSummary.cachedInputTokens > 0
                       ? ` (in ${formatTokens(issueTreeCostSummary.inputTokens)}, out ${formatTokens(issueTreeCostSummary.outputTokens)}, cached ${formatTokens(issueTreeCostSummary.cachedInputTokens)})`
                       : ` (in ${formatTokens(issueTreeCostSummary.inputTokens)}, out ${formatTokens(issueTreeCostSummary.outputTokens)})`}
                   </span>
                   {issueTreeCostSummary.runCount > 0 ? (
-                    <span>
-                      Runtime {formatDurationMs(issueTreeCostSummary.runtimeMs)}
+                    <span>{pageText("runtime_c4740e") + " "}{formatDurationMs(issueTreeCostSummary.runtimeMs)}
                       {` (${issueTreeCostSummary.runCount} run${issueTreeCostSummary.runCount === 1 ? "" : "s"})`}
                     </span>
                   ) : null}
                   <span>
-                    {issueTreeCostSummary.issueCount} task
-                    {issueTreeCostSummary.issueCount === 1 ? "" : "s"}
+                    {issueTreeCostSummary.issueCount}{" " + pageText("task_7fbb72")}{issueTreeCostSummary.issueCount === 1 ? "" : "s"}
                   </span>
                 </div>
               ) : null}
@@ -3267,12 +3189,11 @@ export function IssueDetail({ tasksTab }: { tasksTab?: TaskSidePanelProps["tasks
 /** One controller and surface for both task URLs and agent conversations. */
 export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskSidePanelProps["tasksTab"]; conversation?: {
   agent: Agent; issue: Issue | null; ensureIssue: () => Promise<Issue>;
-  onReady?: () => void;
 } }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi, i18n } = useUiTranslation();
   const { issueId: routeIssueId, companyPrefix } = useParams<{ issueId: string; companyPrefix: string }>();
   const issueId = conversation ? conversation.issue?.id : routeIssueId;
-  const isAgentChatRoute = Boolean(conversation);
-  const persistedAgentChat = Boolean(conversation?.issue);
   const [loadingTitleIssueId, setLoadingTitleIssueId] = useState<string | null>(null);
   useEffect(() => setLoadingTitleIssueId(null), [issueId, companyPrefix]);
   const [draftWorkMode, setDraftWorkMode] = useState<IssueWorkMode>("standard");
@@ -3289,7 +3210,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     streamlinedUiEnabled,
     loaded: taskInterfaceSettingsLoaded,
     coordinatorWorkspaceEnabled,
-  } = useTaskDetailInterfaceMode(isAgentChatRoute);
+  } = useTaskDetailInterfaceMode(!!conversation);
   const designSandbox = useDesignSandbox();
   const proposedTaskHeader = (designSandbox || coordinatorWorkspaceEnabled) && streamlinedTaskDetailEnabled;
   // Chat-style: the page wrapper spans the full center pane so the thread's
@@ -3304,7 +3225,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     closePanel,
     panelVisible,
     setPanelVisible,
-    setPanelShowsArtifact,
     requestPanelMaximize,
     clearPanelMaximizeRequest,
   } = usePanel();
@@ -3334,7 +3254,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     setOpenSkill((current) => current?.id === skillId ? null : current);
   }, []);
   const [documentDeepLink, setDocumentDeepLink] = useState<
-    (IssuePropertiesDocumentDeepLink & { issueId: string; focusActivePlan?: boolean }) | null
+    (IssuePropertiesDocumentDeepLink & { issueId: string }) | null
   >(null);
   const [fileViewerPromptOpen, setFileViewerPromptOpen] = useState(false);
   const [detailTab, setDetailTab] = useState("chat");
@@ -3369,7 +3289,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const readReceiptRef = useRef<{
     issueId: string;
-    companyId: string;
     account: ReturnType<typeof bindAccount>;
     attemptedSessionAt?: number;
     confirmed: boolean;
@@ -3411,20 +3330,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     [location.state, resolvedIssueDetailState],
   );
 
-  // A cold open sends one bootstrap request for everything the chat's first
-  // frame needs; the reads below wait for its answer instead of fanning out.
-  // A task preloaded by the list is already cached, so this is a no-op. A task
-  // restored from the saved read cache shows its header at once but has no
-  // chat history saved, so it opens like a cold one.
-  const bootstrapCompanyId = companies.find((company) => company.issuePrefix === companyPrefix?.toUpperCase())?.id ?? selectedCompanyId;
-  const coreIssueKey = issueId ? [...queryKeys.issues.detail(issueId), "core"] : null;
-  if (issueId && coreIssueKey && !conversation
-    && (queryClient.getQueryData(coreIssueKey) === undefined || isRestoredSavedRead(queryClient, coreIssueKey))) {
-    const restoredIssue = queryClient.getQueryData<Issue>(coreIssueKey);
-    startIssueChatBootstrap(queryClient, bootstrapCompanyId, issueId, [restoredIssue?.id, restoredIssue?.identifier]);
-  }
-  // The core issue keeps its own small, fast read so the header never waits
-  // for the larger chat bootstrap; a preloaded task already has it cached.
   const coreIssueQuery = useQuery({
     ...getIssueCoreQueryOptions(queryClient, issueId!),
     enabled: !!issueId,
@@ -3495,10 +3400,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       issue.identifier?.toLowerCase() === issueId.toLowerCase())
       ? issue
       : null;
-  const openedIssueId = loadedIssue ? loadedIssue.id : null;
-  useEffect(() => {
-    if (openedIssueId) recordTaskOpen(queryClient, { id: openedIssueId });
-  }, [queryClient, openedIssueId]);
   const loadedIssueCompany = loadedIssue
     ? companies.find((company) => company.id === loadedIssue.companyId)
     : undefined;
@@ -3581,19 +3482,9 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     [linkedComment.data, windowComments],
   );
 
-  const contentNavigationStartedAt = useRef(Infinity);
   useLayoutEffect(() => {
-    contentNavigationStartedAt.current = performance.now();
     beginIssueDetailNavigation();
   }, [issueId]);
-  // The task page is loaded when its conversation content has painted: the
-  // same point as the `issue-detail:navigate→content-paint` measure. An agent
-  // chat with no saved task never records that mark, so it uses the generic rule.
-  const contentPaintedAt = useIssueDetailContentPaintedAt();
-  usePageContentReady(contentPaintedAt !== null, contentPaintedAt, { enabled: Boolean(issueId) });
-  useEffect(() => {
-    if (contentPaintedAt !== null && contentPaintedAt >= contentNavigationStartedAt.current) conversation?.onReady?.();
-  }, [contentPaintedAt, conversation?.onReady]);
 
   useEffect(() => {
     if (!(import.meta.env.DEV || import.meta.env.MODE === "qa")) return;
@@ -3647,7 +3538,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     refetch: refetchInteractions,
   } = useQuery({
     queryKey: queryKeys.issues.interactions(issueId!),
-    queryFn: () => readFromIssueChatBootstrap(queryClient, queryKeys.issues.interactions(issueId!), issueId!, (item) => item.interactions, () => issuesApi.listInteractions(issueId!)),
+    queryFn: () => issuesApi.listInteractions(issueId!),
     enabled: !!issueId,
     // A review can be committed between the initial fetch and live-socket
     // subscription. Reconcile even after its originating run has ended.
@@ -3664,7 +3555,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     refetch: refetchAttachments,
   } = useQuery({
     queryKey: queryKeys.issues.attachments(issueId!),
-    queryFn: () => readFromIssueChatBootstrap(queryClient, queryKeys.issues.attachments(issueId!), issueId!, (item) => item.attachments, () => issuesApi.listAttachments(issueId!)),
+    queryFn: () => issuesApi.listAttachments(issueId!),
     enabled: !!issueId,
     placeholderData: keepPreviousDataForSameQueryTail<IssueAttachment[]>(
       issueId ?? "pending",
@@ -3681,47 +3572,38 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     recordIssueDetailReadiness({ issue: !!loadedIssue, comments: !commentsLoading, interactions: !interactionsLoading, attachments: !attachmentsLoading, "work-products": !workProductsLoading });
   }, [issueId, loadedIssue, commentsLoading, interactionsLoading, attachmentsLoading, workProductsLoading]);
 
-  const { data: liveRunSummary = EMPTY_LIVE_RUN_SUMMARY } = useQuery<LiveRunForIssue[], Error, LiveRunSummary>(
+  const { data: liveRunCount = 0 } = useQuery<LiveRunForIssue[], Error, number>(
     {
       queryKey: queryKeys.issues.liveRuns(issueId!),
-      // Shares the chat's read: whichever observer mounts first must not send
-      // its own request while the page's bootstrap is loading.
-      queryFn: () => readFromIssueChatBootstrap(queryClient, queryKeys.issues.liveRuns(issueId!), issueId!, (item) => item.liveRuns, () => heartbeatsApi.liveRunsForIssue(issueId!)),
+      queryFn: () => heartbeatsApi.liveRunsForIssue(issueId!),
       enabled: !!issueId,
       refetchInterval: (query) => liveRunRefetchInterval(hasLiveConnection, query.state, 3000),
-      select: summarizeLiveRuns,
+      select: (runs) => runs.length,
       placeholderData: keepPreviousDataForSameQueryTail<LiveRunForIssue[]>(
         issueId ?? "pending",
       ),
     },
   );
 
-  const liveRunCount = liveRunSummary.count;
-  const { data: activeRunSummary = EMPTY_LIVE_RUN_SUMMARY } = useQuery<
+  const { data: hasActiveRun = false } = useQuery<
     ActiveRunForIssue | null,
     Error,
-    LiveRunSummary
+    boolean
   >({
     queryKey: queryKeys.issues.activeRun(issueId!),
     queryFn: () => heartbeatsApi.activeRunForIssue(issueId!),
     enabled:
       !!issueId && (!!issue?.executionRunId || issue?.status === "in_progress"),
     refetchInterval: (query) => liveRunCount > 0 ? false : liveRunRefetchInterval(hasLiveConnection, query.state, 3000),
-    select: (run) => summarizeLiveRuns(run ? [run] : []),
+    select: (run) => !!run,
     placeholderData: keepPreviousDataForSameQueryTail<ActiveRunForIssue | null>(
       issueId ?? "pending",
     ),
   });
-  const hasActiveRun = activeRunSummary.count > 0;
   const resolvedHasActiveRun = issue
     ? shouldTrackIssueActiveRun(issue) && hasActiveRun
     : hasActiveRun;
   const hasLiveRuns = liveRunCount > 0 || resolvedHasActiveRun;
-  // Every live run is still waiting to start: say so instead of "Live".
-  const headerWaiting = hasLiveRuns
-    && (liveRunCount === 0 || liveRunSummary.waitingOnly)
-    && (!resolvedHasActiveRun || activeRunSummary.waitingOnly);
-  const headerAgentQueue = liveRunSummary.agentQueue ?? (resolvedHasActiveRun ? activeRunSummary.agentQueue : null);
   useEffect(() => {
     if (!hasLiveRuns && locallyQueuedCommentRunIds.size > 0) {
       setLocallyQueuedCommentRunIds(new Map());
@@ -3730,7 +3612,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
   const sourceBreadcrumb = useMemo(
     () =>
       readIssueDetailBreadcrumb(issueId, location.state, location.search) ?? {
-        label: "Tasks",
+        label: controlText("Tasks"),
         href: "/issues",
       },
     [issueId, location.state, location.search],
@@ -3827,10 +3709,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     enabled: !!selectedCompanyId,
   });
   // Bounded pool of recently-updated issues to back the `@task` reference picker.
-  // The picker filters this list client-side by identifier/title. It is a large
-  // read (full rows) that never affects the first chat frame, so it starts once
-  // the page's own reads have finished.
-  const mentionPoolReady = usePageSettled();
+  // The picker filters this list client-side by identifier/title.
   const { data: mentionIssues = EMPTY_ISSUES } = useQuery({
     queryKey: resolvedCompanyId
       ? queryKeys.issues.mentionPool(resolvedCompanyId)
@@ -3841,7 +3720,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         sortField: "updated",
         sortDir: "desc",
       }),
-    enabled: !!resolvedCompanyId && mentionPoolReady,
+    enabled: !!resolvedCompanyId,
     staleTime: 60_000,
     placeholderData: keepPreviousDataForSameQueryTail<Issue[]>(
       resolvedCompanyId ?? "pending",
@@ -3854,18 +3733,15 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
   });
 
   const { data: projects = EMPTY_PROJECTS } = useQuery({
-    ...companyProjectsQuery(selectedCompanyId!),
+    queryKey: queryKeys.projects.list(selectedCompanyId!),
+    queryFn: () => projectsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
   const currentUserId = session?.user?.id ?? session?.session?.userId ?? null;
-  const recentTaskVisit = useRef<string | null>(null);
   useEffect(() => {
-    if (!(streamlinedUiEnabled || coordinatorWorkspaceEnabled) || !loadedIssue || !sessionResolved
-      || conversation || loadedIssue.conversationAgentId || loadedIssue.hiddenAt) return;
-    const visit = `${loadedIssue.companyId}:${currentUserId}:${loadedIssue.id}`;
-    recordRecentTask(loadedIssue, currentUserId, recentTaskVisit.current === visit ? undefined : Date.now());
-    recentTaskVisit.current = visit;
-  }, [loadedIssue, currentUserId, sessionResolved, streamlinedUiEnabled, coordinatorWorkspaceEnabled, conversation]);
+    if (!streamlinedUiEnabled || !issue || !sessionResolved) return;
+    recordRecentTask(issue, currentUserId);
+  }, [issue, currentUserId, sessionResolved, streamlinedUiEnabled]);
   const { data: boardAccess } = useQuery({
     queryKey: queryKeys.access.currentBoardAccess,
     queryFn: () => accessApi.getCurrentBoardAccess(),
@@ -3878,7 +3754,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     selectedCompanyId,
     boardAccess,
   );
-  const canConfirmOwnerStop = canBoardConfirmOwnerStop(selectedCompanyId, boardAccess);
   // Retained-file recovery reports whether it offers its own control. The task's
   // Retry stays visible whenever it does not, so a retryable hold never dead-ends.
   const [retainedRecoveryOwnsRetry, setRetainedRecoveryOwnsRetry] = useState(true);
@@ -4220,7 +4095,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       if (isMobile) setMobilePropsOpen(true);
     }
   }, [pluginPanels, taskPanelAccountScope, issue?.companyId, issue?.id, openTaskSidePanel, isMobile]);
-  const browserQuery = useTaskBrowsers(issue?.id, issue?.companyId);
+  const browserQuery = useTaskBrowsers(issue?.id);
   const { openBrowserId, openBrowser: setOpenBrowserId, acknowledgeBrowserOpened: handleBrowserOpened } =
     useBrowserArrivals(currentUserId ?? "anonymous", issue?.id, browserQuery.data);
   useEffect(() => {
@@ -4349,9 +4224,11 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       }),
     [comments, optimisticComments],
   );
-  const breadcrumbTitle = issue?.title ?? issueHeaderSeed?.title ?? "";
+  const breadcrumbTitle = issue
+    ? displayOnboardingTaskTitle(issue, i18n.resolvedLanguage ?? i18n.language)
+    : issueHeaderSeed?.title ?? "";
   const breadcrumbIdentifier =
-    issue?.identifier ?? issueHeaderSeed?.identifier ?? (issueId && /^[a-z0-9]+-\d+$/i.test(issueId) ? issueId : issue?.id.slice(0, 8));
+    issue?.identifier ?? issueHeaderSeed?.identifier ?? (issueId && /^[a-z0-9]+-\d+$/i.test(issueId) ? issueId : undefined);
   const breadcrumbStatus = issue?.status ?? issueHeaderSeed?.status;
   const breadcrumbBlockerAttention = issue?.blockerAttention;
   // Stable identity for the breadcrumb status glyph. The glyph's shape/colour
@@ -4565,7 +4442,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
 
       try {
         await issuesApi.unarchiveFromInbox(id);
-        pushToast({ title: "Task restored to inbox", tone: "success" });
+        pushToast({ title: interfaceNotice("interface:taskRestoredToInbox_459e0f"), tone: "success" });
       } catch (error) {
         if (companyId) {
           beginLocalInboxArchive(companyId, id);
@@ -4573,11 +4450,11 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           boundLocalInboxArchive(companyId, id);
         }
         pushToast({
-          title: "Undo failed",
+          title: interfaceNotice("interface:undoFailed_2311b4"),
           body:
             error instanceof Error
               ? error.message
-              : "Unable to restore this task to the inbox",
+              : interfaceNotice("interface:unableToRestoreThisTaskToTheInbox_4e48c5"),
           tone: "error",
         });
       } finally {
@@ -4590,7 +4467,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
   );
   const upsertInteractionInCache = useCallback(
     (interaction: IssueThreadInteraction) => {
-      invalidateInteractionRecordViews(queryClient, interaction.companyId, interaction);
       queryClient.setQueryData<IssueThreadInteraction[] | undefined>(
         queryKeys.issues.interactions(issueId!),
         (current) => {
@@ -4608,6 +4484,9 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           return next;
         },
       );
+      queryClient.invalidateQueries({ queryKey: ["issues", "pending-questions"] });
+      queryClient.invalidateQueries({ queryKey: ["issues", "decision-receipts"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.attention(interaction.companyId) });
     },
     [issueId, queryClient],
   );
@@ -4641,8 +4520,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     },
     onSuccess: (_data, receipt) => {
       receipt.confirmed = true;
-      // A late receipt belongs to its original company, even after navigation.
-      queryClient.invalidateQueries({ queryKey: queryKeys.issues.summaries(receipt.companyId) });
       if (selectedCompanyId) {
         queryClient.invalidateQueries({
           queryKey: queryKeys.issues.listMineByMe(selectedCompanyId),
@@ -4680,7 +4557,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       if (nextIssue.identifier) issueRefs.add(nextIssue.identifier);
       mergeIssueResponseIntoCaches(issueRefs, nextIssue);
       if (streamlinedUiEnabled && sessionResolved) {
-        recordRecentTask(nextIssue, currentUserId, Date.now());
+        recordRecentTask(nextIssue, currentUserId);
       }
       queryClient.invalidateQueries({
         queryKey: queryKeys.issues.activity(issueId!),
@@ -4715,11 +4592,11 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     },
     onError: (err) => {
       pushToast({
-        title: "Recovery resolution failed",
+        title: interfaceNotice("interface:recoveryResolutionFailed_a71bf9"),
         body:
           err instanceof Error
             ? err.message
-            : "Unable to resolve recovery action",
+            : interfaceMessage("interface:errorUnableToResolveRecoveryAction"),
         tone: "error",
       });
     },
@@ -4902,7 +4779,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       queryClient.invalidateQueries({ queryKey: queryKeys.issues.runs(issueId!) }),
     ]),
   });
-  const cancelTask = useTaskCancellation();
   const stopAndFinalizeRun = useMutation({
     mutationFn: async ({
       runId,
@@ -4911,18 +4787,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       runId: string;
       status: "cancelled" | "done";
     }) => {
-      if (status === "cancelled") {
-        let stopped = false;
-        try {
-          return await cancelTask(issueId!, { status }, async () => {
-            await heartbeatsApi.cancel(runId);
-            stopped = true;
-          });
-        } catch (err) {
-          if (err instanceof TaskCancellationDismissedError || err instanceof SubtaskCancellationError) throw err;
-          throw stopped ? createRunCancelledStatusUpdateError(err) : err;
-        }
-      }
       await heartbeatsApi.cancel(runId);
       try {
         return await issuesApi.update(issueId!, { status });
@@ -4942,29 +4806,23 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       pushToast({
         title:
           status === "done"
-            ? "Run stopped and task done"
-            : "Run stopped and task cancelled",
+            ? interfaceNotice("interface:runStoppedAndTaskDone_1adc23")
+            : interfaceNotice("interface:runStoppedAndTaskCancelled_f0e1af"),
         tone: "success",
       });
     },
     onError: (err, { status }) => {
-      if (err instanceof TaskCancellationDismissedError) return;
-      if (err instanceof SubtaskCancellationError) {
-        invalidateIssueRunState();
-        pushToast({ title: "Some subtasks could not be canceled", body: err.message, tone: "error" });
-        return;
-      }
       const runWasStopped = didRunCancelBeforeStatusUpdateFail(err);
       pushToast({
         title: runWasStopped
-          ? "Run stopped; task update failed"
+          ? interfaceNotice("interface:runStoppedTaskUpdateFailed_0e22be")
           : status === "done"
-            ? "Stop and done failed"
-            : "Stop and cancel failed",
+            ? interfaceNotice("interface:stopAndDoneFailed_0938c7")
+            : interfaceNotice("interface:stopAndCancelFailed_196c1d"),
         body:
           err instanceof Error
             ? err.message
-            : "Unable to stop the run and update the task",
+            : interfaceNotice("interface:unableToStopTheRunAndUpdateThe_946e2a"),
         tone: "error",
       });
     },
@@ -4987,8 +4845,9 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     [updateIssue.mutate],
   );
 
-  const updateChildIssue = useUpdateIssueMutation({
-    companyId: resolvedCompanyId,
+  const updateChildIssue = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
+      issuesApi.update(id, data),
     onSuccess: () => {
       if (resolvedCompanyId) {
         queryClient.invalidateQueries({
@@ -4998,6 +4857,16 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           queryKey: queryKeys.sidebarBadges(resolvedCompanyId),
         });
       }
+    },
+    onError: (err) => {
+      pushToast({
+        title: interfaceNotice("interface:taskUpdateFailed_535ac2"),
+        body:
+          err instanceof Error
+            ? err.message
+            : interfaceMessage("interface:errorUnableToSaveSubTaskChanges"),
+        tone: "error",
+      });
     },
   });
   const handleChildIssueUpdate = useCallback(
@@ -5082,17 +4951,17 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       invalidateIssueRunState();
       invalidateIssueCollections();
       pushToast({
-        title: "Monitor check queued",
+        title: interfaceNotice("interface:monitorCheckQueued_10a9e5"),
         tone: "success",
       });
     },
     onError: (err) => {
       pushToast({
-        title: "Monitor check failed",
+        title: interfaceNotice("interface:monitorCheckFailed_acea7e"),
         body:
           err instanceof Error
             ? err.message
-            : "Unable to trigger the monitor right now",
+            : interfaceNotice("interface:unableToTriggerTheMonitorRightNow_358ee2"),
         tone: "error",
       });
     },
@@ -5131,8 +5000,8 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       pushToast({
         title:
           variables.action === "approve"
-            ? "Approval approved"
-            : "Approval rejected",
+            ? interfaceNotice("interface:approvalApproved_43622d")
+            : interfaceNotice("interface:approvalRejected_bb16c7"),
         tone: "success",
       });
     },
@@ -5140,9 +5009,9 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       pushToast({
         title:
           variables.action === "approve"
-            ? "Approval failed"
-            : "Rejection failed",
-        body: err instanceof Error ? err.message : "Unable to update approval",
+            ? interfaceNotice("interface:approvalFailed_5a9e3f")
+            : interfaceNotice("interface:rejectionFailed_547519"),
+        body: err instanceof Error ? err.message : interfaceMessage("interface:errorUnableToUpdateApproval"),
         tone: "error",
       });
     },
@@ -5152,8 +5021,8 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
   });
 
   const addComment = useAccountBoundMutation({
-    mutationFn: async ({ body, reopen, interrupt, attachmentIds, clientRequestId, runSettings, nativeCommand }: {
-      body: string; reopen?: boolean; interrupt?: boolean; attachmentIds?: string[]; clientRequestId?: string; runSettings?: ComposerRunSettings; nativeCommand?: "swarm";
+    mutationFn: async ({ body, reopen, interrupt, attachmentIds, clientRequestId, runSettings }: {
+      body: string; reopen?: boolean; interrupt?: boolean; attachmentIds?: string[]; clientRequestId?: string; runSettings?: ComposerRunSettings;
     }, { assertCurrentAccount }) => {
       if (issue?.conversationAgentId) clearLegacyChatMessageRequests(`${issue.companyId}:${currentUserId}:${issue.conversationAgentId}`);
       const writableIssueId = await resolveWritableIssueId();
@@ -5175,7 +5044,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         assertCurrentAccount();
         queryClient.setQueryData(queryKeys.issues.detail(writableIssueId), updated);
       }
-      return issuesApi.addComment(writableIssueId, body, reopen, interrupt, attachmentIds, clientRequestId ?? createUuid(), nativeCommand);
+      return issuesApi.addComment(writableIssueId, body, reopen, interrupt, attachmentIds, clientRequestId ?? crypto.randomUUID());
     },
     onMutate: async ({ body, reopen, interrupt }) => {
       // Start cache cancellation immediately but do not put it in front of the
@@ -5249,11 +5118,11 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           return;
         } catch (err) {
           pushToast({
-            title: "Cancel failed",
+            title: interfaceNotice("interface:cancelFailed_63378e"),
             body:
               err instanceof Error
                 ? err.message
-                : "Unable to cancel the queued comment",
+                : interfaceMessage("interface:errorUnableToCancelTheQueuedComment"),
             tone: "error",
           });
         }
@@ -5267,11 +5136,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         void queryClient.invalidateQueries({
           queryKey: queryKeys.issues.queuedComments(issueId ?? comment.issueId),
         });
-      }
-      if (issue?.conversationAgentId) {
-        captureAgentChatMessageSent(
-          issue.originKind === "onboarding_chat" ? "onboarding_chat" : "agent_chat",
-        );
       }
       if (context?.optimisticCommentId) {
         commentRenderKeys.current.set(comment.id, context.optimisticCommentId);
@@ -5400,19 +5264,19 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       pushToast({
         title:
           interaction.kind === "request_confirmation"
-            ? "Request confirmed"
+            ? interfaceNotice("interface:requestConfirmed_acc4ed")
             : interaction.kind === "request_checkbox_confirmation"
-              ? "Selection confirmed"
+              ? interfaceNotice("interface:selectionConfirmed_7639b0")
               : skippedCount > 0
                 ? `Accepted ${createdCount} draft${createdCount === 1 ? "" : "s"} and skipped ${skippedCount}`
-                : "Suggested tasks accepted",
+                : interfaceNotice("interface:suggestedTasksAccepted_2c0aeb"),
         tone: "success",
       });
     },
     onError: (err) => {
       if (describeInteractionResolutionFailure(err).kind === "settled") invalidateIssueDetail();
       pushToast({
-        title: "Accept failed",
+        title: interfaceNotice("interface:acceptFailed_eac973"),
         body: interactionResolutionErrorMessage(err),
         tone: "error",
       });
@@ -5435,14 +5299,14 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         title:
           interaction.kind === "request_confirmation"
             ? buildIssueThreadInteractionSummary(interaction)
-            : "Suggestion rejected",
+            : interfaceNotice("interface:suggestionRejected_c29949"),
         tone: "success",
       });
     },
     onError: (err) => {
       if (describeInteractionResolutionFailure(err).kind === "settled") invalidateIssueDetail();
       pushToast({
-        title: "Reject failed",
+        title: interfaceNotice("interface:rejectFailed_20c0bb"),
         body: interactionResolutionErrorMessage(err),
         tone: "error",
       });
@@ -5462,13 +5326,13 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       invalidateIssueDetail();
       invalidateIssueCollections();
       pushToast({
-        title: "Answers submitted",
+        title: interfaceNotice("interface:answersSubmitted_336100"),
         tone: "success",
       });
     },
     onError: (err) => {
       pushToast({
-        title: "Submit failed",
+        title: interfaceNotice("interface:submitFailed_e80898"),
         body: interactionResolutionErrorMessage(err),
         tone: "error",
       });
@@ -5499,16 +5363,16 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           : false;
       pushToast({
         title: complete
-          ? "All verdicts applied"
+          ? interfaceNotice("interface:allVerdictsApplied_871c6c")
           : `Applied ${applied} decision${applied === 1 ? "" : "s"}`,
         tone: "success",
       });
     },
     onError: (err) => {
       pushToast({
-        title: "Apply failed",
+        title: interfaceNotice("interface:applyFailed_94b614"),
         body:
-          err instanceof Error ? err.message : "Unable to apply the verdicts",
+          err instanceof Error ? err.message : interfaceMessage("interface:errorUnableToApplyTheVerdicts"),
         tone: "error",
       });
     },
@@ -5525,15 +5389,15 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       invalidateIssueDetail();
       invalidateIssueCollections();
       pushToast({
-        title: "Question cancelled",
+        title: interfaceNotice("interface:questionCancelled_60bb6f"),
         tone: "success",
       });
     },
     onError: (err) => {
       pushToast({
-        title: "Cancel failed",
+        title: interfaceNotice("interface:cancelFailed_63378e"),
         body:
-          err instanceof Error ? err.message : "Unable to cancel the question",
+          err instanceof Error ? err.message : interfaceMessage("interface:errorUnableToCancelTheQuestion"),
         tone: "error",
       });
     },
@@ -5558,9 +5422,9 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     },
     onError: (err) => {
       pushToast({
-        title: "Skip failed",
+        title: interfaceNotice("interface:skipFailed_b6ac48"),
         body:
-          err instanceof Error ? err.message : "Unable to skip this request",
+          err instanceof Error ? err.message : interfaceMessage("interface:errorUnableToSkipThisRequest"),
         tone: "error",
       });
     },
@@ -5687,11 +5551,11 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           return;
         } catch (err) {
           pushToast({
-            title: "Cancel failed",
+            title: interfaceNotice("interface:cancelFailed_63378e"),
             body:
               err instanceof Error
                 ? err.message
-                : "Unable to cancel the queued comment",
+                : interfaceMessage("interface:errorUnableToCancelTheQueuedComment"),
             tone: "error",
           });
         }
@@ -5728,9 +5592,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         );
         if (!historyExpanded) {
           await queryClient.invalidateQueries({ queryKey: queryKeys.issues.comments(issueId!), exact: true, refetchType: "none" });
-        }
-        if (streamlinedUiEnabled && sessionResolved) {
-          recordRecentTask(nextIssue, currentUserId, new Date(comment.createdAt).getTime());
         }
       }
       if (context?.optimisticCommentId) {
@@ -5806,18 +5667,18 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       invalidateIssueThreadLazily();
       invalidateIssueCollections();
       pushToast({
-        title: "Queued comment canceled",
-        body: "The queued message was restored to the composer.",
+        title: interfaceNotice("interface:queuedCommentCanceled_fc27ed"),
+        body: interfaceNotice("interface:theQueuedMessageWasRestoredToTheComposer_93d745"),
         tone: "success",
       });
     },
     onError: (err) => {
       pushToast({
-        title: "Cancel failed",
+        title: interfaceNotice("interface:cancelFailed_63378e"),
         body:
           err instanceof Error
             ? err.message
-            : "Unable to cancel the queued comment",
+            : interfaceMessage("interface:errorUnableToCancelTheQueuedComment"),
         tone: "error",
       });
     },
@@ -5834,16 +5695,16 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       invalidateIssueCollections();
       invalidateIssueDocumentAnnotationState();
       pushToast({
-        title: "Comment deleted",
-        body: "The thread now shows a deleted-comment marker.",
+        title: interfaceNotice("interface:commentDeleted_ff337d"),
+        body: interfaceNotice("interface:theThreadNowShowsADeletedCommentMarker_b1a002"),
         tone: "success",
       });
     },
     onError: (err) => {
       pushToast({
-        title: "Delete failed",
+        title: interfaceNotice("interface:deleteFailed_64513b"),
         body:
-          err instanceof Error ? err.message : "Unable to delete the comment",
+          err instanceof Error ? err.message : interfaceMessage("interface:errorUnableToDeleteTheComment"),
         tone: "error",
       });
     },
@@ -5862,8 +5723,8 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         if (cancelledCommentBody) {
           restoreQueuedCommentDraft(cancelledCommentBody);
           pushToast({
-            title: "Queued comment canceled",
-            body: "The queued message was restored to the composer.",
+            title: interfaceNotice("interface:queuedCommentCanceled_fc27ed"),
+            body: interfaceNotice("interface:theQueuedMessageWasRestoredToTheComposer_93d745"),
             tone: "success",
           });
         }
@@ -5926,11 +5787,11 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         title:
           variables.sharingPreferenceAtSubmit === "prompt"
             ? variables.allowSharing
-              ? "Feedback saved. Future votes will share"
-              : "Feedback saved. Future votes will stay local"
+              ? interfaceNotice("interface:feedbackSavedFutureVotesWillShare_5a9d53")
+              : interfaceNotice("interface:feedbackSavedFutureVotesWillStayLocal_17ad85")
             : variables.allowSharing
-              ? "Feedback saved and sharing enabled"
-              : "Feedback saved",
+              ? interfaceNotice("interface:feedbackSavedAndSharingEnabled_af9cd0")
+              : interfaceNotice("interface:feedbackSaved_afbdd6"),
         tone: "success",
       });
     },
@@ -5942,8 +5803,8 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         );
       }
       pushToast({
-        title: "Failed to save feedback",
-        body: err instanceof Error ? err.message : "Unknown error",
+        title: interfaceMessage("interface:errorFailedToSaveFeedback"),
+        body: err instanceof Error ? err.message : interfaceNotice("interface:unknownError_e5fd9a"),
         tone: "error",
       });
     },
@@ -5971,7 +5832,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       if (!issueId) void queryClient.invalidateQueries({ queryKey: queryKeys.issues.detail(result.issueId) });
     },
     onError: (err) => {
-      setAttachmentError(err instanceof Error ? err.message : "Upload failed");
+      setAttachmentError(err instanceof Error ? err.message : interfaceNotice("interface:uploadFailed_ad0d06"));
     },
   });
 
@@ -6001,7 +5862,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     },
     onError: (err) => {
       setAttachmentError(
-        err instanceof Error ? err.message : "Document import failed",
+        err instanceof Error ? err.message : interfaceNotice("interface:documentImportFailed_17c487"),
       );
     },
   });
@@ -6017,7 +5878,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       invalidateIssueDetail();
     },
     onError: (err) => {
-      setAttachmentError(err instanceof Error ? err.message : "Delete failed");
+      setAttachmentError(err instanceof Error ? err.message : interfaceNotice("interface:deleteFailed_64513b"));
     },
   });
 
@@ -6057,10 +5918,10 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         { replace: true },
       );
       pushToast({
-        title: "Task archived from inbox",
+        title: interfaceNotice("interface:taskArchivedFromInbox_2f21b6"),
         tone: "success",
         action: {
-          label: "Undo",
+          label: interfaceNotice("interface:undo_39fc72"),
           onClick: () => {
             void undoInboxArchive(
               id,
@@ -6077,11 +5938,11 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         restoreIssueToInboxCaches(queryClient, context.previousData, id);
       }
       pushToast({
-        title: "Archive failed",
+        title: interfaceNotice("interface:archiveFailed_fa2362"),
         body:
           err instanceof Error
             ? err.message
-            : "Unable to archive this task from the inbox",
+            : interfaceNotice("interface:unableToArchiveThisTaskFromTheInbox_7049c3"),
         tone: "error",
       });
     },
@@ -6109,36 +5970,13 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
   });
 
   const conversationAgent = conversation?.agent ?? agents?.find(agent => agent.id === issue?.conversationAgentId);
-  const breadcrumbParent = issue?.ancestors?.[0];
-  const breadcrumbParentRef = breadcrumbParent && !isLockedIssueStub(breadcrumbParent)
-    ? breadcrumbParent.identifier ?? breadcrumbParent.id
-    : null;
-  const rememberBreadcrumbParent = useCallback(() => {
-    if (!breadcrumbParentRef) return;
-    rememberIssueDetailLocationState(
-      breadcrumbParentRef,
-      resolvedIssueDetailState ?? location.state,
-      location.search,
-    );
-  }, [breadcrumbParentRef, resolvedIssueDetailState, location.state, location.search]);
   useEffect(() => {
-    if (isAgentChatRoute) {
-      setBreadcrumbs([{ label: "Chat" }]);
+    if (conversationAgent) {
+      setBreadcrumbs([{ label: interfaceNotice("interface:chat_2ced57") }]);
       return;
     }
     setBreadcrumbs([
       sourceBreadcrumb,
-      ...(breadcrumbParent ? [{
-        label: isLockedIssueStub(breadcrumbParent) ? "Private task" : breadcrumbParent.title,
-        href: isLockedIssueStub(breadcrumbParent)
-          ? undefined
-          : createIssueDetailPath(breadcrumbParent.identifier ?? breadcrumbParent.id),
-        onClick: isLockedIssueStub(breadcrumbParent) ? undefined : rememberBreadcrumbParent,
-        control: isLockedIssueStub(breadcrumbParent)
-          ? <LockedIssueChip identifier={null} />
-          : undefined,
-        controlKey: isLockedIssueStub(breadcrumbParent) ? "private-parent" : undefined,
-      }] : []),
       {
         // The status glyph (leading) already conveys in-progress/live state;
         // no redundant 🔵 emoji prefix on the title.
@@ -6149,12 +5987,10 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       },
     ]);
   }, [
-    isAgentChatRoute,
+    conversationAgent,
     coordinatorWorkspaceEnabled,
     breadcrumbTitle,
     breadcrumbIdentifier,
-    breadcrumbParent,
-    rememberBreadcrumbParent,
     hasLiveRuns,
     setBreadcrumbs,
     sourceBreadcrumb.href,
@@ -6288,7 +6124,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     const receipt = readReceiptRef.current?.issueId === issue.id
       ? readReceiptRef.current
       : (readReceiptRef.current = pendingReadReceiptsRef.current.get(issue.id)
-        ?? { issueId: issue.id, companyId: issue.companyId, account: bindAccount(queryClient), confirmed: false });
+        ?? { issueId: issue.id, account: bindAccount(queryClient), confirmed: false });
     if (receipt.confirmed || pendingReadReceiptsRef.current.has(issue.id) || !receipt.account.isCurrentScope()) return;
     // Retry after a successful session read, without looping on a failed check.
     if (receipt.attemptedSessionAt === sessionUpdatedAt) return;
@@ -6381,7 +6217,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
 
   const handleChatImageClick = useCallback(
     (src: string) => {
-      if (!openIssueGallery(src)) openSafeUrl(src);
+      if (!openIssueGallery(src)) window.open(src, "_blank");
     },
     [openIssueGallery],
   );
@@ -6454,8 +6290,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
             onBrowserOpened={handleBrowserOpened}
             key={panelIssue.id}
             {...sharedProps}
-            showDocumentSourceTask={persistedAgentChat}
-            onArtifactVisibilityChange={persistedAgentChat ? setPanelShowsArtifact : undefined}
             accountScope={taskPanelAccountScope}
             fileTabsEnabled={fileViewerEnabled}
             streamlinedTabs={streamlinedTaskDetailEnabled}
@@ -6494,8 +6328,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     handleSkillOpened,
     panelChildIssues,
     panelIssue,
-    persistedAgentChat,
-    setPanelShowsArtifact,
     suppressPanelUntilPlan,
     relationIssueLinkState,
     streamlinedTaskDetailEnabled,
@@ -6651,9 +6483,8 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
   // the issue param so navigating to another issue with an identical hash
   // still maximizes the destination pane.
   const lastMaximizeRequestKeyRef = useRef<string | null>(null);
-  const planExpandNavigation = useRef<{ pathname: string; hash: string } | null>(null);
   const routeIssueDocumentDeepLink = useCallback(
-    (hash: string, focusActivePlan = false) => {
+    (hash: string) => {
       const resolvedRoute = resolveIssueDocumentDeepLink(hash);
       // A handoff is a saved document too. Opening it must not switch the
       // conversation to full activity just because it has a legacy hash.
@@ -6696,7 +6527,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         issueId: targetIssueId,
         tab: route.tab,
         documentKey: route.documentKey,
-        focusActivePlan,
         requestId:
           current?.issueId === targetIssueId ? current.requestId + 1 : 1,
       }));
@@ -6715,9 +6545,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
   );
 
   useEffect(() => {
-    const expand = planExpandNavigation.current;
-    planExpandNavigation.current = null;
-    if (!routeIssueDocumentDeepLink(location.hash, expand?.pathname === location.pathname && expand.hash === location.hash)) {
+    if (!routeIssueDocumentDeepLink(location.hash)) {
       setDocumentDeepLink(null);
       // The deep link ended (hash cleared or issue changed): drop any
       // maximize request the panel never consumed so it cannot maximize a
@@ -6728,7 +6556,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
   }, [
     issueId,
     location.hash,
-    location.pathname,
     routeIssueDocumentDeepLink,
     clearPanelMaximizeRequest,
   ]);
@@ -6762,21 +6589,16 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       if (!rawHref) return;
 
       const currentUrl = new URL(`${location.pathname}${location.search}${location.hash}`, window.location.origin);
-      const issueReferences = [issue?.id, issue?.identifier, issueId].filter((id): id is string => !!id);
-      const hash = persistedAgentChat && anchor.hasAttribute("data-sidebar-document-link")
-        ? chatSidebarDocumentHash(rawHref, currentUrl, issueReferences)
-        : sameIssueDocumentHash(rawHref, currentUrl, issueReferences);
+      const hash = sameIssueDocumentHash(rawHref, currentUrl, [issue?.id, issue?.identifier, issueId].filter((id): id is string => !!id));
       if (!hash) return;
       const route = resolveIssueDocumentDeepLink(hash);
       if (route?.kind === "properties-pane" && (!taskInterfaceSettingsLoaded || !taskChatShellEnabled)) return;
       event.preventDefault();
       // Let link handlers close any hovered task preview. Router links and
       // popover triggers honor defaultPrevented and skip their navigation.
-      const focusActivePlan = anchor.hasAttribute("data-plan-expand") && !isMobile && panelVisible && !suppressPanelUntilPlan;
       if (hash === location.hash) {
-        routeIssueDocumentDeepLink(hash, focusActivePlan);
+        routeIssueDocumentDeepLink(hash);
       } else {
-        planExpandNavigation.current = focusActivePlan ? { pathname: location.pathname, hash } : null;
         navigate(`${location.pathname}${location.search}${hash}`, {
           preventScrollReset: true,
           state: {
@@ -6794,10 +6616,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     issue?.id,
     issue?.identifier,
     issueId,
-    persistedAgentChat,
-    isMobile,
-    panelVisible,
-    suppressPanelUntilPlan,
     navigate,
     location.hash,
     location.key,
@@ -6895,15 +6713,15 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     try {
       await copyTextToClipboard(md);
       setCopied(true);
-      pushToast({ title: "Copied to clipboard", tone: "success" });
+      pushToast({ title: interfaceNotice("interface:copiedToClipboard_0e7383"), tone: "success" });
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
       pushToast({
-        title: "Copy failed",
+        title: interfaceNotice("interface:copyFailed_bd5acb"),
         body:
           error instanceof Error
             ? error.message
-            : "Unable to copy task markdown",
+            : interfaceMessage("interface:errorUnableToCopyTaskMarkdown"),
         tone: "error",
       });
     }
@@ -7061,13 +6879,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       attachmentIds?: string[],
       clientRequestId?: string,
       runSettings?: ComposerRunSettings,
-      nativeCommand?: "swarm",
     ) => {
-      // A swarm request always uses the comments endpoint, which checks it.
-      if (nativeCommand) {
-        await addComment.mutateAsync({ body, reopen, attachmentIds, clientRequestId, nativeCommand });
-        return;
-      }
       if (!issue?.conversationAgentId && (reassignment || runSettings)) {
         await addCommentAndReassign.mutateAsync({
           body,
@@ -7348,10 +7160,10 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     onSuccess: (created) => {
       invalidateIssueCollections();
       pushToast({
-        title: "Isolated re-issue created",
+        title: interfaceNotice("interface:isolatedReIssueCreated_dffd37"),
         body: created.identifier
           ? `${created.identifier} will run on a fresh isolated workspace.`
-          : "A fresh isolated re-issue was created.",
+          : interfaceNotice("interface:aFreshIsolatedReIssueWasCreated_53b8c1"),
         tone: "success",
       });
       if (created.identifier) {
@@ -7360,11 +7172,11 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     },
     onError: (err) => {
       pushToast({
-        title: "Re-issue failed",
+        title: interfaceNotice("interface:reIssueFailed_a48168"),
         body:
           err instanceof Error
             ? err.message
-            : "Unable to create an isolated re-issue.",
+            : interfaceNotice("interface:unableToCreateAnIsolatedReIssue_32f55f"),
         tone: "error",
       });
     },
@@ -7404,24 +7216,24 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       pushToast(
         variables.mode === "quarantine_restore"
           ? {
-              title: "Workspace repaired",
-              body: "Dirty changes were quarantined onto a rescue branch and the recorded branch restored; the task will resume.",
+              title: interfaceNotice("interface:workspaceRepaired_6a2df1"),
+              body: interfaceNotice("interface:dirtyChangesWereQuarantinedOntoARescueBranch_6e5d82"),
               tone: "success",
             }
           : {
-              title: "Workspace branch reconciled",
-              body: "The recorded branch now matches the live branch; the task will resume.",
+              title: interfaceNotice("interface:workspaceBranchReconciled_127444"),
+              body: interfaceNotice("interface:theRecordedBranchNowMatchesTheLiveBranch_d9b0d2"),
               tone: "success",
             },
       );
     },
     onError: (err) => {
       pushToast({
-        title: "Reconcile failed",
+        title: interfaceNotice("interface:reconcileFailed_bed1cd"),
         body:
           err instanceof Error
             ? err.message
-            : "Unable to reconcile the workspace branch.",
+            : interfaceMessage("interface:errorUnableToReconcileTheWorkspaceBranchSentence"),
         tone: "error",
       });
     },
@@ -7439,8 +7251,8 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
   const handleReconcileForwardRecoveryAction = useCallback(() => {
     if (!reconcileExecutionWorkspaceId) {
       pushToast({
-        title: "Reconcile failed",
-        body: "This task has no execution workspace to reconcile.",
+        title: interfaceNotice("interface:reconcileFailed_bed1cd"),
+        body: interfaceNotice("interface:thisTaskHasNoExecutionWorkspaceToReconcile_89ffc4"),
         tone: "error",
       });
       return;
@@ -7458,8 +7270,8 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     (reason: string) => {
       if (!reconcileExecutionWorkspaceId) {
         pushToast({
-          title: "Reconcile failed",
-          body: "This task has no execution workspace to reconcile.",
+          title: interfaceNotice("interface:reconcileFailed_bed1cd"),
+          body: interfaceNotice("interface:thisTaskHasNoExecutionWorkspaceToReconcile_89ffc4"),
           tone: "error",
         });
         return;
@@ -7481,8 +7293,8 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
   const handleQuarantineRestoreRecoveryAction = useCallback(() => {
     if (!reconcileExecutionWorkspaceId) {
       pushToast({
-        title: "Repair failed",
-        body: "This task has no execution workspace to repair.",
+        title: interfaceNotice("interface:repairFailed_1e8cfc"),
+        body: interfaceNotice("interface:thisTaskHasNoExecutionWorkspaceToRepair_7f82b9"),
         tone: "error",
       });
       return;
@@ -7706,11 +7518,11 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       >
         <Paperclip className="h-3.5 w-3.5 mr-1.5" />
         {uploadAttachment.isPending || importMarkdownDocument.isPending ? (
-          "Uploading..."
+          pageText("uploading_070e32")
         ) : (
           <>
-            <span className="hidden sm:inline">Upload attachment</span>
-            <span className="sm:hidden">Upload</span>
+            <span className="hidden sm:inline">{pageText("uploadAttachment_09cc3f")}</span>
+            <span className="sm:hidden">{pageText("upload_8bdf05")}</span>
           </>
         )}
       </Button>
@@ -7853,11 +7665,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
             {issue.identifier ?? issue.id.slice(0, 8)}
           </span>
         ) : null}
-        {headerWaiting ? (
-          <span className="shrink-0" data-testid="issue-header-waiting">
-            <AgentQueueWaitChip queue={headerAgentQueue} />
-          </span>
-        ) : hasLiveRuns && (
+        {hasLiveRuns && (
           <Badge
             variant="outline"
             className={cn("gap-1.5 text-(length:--text-nano)", liveBlueBadge)}
@@ -7865,31 +7673,25 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
             <span className="relative flex h-1.5 w-1.5">
               <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
               <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-blue-500" />
-            </span>
-            Live
-          </Badge>
+            </span>{pageText("live_65c821")}</Badge>
         )}
 
         {issue.originKind === "routine_execution" && issue.originId && (
           <Link
             to={`/routines/${issue.originId}`}
             className="inline-flex items-center gap-1 rounded-full bg-violet-500/10 border border-violet-500/30 px-2 py-0.5 text-(length:--text-nano) font-medium text-violet-600 dark:text-violet-400 shrink-0 hover:bg-violet-500/20 transition-colors"
-            title={`Routine execution from routine ${issue.originId}`}
+            title={translateDynamic("dynamic:routineExecutionFromRoutine", { value1: issue.originId })}
           >
-            <Repeat className="h-3 w-3" />
-            Routine
-          </Link>
+            <Repeat className="h-3 w-3" />{pageText("routine_482273")}</Link>
         )}
 
         {issue.originKind === "task_watchdog" ? (
           <Badge
             variant="outline"
             className="border-sky-500/40 bg-sky-500/10 text-(length:--text-nano) text-sky-700 dark:text-sky-300"
-            title="This task is a generated watchdog task. It verifies whether stopped work in the watched task tree is legitimate."
+            title={pageText("thisTaskIsAGeneratedWatchdogTaskIt_1e4119")}
           >
-            <ScanEye className="h-3 w-3" />
-            Watchdog
-          </Badge>
+            <ScanEye className="h-3 w-3" />{pageText("watchdog_86de7d")}</Badge>
         ) : null}
 
         {/* Task Chat Redesign: no mode chip in the header — mode is a
@@ -7908,7 +7710,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                     "text-(length:--text-nano)",
                     workModeMeta.classes.badge,
                   )}
-                  title={`This task is in ${workModeMeta.label.toLowerCase()}.`}
+                  title={translateDynamic("dynamic:thisTaskIsIn", { value1: workModeMeta.label.toLowerCase() })}
                 >
                   <WorkModeIcon className="h-3 w-3" aria-hidden />
                   {workModeMeta.label}
@@ -7922,11 +7724,9 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
             variant="outline"
             data-testid="issue-detail-parked-blocker"
             className="border-amber-500/60 bg-amber-500/15 text-(length:--text-nano) text-amber-700 dark:text-amber-300"
-            title="Blocked by parked work — at least one assigned blocker is in backlog and will not wake its assignee."
+            title={pageText("blockedByParkedWorkAtLeastOneAssigned_1230f7")}
           >
-            <Flag className="h-3 w-3" />
-            Blocked by parked work
-          </Badge>
+            <Flag className="h-3 w-3" />{pageText("blockedByParkedWork_2da68c")}</Badge>
         ) : null}
 
         {/* Project reads as a tile plus a name, matching the project rows in
@@ -7953,9 +7753,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           </Link>
         ) : (
           <span className="inline-flex items-center gap-1 text-xs text-muted-foreground opacity-50 px-1 -mx-1 py-0.5">
-            <ProjectTile size="xs" />
-            No project
-          </span>
+            <ProjectTile size="xs" />{pageText("noProject_c326b7")}</span>
         )}
 
         <IssueAttributionByline
@@ -7995,7 +7793,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
               variant="ghost"
               size="icon-xs"
               onClick={copyIssueToClipboard}
-              title="Copy task as markdown"
+              title={pageText("copyTaskAsMarkdown_c8bd5e")}
             >
               {copied ? (
                 <Check className="h-4 w-4 text-green-500" />
@@ -8007,7 +7805,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
               variant="ghost"
               size="icon-xs"
               onClick={() => setMobilePropsOpen(true)}
-              title="Properties"
+              title={pageText("properties_bc6c88")}
             >
               <SlidersHorizontal className="h-4 w-4" />
             </Button>
@@ -8024,8 +7822,8 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                   archiveFromInbox.mutate(issue.id);
               }}
               disabled={archivePending}
-              title="Archive from inbox"
-              aria-label="Archive from inbox"
+              title={pageText("archiveFromInbox_01ebe7")}
+              aria-label={pageText("archiveFromInbox_01ebe7")}
             >
               <Archive className="h-4 w-4" />
             </Button>
@@ -8035,8 +7833,8 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
               variant="ghost"
               size="icon-xs"
               onClick={() => setFileViewerPromptOpen(true)}
-              title="Open file... (g f)"
-              aria-label="Open file in this issue"
+              title={pageText("openFileGF_715a6d")}
+              aria-label={pageText("openFileInThisIssue_fae686")}
             >
               <FileCode2 className="h-4 w-4" />
             </Button>
@@ -8046,7 +7844,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
               variant="ghost"
               size="icon-xs"
               onClick={copyIssueToClipboard}
-              title="Copy task as markdown"
+              title={pageText("copyTaskAsMarkdown_c8bd5e")}
             >
               {copied ? (
                 <Check className="h-4 w-4 text-green-500" />
@@ -8088,8 +7886,8 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                   variant="ghost"
                   size="icon-xs"
                   className="shrink-0"
-                  aria-label="More task actions"
-                  title="More task actions"
+                  aria-label={pageText("moreTaskActions_f37d39")}
+                  title={pageText("moreTaskActions_f37d39")}
                   onKeyDown={(event) => {
                     if (event.key === "Enter" || event.key === " ") {
                       event.preventDefault();
@@ -8109,9 +7907,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                       setMoreOpen(false);
                     }}
                   >
-                    <ActivityIcon className="h-3 w-3" />
-                    Show task activity
-                  </button>
+                    <ActivityIcon className="h-3 w-3" />{pageText("showTaskActivity_5d383b")}</button>
                 ) : null}
                 {streamlinedTaskDetailEnabled ? (
                   <>
@@ -8122,9 +7918,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                         setMoreOpen(false);
                       }}
                     >
-                      <Plus className="h-3 w-3" />
-                      Add subtask
-                    </button>
+                      <Plus className="h-3 w-3" />{pageText("addSubtask_65b9d7")}</button>
                     <button
                       className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-accent/50"
                       onClick={() => {
@@ -8136,9 +7930,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                         <Check className="h-3 w-3" />
                       ) : (
                         <Copy className="h-3 w-3" />
-                      )}
-                      Copy as markdown
-                    </button>
+                      )}{pageText("copyAsMarkdown_87358c")}</button>
                     {canArchiveFromInbox ? (
                       <button
                         className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-accent/50 disabled:opacity-50"
@@ -8149,9 +7941,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                           setMoreOpen(false);
                         }}
                       >
-                        <Archive className="h-3 w-3" />
-                        Archive from inbox
-                      </button>
+                        <Archive className="h-3 w-3" />{pageText("archiveFromInbox_01ebe7")}</button>
                     ) : null}
                   </>
                 ) : null}
@@ -8208,9 +7998,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                     setMoreOpen(false);
                   }}
                 >
-                  <EyeOff className="h-3 w-3" />
-                  Hide this task
-                </button>
+                  <EyeOff className="h-3 w-3" />{pageText("hideThisTask_25903a")}</button>
               </PopoverContent>
             </Popover>
                 )}
@@ -8257,7 +8045,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           readCurrentValue={async () => (await issuesApi.getCore(issue.id, { cache: "no-store", fresh: true })).description ?? ""}
           as="p"
           className="text-sm leading-7 text-foreground"
-          placeholder="Add a description..."
+          placeholder={pageText("addADescription_8c1d83")}
           multiline
           foldable
           mentions={mentionOptions}
@@ -8339,7 +8127,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       <TextAttachmentContext.Provider value={taskChatShellEnabled ? handleOpenTextAttachment : null}><IssueGalleryContext.Provider value={openIssueGallery}>
         <div
           data-task-chat-shell={taskChatShellEnabled ? "" : undefined}
-          data-classic-task-shell={!isMobile && !taskChatShellEnabled && resolvedDetailTab === "chat" ? "" : undefined}
           className={
             taskChatShellEnabled
               ? // Fill main exactly so the outer page never scrolls — the
@@ -8352,9 +8139,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           }
         >
           {error && coreIssueQuery.data && !isTransientError(error) ? (
-            <div role="status" className="flex items-center gap-2 text-sm text-muted-foreground">
-              Some task details could not be loaded.
-              <Button type="button" variant="ghost" size="sm" onClick={() => void refetchIssueDetail()}>Retry</Button>
+            <div role="status" className="flex items-center gap-2 text-sm text-muted-foreground">{pageText("someTaskDetailsCouldNotBeLoaded_78c20a")}<Button type="button" variant="ghost" size="sm" onClick={() => void refetchIssueDetail()}>{translateUi("interfaceCopy.retry")}</Button>
             </div>
           ) : null}
           {/* Parent chain breadcrumb (redesign: rendered inside the thread viewport) */}
@@ -8381,14 +8166,14 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           )}
           {resolvedDetailTab === "chat" && (
             <ExecutionBlockerNotice className={shellSectionClass} presentation={issue.interruption} blockers={issue.blockedBy}
-              issueId={issue.id} companyId={issue.companyId} agentName={agentMap.get(issue.assigneeAgentId ?? "")?.name} projectName={issue.project?.name}
+              issueId={issue.id} agentName={agentMap.get(issue.assigneeAgentId ?? "")?.name} projectName={issue.project?.name}
               canRetry={canResolveBoardRecoveryAction && !(issue.executionBlocker?.workspaceRepairRequired
                 && isRetainedWorkspaceExportCause(issue.executionBlocker.cause) && retainedRecoveryOwnsRetry)} onRetry={taskRetry.retry}
               optimistic={taskRetry.optimistic} takingLonger={taskRetry.takingLonger} error={taskRetry.error} />
           )}
 
           {issue.status === "in_review" && issue.externalConversationState === "waiting" && (
-            <p role="status" className="text-sm text-muted-foreground">Reply sent. Send a message to continue.</p>
+            <p role="status" className="text-sm text-muted-foreground">{pageText("replySentSendAMessageToContinue_84d2ef")}</p>
           )}
 
           {issue.hiddenAt && (
@@ -8399,9 +8184,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                 taskChatShellEnabled && (isMobile ? "mt-4" : "mt-3"),
               )}
             >
-              <EyeOff className="h-4 w-4 shrink-0" />
-              This task is hidden
-            </div>
+              <EyeOff className="h-4 w-4 shrink-0" />{pageText("thisTaskIsHidden_cb08b1")}</div>
           )}
           {treeControlWakeWarning ? (
             <p
@@ -8430,9 +8213,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           {taskChatShellEnabled ? null : showRichSubIssuesSection ? (
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-2">
-                <h3 className="text-sm font-medium text-muted-foreground">
-                  Sub-tasks
-                </h3>
+                <h3 className="text-sm font-medium text-muted-foreground">{pageText("subTasks_c4e36c")}</h3>
               </div>
               <IssuesList
                 issues={childIssues}
@@ -8469,9 +8250,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                 onClick={openNewSubIssue}
                 className="shrink-0 shadow-none"
               >
-                <Plus className="mr-1.5 h-3.5 w-3.5" />
-                New Sub-task
-              </Button>
+                <Plus className="mr-1.5 h-3.5 w-3.5" />{pageText("newSubTask_377408")}</Button>
             </div>
           )}
 
@@ -8591,9 +8370,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
               return (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between gap-2">
-                    <h3 className="text-sm font-medium text-muted-foreground">
-                      Artifacts
-                    </h3>
+                    <h3 className="text-sm font-medium text-muted-foreground">{pageText("artifacts_a5b79f")}</h3>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     {workProductsWithFileRefs.map(({ product, fileRef }) => (
@@ -8629,17 +8406,11 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                 className={cn("w-full justify-start gap-1", shellSectionClass)}
               >
                 <TabsTrigger value="chat" className="gap-1.5">
-                  <MessageSquare className="h-3.5 w-3.5" />
-                  Chat
-                </TabsTrigger>
+                  <MessageSquare className="h-3.5 w-3.5" />{pageText("chat_2ced57")}</TabsTrigger>
                 <TabsTrigger value="activity" className="gap-1.5">
-                  <ActivityIcon className="h-3.5 w-3.5" />
-                  Activity
-                </TabsTrigger>
+                  <ActivityIcon className="h-3.5 w-3.5" />{pageText("activity_81c0d9")}</TabsTrigger>
                 <TabsTrigger value="related-work" className="gap-1.5">
-                  <ListTree className="h-3.5 w-3.5" />
-                  Related work
-                </TabsTrigger>
+                  <ListTree className="h-3.5 w-3.5" />{pageText("relatedWork_7f3a70")}</TabsTrigger>
                 {issuePluginTabItems.map((item) => (
                   <TabsTrigger key={item.value} value={item.value}>
                     {item.label}
@@ -8688,12 +8459,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                         : null,
                   onRetry: (actionId) => retryDispositionRecovery.mutateAsync(actionId).then(() => undefined),
                 }}>
-                <NativeControllerContainmentRecovery key={`${issue.activeRecoveryAction?.id}:${JSON.stringify(issue.activeRecoveryAction?.evidence?.controllerAuthority)}`} issue={issue}
-                  canManage={canConfirmOwnerStop} onRecorded={() => {
-                    invalidateIssueCollections();
-                    void queryClient.invalidateQueries({ queryKey: queryKeys.issues.detail(issueId!) });
-                    void queryClient.invalidateQueries({ queryKey: queryKeys.issues.runs(issueId!) });
-                  }} />
                 <IssueDetailChatTab
                   executionBlocked={Boolean(issue.executionBlocker)}
                   interruption={issue.interruption}
@@ -8706,11 +8471,11 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                   threadHeader={<>{taskChatThreadHeader}<EmailTaskActivity key={issue.id} companyId={issue.companyId} issueId={issue.id} />
                     {(childIssuesError || createdTasksQuery.isError) && (
                       <div role="alert" className="flex items-center gap-2 px-4 text-sm text-destructive">
-                        <span>Could not load created tasks.</span>
+                        <span>{pageText("couldNotLoadCreatedTasks_5700de")}</span>
                         <Button variant="ghost" size="sm" onClick={() => {
                           void refetchChildIssues();
                           void createdTasksQuery.refetch();
-                        }}>Retry</Button>
+                        }}>{translateUi("interfaceCopy.retry")}</Button>
                       </div>
                     )}
                   </>}
@@ -9111,7 +8876,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
               {taskChatShellEnabled ? (
                 <>
                   <SheetHeader className="sr-only">
-                    <SheetTitle>Task side panel</SheetTitle>
+                    <SheetTitle>{pageText("taskSidePanel_a1a54d")}</SheetTitle>
                   </SheetHeader>
                   <TaskSidePanel
                     documentEditor={taskDocumentEditor}
@@ -9123,7 +8888,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                     onBrowserOpened={handleBrowserOpened}
                     key={`${issue.id}:mobile`}
                     issue={issue}
-                    showDocumentSourceTask={persistedAgentChat}
                     accountScope={taskPanelAccountScope}
                     childIssues={childIssues}
                     issueLinkState={
@@ -9183,8 +8947,8 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                   <SheetHeader>
                     <SheetTitle className="text-sm">
                       {documentDeepLink?.documentKey === "plan"
-                        ? "Plan"
-                        : "Properties"}
+                        ? pageText("plan_ae2f98")
+                        : pageText("properties_bc6c88")}
                     </SheetTitle>
                   </SheetHeader>
                   <ScrollArea className="flex-1 overflow-y-auto">

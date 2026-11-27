@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import {
   Attachment,
   AttachmentContent,
@@ -22,6 +23,7 @@ import { toAttachmentRef } from "./adapters";
  * the real ones.
  */
 export function ThreadAttachments({ artifacts }: { artifacts: LabArtifact[] }) {
+  const { t: pageText } = usePageTranslation("interface");
   const refs = artifacts.filter((a) => a.kind !== "link").map(toAttachmentRef);
   const imageRefs = refs.filter((ref) => isImageAttachment({ contentType: ref.contentType ?? "", originalFilename: ref.name }));
   const attachmentRefs = refs.filter((ref) => !imageRefs.includes(ref));
@@ -29,7 +31,7 @@ export function ThreadAttachments({ artifacts }: { artifacts: LabArtifact[] }) {
     <>
       {imageRefs.length > 0 ? (
         <div className="flex max-w-(--pct-85) flex-col gap-2" data-testid="task-chat-bubble-media">
-          <span className="text-xs text-muted-foreground">Images · {imageRefs.length}</span>
+          <span className="text-xs text-muted-foreground">{pageText("images_a67b65") + " "}{imageRefs.length}</span>
           <div className="grid grid-cols-4 gap-2">
             {imageRefs.slice(0, imageRefs.length > 4 ? 3 : 4).map((ref, index) => (
               <button
@@ -63,7 +65,7 @@ export function ThreadAttachments({ artifacts }: { artifacts: LabArtifact[] }) {
       ) : null}
       {attachmentRefs.length > 0 ? (
         <div className="flex max-w-(--pct-85) flex-col gap-2">
-          <span className="text-xs text-muted-foreground">Files · {attachmentRefs.length}</span>
+          <span className="text-xs text-muted-foreground">{pageText("files_27c071") + " "}{attachmentRefs.length}</span>
           <AttachmentGroup data-testid="task-chat-bubble-attachments">
             {attachmentRefs.map((ref) => {
               const kind = fileKindForAttachment(ref);

@@ -172,7 +172,9 @@ export function createProviderTraceObjectStore(
     try {
       for (const source of channelsFor(ref, filePath)) {
         capture.signal.throwIfAborted();
+        const current = await source.journal.head(capture.signal);
         const writer = await source.journal.claim({
+          expectedOwner: current?.head.owner ?? null,
           assertAuthority,
           signal: capture.signal,
         });

@@ -51,12 +51,6 @@ export interface AcpxIdentityRecord {
   providerLifetimeFenceCandidates: readonly [number, number, number];
 }
 
-// ACPX upgrades carry saved sessions forward: the current ACPX loads the
-// session records earlier releases wrote. Session keys and persisted identity
-// records first hashed ACPX 0.13.1, so the identity keeps that value and they
-// still match after an upgrade.
-const SESSION_IDENTITY_ACPX_VERSION = "0.13.1";
-
 export async function createAcpxRecoveryBinding(input: {
   runtimeDirectory: string;
   normalizedSessionId: string;
@@ -97,7 +91,7 @@ export async function createAcpxRecoveryBinding(input: {
     canonicalJson({
       driverKind: input.profile.driverKind,
       protocolVersion: input.profile.protocolVersion,
-      acpxVersion: SESSION_IDENTITY_ACPX_VERSION,
+      acpxVersion: input.profile.acpxVersion,
       agent: input.profile.agent,
       agentProfileVersion: input.profile.agentProfileVersion,
       agentServerPackage: input.profile.agentServerPackage,

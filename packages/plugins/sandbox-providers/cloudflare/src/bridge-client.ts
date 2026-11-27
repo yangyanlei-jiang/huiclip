@@ -35,16 +35,6 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-/** A bridge request that hit its own deadline. The errno-style code lets the host retry it as a transport failure. */
-export class CloudflareBridgeTimeoutError extends Error {
-  readonly code = "ETIMEDOUT";
-
-  constructor(timeoutMs: number, cause: unknown) {
-    super(`Cloudflare sandbox bridge request timed out after ${timeoutMs}ms.`, { cause });
-    this.name = "CloudflareBridgeTimeoutError";
-  }
-}
-
 export class CloudflareBridgeError extends Error {
   readonly status: number;
   readonly code: string | null;
@@ -143,7 +133,9 @@ async function requestJson<T>(
   } catch (error) {
     if (error instanceof CloudflareBridgeError) throw error;
     if ((error as { name?: string } | null)?.name === "AbortError") {
-      throw new CloudflareBridgeTimeoutError(requestTimeoutMs, error);
+      throw new Error(
+        `Cloudflare sandbox bridge request timed out after ${requestTimeoutMs}ms.`,
+      );
     }
     throw error;
   } finally {
@@ -185,7 +177,9 @@ async function requestResponse(
   } catch (error) {
     if (error instanceof CloudflareBridgeError) throw error;
     if ((error as { name?: string } | null)?.name === "AbortError") {
-      throw new CloudflareBridgeTimeoutError(requestTimeoutMs, error);
+      throw new Error(
+        `Cloudflare sandbox bridge request timed out after ${requestTimeoutMs}ms.`,
+      );
     }
     throw error;
   } finally {

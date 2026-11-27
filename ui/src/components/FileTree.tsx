@@ -1,3 +1,6 @@
+import { controlText } from "@/i18n/controls";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import type { CSSProperties, KeyboardEvent, ReactNode } from "react";
 import { useMemo, useRef, useState } from "react";
 import { cn } from "../lib/utils";
@@ -292,8 +295,10 @@ export function FileTree({
   loading = false,
   error,
   empty,
-  ariaLabel = "Files",
+  ariaLabel = controlText("Files"),
 }: FileTreeProps) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const effectiveCheckedFiles = checkedFiles ?? new Set<string>();
   const visibleNodes = useMemo(
     () => flattenVisibleNodes(nodes, expandedDirs).filter(({ node }) => !visiblePaths || visiblePaths.has(node.path)),
@@ -383,15 +388,11 @@ export function FileTree({
                 "px-2.5",
                 statusBadge.error ?? statusBadgeDefault,
               )}
-            >
-              error
-            </Badge>
+            >{pageText("error_11f957")}</Badge>
             <span className="min-w-0 text-destructive">{describeError(new Error(error.message)).body}</span>
           </div>
           {error.retry && (
-            <Button type="button" size="xs" variant="outline" onClick={error.retry}>
-              Retry
-            </Button>
+            <Button type="button" size="xs" variant="outline" onClick={error.retry}>{translateUi("interfaceCopy.retry")}</Button>
           )}
         </div>
       </div>
@@ -402,9 +403,9 @@ export function FileTree({
     return (
       <div aria-label={ariaLabel} role="tree" className="p-3">
         <div className="rounded-md border border-dashed border-border px-4 py-8 text-center">
-          <div className="text-sm font-medium">{empty?.title ?? "No files"}</div>
+          <div className="text-sm font-medium">{empty?.title ?? pageText("noFiles_ccc17f")}</div>
           <div className="mt-1 text-xs text-muted-foreground">
-            {empty?.description ?? "Files will appear here when they are available."}
+            {empty?.description ?? pageText("filesWillAppearHereWhenTheyAreAvailable_d6a8fa")}
           </div>
         </div>
       </div>

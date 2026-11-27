@@ -1,3 +1,5 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useId, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { connectionInstructionsConfig, type ToolConnection } from "@paperclipai/shared";
@@ -8,6 +10,8 @@ import { Input } from "@/components/ui/input";
 import { InlineBanner } from "@/components/InlineBanner";
 
 export function HonchoWorkspaceSettings({ connection, canConfigure }: { connection: ToolConnection; canConfigure: boolean }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const id = useId();
   const client = useQueryClient();
   const connectionConfig = connectionInstructionsConfig(connection);
@@ -19,14 +23,14 @@ export function HonchoWorkspaceSettings({ connection, canConfigure }: { connecti
     mutationFn: () => toolsApi.updateConnection(connection.id, { config: { ...connectionConfig, methodConfig: { ...config, workspaceId: value.trim() } } }),
     onSuccess: async () => { await client.invalidateQueries({ queryKey: ["tools"] }); setDraft(null); },
   });
-  return <section className="space-y-3" aria-label="Honcho workspace">
-    <label htmlFor={id} className="text-sm font-medium">Honcho workspace</label>
-    <Input id={id} value={value} maxLength={512} disabled={!canConfigure || mutation.isPending} placeholder="Workspace ID" onChange={(event) => setDraft(event.target.value)} />
-    {!value.trim() && <InlineBanner tone="warning">Enter a workspace to include Honcho instructions. Existing tools remain available.</InlineBanner>}
+  return <section className="space-y-3" aria-label={pageText("honchoWorkspace_5738db")}>
+    <label htmlFor={id} className="text-sm font-medium">{pageText("honchoWorkspace_5738db")}</label>
+    <Input id={id} value={value} maxLength={512} disabled={!canConfigure || mutation.isPending} placeholder={pageText("workspaceID_14fb66")} onChange={(event) => setDraft(event.target.value)} />
+    {!value.trim() && <InlineBanner tone="warning">{pageText("enterAWorkspaceToIncludeHonchoInstructionsExisting_6b3021")}</InlineBanner>}
     {mutation.error && <div role="alert"><InlineBanner tone="danger">{describeError(mutation.error).body}</InlineBanner></div>}
     {draft !== null && draft !== saved && <div className="flex items-center justify-between">
-      <Button variant="ghost" disabled={mutation.isPending} onClick={() => { setDraft(null); mutation.reset(); }}>Cancel</Button>
-      <Button disabled={!canConfigure || mutation.isPending || !value.trim()} onClick={() => mutation.mutate()}>{mutation.isPending ? "Saving…" : "Save workspace"}</Button>
+      <Button variant="ghost" disabled={mutation.isPending} onClick={() => { setDraft(null); mutation.reset(); }}>{translateUi("interfaceCopy.cancel")}</Button>
+      <Button disabled={!canConfigure || mutation.isPending || !value.trim()} onClick={() => mutation.mutate()}>{mutation.isPending ? pageText("saving_56a228") : pageText("saveWorkspace_36256d")}</Button>
     </div>}
   </section>;
 }

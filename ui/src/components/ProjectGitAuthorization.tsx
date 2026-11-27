@@ -1,13 +1,13 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { Project } from "@paperclipai/shared";
 import { projectsApi } from "@/api/projects";
 import { Button } from "./ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
-import { cn } from "@/lib/utils";
 
 export function ProjectGitAuthorization({ project }: { project: Project }) {
+  const { t: pageText } = usePageTranslation("interface");
   const client = useQueryClient();
   const key = ["project-git-authorization", project.companyId, project.id];
   const authorization = useQuery({
@@ -24,49 +24,37 @@ export function ProjectGitAuthorization({ project }: { project: Project }) {
   });
   const data = authorization.data;
   return (
-    <section aria-label="Background GitHub authorization" className="flex flex-col gap-3 py-4">
-      <h3 className="text-sm font-medium">Background GitHub authorization</h3>
-      <p className="text-sm text-muted-foreground">
-        Allow this project’s workspace provider to use your GitHub Connector for repository provisioning and maintenance
-        until revoked. This shares the Connector credential with the provider using its existing GitHub permissions.
-        Project repository editors can add repositories covered by this connection. Manage repository access in the GitHub connection.
-        Task runs continue to use their own identity.
-      </p>
+    <section aria-label={pageText("backgroundGitHubAuthorization_63a23d")} className="flex flex-col gap-3 py-4">
+      <h3 className="text-sm font-medium">{pageText("backgroundGitHubAuthorization_63a23d")}</h3>
+      <p className="text-sm text-muted-foreground">{pageText("allowThisProjectSWorkspaceProviderToUse_61f3de")}</p>
       {data?.grantId && (
-        <p role="status" className={cn("text-sm", ANALYTICS_MASK_CLASS)}>
-          Authorized:{" "}
+        <p role="status" className="text-sm">{pageText("authorized_58ea1d")}{" "}
           {data.options.find((option) => option.grantId === data.grantId)?.login ??
-            "selected grant (unavailable or owned by another member)"}
+            pageText("selectedGrantUnavailableOrOwnedByAnotherMember_4c65c5")}
         </p>
       )}
       {data && (
         <div className="flex flex-wrap gap-2">
           <Select value={selected} onValueChange={setSelected} disabled={save.isPending}>
-            <SelectTrigger aria-label="Your GitHub authorization" className={ANALYTICS_MASK_CLASS}>
-              <SelectValue placeholder="Select your GitHub account" />
+            <SelectTrigger aria-label={pageText("yourGitHubAuthorization_35ad27")}>
+              <SelectValue placeholder={pageText("selectYourGitHubAccount_c6c454")} />
             </SelectTrigger>
             <SelectContent>
               {data.options.map((option) => (
-                <SelectItem key={option.grantId} value={option.grantId} className={ANALYTICS_MASK_CLASS}>
+                <SelectItem key={option.grantId} value={option.grantId}>
                   {option.login} · {option.connectionName}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Button disabled={!selected || save.isPending} onClick={() => save.mutate(selected)}>
-            Authorize project
-          </Button>
+          <Button disabled={!selected || save.isPending} onClick={() => save.mutate(selected)}>{pageText("authorizeProject_5de178")}</Button>
           {data.grantId && (
-            <Button variant="outline" disabled={save.isPending} onClick={() => save.mutate(null)}>
-              Revoke authorization
-            </Button>
+            <Button variant="outline" disabled={save.isPending} onClick={() => save.mutate(null)}>{pageText("revokeAuthorization_a23f3d")}</Button>
           )}
         </div>
       )}
       {data && !data.options.length && (
-        <p className="text-sm text-muted-foreground">
-          Connect your GitHub account and install the Connector for this company to authorize it.
-        </p>
+        <p className="text-sm text-muted-foreground">{pageText("connectYourGitHubAccountAndInstallTheConnector_1256e8")}</p>
       )}
       {(authorization.error || save.error) && (
         <p role="alert" className="text-sm text-destructive">

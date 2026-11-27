@@ -1,3 +1,6 @@
+import { controlText } from "@/i18n/controls";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { type ReactNode } from "react";
 import { ArrowUpDown, Check, Layers, ListFilter } from "lucide-react";
 import {
@@ -58,10 +61,12 @@ export function DecisionsToolbar({
   sortOrder,
   onSortOrderChange,
 }: DecisionsToolbarProps) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const activeFilterCount = countActiveAttentionFilters(filters);
   return (
-    <div data-canonical-toolbar="decisions" role="toolbar" aria-label="Decisions controls" className="flex flex-wrap items-center gap-2">
-      <ToolbarSearch query={query} onQueryChange={onQueryChange} label="Search decisions" placeholder="Search decisions…" />
+    <div data-canonical-toolbar="decisions" role="toolbar" aria-label={pageText("decisionsControls_250096")} className="flex flex-wrap items-center gap-2">
+      <ToolbarSearch query={query} onQueryChange={onQueryChange} label={pageText("searchDecisions_b5f1fd")} placeholder={pageText("searchDecisions_3dbb5b")} />
       {/* Filter */}
       <Popover>
         <PopoverTrigger asChild>
@@ -70,9 +75,9 @@ export function DecisionsToolbar({
             variant="outline"
             size="icon"
             className={cn("h-8 w-8 shrink-0", activeFilterCount > 0 && "bg-accent")}
-            title="Filter"
+            title={pageText("filter_d7decf")}
             data-active={activeFilterCount > 0}
-            aria-label="Filter"
+            aria-label={pageText("filter_d7decf")}
           >
             <ListFilter className="h-3.5 w-3.5" />
           </Button>
@@ -89,9 +94,9 @@ export function DecisionsToolbar({
             variant="outline"
             size="icon"
             className={cn("h-8 w-8 shrink-0", groupBy !== "none" && "bg-accent")}
-            title="Group"
+            title={pageText("group_171a06")}
             data-active={groupBy !== "none"}
-            aria-label="Group"
+            aria-label={pageText("group_171a06")}
           >
             <Layers className="h-3.5 w-3.5" />
           </Button>
@@ -108,7 +113,7 @@ export function DecisionsToolbar({
                 )}
                 onClick={() => onGroupByChange(value)}
               >
-                <span>{label}</span>
+                <span>{controlText(label)}</span>
                 {groupBy === value ? <Check className="h-3.5 w-3.5" /> : null}
               </button>
             ))}
@@ -123,8 +128,8 @@ export function DecisionsToolbar({
             variant="outline"
             size="icon"
             className="h-8 w-8 shrink-0"
-            title="Sort"
-            aria-label="Sort"
+            title={translateUi("interfaceCopy.sort")}
+            aria-label={translateUi("interfaceCopy.sort")}
           >
             <ArrowUpDown className="h-3.5 w-3.5" />
           </Button>
@@ -141,14 +146,14 @@ export function DecisionsToolbar({
                 )}
                 onClick={() => onSortOrderChange(value)}
               >
-                <span>{label}</span>
+                <span>{controlText(label)}</span>
                 {sortOrder === value ? <Check className="h-3.5 w-3.5" /> : null}
               </button>
             ))}
           </div>
         </PopoverContent>
       </Popover>
-      <span data-toolbar-count className="w-full text-xs text-muted-foreground" aria-live="polite">{visibleCount} {visibleCount === 1 ? "decision" : "decisions"}</span>
+      <span data-toolbar-count className="w-full text-xs text-muted-foreground" aria-live="polite">{visibleCount} {visibleCount === 1 ? pageText("decision_8501a3") : pageText("decisions_cce1b9")}</span>
     </div>
   );
 }
@@ -162,6 +167,8 @@ function FilterMenu({
   filters: AttentionFilterState;
   onChange: (next: AttentionFilterState) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const toggle = (key: keyof AttentionFilterState, value: string) => {
     const list = filters[key] as string[];
     const nextList = list.includes(value) ? list.filter((v) => v !== value) : [...list, value];
@@ -172,20 +179,18 @@ function FilterMenu({
   return (
     <div className="max-h-(--sz-70vh) overflow-y-auto">
       <div className="flex items-center justify-between px-3 py-2">
-        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Filter</span>
+        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{pageText("filter_d7decf")}</span>
         {hasActive && (
           <button
             type="button"
             className="text-xs text-muted-foreground hover:text-foreground"
             onClick={() => onChange(defaultAttentionFilterState)}
-          >
-            Clear
-          </button>
+          >{translateUi("interfaceCopy.clear")}</button>
         )}
       </div>
 
       {options.sourceKinds.length > 1 && (
-        <FilterSection title="Type">
+        <FilterSection title={translateUi("interfaceCopy.type")}>
           {options.sourceKinds.map((kind) => (
             <FilterRow
               key={kind}
@@ -198,7 +203,7 @@ function FilterMenu({
       )}
 
       {options.severities.length > 1 && (
-        <FilterSection title="Severity">
+        <FilterSection title={pageText("severity_de314f")}>
           {options.severities.map((severity) => (
             <FilterRow
               key={severity}
@@ -211,7 +216,7 @@ function FilterMenu({
       )}
 
       {(options.projects.length > 0 || options.hasNoProject) && (
-        <FilterSection title="Project">
+        <FilterSection title={translateUi("interfaceCopy.project")}>
           {options.projects.map((project) => (
             <FilterRow
               key={project.id}
@@ -222,7 +227,7 @@ function FilterMenu({
           ))}
           {options.hasNoProject && (
             <FilterRow
-              label="No project"
+              label={pageText("noProject_c326b7")}
               checked={filters.projectIds.includes(NO_GROUP_SENTINEL)}
               onToggle={() => toggle("projectIds", NO_GROUP_SENTINEL)}
             />
@@ -231,7 +236,7 @@ function FilterMenu({
       )}
 
       {(options.workspaces.length > 0 || options.hasNoWorkspace) && (
-        <FilterSection title="Workspace">
+        <FilterSection title={pageText("workspace_4ca0a7")}>
           {options.workspaces.map((workspace) => (
             <FilterRow
               key={workspace.id}
@@ -242,7 +247,7 @@ function FilterMenu({
           ))}
           {options.hasNoWorkspace && (
             <FilterRow
-              label="No workspace"
+              label={pageText("noWorkspace_df398e")}
               checked={filters.workspaceIds.includes(NO_GROUP_SENTINEL)}
               onToggle={() => toggle("workspaceIds", NO_GROUP_SENTINEL)}
             />

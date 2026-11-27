@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState, type ReactNode } from "react";
 import { ChevronsUpDown } from "lucide-react";
 import type { PluginOrganizationSwitcherProps } from "@paperclipai/plugin-sdk/ui";
@@ -10,12 +11,15 @@ import { CompanyPatternIcon } from "./CompanyPatternIcon";
 import { Skeleton } from "./ui/skeleton";
 
 /** Reserve the trigger's space until its owner is known. Never flash another name. */
-function OrganizationSwitcherLoading() {
-  return <div role="status" aria-label="Loading organization" aria-busy="true"
+function OrganizationSwitcherLoading({ collapsed }: { collapsed: boolean }) {
+  const { t: pageText } = usePageTranslation("interface");
+  return <div role="status" aria-label={pageText("loadingOrganization_1f9e26")} aria-busy="true"
     className="flex h-9 min-w-0 flex-1 items-center gap-2 px-4">
     <Skeleton className="size-5 shrink-0" />
-    <span className="min-w-0 flex-1"><Skeleton className="h-4 w-20 max-w-full" /></span>
-    <ChevronsUpDown className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+    {!collapsed && <>
+      <span className="min-w-0 flex-1"><Skeleton className="h-4 w-20 max-w-full" /></span>
+      <ChevronsUpDown className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+    </>}
   </div>;
 }
 
@@ -49,7 +53,7 @@ function OrganizationSwitcher({ children, settled, loading, companyId, company, 
   open?: boolean; onOpenChange?: (open: boolean) => void;
 }) {
   const [internalOpen, setInternalOpen] = useState(false);
-  const { isMobile, setSidebarOpen } = useSidebar();
+  const { isMobile, setSidebarOpen, collapsed, peeking } = useSidebar();
   const open = controlledOpen ?? internalOpen;
   const setOpen = onOpenChange ?? setInternalOpen;
   function closeNavigation() {
@@ -59,14 +63,14 @@ function OrganizationSwitcher({ children, settled, loading, companyId, company, 
   const signOut = useSignOut({ onSignedOut: closeNavigation });
   const { slots, isLoading, errorMessage } = usePluginSlots({ slotTypes: ["organizationSwitcher"], companyId, enabled: settled });
   if (loading || (settled && isLoading && !errorMessage)) {
-    return <OrganizationSwitcherLoading />;
+    return <OrganizationSwitcherLoading collapsed={collapsed && !peeking} />;
   }
   // Never choose an arbitrary winner for a replacement surface.
   if (!settled || errorMessage || slots.length !== 1) return children;
   const props: PluginOrganizationSwitcherProps = {
     organizationSwitcher: {
       currentCompany: company ? { name: company.name, logoUrl: company.logoUrl ?? null } : null,
-      collapsed: false, open, onOpenChange: setOpen,
+      collapsed: collapsed && !peeking, open, onOpenChange: setOpen,
       onNavigate: closeNavigation, onSignOut: () => signOut.mutate(), signingOut: signOut.isPending,
       renderIcon: (name, logoUrl, inMenu) => <CompanyPatternIcon companyName={name} logoUrl={logoUrl}
         className={inMenu

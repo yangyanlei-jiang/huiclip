@@ -1,3 +1,6 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCompany } from "@/context/CompanyContext";
 import { PAPERCLIP_RUNNER_ACPX_PROFILES } from "@paperclipai/adapter-utils";
 import { useAgentAppearanceDraft } from "@/hooks/useAgentAppearanceDraft";
@@ -12,13 +15,13 @@ import { ArrowLeft, ArrowRight, Check, ChevronRight } from "lucide-react";
 import { adaptersApi } from "@/api/adapters";
 import { instanceSettingsApi } from "@/api/instanceSettings";
 import { useCloudInstance } from "@/hooks/useCloudInstance";
-import { useCloudHarnessPolicy } from "@/hooks/useCloudHarnessPolicy";
 import { isNewAgentAdapterAllowed } from "@/lib/new-agent-adapters";
 import { queryKeys } from "@/lib/queryKeys";
 import { getAdapterDisplay } from "@/adapters/adapter-display-registry";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
+import { SelectPopover } from "../ui/select";
 import {
   Dialog,
   DialogContent,
@@ -59,6 +62,8 @@ export function AgentBasicsDialog({
   setupAgentId?: string;
   onInvite?: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const id = useId();
   const { selectedCompanyId: companyId } = useCompany();
   const cache = useQueryClient();
@@ -71,7 +76,6 @@ export function AgentBasicsDialog({
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const cloud = Boolean(useCloudInstance());
-  const harnessPolicy = useCloudHarnessPolicy();
   const experimental = useQuery({
     queryKey: queryKeys.instance.experimentalSettings,
     queryFn: instanceSettingsApi.getExperimental,
@@ -79,6 +83,7 @@ export function AgentBasicsDialog({
   });
   const [name, setName] = useState(initialName);
   const [adapterType, setAdapterType] = useState(initialAdapter);
+  const [runnerProvider, setRunnerProvider] = useState("codex");
   const [step, setStep] = useState<"name" | "adapter">(setupAgentId ? "adapter" : "name");
   const adaptersQuery = useQuery({
     queryKey: queryKeys.adapters.availability(companyId ?? "none", null),
@@ -88,12 +93,12 @@ export function AgentBasicsDialog({
   const adaptersView = useQueryView(adaptersQuery);
   const adapters = adaptersView.data;
   const nativeRunner = adapters?.find(adapter => adapter.type === "paperclip_runner" && adapter.loaded && !adapter.disabled && adapter.supportedRunners?.length !== 0);
-  const copilotAvailable = (!cloud || harnessPolicy.isCloudRunnerProviderAllowed("copilot")) && Boolean(nativeRunner) && PAPERCLIP_RUNNER_ACPX_PROFILES.some(profile => profile.value === "copilot" && profile.qualified);
-  const kimiAvailable = (!cloud || harnessPolicy.isCloudRunnerProviderAllowed("kimi")) && Boolean(nativeRunner) && experimental.data?.enableNativeRunner === true
+  const copilotAvailable = Boolean(nativeRunner) && PAPERCLIP_RUNNER_ACPX_PROFILES.some(profile => profile.value === "copilot" && profile.qualified);
+  const kimiAvailable = Boolean(nativeRunner) && experimental.data?.enableNativeRunner === true
     && PAPERCLIP_RUNNER_ACPX_PROFILES.some(profile => profile.value === "kimi" && profile.qualified);
   const antigravityQualified = PAPERCLIP_RUNNER_ACPX_PROFILES.some(profile => profile.value === "antigravity" && profile.qualified);
   const antigravityCandidate = nativeRunner?.candidateHarnesses?.some(candidate => candidate.agent === "antigravity");
-  const antigravityAvailable = (!cloud || harnessPolicy.isCloudRunnerProviderAllowed("antigravity")) && Boolean(nativeRunner);
+  const antigravityAvailable = Boolean(nativeRunner);
   const choices = [...(adapters ?? []).filter(
     (adapter) =>
       adapter.loaded &&
@@ -102,7 +107,6 @@ export function AgentBasicsDialog({
       adapter.type !== "paperclip_runner" &&
       isNewAgentAdapterAllowed(adapter.type, {
         cloud,
-        harnessPolicy,
         nativeRunnerEnabled: experimental.data?.enableNativeRunner === true,
       }) &&
       (!cloud || adapter.type !== "cursor_cloud" || adapter.supportedRunners?.includes("paperclip")) &&
@@ -111,7 +115,10 @@ export function AgentBasicsDialog({
   ), ...(copilotAvailable ? [{ ...nativeRunner!, type: "copilot_runtime" }] : []),
     ...(antigravityAvailable ? [{ ...nativeRunner!, type: "antigravity_runtime" }] : []),
     ...(kimiAvailable ? [{ ...nativeRunner!, type: "kimi_runtime" }] : [])];
-  const validAdapter = choices.some((adapter) => adapter.type === adapterType);
+  const experimentalRunnerAvailable = experimental.data?.enableNativeRunner === true
+    && adapters?.some(adapter => adapter.type === "paperclip_runner" && adapter.loaded && !adapter.disabled && adapter.supportedRunners?.length !== 0);
+  const validAdapter = choices.some((adapter) => adapter.type === adapterType)
+    || (experimentalRunnerAvailable && adapterType === "paperclip_runner" && (runnerProvider !== "antigravity" || antigravityQualified));
   async function submit() {
     if (busy.current || !name.trim() || (step === "adapter" && !validAdapter)) return;
     busy.current = true;
@@ -142,7 +149,7 @@ export function AgentBasicsDialog({
       saved.current = agent;
       const hostedCursor = cloud && adapterType === "cursor_cloud";
       const nextAdapter = hostedCursor || ["openai_dot", "copilot_runtime", "antigravity_runtime", "kimi_runtime"].includes(adapterType) ? "paperclip_runner" : adapterType;
-      const nextProvider = hostedCursor ? "cursor_cloud" : adapterType === "kimi_runtime" ? "kimi" : adapterType === "antigravity_runtime" ? "antigravity" : adapterType === "copilot_runtime" ? "copilot" : adapterType === "openai_dot" ? "openai_dot" : "codex";
+      const nextProvider = hostedCursor ? "cursor_cloud" : adapterType === "kimi_runtime" ? "kimi" : adapterType === "antigravity_runtime" ? "antigravity" : adapterType === "copilot_runtime" ? "copilot" : adapterType === "openai_dot" ? "openai_dot" : adapterType === "paperclip_runner" ? runnerProvider : "codex";
       const nextRunner = hostedCursor ? "paperclip" as const : "auto" as const;
       // Pending providers can show setup while the saved name-only draft stays held.
       const pendingAntigravity = nextProvider === "antigravity" && !antigravityQualified;
@@ -157,8 +164,9 @@ export function AgentBasicsDialog({
           ...(step === "adapter" && !pendingAntigravity ? {
             adapterType: nextAdapter, runner: nextRunner,
             adapterConfig: nextAdapter === "paperclip_runner" ? {
-              provider: ["copilot", "antigravity", "kimi"].includes(nextProvider) ? "acpx" : nextProvider,
-              ...(["copilot", "antigravity", "kimi"].includes(nextProvider) ? { acpxAgent: nextProvider } : {}),
+              provider: ["claude", "grok", "copilot", "antigravity", "kimi"].includes(nextProvider) ? "acpx" : nextProvider,
+              ...(["claude", "grok", "copilot", "antigravity", "kimi"].includes(nextProvider) ? { acpxAgent: nextProvider } : {}),
+              ...(nextProvider === "grok" ? { model: "grok-4.7" } : {}),
             } : {},
             metadata: { ...metadata, setupAdapterPending: false },
           } : {}),
@@ -172,7 +180,7 @@ export function AgentBasicsDialog({
       else onContinue({ name: agent.name, adapterType: nextAdapter, runnerProvider: nextProvider,
         runner: nextRunner, setupAgentId: agent.id });
     } catch (cause) {
-      if (active.current) setSaveError(cause instanceof Error ? cause.message : "Could not save agent setup.");
+      if (active.current) setSaveError(cause instanceof Error ? cause.message : interfaceNotice("interface:couldNotSaveAgentSetup_dc2893"));
     } finally {
       busy.current = false;
       if (active.current) setSaving(false);
@@ -193,19 +201,15 @@ export function AgentBasicsDialog({
       >
         <div
           className="flex items-center gap-2 px-6 py-5 text-xs text-muted-foreground"
-          aria-label="New agent progress"
+          aria-label={pageText("newAgentProgress_f86b33")}
         >
           <span
             className={cn(step === "name" && "font-medium text-foreground")}
-          >
-            1. Name
-          </span>
+          >{pageText("1Name_ae760c")}</span>
           <ChevronRight className="size-3" />
           <span
             className={cn(step === "adapter" && "font-medium text-foreground")}
-          >
-            2. Adapter
-          </span>
+          >{pageText("2Adapter_aaae30")}</span>
         </div>
         <form
           className="flex min-h-0 flex-col"
@@ -220,27 +224,25 @@ export function AgentBasicsDialog({
               <div className="space-y-2">
                 <DialogTitle className="text-3xl font-semibold tracking-tight">
                   {step === "name"
-                    ? "Meet your next agent"
-                    : "Choose an adapter"}
+                    ? pageText("meetYourNextAgent_8cdce8")
+                    : pageText("chooseAnAdapter_a728dd")}
                 </DialogTitle>
                 <DialogDescription className="text-base">
                   {step === "name"
-                    ? "Start with a name. Make them your own."
+                    ? pageText("startWithANameMakeThemYourOwn_b63278")
                     : `How should ${name.trim()} work?`}
                 </DialogDescription>
               </div>
             </div>
             {step === "name" ? (
               <div className="space-y-2">
-                <label htmlFor={id} className="text-sm font-medium">
-                  Agent name
-                </label>
+                <label htmlFor={id} className="text-sm font-medium">{translateUi("interfaceCopy.agentName")}</label>
                 <Input
                   id={id}
                   autoFocus
                   disabled={saving}
                   maxLength={100}
-                  placeholder="e.g. Darnold"
+                  placeholder={pageText("eGDarnold_d5ff41")}
                   value={name}
                   onChange={(event) => setName(event.target.value)}
                   className="h-12 text-base"
@@ -251,18 +253,14 @@ export function AgentBasicsDialog({
                     variant="link"
                     className="px-0 text-muted-foreground"
                     onClick={onInvite}
-                  >
-                    Invite an external agent
-                  </Button>
+                  >{pageText("inviteAnExternalAgent_a382ae")}</Button>
                 )}
               </div>
             ) : (
               <fieldset className="space-y-4">
-                <legend className="sr-only">Adapter</legend>
+                <legend className="sr-only">{translateUi("interfaceCopy.adapter")}</legend>
                 {adaptersView.kind === "loading" || adaptersView.kind === "reconnecting" ? (
-                  <p role="status" className="text-sm text-muted-foreground">
-                    Loading adapters…
-                  </p>
+                  <p role="status" className="text-sm text-muted-foreground">{pageText("loadingAdapters_945563")}</p>
                 ) : null}
                 {adaptersView.kind === "error" ? (
                   <QueryErrorState
@@ -303,7 +301,7 @@ export function AgentBasicsDialog({
                             {display.label}
                           </span>
                           {adapter.type === "antigravity_runtime" && !antigravityQualified && (
-                            <span className="text-xs text-muted-foreground">{antigravityCandidate ? "Candidate" : "Not available yet"}</span>
+                            <span className="text-xs text-muted-foreground">{antigravityCandidate ? pageText("candidate_d769de") : pageText("notAvailableYet_a1db9d")}</span>
                           )}
                           {adapterType === adapter.type && (
                             <Check className="absolute right-2 top-2 size-3.5" />
@@ -313,6 +311,20 @@ export function AgentBasicsDialog({
                     );
                   })}
                 </div>
+                {experimentalRunnerAvailable && <details className="space-y-3">
+                  <summary className="cursor-pointer text-sm text-muted-foreground">{translateUi("interfaceCopy.advanced")}</summary>
+                  <div className="space-y-2">
+                    <label className="text-sm text-muted-foreground">{pageText("experimentalHarness_ad251d")}</label>
+                    <SelectPopover aria-label={pageText("experimentalHarness_ad251d")}
+                      value={adapterType === "paperclip_runner" ? runnerProvider : ""}
+                      placeholder={pageText("chooseANativeHarness_80b61f")}
+                      onValueChange={provider => { setRunnerProvider(provider); setAdapterType("paperclip_runner"); }}
+                      options={[
+                        { value: "grok", label: "Grok Build (Paperclip Runner)" },
+                        { value: "opencode", label: "OpenCode (Paperclip Runner)" },
+                      ]} />
+                  </div>
+                </details>}
               </fieldset>
             )}
           </div>
@@ -325,19 +337,17 @@ export function AgentBasicsDialog({
               onClick={() => (step === "name" ? onClose() : setStep("name"))}
             >
               {step === "name" ? (
-                "Cancel"
+                pageText("cancel_77dfd2")
               ) : (
                 <>
-                  <ArrowLeft className="size-4" />
-                  Back
-                </>
+                  <ArrowLeft className="size-4" />{pageText("back_b52b36")}</>
               )}
             </Button>
             <Button
               type="submit"
               disabled={saving || !name.trim() || (step === "adapter" && !validAdapter)}
             >
-              {saving ? "Saving…" : step === "name" ? "Choose adapter" : "Configure agent"}
+              {saving ? pageText("saving_56a228") : step === "name" ? pageText("chooseAdapter_f322ba") : pageText("configureAgent_3daf48")}
               <ArrowRight className="size-4" />
             </Button>
           </div>

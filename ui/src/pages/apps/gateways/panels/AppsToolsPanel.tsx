@@ -1,3 +1,5 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import type { ToolProfileWithDetails } from "@paperclipai/shared";
 import { Link } from "@/lib/router";
 import { cn } from "@/lib/utils";
@@ -15,26 +17,22 @@ export function AppsToolsPanel({
   apps: GatewayAppRow[];
   profile: ToolProfileWithDetails | undefined;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   return (
     <div className="space-y-4">
-      <p className="text-sm text-muted-foreground">
-        These apps go through this gateway. The bound profile
-        {profile ? ` (${profile.name})` : ""} decides which tools are allowed
-        {profile ? ` — ${allowedToolsLabel(profile)}.` : "."} Change the profile under Advanced.
-      </p>
+      <p className="text-sm text-muted-foreground">{pageText("theseAppsGoThroughThisGatewayTheBound_0ac970")}{profile ? ` (${profile.name})` : ""}{" " + pageText("decidesWhichToolsAreAllowed_233dbc")}{profile ? ` — ${allowedToolsLabel(profile)}.` : "."}{" " + pageText("changeTheProfileUnderAdvanced_b70ee6")}</p>
 
       {apps.length === 0 ? (
-        <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
-          No apps are assigned to this gateway’s profile yet.
-        </div>
+        <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">{pageText("noAppsAreAssignedToThisGatewayS_a78379")}</div>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-border">
           <table className="w-full min-w-(--sz-32rem) text-sm">
             <thead>
               <tr className="border-b border-border bg-muted/40 text-left text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-                <th className="px-4 py-2.5">App</th>
-                <th className="px-4 py-2.5">Tools</th>
-                <th className="px-4 py-2.5">Status</th>
+                <th className="px-4 py-2.5">{pageText("app_fc4a69")}</th>
+                <th className="px-4 py-2.5">{pageText("tools_4fa8cc")}</th>
+                <th className="px-4 py-2.5">{translateUi("interfaceCopy.status")}</th>
                 <th className="px-4 py-2.5 text-right" />
               </tr>
             </thead>
@@ -54,7 +52,7 @@ export function AppsToolsPanel({
                       ) : null}
                     </td>
                     <td className="px-4 py-3 text-muted-foreground">
-                      {app.toolCount} {app.toolCount === 1 ? "tool" : "tools"}
+                      {app.toolCount} {app.toolCount === 1 ? pageText("tool_1937c4") : pageText("tools_0284c6")}
                     </td>
                     <td className="px-4 py-3">
                       <span
@@ -65,13 +63,11 @@ export function AppsToolsPanel({
                             : "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
                         )}
                       >
-                        {app.needsAttention ? "Needs attention" : "Healthy"}
+                        {app.needsAttention ? pageText("needsAttention_a12672") : pageText("healthy_80ea15")}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <Link to={href} className="text-xs font-medium text-primary hover:underline">
-                        Open →
-                      </Link>
+                      <Link to={href} className="text-xs font-medium text-primary hover:underline">{pageText("open_6f4789")}</Link>
                     </td>
                   </tr>
                 );

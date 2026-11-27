@@ -1,3 +1,7 @@
+import { optionLabel } from "@/i18n/option-label";
+import { t as translateDynamic } from "../../../i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, Plug, Plus, Search, X } from "lucide-react";
 import { Link } from "@/lib/router";
@@ -52,6 +56,8 @@ export interface WizardToolsStepProps {
 }
 
 export function WizardToolsStep(props: WizardToolsStepProps) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const { appGroups, catalogLoading, selections, onSelectionsChange } = props;
   const [search, setSearch] = useState("");
   const [capabilityFilter, setCapabilityFilter] = useState<ToolCapability | null>(null);
@@ -74,7 +80,7 @@ export function WizardToolsStep(props: WizardToolsStepProps) {
       .filter((entry) => entry.tools.length > 0);
   }, [appGroups, search, capabilityFilter]);
 
-  if (catalogLoading) return <LoadingState label="Loading tools…" />;
+  if (catalogLoading) return <LoadingState label={pageText("loadingTools_8237fc")} />;
 
   // Cold state A (AP17): nothing connected at all.
   if (appGroups.length === 0) {
@@ -82,14 +88,11 @@ export function WizardToolsStep(props: WizardToolsStepProps) {
       <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border py-12 text-center">
         <Plug className="h-6 w-6 text-muted-foreground" />
         <div>
-          <p className="text-sm font-medium text-foreground">App connections are coming soon</p>
-          <p className="mx-auto max-w-sm text-sm text-muted-foreground">
-            Profiles will be available once app connections are ready. Browse the planned integrations in the
-            meantime.
-          </p>
+          <p className="text-sm font-medium text-foreground">{pageText("appConnectionsAreComingSoon_708741")}</p>
+          <p className="mx-auto max-w-sm text-sm text-muted-foreground">{pageText("profilesWillBeAvailableOnceAppConnectionsAre_88ab3f")}</p>
         </div>
         <Button asChild variant="outline">
-          <Link to="/apps">Browse app connections</Link>
+          <Link to="/apps">{pageText("browseAppConnections_d40c3c")}</Link>
         </Button>
       </div>
     );
@@ -103,7 +106,7 @@ export function WizardToolsStep(props: WizardToolsStepProps) {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search tools…"
+            placeholder={pageText("searchTools_97829a")}
             className="pl-8"
           />
         </div>
@@ -120,7 +123,7 @@ export function WizardToolsStep(props: WizardToolsStepProps) {
                   : "border-border text-muted-foreground hover:bg-accent",
               )}
             >
-              {CAPABILITY_LABEL[cap]}
+              {optionLabel(CAPABILITY_LABEL[cap])}
             </button>
           ))}
         </div>
@@ -129,7 +132,7 @@ export function WizardToolsStep(props: WizardToolsStepProps) {
       {filteredGroups.length === 0 ? (
         // Cold state B (AP17): a search/filter that matches nothing.
         <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-border py-10 text-center">
-          <p className="text-sm font-medium text-foreground">No tools match “{search}”.</p>
+          <p className="text-sm font-medium text-foreground">{pageText("noToolsMatch_12a3ac")}{search}”.</p>
           <button
             type="button"
             onClick={() => {
@@ -137,9 +140,7 @@ export function WizardToolsStep(props: WizardToolsStepProps) {
               setCapabilityFilter(null);
             }}
             className="text-sm font-medium text-primary hover:underline"
-          >
-            Clear search
-          </button>
+          >{translateUi("interfaceCopy.clearSearch")}</button>
         </div>
       ) : (
         <div className="divide-y divide-border overflow-hidden rounded-lg border border-border">
@@ -183,6 +184,7 @@ function AppRow({
   onToggleApp: () => void;
   onToggleTool: (toolId: string) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [expanded, setExpanded] = useState(false);
   const state = appCheckState(group, selection);
   const checked = state === "checked" ? true : state === "indeterminate" ? "indeterminate" : false;
@@ -190,7 +192,7 @@ function AppRow({
   return (
     <div>
       <div className="flex items-center gap-2.5 px-3 py-2">
-        <Checkbox checked={checked} onCheckedChange={onToggleApp} aria-label={`All ${group.name} tools`} />
+        <Checkbox checked={checked} onCheckedChange={onToggleApp} aria-label={translateDynamic("dynamic:allTools", { value1: group.name })} />
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
@@ -202,8 +204,7 @@ function AppRow({
             <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
           )}
           <span className="flex flex-col">
-            <span className="text-sm font-medium text-foreground">
-              All {group.name} tools ({group.tools.length})
+            <span className="text-sm font-medium text-foreground">{pageText("all_6a7208") + " "}{group.name}{" " + pageText("tools_bfbdf0")}{group.tools.length})
             </span>
             <span className="text-xs text-muted-foreground">
               {state === "indeterminate"
@@ -232,7 +233,7 @@ function AppRow({
                   <span className="flex flex-wrap items-center gap-2">
                     <code className="font-mono text-xs text-foreground">{tool.toolName}</code>
                     <Badge variant={CAPABILITY_VARIANT[cap]} className="text-(length:--text-nano)">
-                      {CAPABILITY_LABEL[cap]}
+                      {optionLabel(CAPABILITY_LABEL[cap])}
                     </Badge>
                   </span>
                   {tool.title || tool.description ? (
@@ -255,6 +256,7 @@ function NewToolsRadio({
   value: NewToolsAction;
   onChange: (next: NewToolsAction) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const options: Array<{ value: NewToolsAction; label: string; hint: string; recommended?: boolean }> = [
     {
       value: "deny",
@@ -270,7 +272,7 @@ function NewToolsRadio({
   ];
   return (
     <fieldset className="space-y-2 rounded-lg border border-border p-4">
-      <legend className="px-1 text-sm font-medium text-foreground">New tools that appear later</legend>
+      <legend className="px-1 text-sm font-medium text-foreground">{pageText("newToolsThatAppearLater_317215")}</legend>
       <div className="space-y-2">
         {options.map((opt) => (
           <label key={opt.value} className="flex cursor-pointer items-start gap-2.5">
@@ -283,16 +285,14 @@ function NewToolsRadio({
             />
             <span className="flex flex-col gap-0.5">
               <span className="flex items-center gap-2 text-sm font-medium text-foreground">
-                {opt.label}
+                {optionLabel(opt.label)}
                 {opt.recommended ? (
-                  <Badge variant="outline" className="text-(length:--text-nano)">
-                    Recommended
-                  </Badge>
+                  <Badge variant="outline" className="text-(length:--text-nano)">{pageText("recommended_9ef937")}</Badge>
                 ) : (
-                  <span className="text-xs font-normal text-amber-600">(risky)</span>
+                  <span className="text-xs font-normal text-amber-600">{pageText("risky_a1a688")}</span>
                 )}
               </span>
-              <span className="text-xs text-muted-foreground">{opt.hint}</span>
+              <span className="text-xs text-muted-foreground">{optionLabel(opt.hint)}</span>
             </span>
           </label>
         ))}
@@ -314,10 +314,13 @@ function createAdvancedRuleId() {
 }
 
 function ruleSummary(rule: AdvancedRule): string {
-  const verb = rule.effect === "include" ? "Allow" : "Block";
-  if (rule.kind === "tool_name") return `${verb} tools matching ${rule.value}`;
-  if (rule.kind === "risk_level") return `${verb} ${rule.riskLevel ?? rule.value} tools`;
-  return `${verb} tool ${rule.value}`;
+  const verb = optionLabel(rule.effect === "include" ? "Allow" : "Block");
+  if (rule.kind === "tool_name") return optionLabel("{{verb}} tools matching {{value}}", { verb, value: rule.value });
+  if (rule.kind === "risk_level") {
+    const risk = rule.riskLevel ?? rule.value;
+    return optionLabel("{{verb}} {{risk}} tools", { verb, risk: optionLabel(risk) });
+  }
+  return optionLabel("{{verb}} tool {{value}}", { verb, value: rule.value });
 }
 
 function AdvancedRules({
@@ -327,6 +330,8 @@ function AdvancedRules({
   rules: AdvancedRule[];
   onChange: (next: AdvancedRule[]) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
   const [kind, setKind] = useState<AdvancedRuleKind>("tool_name");
   const [value, setValue] = useState("");
@@ -349,14 +354,11 @@ function AdvancedRules({
   return (
     <Collapsible open={open} onOpenChange={setOpen} className="rounded-lg border border-border">
       <CollapsibleTrigger className="flex w-full items-center justify-between px-4 py-3 text-left">
-        <span className="text-sm font-medium text-foreground">Advanced rules</span>
+        <span className="text-sm font-medium text-foreground">{pageText("advancedRules_f9d5bb")}</span>
         <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", open && "rotate-180")} />
       </CollapsibleTrigger>
       <CollapsibleContent className="space-y-3 border-t border-border px-4 py-3">
-        <p className="text-xs text-muted-foreground">
-          Match tools by a name pattern, a risk level, or a specific tool ID. These run on top of the choices
-          above.
-        </p>
+        <p className="text-xs text-muted-foreground">{pageText("matchToolsByANamePatternARisk_ae0a40")}</p>
 
         {rules.length > 0 ? (
           <ul className="space-y-1.5">
@@ -368,7 +370,7 @@ function AdvancedRules({
                 <span className="text-foreground">{ruleSummary(rule)}</span>
                 <button
                   type="button"
-                  aria-label="Remove rule"
+                  aria-label={pageText("removeRule_e0d4ff")}
                   onClick={() => onChange(rules.filter((r) => r.id !== rule.id))}
                   className="text-muted-foreground hover:text-destructive"
                 >
@@ -385,8 +387,8 @@ function AdvancedRules({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="include">Allow</SelectItem>
-              <SelectItem value="exclude">Block</SelectItem>
+              <SelectItem value="include">{pageText("allow_3ad0e3")}</SelectItem>
+              <SelectItem value="exclude">{pageText("block_82dd2c")}</SelectItem>
             </SelectContent>
           </Select>
           <Select value={kind} onValueChange={(v) => setKind(v as AdvancedRuleKind)}>
@@ -396,7 +398,7 @@ function AdvancedRules({
             <SelectContent>
               {RULE_KIND_OPTIONS.map((opt) => (
                 <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
+                  {optionLabel(opt.label)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -407,23 +409,21 @@ function AdvancedRules({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="read">Read-only</SelectItem>
-                <SelectItem value="write">Makes changes</SelectItem>
-                <SelectItem value="destructive">Destructive</SelectItem>
+                <SelectItem value="read">{translateUi("interfaceCopy.readonly")}</SelectItem>
+                <SelectItem value="write">{pageText("makesChanges_623884")}</SelectItem>
+                <SelectItem value="destructive">{pageText("destructive_f58c83")}</SelectItem>
               </SelectContent>
             </Select>
           ) : (
             <Input
               value={value}
               onChange={(e) => setValue(e.target.value)}
-              placeholder={kind === "tool_name" ? "e.g. gmail.send*" : "tool ID"}
+              placeholder={kind === "tool_name" ? pageText("eGGmailSend_b69d1d") : pageText("toolID_58abc2")}
               className="w-44"
             />
           )}
           <Button type="button" variant="outline" size="sm" onClick={addRule}>
-            <Plus className="mr-1 h-3.5 w-3.5" />
-            Add rule
-          </Button>
+            <Plus className="mr-1 h-3.5 w-3.5" />{pageText("addRule_11cc2b")}</Button>
         </div>
       </CollapsibleContent>
     </Collapsible>

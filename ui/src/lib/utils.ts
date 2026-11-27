@@ -1,3 +1,4 @@
+import { i18n, t as timeText } from "@/i18n";
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { deriveAgentUrlKey, deriveProjectUrlKey, normalizeProjectUrlKey, hasNonAsciiContent } from "@paperclipai/shared";
@@ -6,6 +7,18 @@ import type { BillingType, FinanceDirection, FinanceEventKind } from "@paperclip
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
+/**
+ * Classes for a sidebar row label when the sidebar is collapsed to the icon rail
+ * (PAP-10676). Unlike `sr-only` (which is `position: absolute` and therefore
+ * removes the label from flow), this keeps the label in flow so it still
+ * contributes its line-height to the row. That guarantees a row is the *exact*
+ * same height collapsed as expanded, so the icons never shift vertically between
+ * states. The label is clipped to zero visible width and rendered transparent,
+ * but stays in the DOM and the a11y tree as the link's accessible name.
+ */
+export const SIDEBAR_RAIL_HIDDEN_LABEL =
+  "block w-0 min-w-0 overflow-hidden whitespace-nowrap text-transparent select-none";
 
 export function asObject(value: unknown): Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
@@ -44,7 +57,7 @@ export function formatProjectBudget(budget: { amountCents: number; windowKind: s
 }
 
 export function formatDate(date: Date | string): string {
-  return new Date(date).toLocaleDateString("en-US", {
+  return new Date(date).toLocaleDateString(i18n.resolvedLanguage || "en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
@@ -53,21 +66,20 @@ export function formatDate(date: Date | string): string {
 
 export function formatDateTime(
   date: Date | string,
-  options: { includeSeconds?: boolean; includeYear?: boolean; includeTimeZone?: boolean } = {},
+  options: { includeSeconds?: boolean; includeYear?: boolean } = {},
 ): string {
-  return new Date(date).toLocaleString("en-US", {
+  return new Date(date).toLocaleString(i18n.resolvedLanguage || "en-US", {
     month: "short",
     day: "numeric",
     ...(options.includeYear === false ? {} : { year: "numeric" as const }),
     hour: "numeric",
     minute: "2-digit",
     ...(options.includeSeconds ? { second: "2-digit" as const } : {}),
-    ...(options.includeTimeZone ? { timeZoneName: "short" as const } : {}),
   });
 }
 
 export function formatShortDate(date: Date | string): string {
-  return new Date(date).toLocaleString("en-US", {
+  return new Date(date).toLocaleString(i18n.resolvedLanguage || "en-US", {
     month: "short",
     day: "numeric",
   });
@@ -77,13 +89,13 @@ export function relativeTime(date: Date | string): string {
   const now = Date.now();
   const then = new Date(date).getTime();
   const diffSec = Math.round((now - then) / 1000);
-  if (diffSec < 60) return "just now";
+  if (diffSec < 60) return timeText("interface:relativeNow");
   const diffMin = Math.round(diffSec / 60);
-  if (diffMin < 60) return `${diffMin}m ago`;
+  if (diffMin < 60) return timeText("interface:relativeAgo_m", { value: diffMin });
   const diffHr = Math.round(diffMin / 60);
-  if (diffHr < 24) return `${diffHr}h ago`;
+  if (diffHr < 24) return timeText("interface:relativeAgo_h", { value: diffHr });
   const diffDay = Math.round(diffHr / 24);
-  if (diffDay < 30) return `${diffDay}d ago`;
+  if (diffDay < 30) return timeText("interface:relativeAgo_d", { value: diffDay });
   return formatDate(date);
 }
 
@@ -119,8 +131,6 @@ export function providerDisplayName(provider: string): string {
     aws_bedrock: "AWS Bedrock",
     openai: "OpenAI",
     openrouter: "OpenRouter",
-    ollama: "Ollama",
-    "ollama-cloud": "Ollama Cloud",
     chatgpt: "ChatGPT",
     google: "Google",
     cursor: "Cursor",

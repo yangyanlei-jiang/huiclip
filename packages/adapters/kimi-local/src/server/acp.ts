@@ -219,7 +219,7 @@ async function commandIsResolvable(
         token,
         target,
         resolveAdapterExecutionTargetCwd(target, asString(input?.config.cwd, ""), process.cwd()),
-        target.transport === "ssh" ? { PATH: process.env.PATH } : {},
+        process.env,
       );
       return true;
     } catch {
@@ -250,13 +250,11 @@ async function kimiAcpUnavailableReason(
     executionTarget: input.executionTarget,
     legacyRemoteExecution: input.executionTransport?.remoteExecution,
   });
-  const managedSsh = target?.kind === "remote" && target.transport === "ssh"
-    && target.spec.useHostAuth === false && Boolean(input.config.managedAiConnection);
-  if (target?.kind === "remote" && !sandboxTargetHasProcessSessionBridge(target) && !managedSsh) {
+  if (target?.kind === "remote" && !sandboxTargetHasProcessSessionBridge(target)) {
     if (target.transport === "sandbox") {
       return "Kimi ACP requires a bidirectional remote process target; this sandbox exposes only one-shot command execution.";
     }
-    return "Kimi ACP requires an agent-managed SSH account; host authentication is supported by the CLI engine.";
+    return "Kimi ACP supports sandbox remote targets only; this run targets a non-sandbox remote environment.";
   }
   if (!nodeVersionMeetsKimiAcpMinimum()) {
     return `Node ${process.version} (${process.execPath}) does not satisfy Kimi ACP's Node >=${MIN_ACP_NODE_VERSION} prerequisite.`;

@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../i18n";
 import { useState } from "react";
 import { ArrowUp, ArrowDown, Minus, AlertTriangle } from "lucide-react";
 import { cn } from "../lib/utils";
@@ -44,7 +45,7 @@ export function PriorityIcon({ priority, onChange, className, showLabel }: Prior
   const trigger = showLabel ? (
     <button
       type="button"
-      aria-label={`Change priority (current: ${config.label})`}
+      aria-label={translateDynamic("dynamic:changePriorityCurrent", { value1: config.label })}
       className="inline-flex min-h-5 items-center gap-1.5 cursor-pointer hover:bg-accent/50 rounded px-1 -mx-1 py-0.5 transition-colors"
     >
       {icon}
@@ -54,7 +55,7 @@ export function PriorityIcon({ priority, onChange, className, showLabel }: Prior
     <button
       type="button"
       data-slot="icon-button"
-      aria-label={`Change priority (current: ${config.label})`}
+      aria-label={translateDynamic("dynamic:changePriorityCurrent", { value1: config.label })}
       className="inline-flex cursor-pointer items-center justify-center rounded-sm focus-visible:outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-ring"
     >
       {icon}

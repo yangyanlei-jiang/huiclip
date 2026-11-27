@@ -111,12 +111,12 @@ export async function assertIssueReviewVerdictActorAllowed(
   if (policy === "human_only") {
     if (input.actor.type === "user") return;
     throw forbidden(
-      "Only a signed-in person can approve or reject this review; an agent cannot submit the verdict.",
+      "Review policy `human_only` allows only an authenticated user to approve or reject this review.",
       {
         code: "review_policy_denied",
         policy,
         allowedActor: "authenticated_user_with_issue_write_access",
-        remediation: "Ask a person with access to this task to approve or reject it in Paperclip.",
+        remediation: "Have an authenticated user with issue write access submit the verdict.",
       },
     );
   }
@@ -124,24 +124,24 @@ export async function assertIssueReviewVerdictActorAllowed(
   const requester = await resolveIssueReviewRequester(db, input.issue);
   if (!requester) {
     throw forbidden(
-      "Someone other than whoever sent this task for review must decide it, and Paperclip could not tell who sent it.",
+      "Review policy `not_creator` requires a different writer, but the review requester could not be determined.",
       {
         code: "review_policy_denied",
         policy,
         allowedActor: "writer_other_than_review_requester",
-        remediation: "Move the task out of review and back into review so Paperclip records who sent it, then have someone else submit the verdict.",
+        remediation: "Move the issue out of and back into `in_review` to record a requester before another writer submits the verdict.",
       },
     );
   }
   if (requester.type !== input.actor.type || requester.id !== input.actor.id) return;
 
   throw forbidden(
-    "Whoever sent this task for review cannot also approve or reject it; someone else must submit the verdict.",
+    "Review policy `not_creator` requires someone other than the writer who moved the issue into `in_review` to approve or reject it.",
     {
       code: "review_policy_denied",
       policy,
       allowedActor: "writer_other_than_review_requester",
-      remediation: "Have someone else with access to this task submit the verdict.",
+      remediation: "Have another writer with issue write access submit the verdict.",
     },
   );
 }

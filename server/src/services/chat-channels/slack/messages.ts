@@ -106,15 +106,9 @@ export function stripSlackTitleMentions(text: string): string {
 
 export function slackMessageMeetsMentionRequirement(
   endpoint: Pick<EndpointRow, "requireAtMention">,
-  thread: Pick<Thread, "id" | "isDM">,
+  thread: Pick<Thread, "isDM">,
   trigger: ChatSdkMessageCallbackEvent["trigger"],
-  message: Pick<Message, "id" | "isMention">,
+  message: Pick<Message, "isMention">,
 ): boolean {
-  return (
-    !endpoint.requireAtMention ||
-    thread.isDM ||
-    (Boolean(message.id) && slackOrphanFollowUp(thread.id, message.id)) ||
-    trigger === "mention" ||
-    message.isMention === true
-  );
+  return !endpoint.requireAtMention || thread.isDM || trigger === "mention" || message.isMention === true;
 }

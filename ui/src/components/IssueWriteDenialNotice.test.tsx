@@ -27,7 +27,8 @@ describe("IssueWriteDenialNotice", () => {
     expect(html).toContain("Issue visibility");
     expect(html).toContain("TASK-482");
     expect(html).toContain("Fable");
-    expect(html).toContain("Ask the board to widen visibility for Fable.");
+    // The workaround the incident had to discover is now stated outright.
+    expect(html).toContain("child issue");
   });
 
   it("tones a run lock as transient rather than a permission wall", () => {

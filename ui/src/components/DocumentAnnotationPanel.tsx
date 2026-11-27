@@ -1,11 +1,11 @@
+import { t as translateDynamic } from "../i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { AgentAvatar } from "./AgentAvatar";
 import { useCallback, useMemo, useRef, useState, useEffect } from "react";
-import {
-  DOCUMENT_ANNOTATION_COMMENT_REACTIONS,
-  type DocumentAnnotationComment,
-  type DocumentAnnotationCommentReactionName,
-  type DocumentAnnotationCommentReactionSummary,
-  type DocumentAnnotationThreadWithComments,
+import type {
+  DocumentAnnotationComment,
+  DocumentAnnotationThreadWithComments,
 } from "@paperclipai/shared";
 import {
   Check,
@@ -68,6 +68,7 @@ export interface AnnotationPanelProps {
 }
 
 export function DocumentAnnotationPanel(props: AnnotationPanelProps) {
+  const { t: pageText } = usePageTranslation("interface");
   if (props.isMobile) {
     return (
       <Sheet open={props.open} onOpenChange={props.onOpenChange}>
@@ -76,8 +77,7 @@ export function DocumentAnnotationPanel(props: AnnotationPanelProps) {
           showCloseButton={false}
           className="paperclip-doc-annotation-sheet z-(--z-60) flex max-h-(--sz-88vh) flex-col rounded-none border-t border-border bg-popover p-0 text-popover-foreground shadow-2xl"
         >
-          <SheetTitle className="sr-only">
-            Comments on {props.documentKey} revision {props.documentRevisionNumber}
+          <SheetTitle className="sr-only">{pageText("commentsOn_b99c6f") + " "}{props.documentKey}{" " + pageText("revision_eae79d") + " "}{props.documentRevisionNumber}
           </SheetTitle>
           <div className="mx-auto mt-2 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/30" aria-hidden="true" />
           <AnnotationPanelBody {...props} />
@@ -91,7 +91,7 @@ export function DocumentAnnotationPanel(props: AnnotationPanelProps) {
   return (
     <aside
       role="complementary"
-      aria-label={`Annotations for ${props.documentKey.toUpperCase()}, revision ${props.documentRevisionNumber}`}
+      aria-label={translateDynamic("dynamic:annotationsForRevision", { value1: props.documentKey.toUpperCase(), value2: props.documentRevisionNumber })}
       data-testid="document-annotation-panel"
       className={cn(
         "isolate flex h-full max-h-(--sz-80vh) shrink-0 flex-col overflow-hidden rounded-none border border-border bg-popover text-popover-foreground shadow-xl",
@@ -106,6 +106,8 @@ export function DocumentAnnotationPanel(props: AnnotationPanelProps) {
 }
 
 export function AnnotationPanelBody(props: AnnotationPanelProps) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const copyAnnotationLink = useCopyAnnotationLink();
   const [composerValue, setComposerValue] = useState("");
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
@@ -117,7 +119,7 @@ export function AnnotationPanelBody(props: AnnotationPanelProps) {
     return { kind: "issue", issueId: props.issueId, documentKey: props.documentKey };
   }, [props.documentKey, props.issueId, props.target]);
 
-  const { createThread, addReply, updateStatus, toggleReaction, mutationError, currentUser } = useDocumentAnnotationMutations({
+  const { createThread, addReply, updateStatus, mutationError, currentUser } = useDocumentAnnotationMutations({
     target: annotationTarget,
     baseRevisionId: props.baseRevisionId,
     baseRevisionNumber: props.baseRevisionNumber,
@@ -178,8 +180,7 @@ export function AnnotationPanelBody(props: AnnotationPanelProps) {
         data-testid={bodyTestId}
         className="flex items-center justify-end gap-1 border-b border-border bg-popover px-2 py-1.5"
       >
-        <span className="text-(length:--text-micro) tabular-nums text-muted-foreground">
-          rev {props.documentRevisionNumber}
+        <span className="text-(length:--text-micro) tabular-nums text-muted-foreground">{pageText("rev_03e404") + " "}{props.documentRevisionNumber}
         </span>
         <Button
           type="button"
@@ -190,7 +191,7 @@ export function AnnotationPanelBody(props: AnnotationPanelProps) {
             props.onFocusThread(null);
             props.onOpenChange(false);
           }}
-          aria-label="Close annotation panel"
+          aria-label={pageText("closeAnnotationPanel_d3c9f1")}
         >
           <X className="h-4 w-4" />
         </Button>
@@ -241,9 +242,6 @@ export function AnnotationPanelBody(props: AnnotationPanelProps) {
                 onCopyLink={() => copyAnnotationLink(props.documentKey, thread.id)}
                 pendingReply={addReply.isPending && addReply.variables?.threadId === thread.id}
                 pendingStatus={updateStatus.isPending && updateStatus.variables?.threadId === thread.id}
-                onToggleReaction={(commentId, reaction, present) =>
-                  toggleReaction.mutate({ threadId: thread.id, commentId, reaction, present })
-                }
                 agentMap={props.agentMap}
                 userProfileMap={props.userProfileMap}
               />
@@ -283,7 +281,7 @@ export function AnnotationPanelBody(props: AnnotationPanelProps) {
                 }
               }
             }}
-            placeholder="Write a comment…"
+            placeholder={pageText("writeAComment_ee6540")}
             disabled={props.newCommentDisabled}
             className="resize-y rounded-none text-sm"
           />
@@ -296,9 +294,7 @@ export function AnnotationPanelBody(props: AnnotationPanelProps) {
                 props.onClearPendingAnchor();
                 setComposerValue("");
               }}
-            >
-              Cancel
-            </Button>
+            >{translateUi("interfaceCopy.cancel")}</Button>
             <Button
               type="button"
               size="sm"
@@ -310,7 +306,7 @@ export function AnnotationPanelBody(props: AnnotationPanelProps) {
               }
               onClick={() => createThread.mutate(composerValue.trim())}
             >
-              {createThread.isPending ? "Posting…" : "Comment"}
+              {createThread.isPending ? pageText("posting_20c00d") : pageText("comment_153d7a")}
             </Button>
           </div>
         </div>
@@ -331,14 +327,10 @@ export function ThreadCard(props: {
   onCopyLink: () => void;
   pendingReply: boolean;
   pendingStatus: boolean;
-  onToggleReaction?: (
-    commentId: string,
-    reaction: DocumentAnnotationCommentReactionName,
-    present: boolean,
-  ) => void;
   agentMap?: ReadonlyMap<string, Pick<Agent, "id" | "name"> & Partial<Pick<Agent, "icon" | "appearance">>>;
   userProfileMap?: ReadonlyMap<string, CompanyUserProfile>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { thread } = props;
   const latestComment = thread.comments[thread.comments.length - 1];
 
@@ -375,7 +367,6 @@ export function ThreadCard(props: {
                 key={comment.id}
                 comment={comment}
                 focused={props.focusedCommentId === comment.id}
-                onToggleReaction={props.onToggleReaction}
                 agentMap={props.agentMap}
                 userProfileMap={props.userProfileMap}
               />
@@ -393,7 +384,7 @@ export function ThreadCard(props: {
                   }
                 }
               }}
-              placeholder="Reply…"
+              placeholder={pageText("reply_defdba")}
               className="resize-y rounded-none text-sm"
               disabled={props.pendingReply}
             />
@@ -408,12 +399,10 @@ export function ThreadCard(props: {
               >
                 {thread.status === "resolved" ? (
                   <>
-                    <RotateCcw className="h-3 w-3" /> Reopen
-                  </>
+                    <RotateCcw className="h-3 w-3" />{" " + pageText("reopen_61e05d")}</>
                 ) : (
                   <>
-                    <Check className="h-3 w-3" /> Resolve
-                  </>
+                    <Check className="h-3 w-3" />{" " + pageText("resolve_ac7f95")}</>
                 )}
               </Button>
               <Button
@@ -422,7 +411,7 @@ export function ThreadCard(props: {
                 disabled={!props.replyDraft.trim() || props.pendingReply}
                 onClick={props.onSubmitReply}
               >
-                {props.pendingReply ? "Sending…" : "Reply"}
+                {props.pendingReply ? pageText("sending_cf7655") : pageText("reply_6c2bb7")}
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -431,8 +420,8 @@ export function ThreadCard(props: {
                     variant="ghost"
                     size="icon-xs"
                     className="text-muted-foreground"
-                    title="More actions"
-                    aria-label="More thread actions"
+                    title={pageText("moreActions_a1e34f")}
+                    aria-label={pageText("moreThreadActions_1ddcf1")}
                   >
                     <MoreHorizontal className="h-3.5 w-3.5" />
                   </Button>
@@ -444,9 +433,7 @@ export function ThreadCard(props: {
                       props.onCopyLink();
                     }}
                   >
-                    <Copy className="h-3.5 w-3.5" />
-                    Copy link
-                  </DropdownMenuItem>
+                    <Copy className="h-3.5 w-3.5" />{pageText("copyLink_2f84ee")}</DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -454,7 +441,7 @@ export function ThreadCard(props: {
         ) : (
           <p className="px-3 py-2 text-xs text-muted-foreground">
             <span className="font-medium text-foreground">
-              {thread.comments.length} comment{thread.comments.length === 1 ? "" : "s"}
+              {thread.comments.length}{" " + pageText("comment_118a99")}{thread.comments.length === 1 ? "" : "s"}
             </span>
             {latestComment ? <span className="ml-1">· {truncate(latestComment.body, 120)}</span> : null}
           </p>
@@ -467,20 +454,15 @@ export function ThreadCard(props: {
 function CommentRow({
   comment,
   focused,
-  onToggleReaction,
   agentMap,
   userProfileMap,
 }: {
   comment: DocumentAnnotationComment;
   focused: boolean;
-  onToggleReaction?: (
-    commentId: string,
-    reaction: DocumentAnnotationCommentReactionName,
-    present: boolean,
-  ) => void;
   agentMap?: ReadonlyMap<string, Pick<Agent, "id" | "name"> & Partial<Pick<Agent, "icon" | "appearance">>>;
   userProfileMap?: ReadonlyMap<string, CompanyUserProfile>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const author = resolveAuthor(comment, { agentMap, userProfileMap });
   return (
     <div
@@ -500,94 +482,14 @@ function CommentRow({
           </Avatar>)}
           <span className="truncate font-medium text-foreground">{author.name}</span>
           {author.role === "agent" ? (
-            <span className="text-muted-foreground">· agent</span>
+            <span className="text-muted-foreground">{pageText("agent_826238")}</span>
           ) : null}
         </span>
         <span className="shrink-0 text-muted-foreground">{relativeTime(comment.createdAt)}</span>
       </div>
       <MarkdownBody className="text-sm leading-6">{comment.body}</MarkdownBody>
-      {onToggleReaction && !comment.id.startsWith("optimistic-") ? (
-        <CommentReactions
-          comment={comment}
-          onToggle={(reaction, present) => onToggleReaction(comment.id, reaction, present)}
-          agentMap={agentMap}
-          userProfileMap={userProfileMap}
-        />
-      ) : null}
     </div>
   );
-}
-
-const REACTION_DISPLAY: Record<DocumentAnnotationCommentReactionName, { emoji: string; label: string }> = {
-  done: { emoji: "✅", label: "Done" },
-  check: { emoji: "✔️", label: "Check" },
-  thumbs_up: { emoji: "👍", label: "Thumbs up" },
-  question: { emoji: "❓", label: "Question" },
-};
-
-function CommentReactions({
-  comment,
-  onToggle,
-  agentMap,
-  userProfileMap,
-}: {
-  comment: DocumentAnnotationComment;
-  onToggle: (reaction: DocumentAnnotationCommentReactionName, present: boolean) => void;
-  agentMap?: ReadonlyMap<string, Pick<Agent, "id" | "name"> & Partial<Pick<Agent, "icon" | "appearance">>>;
-  userProfileMap?: ReadonlyMap<string, CompanyUserProfile>;
-}) {
-  const byName = new Map((comment.reactions ?? []).map((entry) => [entry.reaction, entry]));
-  return (
-    <div
-      role="group"
-      aria-label="Reactions"
-      data-testid={`document-annotation-reactions-${comment.id}`}
-      className="mt-1 flex flex-wrap items-center gap-1"
-      onClick={(event) => event.stopPropagation()}
-    >
-      {DOCUMENT_ANNOTATION_COMMENT_REACTIONS.map((reaction) => {
-        const summary = byName.get(reaction);
-        const display = REACTION_DISPLAY[reaction];
-        const reacted = summary?.reactedByMe === true;
-        const count = summary?.count ?? 0;
-        const who = summary ? reactionActorNames(summary, { agentMap, userProfileMap }) : [];
-        return (
-          <Button
-            key={reaction}
-            type="button"
-            size="xs"
-            variant={reacted ? "secondary" : "ghost"}
-            aria-pressed={reacted}
-            aria-label={`${display.label}${count > 0 ? `, ${count}` : ""}`}
-            title={who.length > 0 ? `${display.label}: ${who.join(", ")}` : display.label}
-            data-reaction={reaction}
-            className={cn(
-              "px-1.5 tabular-nums",
-              reacted ? "text-foreground" : "text-muted-foreground",
-            )}
-            onClick={() => onToggle(reaction, !reacted)}
-          >
-            <span aria-hidden="true">{display.emoji}</span>
-            {count > 0 ? <span>{count}</span> : null}
-          </Button>
-        );
-      })}
-    </div>
-  );
-}
-
-function reactionActorNames(
-  summary: DocumentAnnotationCommentReactionSummary,
-  maps: {
-    agentMap?: ReadonlyMap<string, Pick<Agent, "id" | "name"> & Partial<Pick<Agent, "icon" | "appearance">>>;
-    userProfileMap?: ReadonlyMap<string, CompanyUserProfile>;
-  },
-): string[] {
-  return summary.actors.map((actor) => {
-    if (actor.agentId) return maps.agentMap?.get(actor.agentId)?.name ?? actor.agentId.slice(0, 8);
-    if (actor.userId) return maps.userProfileMap?.get(actor.userId)?.label ?? actor.userId.slice(0, 8);
-    return actor.actorType === "agent" ? "Agent" : "Board";
-  });
 }
 
 /** ⌘/Ctrl + Enter submits the composer or reply. */

@@ -7,8 +7,6 @@ import {
   sanitizeQuarantinedCommentForHigherTrust,
 } from "../source-trust.js";
 import { and, desc, eq, isNull } from "drizzle-orm";
-import { commentsArrivedDuringRun, recordTaskHistoryRead, taskHistoryHandlingGuidance } from "../queued-comment-delivery.js";
-import { logger } from "../../middleware/logger.js";
 
 import type { Db } from "@paperclipai/db";
 import {
@@ -168,7 +166,6 @@ export class PaperclipRunnerSemanticAuthority {
                 authorAgentId: issueComments.authorAgentId,
                 authorUserId: issueComments.authorUserId,
                 createdAt: issueComments.createdAt,
-                updatedAt: issueComments.updatedAt,
               })
               .from(issueComments)
               .where(
@@ -185,19 +182,14 @@ export class PaperclipRunnerSemanticAuthority {
               issue: context.issue,
               actor: { actorType: "agent", actorId: context.agent.id, agentId: context.agent.id, runId: context.run.id },
             });
-            await recordTaskHistoryRead(this.#db, { companyId: this.#binding.companyId, agentId: this.#binding.agentId,
-              runId: this.#binding.runId, comments: rows }).catch(error =>
-              logger.warn({ err: error, runId: this.#binding.runId }, "could not record the task history a run read"));
-            const comments = rows.reverse().map(({ updatedAt: _updatedAt, ...row }) => {
+            const comments = rows.reverse().map(row => {
               const comment = isLowTrustQuarantined(readerSourceTrust)
                 ? row
                 : sanitizeQuarantinedCommentForHigherTrust(row);
               return { ...comment, body: fastResponseHistoryBody(comment) };
             });
-            const arrived = await commentsArrivedDuringRun(this.#db, { companyId: this.#binding.companyId,
-              runId: this.#binding.runId, agentId: this.#binding.agentId, comments: rows }).catch(() => [] as string[]);
             return {
-              value: jsonValue({ comments, ...taskHistoryHandlingGuidance(arrived) }),
+              value: jsonValue({ comments }),
               references: [{ kind: "task", id: context.issue.id }],
             };
           }

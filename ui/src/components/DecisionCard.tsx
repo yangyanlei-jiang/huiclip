@@ -1,3 +1,5 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo, useState, type ReactNode } from "react";
 import {
   AlertTriangle,
@@ -22,17 +24,13 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { MarkdownBody } from "./MarkdownBody";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 /**
  * Presentational card for a single Decisions-v1 decision (PAP-14966 / PAP-14939
  * §4), modeled on {@link IssueThreadInteractionCard}. It renders every state —
  * pending / stale-target / destructive cancel-tree / decided / partial / failed
- * / expired / cancelled / dismissed — and delegates the decide mutation to the
- * parent (the feed's `DecisionResolver`, or the history view). There is no
- * "Dismiss — no effects" verb: it recorded a final `decided` value and could
- * wake the agent, so the card's Close… menu offers Withdraw request or Archive
- * for me instead (PAP-749 plan §2, Rule 8). Legacy dismissed records still render.
+ * / expired / cancelled / dismissed — and delegates the actual decide / dismiss
+ * mutations to the parent (the feed's `DecisionResolver`, or the history view).
  * It never fetches: issue labels + the cancel-tree preview arrive via resolvers
  * so the same component drives the live feed and the screenshot harness.
  */
@@ -61,6 +59,7 @@ export interface DecisionCardProps {
   busy?: boolean;
   errorMessage?: string | null;
   onDecide?: (optionId: string, inputValues: Record<string, string>) => void;
+  onDismiss?: (reason?: string) => void;
   className?: string;
 }
 
@@ -239,8 +238,11 @@ export function DecisionCard({
   busy = false,
   errorMessage,
   onDecide,
+  onDismiss,
   className,
 }: DecisionCardProps) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [inputValues, setInputValues] = useState<Record<string, string>>({});
   const [confirmOptionId, setConfirmOptionId] = useState<string | null>(null);
   const [confirmText, setConfirmText] = useState("");
@@ -326,7 +328,6 @@ export function DecisionCard({
         SHELL[tone],
         dimmed && "opacity-80",
         className,
-        ANALYTICS_MASK_CLASS,
       )}
       data-decision-state={badgeLabel.toLowerCase()}
     >
@@ -336,8 +337,7 @@ export function DecisionCard({
         <div className="flex shrink-0 items-center gap-1.5">
           {open && hasCancelTree && (
             <span className={cn("inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-(length:--text-micro) font-semibold uppercase tracking-wide", BADGE.destructive)}>
-              <ShieldAlert className="h-3 w-3" aria-hidden /> Destructive
-            </span>
+              <ShieldAlert className="h-3 w-3" aria-hidden />{" " + pageText("destructive_f58c83")}</span>
           )}
           <span className={cn("inline-flex items-center rounded-full border px-2 py-0.5 text-(length:--text-micro) font-semibold uppercase tracking-wide", BADGE[tone])}>
             {badgeLabel}
@@ -346,11 +346,10 @@ export function DecisionCard({
       </div>
 
       {/* Provenance */}
-      <p className="mt-1 text-xs text-muted-foreground">
-        Proposed by <span className="font-medium text-foreground">{originAgentName ?? "an agent"}</span>
+      <p className="mt-1 text-xs text-muted-foreground">{pageText("proposedBy_788df0") + " "}<span className="font-medium text-foreground">{originAgentName ?? pageText("anAgent_14ff03")}</span>
         {originIssue && (
           <>
-            {" "}while running{" "}
+            {" "}{pageText("whileRunning_bdc235")}{" "}
             <a href={originIssue.href} className="font-medium text-primary underline-offset-2 hover:underline">
               {issueLabel(originIssue, originIssue.id)}
             </a>
@@ -358,7 +357,7 @@ export function DecisionCard({
         )}
         {targetRefs.length > 0 && (
           <>
-            {" · applies to "}
+            {" " + pageText("appliesTo_88c312") + " "}
             {targetRefs.map(({ id, ref }, index) => (
               <span key={id}>
                 {index > 0 && ", "}
@@ -376,7 +375,7 @@ export function DecisionCard({
         {runHref && (
           <>
             {" · "}
-            <a href={runHref} className="hover:underline">view run</a>
+            <a href={runHref} className="hover:underline">{pageText("viewRun_542400")}</a>
           </>
         )}
       </p>
@@ -393,8 +392,7 @@ export function DecisionCard({
         <div className="mt-3 rounded-lg border border-amber-500/50 bg-amber-500/10 px-3 py-2">
           <div className="flex items-center gap-2 text-sm font-medium text-amber-800 dark:text-amber-200">
             <AlertTriangle className="h-4 w-4 shrink-0" aria-hidden />
-            {pluralize(staleTargetIds.length, "target")} changed since this was proposed
-          </div>
+            {pluralize(staleTargetIds.length, "target")}{" " + pageText("changedSinceThisWasProposed_a22e98")}</div>
           <ul className="mt-1.5 space-y-1 text-xs text-amber-900/90 dark:text-amber-100/90">
             {staleTargetIds.map((id) => {
               const ref = resolveIssue(id);
@@ -404,14 +402,12 @@ export function DecisionCard({
                   <span className="font-medium">{issueLabel(ref, id)}:</span>
                   <span className="tabular-nums">{humanStatus(from?.status)}</span>
                   <ArrowRight className="h-3 w-3" aria-hidden />
-                  <span className="tabular-nums">{humanStatus(ref?.status) || "changed"}</span>
+                  <span className="tabular-nums">{humanStatus(ref?.status) || pageText("changed_37c6c5")}</span>
                 </li>
               );
             })}
           </ul>
-          <p className="mt-1.5 text-xs text-amber-800/80 dark:text-amber-200/80">
-            Options that require an unchanged target are disabled below.
-          </p>
+          <p className="mt-1.5 text-xs text-amber-800/80 dark:text-amber-200/80">{pageText("optionsThatRequireAnUnchangedTargetAreDisabled_586123")}</p>
         </div>
       )}
 
@@ -469,9 +465,7 @@ export function DecisionCard({
                       {option.label}
                     </span>
                     {blockedStale && (
-                      <span className="shrink-0 rounded-full border border-amber-500/60 bg-amber-500/10 px-2 py-0.5 text-(length:--text-micro) font-medium text-amber-800 dark:text-amber-200">
-                        Blocked · stale
-                      </span>
+                      <span className="shrink-0 rounded-full border border-amber-500/60 bg-amber-500/10 px-2 py-0.5 text-(length:--text-micro) font-medium text-amber-800 dark:text-amber-200">{pageText("blockedStale_5b305f")}</span>
                     )}
                   </div>
                   {option.description && (
@@ -499,13 +493,11 @@ export function DecisionCard({
                 {confirming && cancelTree && (
                   <div className="rounded-lg border border-rose-500/50 bg-rose-500/5 p-3">
                     <div className="flex items-center gap-2 text-sm font-semibold text-rose-700 dark:text-rose-300">
-                      <Ban className="h-4 w-4" aria-hidden /> This cancels an entire issue tree
-                    </div>
+                      <Ban className="h-4 w-4" aria-hidden />{" " + pageText("thisCancelsAnEntireIssueTree_717adc")}</div>
                     {previewRows && previewRows.length > 0 ? (
                       <>
                         <p className="mt-1 text-xs text-muted-foreground">
-                          {pluralize(previewRows.length, "issue")} will be cancelled:
-                        </p>
+                          {pluralize(previewRows.length, "issue")}{" " + pageText("willBeCancelled_3159fc")}</p>
                         <ul className="mt-1 max-h-40 space-y-0.5 overflow-auto text-xs">
                           {previewRows.map((row) => (
                             <li key={row.id} className="flex items-center gap-1.5">
@@ -519,18 +511,14 @@ export function DecisionCard({
                         </ul>
                       </>
                     ) : (
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        This issue and every sub-issue beneath it will be cancelled.
-                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">{pageText("thisIssueAndEverySubIssueBeneathIt_a18910")}</p>
                     )}
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      Type <span className="font-mono font-medium text-foreground">{confirmToken}</span> to confirm.
-                    </p>
+                    <p className="mt-2 text-xs text-muted-foreground">{pageText("type_3deb74") + " "}<span className="font-mono font-medium text-foreground">{confirmToken}</span>{" " + pageText("toConfirm_9c9cba")}</p>
                     <Input
                       value={confirmText}
                       onChange={(event) => setConfirmText(event.target.value)}
                       placeholder={confirmToken}
-                      aria-label="Type the issue identifier to confirm"
+                      aria-label={pageText("typeTheIssueIdentifierToConfirm_50fc5d")}
                       autoFocus
                       className="mt-1"
                     />
@@ -542,9 +530,7 @@ export function DecisionCard({
                           setConfirmOptionId(null);
                           setConfirmText("");
                         }}
-                      >
-                        Cancel
-                      </Button>
+                      >{translateUi("interfaceCopy.cancel")}</Button>
                       <Button
                         variant="destructive"
                         size="sm"
@@ -552,7 +538,7 @@ export function DecisionCard({
                         onClick={() => onDecide?.(option.id, inputValues)}
                       >
                         {busy && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-                        {previewRows ? `Cancel ${pluralize(previewRows.length, "issue")}` : "Cancel tree"}
+                        {previewRows ? `Cancel ${pluralize(previewRows.length, "issue")}` : pageText("cancelTree_192ce0")}
                       </Button>
                     </div>
                   </div>
@@ -561,6 +547,13 @@ export function DecisionCard({
             );
           })}
 
+          {/* Always-present zero-effect Dismiss (telemetered "no", distinct from expiry) */}
+          {!decision.options.some((option) => option.effects.length === 0) && (
+            <div className="flex items-center justify-between gap-2 pt-1">
+              <span className="text-xs text-muted-foreground">{pageText("notNow_5f263e")}</span>
+              <Button variant="ghost" size="sm" disabled={busy} onClick={() => onDismiss?.()}>{pageText("dismissNoEffects_75f1e2")}</Button>
+            </div>
+          )}
           {errorMessage && <p className="text-xs text-rose-600 dark:text-rose-400">{errorMessage}</p>}
         </div>
       )}
@@ -571,27 +564,22 @@ export function DecisionCard({
           {decision.status === "expired" && (
             <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
               <div className="flex items-center gap-2 font-medium text-foreground">
-                <Clock className="h-4 w-4" aria-hidden /> The decision window closed
-              </div>
+                <Clock className="h-4 w-4" aria-hidden />{" " + pageText("theDecisionWindowClosed_6945cf")}</div>
               <p className="mt-1">
                 {expiredReason === "target_gone"
-                  ? "A target issue was cancelled before this was decided."
+                  ? pageText("aTargetIssueWasCancelledBeforeThisWas_89523b")
                   : expiredReason === "target_completed"
-                    ? "All target issues were completed before this was decided."
-                    : "No response before the expiry deadline."}
-                {decision.continuationPolicy === "wake_origin_agent" && " The proposer was re-woken."}
+                    ? pageText("allTargetIssuesWereCompletedBeforeThisWas_61be85")
+                    : pageText("noResponseBeforeTheExpiryDeadline_423280")}
+                {decision.continuationPolicy === "wake_origin_agent" && " " + pageText("theProposerWasReWoken_f806a6")}
               </p>
             </div>
           )}
           {decision.status === "cancelled" && (
-            <p className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-              This decision was withdrawn by the proposer before a response.
-            </p>
+            <p className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-xs text-muted-foreground">{pageText("thisDecisionWasWithdrawnByTheProposerBefore_35060c")}</p>
           )}
           {decision.status === "decided" && dismissed && (
-            <p className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-              Dismissed — no effects were run.
-            </p>
+            <p className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-xs text-muted-foreground">{pageText("dismissedNoEffectsWereRun_a90f9d")}</p>
           )}
           {decision.status === "decided" && !dismissed && (executions ?? []).length > 0 && (
             <>
@@ -608,9 +596,7 @@ export function DecisionCard({
                 })}
               </ul>
               {decision.executionStatus !== "succeeded" && (
-                <p className="text-xs text-muted-foreground">
-                  Some effects may already have been applied. Review the results before asking the proposer to re-propose.
-                </p>
+                <p className="text-xs text-muted-foreground">{pageText("someEffectsMayAlreadyHaveBeenAppliedReview_03ce01")}</p>
               )}
             </>
           )}

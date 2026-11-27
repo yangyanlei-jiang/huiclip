@@ -1,3 +1,5 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type BrowserUseControl, type TaskBrowser } from "@paperclipai/shared";
@@ -25,6 +27,7 @@ export function TaskBrowserPanel({
   active?: boolean;
   onOpenActiveBrowser?: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const cache = useQueryClient();
   const [actionError, setActionError] = useState<string | null>(null);
   const [refresh, setRefresh] = useState(0);
@@ -156,7 +159,7 @@ export function TaskBrowserPanel({
     onSuccess: () => {
       void cache.invalidateQueries({ queryKey: ["task-browsers", issueId] });
     },
-    onError: () => setActionError("The browser action failed. Try again."),
+    onError: () => setActionError(interfaceNotice("interface:theBrowserActionFailedTryAgain_6b908e")),
   });
   const message = accessError
     ? "You no longer have access to this browser."
@@ -198,7 +201,7 @@ export function TaskBrowserPanel({
           <iframe
             ref={frameRef}
             key={refresh}
-            title="Live Browser Use browser"
+            title={pageText("liveBrowserUseBrowser_c0d229")}
             src={url}
             onLoad={() => setViewerLoad("loaded")}
             referrerPolicy="no-referrer"
@@ -216,24 +219,17 @@ export function TaskBrowserPanel({
                     className="size-5 animate-spin text-muted-foreground motion-reduce:animate-none"
                     aria-hidden="true"
                   />
-                  <p className="text-sm">Connecting to browser…</p>
+                  <p className="text-sm">{pageText("connectingToBrowser_afcf38")}</p>
                 </>
               ) : (
                 <>
-                  <p className="text-sm font-medium">
-                    The live view did not load
-                  </p>
-                  <p className="max-w-sm text-sm text-muted-foreground">
-                    Reconnect the view or open this task in another browser. The
-                    remote browser is still running.
-                  </p>
+                  <p className="text-sm font-medium">{pageText("theLiveViewDidNotLoad_8d6d3f")}</p>
+                  <p className="max-w-sm text-sm text-muted-foreground">{pageText("reconnectTheViewOrOpenThisTaskIn_f9ee71")}</p>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={reconnect}
-                  >
-                    Reconnect view
-                  </Button>
+                  >{pageText("reconnectView_19b7ce")}</Button>
                 </>
               )}
             </div>
@@ -261,21 +257,19 @@ export function TaskBrowserPanel({
               {message ??
                 (browser?.status === "closed"
                   ? onOpenActiveBrowser
-                    ? "Another browser is still open on this task."
-                    : "Send a task message to ask the agent to open another browser."
+                    ? pageText("anotherBrowserIsStillOpenOnThisTask_4653b1")
+                    : pageText("sendATaskMessageToAskTheAgent_fdbbbe")
                   : browser?.status === "starting"
-                    ? "The live view will appear here when it is ready."
+                    ? pageText("theLiveViewWillAppearHereWhenIt_33c71e")
                     : browser?.status === "stopping"
-                      ? "Waiting for Browser Use to confirm shutdown."
+                      ? pageText("waitingForBrowserUseToConfirmShutdown_1b4f76")
                       : !viewable
-                        ? "Ask the agent to browse a website in a task message."
+                        ? pageText("askTheAgentToBrowseAWebsiteIn_590cb3")
                         : null)}
             </p>
           </div>
           {browser?.status === "closed" && !accessError && onOpenActiveBrowser && (
-            <Button variant="outline" size="sm" onClick={onOpenActiveBrowser}>
-              Open active browser
-            </Button>
+            <Button variant="outline" size="sm" onClick={onOpenActiveBrowser}>{pageText("openActiveBrowser_ffede8")}</Button>
           )}
         </div>
       )}
@@ -288,10 +282,7 @@ export function TaskBrowserPanel({
         </p>
       )}
       {viewable && presenceError && (
-        <p role="alert" className="px-3 py-2 text-xs text-destructive">
-          Could not keep this browser open. Check your connection before the
-          timer runs out.
-        </p>
+        <p role="alert" className="px-3 py-2 text-xs text-destructive">{pageText("couldNotKeepThisBrowserOpenCheckYour_1cce34")}</p>
       )}
       {viewable && viewport.error && (
         <p role="alert" className="px-3 py-2 text-xs text-destructive">

@@ -15,7 +15,6 @@ import { secretService } from "../../secrets.js";
 import type { OAuthCredentialStore } from "./credential-store.js";
 
 import type { FinishConnectionSetup } from "../catalog/contracts.js";
-import { connectionRemovedOrSignInCancelled, lockConnectionForSignIn } from "../connections/first-sign-in.js";
 
 type Dependencies = {
   getConnectionRow(idOrUid: string, companyId?: string): Promise<typeof toolConnections.$inferSelect>;
@@ -53,7 +52,7 @@ async function finalizeOAuthAccess(
     };
     if (connection.authKind !== "oauth")
       throw badRequest("This connection does not use browser sign-in");
-    if (connectionRemovedOrSignInCancelled(connection))
+    if (connection.status === "archived")
       throw conflict("Archived app connections cannot be finished");
     const actorUserId = connectionActorUserId(actor);
     if (!actorUserId)
@@ -119,7 +118,6 @@ async function finalizeOAuthAccess(
         throw conflict("This connection already uses a company identity");
       }
       connection = await writeToolConnectionHealthChange(db, connection, async tx => {
-        await lockConnectionForSignIn(tx, connection);
         await notifyGitHubCredentialChange(tx, connection);
         const [updated] = await tx
           .update(toolConnections)
@@ -261,7 +259,9 @@ async function finalizeOAuthAccess(
           await tx.select({ id: toolApplications.id }).from(toolApplications)
             .where(and(eq(toolApplications.id, connection.applicationId), eq(toolApplications.companyId, companyId)))
             .for("update");
-          await lockConnectionForSignIn(tx, connection);
+          await tx.select({ id: toolConnections.id }).from(toolConnections)
+            .where(and(eq(toolConnections.id, connection.id), eq(toolConnections.companyId, companyId)))
+            .for("update");
           const [existingOrganizationGrant] = await tx
             .select()
             .from(connectionGrants)

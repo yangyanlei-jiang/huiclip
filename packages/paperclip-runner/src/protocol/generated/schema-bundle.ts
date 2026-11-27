@@ -729,8 +729,7 @@ export const commandV3Schema = {
         "session.goal.get",
         "session.goal.set",
         "session.goal.clear",
-        "external_provider.operation",
-        "runner.attachment.download"
+        "external_provider.operation"
       ]
     },
     "issuedAt": {
@@ -1196,30 +1195,6 @@ export const commandV3Schema = {
               }
             },
             "type": "object"
-          }
-        },
-        "type": "object"
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "type": {
-            "const": "turn.start"
-          }
-        },
-        "type": "object"
-      },
-      "then": {
-        "properties": {
-          "payload": {
-            "type": "object",
-            "properties": {
-              "providerStartedTurns": {
-                "$ref": "https://paperclip.dev/schemas/prp/v3/provider-turn.schema.json#/$defs/controllerOptIn"
-              }
-            },
-            "additionalProperties": true
           }
         },
         "type": "object"
@@ -3620,12 +3595,6 @@ export const usageSchema = {
         "null"
       ],
       "maxLength": 240
-    },
-    "upstreamProvider": {
-      "type": "string",
-      "minLength": 1,
-      "maxLength": 240,
-      "description": "Host that served the request when the provider routes across hosts, such as an OpenRouter upstream provider."
     },
     "cumulative": {
       "$ref": "#/$defs/measurement"
@@ -6271,7 +6240,6 @@ export const eventV3Schema = {
         "external_provider.dispatch_requested",
         "external_provider.operation_settled",
         "external_provider.input_available",
-        "runner.attachment.settled",
         "auth.credentials.updated",
         "runtime.activity.recorded"
       ]
@@ -6830,54 +6798,6 @@ export const eventV3Schema = {
           }
         }
       }
-    },
-    {
-      "if": {
-        "properties": {
-          "eventType": {
-            "const": "turn.started"
-          }
-        },
-        "type": "object"
-      },
-      "then": {
-        "properties": {
-          "payload": {
-            "type": "object",
-            "properties": {
-              "origin": {
-                "$ref": "https://paperclip.dev/schemas/prp/v3/provider-turn.schema.json#/$defs/origin"
-              }
-            },
-            "additionalProperties": true
-          }
-        },
-        "type": "object"
-      }
-    },
-    {
-      "if": {
-        "properties": {
-          "eventType": {
-            "const": "turn.completed"
-          }
-        },
-        "type": "object"
-      },
-      "then": {
-        "properties": {
-          "payload": {
-            "type": "object",
-            "properties": {
-              "awaitingProviderTurn": {
-                "$ref": "https://paperclip.dev/schemas/prp/v3/provider-turn.schema.json#/$defs/awaitingProviderTurn"
-              }
-            },
-            "additionalProperties": true
-          }
-        },
-        "type": "object"
-      }
     }
   ],
   "additionalProperties": true
@@ -7046,24 +6966,6 @@ export const sessionGoalSchema = {
   }
 } as const;
 
-export const providerTurnSchema = {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://paperclip.dev/schemas/prp/v3/provider-turn.schema.json",
-  "title": "PRP provider-started turn markers",
-  "description": "Marks a turn the provider started without a controller turn.start, a completed turn after which the Runner keeps the provider to await one, and the controller's per-turn opt-in on turn.start. Without the opt-in the Runner never awaits, never suppresses run.terminal and never surfaces a provider-started turn.",
-  "$defs": {
-    "origin": {
-      "const": "provider"
-    },
-    "awaitingProviderTurn": {
-      "const": true
-    },
-    "controllerOptIn": {
-      "type": "boolean"
-    }
-  }
-} as const;
-
 export const fixtureSchema = {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://paperclip.dev/schemas/prp/v1/fixture.schema.json",
@@ -7193,6 +7095,5 @@ export const prpSchemaBundle = {
   "event-v2": eventV2Schema,
   "event-v3": eventV3Schema,
   "session-goal": sessionGoalSchema,
-  "provider-turn": providerTurnSchema,
   "fixture": fixtureSchema,
 } as const;

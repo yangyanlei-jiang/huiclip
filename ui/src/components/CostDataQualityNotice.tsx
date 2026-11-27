@@ -1,3 +1,6 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useId, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronDown, ChevronRight } from "lucide-react";
@@ -41,6 +44,8 @@ export function CostDataQualityNotice({ companyId, from, to, reportKey, unpriced
   companyId: string; from?: string; to?: string; reportKey: readonly unknown[];
   unpricedCount: number; pendingCount: number; unknownBillingCount: number;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
   const unavailableCount = unpricedCount + pendingCount;
   const hasCostGaps = unavailableCount > 0 || unknownBillingCount > 0;
@@ -58,8 +63,8 @@ export function CostDataQualityNotice({ companyId, from, to, reportKey, unpriced
     mutationFn: (runId: string) => costsApi.retryAccounting(companyId, runId),
     onSuccess: result => {
       pushToast({
-        title: result.accounted ? "Costs recorded." : "No new cost data is available.",
-        body: "The agent was not rerun.",
+        title: result.accounted ? interfaceNotice("interface:costsRecorded_1346d2") : interfaceNotice("interface:noNewCostDataIsAvailable_f531e3"),
+        body: interfaceNotice("interface:theAgentWasNotRerun_11d54e"),
         tone: result.accounted ? "success" : "info",
       });
       client.invalidateQueries({ queryKey: ["costs", companyId] });
@@ -99,14 +104,14 @@ export function CostDataQualityNotice({ companyId, from, to, reportKey, unpriced
         <Badge variant="outline" className="font-normal text-muted-foreground">{explanation.label}</Badge>
         <div className="flex flex-wrap items-center gap-2 text-xs">
           <time dateTime={item.occurredAt}>{formatDateTime(item.occurredAt)}</time>
-          {item.runId && item.agentId && <Link className="text-primary underline underline-offset-4 hover:text-primary/80" to={`/agents/${item.agentId}/runs/${item.runId}`}>View run</Link>}
+          {item.runId && item.agentId && <Link className="text-primary underline underline-offset-4 hover:text-primary/80" to={`/agents/${item.agentId}/runs/${item.runId}`}>{translateUi("interfaceCopy.viewRun")}</Link>}
           {item.reason === "retryable" && item.runId && data?.canRetry && <Button type="button" variant="link" size="sm" className="h-auto p-0 text-xs font-normal underline hover:text-primary/80" disabled={retry.isPending}
-            onClick={() => { retry.reset(); retry.mutate(item.runId!); }}>Retry cost recording</Button>}
+            onClick={() => { retry.reset(); retry.mutate(item.runId!); }}>{pageText("retryCostRecording_46cb54")}</Button>}
         </div>
       </div>
       <p>{explanation.description}</p>
-      {retry.variables === item.runId && retry.isPending && <p role="status">Recording saved costs…</p>}
-      {retry.variables === item.runId && retry.error && <p role="status">Cost recording failed. Try again shortly.</p>}
+      {retry.variables === item.runId && retry.isPending && <p role="status">{pageText("recordingSavedCosts_98635f")}</p>}
+      {retry.variables === item.runId && retry.error && <p role="status">{pageText("costRecordingFailedTryAgainShortly_c4b230")}</p>}
     </li>;
   }
 
@@ -116,12 +121,12 @@ export function CostDataQualityNotice({ companyId, from, to, reportKey, unpriced
       {label}
     </Button>
     {open && <div id={detailsId} className="space-y-2">
-      {hasCostGaps && isPending && <p role="status">Loading affected runs…</p>}
-      {hasCostGaps && error && !data && <div className="flex flex-wrap items-center gap-2"><p role="status">Cost details could not be loaded.</p><Button variant="outline" size="sm" onClick={() => refetch()}>Retry loading</Button></div>}
+      {hasCostGaps && isPending && <p role="status">{pageText("loadingAffectedRuns_1ed3f0")}</p>}
+      {hasCostGaps && error && !data && <div className="flex flex-wrap items-center gap-2"><p role="status">{pageText("costDetailsCouldNotBeLoaded_d9961e")}</p><Button variant="outline" size="sm" onClick={() => refetch()}>{pageText("retryLoading_54b15f")}</Button></div>}
       {hasCostGaps && data && <>
-        {error && <p role="status">Showing the last loaded cost details. Updates will resume automatically.</p>}
-        {data.events.length === 0 && data.runs.length === 0 && <p role="status">No cost gaps remain in this period.</p>}
-        <ul aria-label="Cost details by agent" className="space-y-4">
+        {error && <p role="status">{pageText("showingTheLastLoadedCostDetailsUpdatesWill_f14bee")}</p>}
+        {data.events.length === 0 && data.runs.length === 0 && <p role="status">{pageText("noCostGapsRemainInThisPeriod_9f8588")}</p>}
+        <ul aria-label={pageText("costDetailsByAgent_fe9d2a")} className="space-y-4">
           {sortedGroups.map(group => <li key={group.agent.id ?? "services"}>
             <h3 className="flex items-center gap-2 font-medium text-foreground">
               <AgentAvatar agent={group.agent} size={20} />
@@ -130,7 +135,7 @@ export function CostDataQualityNotice({ companyId, from, to, reportKey, unpriced
             <ul aria-label={`${group.agent.name} cost details`}>{group.items.map(({ item, source }) => itemRow(item, source))}</ul>
           </li>)}
         </ul>
-        {(data.hasMoreEvents || data.hasMoreRuns) && <p className="text-xs">Showing the 25 most recent entries in each category. Select a shorter date range to inspect more.</p>}
+        {(data.hasMoreEvents || data.hasMoreRuns) && <p className="text-xs">{pageText("showingThe25MostRecentEntriesInEach_00f5b3")}</p>}
       </>}
     </div>}
   </div>;

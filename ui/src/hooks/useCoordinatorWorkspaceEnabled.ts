@@ -1,7 +1,8 @@
 import { useContext } from "react";
 import { QueryClient, QueryClientContext, useQuery } from "@tanstack/react-query";
 import { useAccountBoundMutation } from "./useAccountBoundMutation";
-import { useResolvedViewerId } from "./useResolvedViewerId";
+import { authApi } from "@/api/auth";
+import { healthApi } from "@/api/health";
 import { workspacePreferencesApi } from "@/api/workspacePreferences";
 import { queryKeys } from "@/lib/queryKeys";
 
@@ -11,8 +12,20 @@ const getDetachedClient = () => detachedClient ??= new QueryClient();
 export function useCoordinatorWorkspaceEnabled() {
   const contextClient = useContext(QueryClientContext);
   const client = contextClient ?? getDetachedClient();
-  const viewer = useResolvedViewerId({ client, enabled: contextClient != null });
-  const { userId } = viewer;
+  const session = useQuery({
+    queryKey: queryKeys.auth.session,
+    queryFn: () => authApi.getSession(),
+    enabled: contextClient != null,
+  }, client);
+  const sessionUserId = session.data?.user?.id ?? session.data?.session?.userId ?? null;
+  const health = useQuery({
+    queryKey: queryKeys.health,
+    queryFn: () => healthApi.get(),
+    enabled: contextClient != null && session.isSuccess && !sessionUserId,
+  }, client);
+  const userId = session.isSuccess
+    ? sessionUserId ?? (health.isSuccess && health.data.deploymentMode === "local_trusted" ? "local-board" : null)
+    : null;
   const preference = useQuery({
     queryKey: queryKeys.workspacePreferences.mine(userId),
     queryFn: () => workspacePreferencesApi.get(),
@@ -31,11 +44,12 @@ export function useCoordinatorWorkspaceEnabled() {
   }, client);
   const classicWorkspaceEnabled = !!userId && preference.isSuccess
     && preference.data.userId === userId && preference.data.coordinatorWorkspaceEnabled === false;
+  const identityLoaded = session.isFetched && (!!sessionUserId || session.isError || health.isFetched);
   return {
     enabled: !!contextClient && !classicWorkspaceEnabled,
-    loaded: !contextClient || (viewer.loaded && (!userId || preference.isFetched)),
+    loaded: !contextClient || (identityLoaded && (!userId || preference.isFetched)),
     userId,
-    error: viewer.error ?? preference.error
+    error: session.error ?? (!sessionUserId ? health.error : null) ?? preference.error
       ?? (mutation.variables?.owner === userId ? mutation.error : null),
     isSaving: mutation.isPending && mutation.variables?.owner === userId,
     setEnabled: async (companyId: string, enabled: boolean) => {
@@ -44,7 +58,8 @@ export function useCoordinatorWorkspaceEnabled() {
     },
     retry: async () => {
       mutation.reset();
-      if (viewer.error) return viewer.retry();
+      if (session.isError) return session.refetch();
+      if (!sessionUserId && health.isError) return health.refetch();
       if (userId) return preference.refetch();
     },
   };

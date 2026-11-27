@@ -1,3 +1,5 @@
+import { t as translateDynamic } from "../i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -12,8 +14,7 @@ import { Link } from "@/lib/router";
 import { authApi } from "@/api/auth";
 import { queryKeys } from "@/lib/queryKeys";
 import { useCloudInstance } from "@/hooks/useCloudInstance";
-import { useCloudSidebarLinks } from "@/hooks/useCloudSidebarLinks";
-import { SidebarSlackFeedback } from "./SidebarSlackFeedback";
+import { useCloudInviteUrl } from "@/hooks/useCloudInviteUrl";
 import { useCanInviteCompanyMembers } from "@/hooks/useCompanyInviteAccess";
 import { useHiddenSettings } from "@/hooks/useHiddenSettings";
 import { useSignOut } from "@/hooks/useSignOut";
@@ -23,7 +24,7 @@ import { useSidebar } from "../context/SidebarContext";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { cn } from "../lib/utils";
+import { cn, SIDEBAR_RAIL_HIDDEN_LABEL } from "../lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
 import { SidebarServerInfo } from "./SidebarServerInfo";
 
@@ -121,6 +122,7 @@ export function SidebarAccountMenu({
   open: controlledOpen,
   onOpenChange,
 }: SidebarAccountMenuProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const cloud = useCloudInstance();
   const isCloud = Boolean(cloud);
   // Invites live on the Members page (or in Cloud's People settings). Hide the
@@ -130,7 +132,7 @@ export function SidebarAccountMenu({
   // On Cloud the shortcut exists only for the current stack's owner/admin and
   // only once the stack metadata is known; the in-app Invites tab is never a
   // fallback there because it drives a different invitation flow.
-  const { inviteUrl: cloudInviteUrl, slackFeedback } = useCloudSidebarLinks(cloud);
+  const cloudInviteUrl = useCloudInviteUrl();
   // Self-hosted invites need the `users:invite` grant. Offer the shortcut only
   // to boards with role-default access (company owner/admin/operator,
   // instance admins, local boards). The server checks the actual grants.
@@ -142,7 +144,8 @@ export function SidebarAccountMenu({
     !hidesCompanyPage(hiddenSettings, "company.members") &&
     !hidesCompanyPage(hiddenSettings, "company.invites");
   const [internalOpen, setInternalOpen] = useState(false);
-  const { isMobile, setSidebarOpen } = useSidebar();
+  const { isMobile, setSidebarOpen, collapsed, peeking } = useSidebar();
+  const rail = collapsed && !peeking;
   const open = controlledOpen ?? internalOpen;
   const stagingCommit = useStagingCommit(open);
   const setOpen = onOpenChange ?? setInternalOpen;
@@ -170,22 +173,22 @@ export function SidebarAccountMenu({
 
   return (
     <div className="border-t border-r border-border bg-background px-3 py-2">
-      <div className="flex items-center gap-0.5 px-2">
+      <div className={cn("flex items-center gap-0.5", !rail && "px-2")}>
         <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <button
             type="button"
             className={cn(
               "flex min-w-0 items-center gap-2.5 rounded-lg text-left text-(length:--text-compact) font-medium text-foreground/80 transition-colors hover:bg-accent/50 hover:text-foreground",
-              "flex-1 px-2 py-1.5",
+              rail ? "w-full px-3 py-2" : "flex-1 px-2 py-1.5",
             )}
-            aria-label="Open account menu"
+            aria-label={pageText("openAccountMenu_50b724")}
           >
             <Avatar size="sm">
               {session?.user.image ? <AvatarImage src={session.user.image} alt={displayName} /> : null}
               <AvatarFallback>{initials}</AvatarFallback>
             </Avatar>
-            <span className="min-w-0 flex-1 truncate">{displayName}</span>
+            <span className={cn("min-w-0 flex-1 truncate", rail && SIDEBAR_RAIL_HIDDEN_LABEL)}>{displayName}</span>
           </button>
         </PopoverTrigger>
         <PopoverContent
@@ -200,7 +203,7 @@ export function SidebarAccountMenu({
             <div className="relative flex items-start gap-3">
               <Link
                 to={profileHref}
-                aria-label="View profile"
+                aria-label={pageText("viewProfile_b98795")}
                 onClick={closeNavigationChrome}
                 className="absolute inset-0 rounded-xl transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
@@ -219,7 +222,7 @@ export function SidebarAccountMenu({
                     href={`https://github.com/paperclipai/paperclip/commit/${stagingCommit}`}
                     target="_blank"
                     rel="noreferrer"
-                    aria-label={`View commit ${stagingCommit} on GitHub`}
+                    aria-label={translateDynamic("dynamic:viewCommitOnGitHub", { value1: stagingCommit })}
                     title={stagingCommit}
                   >
                     SHA {stagingCommit.slice(0, 7)}
@@ -231,8 +234,8 @@ export function SidebarAccountMenu({
             <div className="mt-4 space-y-1">
               {showInvite && inviteHref ? (
                 <MenuAction
-                  label="Invite"
-                  description="Invite people to your organization."
+                  label={pageText("invite_b13660")}
+                  description={pageText("invitePeopleToYourOrganization_b77595")}
                   icon={UserPlus}
                   href={inviteHref}
                   topLevel={isCloud}
@@ -240,8 +243,8 @@ export function SidebarAccountMenu({
                 />
               ) : null}
               <MenuAction
-                label="Documentation"
-                description="Open Paperclip docs in a new tab."
+                label={pageText("documentation_9e9cf3")}
+                description={pageText("openPaperclipDocsInANewTab_30bd26")}
                 icon={BookOpen}
                 href={DOCS_URL}
                 external
@@ -263,11 +266,9 @@ export function SidebarAccountMenu({
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm font-medium text-foreground">
-                      {signOutMutation.isPending ? "Signing out..." : "Sign out"}
+                      {signOutMutation.isPending ? pageText("signingOut_b9412f") : pageText("signOut_dc1649")}
                     </span>
-                    <span className="block text-xs text-muted-foreground">
-                      End this browser session.
-                    </span>
+                    <span className="block text-xs text-muted-foreground">{pageText("endThisBrowserSession_2325ff")}</span>
                   </span>
                 </button>
               ) : null}
@@ -276,21 +277,20 @@ export function SidebarAccountMenu({
           </div>
         </PopoverContent>
         </Popover>
-        {slackFeedback && <SidebarSlackFeedback feedback={slackFeedback} className="hover:bg-accent/50" />}
-        {!isCloud ? (
+        {!rail && !isCloud ? (
           <Tooltip>
             <TooltipTrigger asChild>
               <a
                 href={FEEDBACK_URL}
                 target="_blank"
                 rel="noreferrer"
-                aria-label="Share feedback"
+                aria-label={pageText("shareFeedback_21af3b")}
                 className="flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground/50 transition-colors hover:bg-accent/50 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <Flag className="h-4 w-4" aria-hidden="true" />
               </a>
             </TooltipTrigger>
-            <TooltipContent side="top">Share feedback</TooltipContent>
+            <TooltipContent side="top">{pageText("shareFeedback_21af3b")}</TooltipContent>
           </Tooltip>
         ) : null}
       </div>

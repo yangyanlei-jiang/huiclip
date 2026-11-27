@@ -352,11 +352,12 @@ export async function installChatControlPlaneMock(
   seed: Seed,
   {
     enableChatConnectors,
+    enableGitHubReviewBots = false,
     resourceCount = 2,
     photonShared = false,
     automaticSlack = false,
     managedSlack = false,
-  }: { enableChatConnectors: boolean; resourceCount?: number; photonShared?: boolean; automaticSlack?: boolean; managedSlack?: boolean },
+  }: { enableChatConnectors: boolean; enableGitHubReviewBots?: boolean; resourceCount?: number; photonShared?: boolean; automaticSlack?: boolean; managedSlack?: boolean },
 ): Promise<ChatMock> {
   const endpoint = endpointFixture(provider, seed);
   if (automaticSlack || managedSlack) endpoint.setup.slackSetupMethod = managedSlack ? "managed" : "automatic";
@@ -561,6 +562,7 @@ export async function installChatControlPlaneMock(
     ) {
       await fulfill(route, {
         enableChatConnectors,
+        enableGitHubReviewBots,
         enableIsolatedWorkspaces: false,
       });
       return;

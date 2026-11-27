@@ -31,8 +31,7 @@ export function paperclipRunnerCreationLifecycle(
 
 export const PAPERCLIP_RUNNER_MINIMUM_GLIBC_VERSION = "2.39";
 
-/** The Runner's Linux libc floor: glibc at or above the minimum version. */
-export function supportsLinuxLibc(libc?: "glibc" | "musl" | "unknown", version?: string): boolean {
+function supportsLinuxLibc(libc?: "glibc" | "musl" | "unknown", version?: string): boolean {
   if (libc !== undefined && libc !== "glibc") return false;
   if (version === undefined) return true;
   const match = typeof version === "string" ? version.trim().match(/^(?:glibc\s+)?(\d+)\.(\d+)(?:\.\d+)?$/) : null;
@@ -66,14 +65,10 @@ export function agentRunner(adapterType: string): AgentRunner {
   return adapterType === "paperclip_runner" ? "paperclip" : "legacy";
 }
 
-/** Product name of the harness an agent runs; reported as telemetry `adapter_type`. */
-export function agentHarnessName(adapterType: string, config: Record<string, unknown> = {}): string {
-  const harness = agentHarnessType(adapterType, config);
-  return harness === "acpx:copilot" ? "copilot_runtime" : harness;
-}
-
 /** Stable configuration group across native and legacy execution backends. */
 export function agentRuntimeSettingsHarness(adapterType: string, config: Record<string, unknown> = {}): string {
-  const harness = agentHarnessName(adapterType, config);
-  return harness === "cursor" ? "cursor_local" : harness;
+  const harness = agentHarnessType(adapterType, config);
+  if (harness === "acpx:copilot") return "copilot_runtime";
+  if (harness === "cursor") return "cursor_local";
+  return harness;
 }

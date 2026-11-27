@@ -43,14 +43,12 @@ import {
 } from "@paperclipai/db";
 import {
   createDocumentAnnotationCommentSchema,
-  documentAnnotationCommentReactionSchema,
   createDocumentAnnotationThreadSchema,
   updateDocumentAnnotationThreadSchema,
   isUuidLike,
 } from "@paperclipai/shared";
 import { formatAttachmentSize, MAX_ATTACHMENT_BYTES, normalizeContentType } from "../attachment-types.js";
-import { HttpError, badRequest, conflict, notFound, unprocessable } from "../errors.js";
-import { casesDisabledError } from "../services/cases-disabled.js";
+import { HttpError, badRequest, conflict, forbidden, notFound, unprocessable } from "../errors.js";
 import { validate } from "../middleware/validate.js";
 import { instanceSettingsService } from "../services/instance-settings.js";
 import { documentAnnotationService, logActivity } from "../services/index.js";
@@ -62,7 +60,6 @@ import { listIssueStatusBlockerAttention } from "../services/issue-status-presen
 import type { IssueBlockerAttention } from "@paperclipai/shared";
 import { listCaseTaskDocuments } from "../services/case-task-documents.js";
 import { authorizeCaseCreation, authorizeCaseMutation } from "../services/case-mutation-authorization.js";
-import { assertCaseStatusWriteAuthority } from "../services/case-handoffs.js";
 import { logger } from "../middleware/logger.js";
 import { assertCompanyAccess, getActorInfo, hasCompanyAccess } from "./authz.js";
 
@@ -82,7 +79,7 @@ function eventActorValues(actor: CaseActor) {
 async function assertCasesEnabled(db: Db) {
   const experimental = await instanceSettingsService(db).getExperimental();
   if (!experimental.enableCases) {
-    throw casesDisabledError();
+    throw forbidden("Cases are disabled");
   }
 }
 
@@ -114,11 +111,6 @@ function parseBooleanQuery(value: unknown) {
 function parseQueryList(value: string | string[] | undefined): string[] {
   const values = Array.isArray(value) ? value : value ? [value] : [];
   return values.flatMap((item) => item.split(",")).map((item) => item.trim()).filter(Boolean);
-}
-
-function annotationReactionViewer(req: Request) {
-  const actor = getActorInfo(req);
-  return { actorType: actor.actorType, actorId: actor.actorId };
 }
 
 function annotationActorInput(req: Request) {
@@ -702,21 +694,19 @@ export function caseRoutes(db: Db, storage: StorageService) {
         .then((rows) => rows[0] ?? null);
 
       if (existing) {
-        const current = await authorizeCaseMutation(tx as unknown as Db, req.actor, existing.id, companyId);
-        await assertCaseStatusWriteAuthority(tx as unknown as Db, req.actor, current, body.status);
+        await authorizeCaseMutation(tx as unknown as Db, req.actor, existing.id, companyId);
         if (body.projectId) await retainCaseAccessSource(tx, {
           companyId, caseId: existing.id, sourceKind: "project", sourceId: body.projectId,
         });
-        // Fall back to the locked row so a concurrent close or reopen is not undone.
-        const status = body.status ?? current.status;
+        const status = body.status ?? existing.status;
         const [updated] = await tx.update(cases).set({
-          projectId: body.projectId ?? current.projectId,
+          projectId: body.projectId ?? existing.projectId,
           title: body.title,
-          summary: body.summary ?? current.summary,
+          summary: body.summary ?? existing.summary,
           status,
-          fields: body.fields ?? current.fields,
-          parentCaseId: body.parentCaseId ?? current.parentCaseId,
-          completedAt: completedAtForStatus(status, current.completedAt),
+          fields: body.fields ?? existing.fields,
+          parentCaseId: body.parentCaseId ?? existing.parentCaseId,
+          completedAt: completedAtForStatus(status, existing.completedAt),
           updatedAt: now,
         }).where(eq(cases.id, existing.id)).returning();
         await insertCaseEvent(tx, {
@@ -895,7 +885,6 @@ export function caseRoutes(db: Db, storage: StorageService) {
     const threads = await documentAnnotationsSvc.listThreadsForCaseDocument(caseRow.id, key, {
       status,
       includeComments: parseBooleanQuery(req.query.includeComments),
-      viewer: annotationReactionViewer(req),
     });
     res.json(threads);
   });
@@ -908,7 +897,6 @@ export function caseRoutes(db: Db, storage: StorageService) {
       caseRow.id,
       key,
       req.params.threadId as string,
-      annotationReactionViewer(req),
     );
     if (!thread) throw notFound("Annotation thread not found");
     res.json(thread);
@@ -1027,60 +1015,6 @@ export function caseRoutes(db: Db, storage: StorageService) {
       });
       res.json(thread);
     },
-  );
-
-  async function setCaseAnnotationCommentReaction(req: Request, res: Response, present: boolean) {
-    await assertCasesEnabled(db);
-    const caseRow = await assertCaseAccess(db, req, req.params.id as string);
-    const key = parseDocumentKey(req.params.key as string);
-    const reactionParsed = documentAnnotationCommentReactionSchema.safeParse(req.params.reaction);
-    if (!reactionParsed.success) {
-      res.status(400).json({ error: "Invalid reaction", details: reactionParsed.error.issues });
-      return;
-    }
-    const { actor, annotationActor } = annotationActorInput(req);
-    const result = await mutateCase(req, caseRow, tx => documentAnnotationService(tx as unknown as Db).setCommentReaction({
-      target: { kind: "case", caseId: caseRow.id, key },
-      threadId: req.params.threadId as string,
-      commentId: req.params.commentId as string,
-      reaction: reactionParsed.data,
-      present,
-      actor: annotationActor,
-    }));
-    if (result.changed) {
-      await logActivity(db, {
-        companyId: caseRow.companyId,
-        actorType: actor.actorType,
-        actorId: actor.actorId,
-        agentId: actor.agentId,
-        runId: actor.runId,
-        agentApiKeyId: actor.agentApiKeyId,
-        action: present
-          ? "case.document_annotation_comment_reaction_added"
-          : "case.document_annotation_comment_reaction_removed",
-        entityType: "case",
-        entityId: caseRow.id,
-        details: {
-          key,
-          documentKey: key,
-          documentId: result.thread.documentId,
-          threadId: result.thread.id,
-          commentId: result.comment.id,
-          reaction: reactionParsed.data,
-        },
-      });
-    }
-    res.json(result.comment);
-  }
-
-  router.put(
-    "/cases/:id/documents/:key/annotations/:threadId/comments/:commentId/reactions/:reaction",
-    async (req, res) => setCaseAnnotationCommentReaction(req, res, true),
-  );
-
-  router.delete(
-    "/cases/:id/documents/:key/annotations/:threadId/comments/:commentId/reactions/:reaction",
-    async (req, res) => setCaseAnnotationCommentReaction(req, res, false),
   );
 
   router.put("/cases/:id/documents/:key", async (req, res) => {
@@ -1658,7 +1592,6 @@ export function caseRoutes(db: Db, storage: StorageService) {
     const nextLabelIds = body.labelIds ?? body.labels;
 
     const updated = await mutateCase(req, caseRow, async (tx, currentCase) => {
-      await assertCaseStatusWriteAuthority(tx as unknown as Db, req.actor, currentCase, body.status);
       await assertProjectBelongsToCompany(tx, { companyId: caseRow.companyId, projectId: body.projectId ?? null });
       if (body.projectId) {
         if (!(await authorizationService(tx).decide({ actor: req.actor, action: "project:read", resource: {

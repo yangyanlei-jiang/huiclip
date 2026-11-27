@@ -12,22 +12,19 @@ export function partitionSelection(inventory, selected, maxShards, durations = {
   return selected.length ? partitionGeneralServerSuites(selected, count, durations).map((shard) => shard.files) : [];
 }
 
-export function refineTestPlan({
-  plan, head, owners, graphs, durations = {}, excludedSuites = new Set(), runnerProfile = "aws",
-}) {
+export function refineTestPlan({ plan, head, owners, graphs, durations = {} }) {
   const result = structuredClone(plan);
   const manifest = { version: 1, head, lanes: {} };
   const stats = [];
   const byProject = new Map(graphs.map((graph) => [graph.project, graph]));
   for (const job of ["general_tests", "verify_serialized_server"]) {
     if (!plan.jobs[job].run) continue;
-    const entries = runnerProfile === "hosted" && plan.jobs[job].hosted_matrix?.include
-      ? plan.jobs[job].hosted_matrix.include
-      : plan.jobs[job].matrix.include;
+    const entries = plan.jobs[job].matrix.include;
     const groups = [...new Set(entries.map((entry) => entry.group ?? "serialized"))];
     const matrix = [];
     for (const group of groups) {
       const original = entries.filter((entry) => (entry.group ?? "serialized") === group);
+      if (group === "general-chat") { matrix.push(...original); continue; }
       const owned = owners[group];
       assert.ok(owned, `Missing inventory owner: ${group}`);
       const projectByFile = new Map();
@@ -41,7 +38,7 @@ export function refineTestPlan({
           assert.ok(inventory.has(file), `Runner/Vitest inventory disagreement: ${file}`);
           assert.ok(!projectByFile.has(file), `Ambiguous owner: ${file}`);
           projectByFile.set(file, project);
-          if (affected.has(file) && !excludedSuites.has(file)) selected.push(file);
+          if (affected.has(file)) selected.push(file);
         }
       }
       const partitions = partitionSelection([...projectByFile.keys()], selected, original.length, durations[group]);
@@ -64,15 +61,8 @@ export function refineTestPlan({
       }
       stats.push({ group, total: projectByFile.size, selected: selected.length, beforeJobs: original.length, jobs: partitions.length });
     }
-    const refinedMatrix = { include: matrix.length ? matrix : entries };
-    result.jobs[job] = {
-      ...result.jobs[job],
-      run: matrix.length > 0,
-      selected: matrix.length,
-      proposed: matrix.length,
-      matrix: refinedMatrix,
-      ...(plan.jobs[job].hosted_matrix ? { hosted_matrix: refinedMatrix, hosted_selected: matrix.length } : {}),
-    };
+    result.jobs[job] = { ...result.jobs[job], run: matrix.length > 0, selected: matrix.length, proposed: matrix.length,
+      matrix: { include: matrix.length ? matrix : entries } };
   }
   validateSelection(manifest);
   result.testSelection = { version: 1, head, hash: selectionHash(manifest), stats };
@@ -82,7 +72,6 @@ export function refineTestPlan({
 export function selectionDurations() {
   return {
     "general-server-without-chat": loadShardDurations("scripts/general-server-shard-durations.json"),
-    "general-chat": loadShardDurations("scripts/chat-shard-durations.json"),
     serialized: loadShardDurations("scripts/serialized-shard-durations.json"),
   };
 }

@@ -1,3 +1,5 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useQuery } from "@tanstack/react-query";
 import type { AttentionItem } from "@paperclipai/shared";
 import { ArrowUpRight } from "lucide-react";
@@ -27,15 +29,16 @@ export function useCoordinatorChatPendingQuestions(issueId: string | null, conve
 }
 
 export function CoordinatorChatPendingQuestion({ item }: { item: AttentionItem }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { userId } = useCoordinatorWorkspaceEnabled();
   const task = item.relatedIssue;
   if (!task) return null;
   const href = `${(task.href ?? `/issues/${task.id}`).split("#")[0]}#interaction-${item.subject.id}`;
   return <section data-testid="coordinator-chat-pending-question" className="space-y-3">
-    <p className="text-sm text-muted-foreground">{item.originAgentName ?? "Your agent"} needs your input on {task.title ?? task.identifier ?? "this task"}.</p>
+    <p className="text-sm text-muted-foreground">{item.originAgentName ?? pageText("yourAgent_007c6e")}{" " + pageText("needsYourInputOn_424c17") + " "}{task.title ?? task.identifier ?? pageText("thisTask_132033")}.</p>
     <article className="coordinator-decision-card space-y-4 rounded-xl border border-border bg-card p-6">
       <AttentionInteractionResolver companyId={task.companyId} issueId={task.id} interactionId={item.subject.id} currentUserId={userId} presentation="coordinator-decision" footerSlot={<Link to={href} className="flex max-w-full items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-        <span className="shrink-0">{task.identifier ?? "Open task"}</span><span className="truncate">{task.title}</span><ArrowUpRight className="size-4 shrink-0" />
+        <span className="shrink-0">{task.identifier ?? pageText("openTask_a1f175")}</span><span className="truncate">{task.title}</span><ArrowUpRight className="size-4 shrink-0" />
       </Link>} />
 
     </article>
@@ -43,8 +46,10 @@ export function CoordinatorChatPendingQuestion({ item }: { item: AttentionItem }
 }
 
 export function CoordinatorChatQuestionStatus({ query }: { query: ReturnType<typeof useCoordinatorChatPendingQuestions> }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   if (!query.enabled || !query.isError) return null;
   return <div role="status" className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-    <span>Task questions couldn’t load.</span><Button size="sm" variant="ghost" onClick={() => void query.refetch()}>Retry</Button>
+    <span>{pageText("taskQuestionsCouldnTLoad_bd7195")}</span><Button size="sm" variant="ghost" onClick={() => void query.refetch()}>{translateUi("interfaceCopy.retry")}</Button>
   </div>;
 }

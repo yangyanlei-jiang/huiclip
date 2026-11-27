@@ -67,7 +67,6 @@ function registerRouteMocks() {
       reportRunActivity: vi.fn(async () => undefined),
       getRun: vi.fn(async () => null),
       getActiveRunForAgent: vi.fn(async () => null),
-      getQueuedAssignmentRunForIssue: vi.fn(async () => null),
       cancelRun: vi.fn(async () => null),
     }),
     instanceSettingsService: () => ({
@@ -148,15 +147,11 @@ function createStorageService(body = Buffer.from("test")): TestStorageService {
   };
 }
 
-function loadRouteModules() {
-  return Promise.all([
+async function createApp(storage: StorageService, options?: { companyIds?: string[]; source?: string }) {
+  const [{ errorHandler }, { issueRoutes }] = await Promise.all([
     vi.importActual<typeof import("../middleware/index.js")>("../middleware/index.js"),
     vi.importActual<typeof import("../routes/issues.js")>("../routes/issues.js"),
   ]);
-}
-
-async function createApp(storage: StorageService, options?: { companyIds?: string[]; source?: string }) {
-  const [{ errorHandler }, { issueRoutes }] = await loadRouteModules();
   const app = express();
   app.use(express.json());
   app.use((req, _res, next) => {
@@ -222,7 +217,7 @@ describe("MAX_ATTACHMENT_BYTES", () => {
 });
 
 describe("issue attachment routes", () => {
-  beforeAll(async () => {
+  beforeAll(() => {
     vi.resetModules();
     vi.doUnmock("@paperclipai/shared/telemetry");
     vi.doUnmock("../telemetry.js");
@@ -233,7 +228,6 @@ describe("issue attachment routes", () => {
     vi.doUnmock("../routes/authz.js");
     vi.doUnmock("../middleware/index.js");
     registerRouteMocks();
-    await loadRouteModules();
   });
 
   beforeEach(() => {
@@ -791,7 +785,6 @@ describe("issue attachment routes", () => {
           originalFilename: "clip.mp4",
         },
       }),
-      null,
     );
   });
 
@@ -885,7 +878,6 @@ describe("issue attachment routes", () => {
           originalFilename: "clip.webm",
         },
       }),
-      null,
     );
   });
 });

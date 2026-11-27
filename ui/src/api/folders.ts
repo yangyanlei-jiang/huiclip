@@ -8,11 +8,11 @@ import type {
   MoveFolderRequest,
   UpdateFolderRequest,
 } from "@paperclipai/shared";
-import { api, type RequestOptions } from "./client";
+import { api } from "./client";
 
 export const foldersApi = {
-  list: (companyId: string, kind: FolderKind, options?: RequestOptions) =>
-    api.get<FolderListResult>(`/companies/${encodeURIComponent(companyId)}/folders?kind=${kind}`, options),
+  list: (companyId: string, kind: FolderKind) =>
+    api.get<FolderListResult>(`/companies/${encodeURIComponent(companyId)}/folders?kind=${kind}`),
   create: (companyId: string, payload: CreateFolderRequest) =>
     api.post<Folder>(`/companies/${encodeURIComponent(companyId)}/folders`, payload),
   ensureMy: (companyId: string, payload: EnsureMySkillFolderRequest = {}) =>

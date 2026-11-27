@@ -3,7 +3,6 @@ import {
   normalizeCompanyPrefix,
   toCompanyRelativePath,
 } from "./company-routes";
-import { DASHBOARD_HOME_PATH } from "./company-home";
 
 const GLOBAL_SEGMENTS = new Set(["auth", "invite", "board-claim", "cli-auth", "docs"]);
 
@@ -43,13 +42,10 @@ export function getRememberedPathOwnerCompanyId<T extends { id: string; issuePre
 export function sanitizeRememberedPathForCompany(params: {
   path: string | null | undefined;
   companyPrefix: string;
-  /** Company-relative fallback when nothing usable was remembered (see `lib/company-home`). */
-  homePath?: string;
 }): string {
-  const homePath = params.homePath ?? DASHBOARD_HOME_PATH;
-  const relativePath = params.path ? toCompanyRelativePath(params.path) : homePath;
+  const relativePath = params.path ? toCompanyRelativePath(params.path) : "/dashboard";
   if (!isRememberableCompanyPath(relativePath)) {
-    return homePath;
+    return "/dashboard";
   }
 
   const pathname = relativePath.split("?")[0] ?? "";
@@ -61,7 +57,7 @@ export function sanitizeRememberedPathForCompany(params: {
       identifierMatch &&
       normalizeCompanyPrefix(identifierMatch[1] ?? "") !== normalizeCompanyPrefix(params.companyPrefix)
     ) {
-      return homePath;
+      return "/dashboard";
     }
   }
 

@@ -16,7 +16,6 @@ import {
   projects,
 } from "@paperclipai/db";
 import {
-  ARTIFACT_REVIEW_DOCUMENT_KEY_PREFIX,
   attachmentArtifactWorkProductMetadataSchema,
   COMPANY_ARTIFACTS_MAX_LIMIT,
   companyArtifactsQuerySchema,
@@ -196,7 +195,7 @@ function pageByCursor<T extends { id: string; updatedAt: string }>(
   return { page, nextCursor };
 }
 
-async function loadIssueGroupingRows(db: Db, companyId: string, seedIssueIds: Iterable<string>, readCondition?: SQL) {
+async function loadIssueGroupingRows(db: Db, companyId: string, seedIssueIds: Iterable<string>) {
   const rowsById = new Map<string, IssueGroupingRow>();
   let pending = [...new Set(seedIssueIds)];
 
@@ -210,7 +209,7 @@ async function loadIssueGroupingRows(db: Db, companyId: string, seedIssueIds: It
         updatedAt: issues.updatedAt,
       })
       .from(issues)
-      .where(and(eq(issues.companyId, companyId), inArray(issues.id, pending), readCondition));
+      .where(and(eq(issues.companyId, companyId), inArray(issues.id, pending)));
 
     const nextPending = new Set<string>();
     for (const row of rows) {
@@ -322,14 +321,7 @@ export function companyArtifactsService(db: Db, storage?: StorageService) {
     list: async (
       companyId: string,
       rawQuery: Partial<CompanyArtifactsQuery> = {},
-      /** `readCondition` limits artifacts and group tasks to tasks the caller can read. */
-      options: {
-        issueConditions?: SQL[];
-        readCondition?: SQL;
-        userId?: string;
-        /** Leave out the `artifact-review-*` documents materialized to review a work product (the work product is listed). */
-        excludeArtifactReviewDocuments?: boolean;
-      } = {},
+      options: { issueConditions?: SQL[]; userId?: string } = {},
     ): Promise<CompanyArtifactsResponse> => {
       const query = companyArtifactsQuerySchema.parse(rawQuery);
       const cursor = decodeCursor(query.cursor);
@@ -352,7 +344,6 @@ export function companyArtifactsService(db: Db, storage?: StorageService) {
         isNull(issues.hiddenAt),
         isNull(issues.harnessKind),
         ...(options.issueConditions ?? []),
-        ...(options.readCondition ? [options.readCondition] : []),
       ];
       const artifacts: CompanyArtifact[] = [];
       const artifactSortDates = new Map<string, string>();
@@ -376,9 +367,6 @@ export function companyArtifactsService(db: Db, storage?: StorageService) {
               or(isNotNull(documents.createdByAgentId), isNotNull(documents.updatedByAgentId))!,
               notInArray(issueDocuments.key, [...SYSTEM_ISSUE_DOCUMENT_KEYS]),
             ]),
-          ...(options.excludeArtifactReviewDocuments
-            ? [sql`${issueDocuments.key} not like ${`${ARTIFACT_REVIEW_DOCUMENT_KEY_PREFIX}%`}`]
-            : []),
         ];
         const documentSortDate = query.starred
           ? sql<Date>`${documentMemberships.starredAt}`
@@ -754,7 +742,7 @@ export function companyArtifactsService(db: Db, storage?: StorageService) {
 
       const issueSeedIds = new Set(artifacts.map((artifact) => artifact.issue.id));
       if (query.groupIssueId) issueSeedIds.add(query.groupIssueId);
-      const issueRows = await loadIssueGroupingRows(db, companyId, issueSeedIds, options.readCondition);
+      const issueRows = await loadIssueGroupingRows(db, companyId, issueSeedIds);
       const groups = buildArtifactGroups({
         artifacts: sorted,
         companyPrefix: company.issuePrefix,

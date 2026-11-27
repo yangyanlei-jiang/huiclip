@@ -1,3 +1,5 @@
+import { controlText } from "@/i18n/controls";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import type { ActivityEvent } from "@paperclipai/shared";
 import {
@@ -30,6 +32,7 @@ export function IssueFieldChangeReceipt({
   resolveUserLabel?: (userId: string) => string | null | undefined;
   className?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const rows = readIssueChangeReceipt(event.details, { resolveAgentLabel, resolveUserLabel });
   const reason = issueAuthorizationReasonLabel(
     typeof event.details?.authorizationReason === "string"
@@ -55,7 +58,7 @@ export function IssueFieldChangeReceipt({
               data-testid={`issue-change-row-${row.field}`}
               className="flex min-w-0 flex-wrap items-baseline gap-x-1.5 text-xs"
             >
-              <dt className="text-muted-foreground">{row.label}</dt>
+              <dt className="text-muted-foreground">{controlText(row.label)}</dt>
               <dd className="flex min-w-0 flex-wrap items-baseline gap-x-1.5">
                 <span className="min-w-0 break-words text-muted-foreground line-through decoration-muted-foreground/50">
                   {row.from}
@@ -65,9 +68,7 @@ export function IssueFieldChangeReceipt({
                 {/* Long text is stored as a preview, so the receipt says so
                     rather than implying the whole value is shown. */}
                 {row.truncated ? (
-                  <span className="text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-                    preview
-                  </span>
+                  <span className="text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{pageText("preview_1aa787")}</span>
                 ) : null}
               </dd>
             </div>
@@ -84,12 +85,10 @@ export function IssueFieldChangeReceipt({
             aria-hidden="true"
           />
           {responsibleUserName ? (
-            <>
-              for <span className="text-foreground">{responsibleUserName}</span>
+            <>{pageText("for_43eef9") + " "}<span className="text-foreground">{responsibleUserName}</span>
               {" · "}
             </>
-          ) : null}
-          authorized by {reason}
+          ) : null}{pageText("authorizedBy_333bad") + " "}{controlText(reason)}
         </p>
       ) : null}
     </div>

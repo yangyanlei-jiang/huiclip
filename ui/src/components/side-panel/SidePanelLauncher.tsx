@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState, type ReactNode } from "react";
 import { AlertCircle, Check, Loader2 } from "lucide-react";
 import {
@@ -35,6 +36,7 @@ function LauncherContent({
   emptyMessage,
   panel,
 }: Pick<SidePanelLauncherProps, "sections" | "onSelect" | "placeholder" | "emptyMessage"> & { panel: boolean }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <Command className={cn(panel && "border border-border shadow-sm")}>
       <CommandInput placeholder={placeholder} aria-label={placeholder} />
@@ -46,9 +48,7 @@ function LauncherContent({
             <CommandGroup heading={section.label}>
               {section.loading ? (
                 <div className="flex items-center gap-2 px-2 py-3 text-sm text-muted-foreground" role="status">
-                  <Loader2 className="size-4 animate-spin" aria-hidden />
-                  Loading…
-                </div>
+                  <Loader2 className="size-4 animate-spin" aria-hidden />{pageText("loading_33ce41")}</div>
               ) : null}
               {section.error ? (
                 <div className="flex items-start gap-2 px-2 py-3 text-sm text-muted-foreground" role="status">
@@ -74,7 +74,7 @@ function LauncherContent({
                       </span>
                     ) : null}
                   </span>
-                  {item.alreadyOpen ? <Check className="size-4 text-muted-foreground" aria-label="Already open" /> : null}
+                  {item.alreadyOpen ? <Check className="size-4 text-muted-foreground" aria-label={pageText("alreadyOpen_1b124e")} /> : null}
                   {item.shortcut ? <CommandShortcut>{item.shortcut}</CommandShortcut> : null}
                 </CommandItem>
               ))}

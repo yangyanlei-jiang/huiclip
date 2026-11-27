@@ -21,7 +21,6 @@ import {
 } from "./helpers/embedded-postgres.js";
 import { errorHandler } from "../middleware/index.js";
 import { issueRoutes } from "../routes/issues.js";
-import { uniqueIssuePrefix } from "./helpers/issue-prefix.js";
 
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
@@ -77,7 +76,7 @@ async function seedCompany(db: Db, label = "Wake Diagnostics") {
   const nonce = randomUUID().slice(0, 8);
   const [company] = await db.insert(companies).values({
     name: `${label} ${nonce}`,
-    issuePrefix: uniqueIssuePrefix("WD"),
+    issuePrefix: `WD${nonce.slice(0, 4).toUpperCase()}`,
     defaultResponsibleUserId: "board-user",
   }).returning();
   return company!;
@@ -268,11 +267,7 @@ describeEmbeddedPostgres("issue wake diagnostics route", () => {
     expect(serialized).not.toContain("\"error\"");
   });
 
-  it.each([
-    "chat_task_completed",
-    "issue_execution_deferred",
-    "execution_reconciliation_required",
-  ])("preserves the known %s reason without exposing completion payloads", async reason => {
+  it.each(["chat_task_completed", "issue_execution_deferred"])("preserves the known %s reason without exposing completion payloads", async reason => {
     const company = await seedCompany(db);
     const agent = await seedAgent(db, company.id);
     const issue = await seedIssue(db, { companyId: company.id, title: "Completion target", assigneeAgentId: agent.id });

@@ -1,3 +1,4 @@
+import { t as interfaceNotice } from "@/i18n";
 import { useCallback } from "react";
 import { useMutation, useQueryClient, type UseMutationResult } from "@tanstack/react-query";
 import type { IssueRetryNowOutcome, IssueRetryNowResponse } from "@paperclipai/shared";
@@ -50,16 +51,23 @@ export function useRetryNowMutation(
         queryClient.invalidateQueries({ queryKey: queryKeys.issues.liveRuns(issueId) });
         queryClient.invalidateQueries({ queryKey: queryKeys.issues.activeRun(issueId) });
       }
-      pushToast({
-        title: RETRY_NOW_OUTCOME_HEADLINE[response.outcome],
-        body: response.message,
-        tone: response.outcome === "promoted" || response.outcome === "already_promoted" ? "success"
-          : response.outcome === "gate_suppressed" ? "error" : "info",
-      });
+      if (response.outcome === "promoted") {
+        pushToast({
+          title: RETRY_NOW_OUTCOME_HEADLINE.promoted,
+          body: response.message,
+          tone: "success",
+        });
+      } else if (response.outcome === "gate_suppressed") {
+        pushToast({
+          title: RETRY_NOW_OUTCOME_HEADLINE.gate_suppressed,
+          body: response.message,
+          tone: "error",
+        });
+      }
     },
     onError: (error) => {
       pushToast({
-        title: "Couldn't retry now",
+        title: interfaceNotice("interface:couldnTRetryNow_cc7b7e"),
         body: readErrorMessage(error),
         tone: "error",
       });

@@ -1,3 +1,6 @@
+import { controlText } from "@/i18n/controls";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useState, type ReactNode } from "react";
 import type {
   FeedbackDataSharingPreference,
@@ -49,7 +52,7 @@ export function agentBubbleDateLabel(date: Date | string | undefined): string {
  */
 export function BubbleCopyButton({ copyText }: { copyText: string }) {
   const { copied, failed, copy } = useCopyAction(2000);
-  const label = failed ? "Couldn’t copy message" : "Copy message";
+  const label = failed ? controlText("Couldn’t copy message") : controlText("Copy message");
 
   return (
     <button
@@ -111,6 +114,7 @@ export function AgentBubbleActionRow({
   menuItems?: ReactNode;
   className?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   // The menu closes on click, so its copy confirmation has to outlive it.
   const copyWithToast = useCopyToast();
   return (
@@ -145,8 +149,8 @@ export function AgentBubbleActionRow({
             variant="ghost"
             size="icon-xs"
             className="text-muted-foreground hover:text-foreground"
-            title="More actions"
-            aria-label="More actions"
+            title={pageText("moreActions_a1e34f")}
+            aria-label={pageText("moreActions_a1e34f")}
           >
             <MoreHorizontal className="h-3.5 w-3.5" />
           </Button>
@@ -157,9 +161,7 @@ export function AgentBubbleActionRow({
               void copyWithToast(copyText, "Message copied");
             }}
           >
-            <Copy className="mr-2 h-3.5 w-3.5" />
-            Copy message
-          </DropdownMenuItem>
+            <Copy className="mr-2 h-3.5 w-3.5" />{pageText("copyMessage_26902e")}</DropdownMenuItem>
           {menuItems}
         </DropdownMenuContent>
       </DropdownMenu>
@@ -183,6 +185,8 @@ export function IssueChatFeedbackButtons({
   termsUrl: string | null;
   onVote: (vote: FeedbackVoteValue, options?: { allowSharing?: boolean; reason?: string }) => Promise<void>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [isSaving, setIsSaving] = useState(false);
   const [optimisticVote, setOptimisticVote] = useState<FeedbackVoteValue | null>(null);
   const [reasonOpen, setReasonOpen] = useState(false);
@@ -262,8 +266,8 @@ export function IssueChatFeedbackButtons({
             ? "text-green-600 dark:text-green-400"
             : "text-muted-foreground hover:bg-accent hover:text-foreground",
         )}
-        title="Helpful"
-        aria-label="Helpful"
+        title={pageText("helpful_45e36d")}
+        aria-label={pageText("helpful_45e36d")}
         onClick={handleThumbsUp}
       >
         <ThumbsUp className="h-3.5 w-3.5" />
@@ -279,19 +283,19 @@ export function IssueChatFeedbackButtons({
                 ? "text-amber-600 dark:text-amber-400"
                 : "text-muted-foreground hover:bg-accent hover:text-foreground",
             )}
-            title="Needs work"
-            aria-label="Needs work"
+            title={pageText("needsWork_eafabc")}
+            aria-label={pageText("needsWork_eafabc")}
             onClick={handleThumbsDown}
           >
             <ThumbsDown className="h-3.5 w-3.5" />
           </button>
         </PopoverTrigger>
         <PopoverContent side="top" align="start" className="w-80 p-3">
-          <div className="mb-2 text-sm font-medium">What could have been better?</div>
+          <div className="mb-2 text-sm font-medium">{pageText("whatCouldHaveBeenBetter_2de6ce")}</div>
           <Textarea
             value={downvoteReason}
             onChange={(event) => setDownvoteReason(event.target.value)}
-            placeholder="Add a short note"
+            placeholder={pageText("addAShortNote_9cd96b")}
             className="min-h-20 resize-y bg-background text-sm"
             disabled={isSaving}
           />
@@ -305,16 +309,14 @@ export function IssueChatFeedbackButtons({
                 setReasonOpen(false);
                 setDownvoteReason("");
               }}
-            >
-              Dismiss
-            </Button>
+            >{pageText("dismiss_70afe9")}</Button>
             <Button
               type="button"
               size="sm"
               disabled={isSaving || !downvoteReason.trim()}
               onClick={handleSubmitReason}
             >
-              {isSaving ? "Saving..." : "Save note"}
+              {isSaving ? pageText("saving_ae7e88") : pageText("saveNote_d69ca0")}
             </Button>
           </div>
         </PopoverContent>
@@ -331,30 +333,21 @@ export function IssueChatFeedbackButtons({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Save your feedback sharing preference</DialogTitle>
-            <DialogDescription>
-              Choose whether voted AI outputs can be shared with Paperclip Labs. This
-              answer becomes the default for future thumbs up and thumbs down votes.
-            </DialogDescription>
+            <DialogTitle>{pageText("saveYourFeedbackSharingPreference_c8511f")}</DialogTitle>
+            <DialogDescription>{pageText("chooseWhetherVotedAIOutputsCanBeShared_ca14bb")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 text-sm text-muted-foreground">
-            <p>This vote is always saved locally.</p>
-            <p>
-              Choose <span className="font-medium text-foreground">Always allow</span> to share
-              this vote and future voted AI outputs. Choose{" "}
-              <span className="font-medium text-foreground">Don't allow</span> to keep this vote
-              and future votes local.
-            </p>
-            <p>You can change this later in Settings &gt; General.</p>
+            <p>{pageText("thisVoteIsAlwaysSavedLocally_680abb")}</p>
+            <p>{pageText("choose_78b7c9") + " "}<span className="font-medium text-foreground">{translateUi("interfaceCopy.alwaysAllow")}</span>{" " + pageText("toShareThisVoteAndFutureVotedAI_10139e")}{" "}
+              <span className="font-medium text-foreground">{pageText("donTAllow_63da96")}</span>{" " + pageText("toKeepThisVoteAndFutureVotesLocal_8f9fdc")}</p>
+            <p>{pageText("youCanChangeThisLaterInSettingsGeneral_1558d3")}</p>
             {termsUrl ? (
               <a
                 href={termsUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex text-sm text-foreground underline underline-offset-4"
-              >
-                Read our terms of service
-              </a>
+              >{pageText("readOurTermsOfService_8a15a6")}</a>
             ) : null}
           </div>
           <DialogFooter>
@@ -370,7 +363,7 @@ export function IssueChatFeedbackButtons({
                 ).then(() => setPendingSharingDialog(null));
               }}
             >
-              {isSaving ? "Saving..." : "Don't allow"}
+              {isSaving ? pageText("saving_ae7e88") : pageText("donTAllow_63da96")}
             </Button>
             <Button
               type="button"
@@ -383,7 +376,7 @@ export function IssueChatFeedbackButtons({
                 }).then(() => setPendingSharingDialog(null));
               }}
             >
-              {isSaving ? "Saving..." : "Always allow"}
+              {isSaving ? pageText("saving_ae7e88") : pageText("alwaysAllow_41325d")}
             </Button>
           </DialogFooter>
         </DialogContent>

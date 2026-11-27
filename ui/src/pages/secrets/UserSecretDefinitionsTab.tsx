@@ -1,3 +1,6 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { SecretStatus, UserSecretDefinition } from "@paperclipai/shared";
@@ -65,6 +68,8 @@ const emptyForm: DefinitionForm = {
  * only — never values — per the UX terminology decisions.
  */
 export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -125,7 +130,7 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
     onSuccess: (definition) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.secrets.userDefinitions(companyId) });
       pushToast({
-        title: editing ? "Definition updated" : "Definition created",
+        title: editing ? interfaceNotice("interface:definitionUpdated_32ec5a") : interfaceNotice("interface:definitionCreated_8e8d6a"),
         body: definition.name,
         tone: "success",
       });
@@ -140,12 +145,12 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
       secretsApi.removeUserSecretDefinition(companyId, definition.id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.secrets.userDefinitions(companyId) });
-      pushToast({ title: "Definition removed", tone: "info" });
+      pushToast({ title: interfaceNotice("interface:definitionRemoved_6c5b97"), tone: "info" });
       setDeleteTarget(null);
     },
     onError: (err) =>
       pushToast({
-        title: "Could not remove definition",
+        title: interfaceNotice("interface:couldNotRemoveDefinition_922166"),
         body: describeError(err).body,
         tone: "error",
       }),
@@ -157,17 +162,12 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
     <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-hidden">
       <div className="flex items-start gap-2 rounded-md border border-violet-500/30 bg-violet-500/5 px-4 py-3 text-xs text-violet-800 dark:text-violet-200">
         <UserRound className="h-4 w-4 mt-0.5 shrink-0" />
-        <p>
-          Define credentials that <span className="font-medium">each member supplies for
-          themselves</span>. You set the shape here; every user enters their own value under My
-          secrets. Coverage shows how many members have set a value — never the values themselves.
-        </p>
+        <p>{pageText("defineCredentialsThat_055bdc") + " "}<span className="font-medium">{pageText("eachMemberSuppliesForThemselves_50d29e")}</span>{pageText("youSetTheShapeHereEveryUserEnters_bbdfcb")}</p>
       </div>
 
       <div className="flex items-center justify-end">
         <Button size="sm" onClick={openCreate}>
-          <Plus className="mr-1 h-3.5 w-3.5" /> New user secret
-        </Button>
+          <Plus className="mr-1 h-3.5 w-3.5" />{" " + pageText("newUserSecret_ebfebe")}</Button>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto">
@@ -181,9 +181,9 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
             />
           </div>
         ) : definitions.length === 0 && !definitionsQuery.isPending && definitionsView.kind !== "reconnecting" ? (
-          <EmptyState placement="upper"
+          <EmptyState
             icon={UserRound}
-            message="No user secret definitions yet. Create one to require each member to supply their own credential."
+            message={pageText("noUserSecretDefinitionsYetCreateOneTo_4932b1")}
             action="New user secret"
             onAction={openCreate}
           />
@@ -237,17 +237,15 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              {editing ? "Edit user secret" : "New user secret"}
+              {editing ? pageText("editUserSecret_5c035f") : pageText("newUserSecret_ebfebe")}
               <UserSecretChip />
             </DialogTitle>
-            <DialogDescription>
-              Members supply their own value for this credential. No value is entered here.
-            </DialogDescription>
+            <DialogDescription>{pageText("membersSupplyTheirOwnValueForThisCredential_65a865")}</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-3">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-foreground">Name</label>
+              <label className="text-xs font-medium text-foreground">{translateUi("interfaceCopy.name")}</label>
               <Input
                 value={form.name}
                 onChange={(event) => {
@@ -258,12 +256,12 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
                     key: keyDirty ? current.key : keyFromName(name),
                   }));
                 }}
-                placeholder="Personal GitHub token"
+                placeholder={pageText("personalGitHubToken_736989")}
                 autoFocus
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-foreground">Key</label>
+              <label className="text-xs font-medium text-foreground">{translateUi("interfaceCopy.key")}</label>
               <Input
                 value={form.key}
                 onChange={(event) => {
@@ -274,36 +272,34 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
                 className="font-mono text-sm"
                 disabled={Boolean(editing)}
               />
-              <p className="text-(length:--text-micro) text-muted-foreground">
-                Stable identifier referenced by env bindings. {editing ? "Cannot be changed." : ""}
+              <p className="text-(length:--text-micro) text-muted-foreground">{pageText("stableIdentifierReferencedByEnvBindings_ed6f75") + " "}{editing ? pageText("cannotBeChanged_83a0a8") : ""}
               </p>
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-foreground">Description</label>
+              <label className="text-xs font-medium text-foreground">{translateUi("interfaceCopy.description")}</label>
               <Input
                 value={form.description}
                 onChange={(event) =>
                   setForm((current) => ({ ...current, description: event.target.value }))
                 }
-                placeholder="What this credential is for"
+                placeholder={pageText("whatThisCredentialIsFor_13985a")}
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-foreground">
-                Usage guidance <span className="text-muted-foreground">(optional)</span>
+              <label className="text-xs font-medium text-foreground">{pageText("usageGuidance_447a72") + " "}<span className="text-muted-foreground">{pageText("optional_b16c7a")}</span>
               </label>
               <Textarea
                 value={form.usageGuidance}
                 onChange={(event) =>
                   setForm((current) => ({ ...current, usageGuidance: event.target.value }))
                 }
-                placeholder="Tell members how to create their token, required scopes, etc."
+                placeholder={pageText("tellMembersHowToCreateTheirTokenRequired_5483ef")}
                 className="min-h-(--sz-70px) text-sm"
               />
             </div>
             {editing ? (
               <div className="space-y-1">
-                <label className="text-xs font-medium text-foreground">Status</label>
+                <label className="text-xs font-medium text-foreground">{translateUi("interfaceCopy.status")}</label>
                 <Select
                   value={form.status}
                   onValueChange={(status) =>
@@ -314,9 +310,9 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="disabled">Disabled</SelectItem>
-                    <SelectItem value="archived">Archived</SelectItem>
+                    <SelectItem value="active">{translateUi("interfaceCopy.active")}</SelectItem>
+                    <SelectItem value="disabled">{translateUi("interfaceCopy.disabled")}</SelectItem>
+                    <SelectItem value="archived">{pageText("archived_eddc81")}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -325,11 +321,9 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
           </div>
 
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setDialogOpen(false)} disabled={save.isPending}>
-              Cancel
-            </Button>
+            <Button variant="ghost" onClick={() => setDialogOpen(false)} disabled={save.isPending}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button onClick={() => save.mutate()} disabled={!canSave || save.isPending}>
-              {save.isPending ? "Saving…" : editing ? "Save changes" : "Create"}
+              {save.isPending ? pageText("saving_56a228") : editing ? pageText("saveChanges_179359") : pageText("create_6e157c")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -339,22 +333,17 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
       <Dialog open={deleteTarget !== null} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Remove user secret?</DialogTitle>
-            <DialogDescription>
-              This removes the definition <span className="font-mono">{deleteTarget?.key}</span> for
-              the whole company. Existing member values become unreferenced. This cannot be undone.
-            </DialogDescription>
+            <DialogTitle>{pageText("removeUserSecret_1fd3b5")}</DialogTitle>
+            <DialogDescription>{pageText("thisRemovesTheDefinition_86f52d") + " "}<span className="font-mono">{deleteTarget?.key}</span>{" " + pageText("forTheWholeCompanyExistingMemberValuesBecome_5942e5")}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setDeleteTarget(null)} disabled={remove.isPending}>
-              Cancel
-            </Button>
+            <Button variant="ghost" onClick={() => setDeleteTarget(null)} disabled={remove.isPending}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button
               variant="destructive"
               onClick={() => deleteTarget && remove.mutate(deleteTarget)}
               disabled={remove.isPending}
             >
-              {remove.isPending ? "Removing…" : "Remove"}
+              {remove.isPending ? pageText("removing_579d7e") : pageText("remove_e96390")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -370,6 +359,7 @@ function CoverageBadge({
   companyId: string;
   definitionId: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const coverageQuery = useQuery({
     queryKey: queryKeys.secrets.userDefinitionCoverage(companyId, definitionId),
     queryFn: () => secretsApi.userSecretDefinitionCoverage(companyId, definitionId),
@@ -379,10 +369,9 @@ function CoverageBadge({
   const missing = summary ? summary.missingCount : 0;
   return (
     <p className="mt-1 inline-flex items-center gap-1 text-(length:--text-micro) text-muted-foreground">
-      <Users className="h-3 w-3" />
-      Coverage: {coverageSummaryLabel(summary)}
+      <Users className="h-3 w-3" />{pageText("coverage_a721d2") + " "}{coverageSummaryLabel(summary)}
       {summary && missing > 0 ? (
-        <span className="text-amber-600 dark:text-amber-400">· {missing} not set</span>
+        <span className="text-amber-600 dark:text-amber-400">· {missing}{" " + pageText("notSet_ef374c")}</span>
       ) : null}
     </p>
   );

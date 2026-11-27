@@ -30,7 +30,6 @@ export type RunnerTaskFlow =
   | "provider_connection"
   | "github_review_journey"
   | "antigravity_agent_journey"
-  | "antigravity_swarm_journey"
   | "plan_task_guidance"
   | "blocker_guidance"
   | "public_mcp"
@@ -41,7 +40,6 @@ export type RunnerTaskFlow =
   | "continuation"
   | "first_task"
   | "agent_chat"
-  | "setup_health"
   | "governed_tool_review"
   | "single_turn"
   | "plan_revision_acceptance"
@@ -98,13 +96,7 @@ export interface RunnerProfileFixture {
       | "openrouter_rankings_snapshot";
     qualificationId: string;
   };
-  qualificationCandidate?: "cursor" | "copilot" | "pi" | "kimi" | "antigravity";
-  /**
-   * Opt-in profile. Its cells are selected only when `--profile` names it or an
-   * exact execution ID is given; suite, group, case and environment selectors
-   * alone never select it.
-   */
-  explicitOnly?: true;
+  qualificationCandidate?: "cursor" | "copilot" | "pi" | "kimi";
   ranking?: {
     rank: number;
     canonicalModelId: string;
@@ -179,8 +171,6 @@ export interface RunnerTaskFixture {
   expectedRunCount: number;
   /** Optional lower bound; expectedRunCount remains the maximum/cost estimate. */
   minimumExpectedRunCount?: number;
-  expectedHumanMessageCount?: number;
-  optionalCompanySecretBindingApproval?: true;
   /** Admit only the first attempt, including provider or infrastructure failures. */
   automaticRetryPolicy?: "single_attempt";
   attemptTimeoutMs: Readonly<Record<RunnerEnvironmentId, number>>;
@@ -312,8 +302,6 @@ export interface RunnerE2EBillingSummary {
 }
 
 export interface RunnerE2EResult {
-  /** Explicit optional owned Linux/arm64 Docker PG18.6 environment identity. */
-  databaseIdentity?: ReturnType<typeof import("./docker-postgres.js").publicDockerDatabaseIdentity>;
   schema: "paperclip.runner-e2e.result/v1" | "paperclip.runner-e2e.result/v2";
   accountingIdentity?: { campaignId: string; attemptId: string };
   executionId: string;
@@ -379,7 +367,6 @@ export interface RunnerE2EResult {
     passed: boolean;
     detail: string;
   }>;
-  screenshotPrivacy?: import("./screenshot-privacy.js").ScreenshotPrivacy;
   screenshots?: Array<{
     id: string;
     label: string;

@@ -8,8 +8,6 @@ interface PanelContextValue {
   panelContent: ReactNode | null;
   panelContentMode: SidePanelContentMode;
   panelVisible: boolean;
-  panelShowsArtifact: boolean;
-  setPanelShowsArtifact: (showsArtifact: boolean) => void;
   openPanel: (content: ReactNode, options?: { contentMode?: SidePanelContentMode }) => void;
   closePanel: () => void;
   setPanelVisible: (visible: boolean) => void;
@@ -47,7 +45,6 @@ function writePreference(visible: boolean) {
 export function PanelProvider({ children }: { children: ReactNode }) {
   const [panelContent, setPanelContent] = useState<ReactNode | null>(null);
   const [panelContentMode, setPanelContentMode] = useState<SidePanelContentMode>("padded");
-  const [panelShowsArtifact, setPanelShowsArtifact] = useState(false);
   const [classicPanelVisible, setPanelVisibleState] = useState(readPreference);
   const [coordinatorPanelVisible, setCoordinatorPanelVisible] = useState(false);
   const { enabled: coordinatorWorkspaceEnabled, userId } = useCoordinatorWorkspaceEnabled();
@@ -98,8 +95,6 @@ export function PanelProvider({ children }: { children: ReactNode }) {
         panelContent,
         panelContentMode,
         panelVisible,
-        panelShowsArtifact,
-        setPanelShowsArtifact,
         openPanel,
         closePanel,
         setPanelVisible,

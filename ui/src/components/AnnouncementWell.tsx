@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ONBOARDING_FIRST_TASK_ORIGIN_KIND } from "@paperclipai/shared";
@@ -13,23 +14,28 @@ import { queryKeys } from "@/lib/queryKeys";
 import { AnnouncementCard } from "./AnnouncementCard";
 
 // Includes the command palette, sheets and dialogs created outside DialogContext.
-export const MODAL_SELECTOR = '[role="dialog"][data-state="open"], [role="alertdialog"][data-state="open"], [aria-modal="true"]:not([data-state="closed"]), dialog[open]';
-export function useModalOpen(enabled: boolean, selector = MODAL_SELECTOR) {
+const MODAL_SELECTOR = '[role="dialog"][data-state="open"], [role="alertdialog"][data-state="open"], [aria-modal="true"]:not([data-state="closed"]), dialog[open]';
+function useModalOpen(enabled: boolean) {
   const [open, setOpen] = useState(false);
   useEffect(() => {
     if (!enabled) return;
-    const scan = () => setOpen(Boolean(document.querySelector(selector)));
+    const scan = () => setOpen(Boolean(document.querySelector(MODAL_SELECTOR)));
     scan();
     const observer = new MutationObserver(scan);
     observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["data-state", "aria-modal", "open"] });
     return () => observer.disconnect();
-  }, [enabled, selector]);
+  }, [enabled]);
   return open;
 }
 
 const FINISHED_ONBOARDING_STATUSES = new Set(["done", "cancelled"]);
 
-export function useOnboardingInProgress(companyId: string | null) {
+/**
+ * A new user's first session is the onboarding first task. Announcements wait
+ * until that task is finished so they cannot cover its questions. Unknown
+ * state (loading or a failed read) keeps the optional card hidden.
+ */
+function useOnboardingInProgress(companyId: string | null) {
   const query = useQuery({
     queryKey: queryKeys.issues.onboardingFirstTask(companyId ?? "__none__"),
     queryFn: ({ signal }) => issuesApi.list(companyId!, { originKind: ONBOARDING_FIRST_TASK_ORIGIN_KIND, limit: 1 }, { signal }),
@@ -49,6 +55,7 @@ export function useOnboardingInProgress(companyId: string | null) {
 export type AnnouncementPlacement = "sidebar" | "floating";
 
 export function AnnouncementWell({ health, placement = "floating" }: { health?: HealthStatus; placement?: AnnouncementPlacement }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { userId: accountId, settled } = useAccountIdentity();
   const { selectedCompanyId, loading } = useCompany();
   const { onboardingOpen } = useDialogState();
@@ -69,7 +76,7 @@ export function AnnouncementWell({ health, placement = "floating" }: { health?: 
   if (!announcement || modalOpen || (toasts?.length ?? 0) > 0) return null;
   return (
     <aside
-      aria-label="Paperclip announcements"
+      aria-label={pageText("paperclipAnnouncements_524cd8")}
       data-placement={placement}
       className={cn(
         "announcement-well",

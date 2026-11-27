@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { Link } from "@/lib/router";
 import { timeAgo } from "../lib/timeAgo";
@@ -401,6 +402,10 @@ interface FeedCardProps {
   agentMap: Map<string, Agent>;
   entityNameMap: Map<string, string>;
   entityTitleMap?: Map<string, string>;
+  /** Retained for call-site compatibility; no longer read — the collapsed
+   *  card always shows the event-derived status. Lifecycle aggregation (a
+   *  later pass) will pass the live status through its own wrapper. */
+  entityStatusMap?: Map<string, string>;
   isActive?: boolean;
   /** Tier 2 treatment: mutes the verb and title text. Actor name and
    *  timestamp retain their color; leading icon retains its color. */
@@ -421,6 +426,7 @@ export function FeedCard({
   isPinned = false,
   className,
 }: FeedCardProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const details = event.details as Record<string, unknown> | null;
   const content = resolveContent(event, agentMap, entityNameMap, entityTitleMap);
   const verb = formatVerb(event.action, details, isPinned ? "pinned" : "chronological");
@@ -464,7 +470,7 @@ export function FeedCard({
         )}
       </span>
       {isPinned && (
-        <span className="shrink-0 text-xs text-muted-foreground">Review →</span>
+        <span className="shrink-0 text-xs text-muted-foreground">{pageText("review_2d28dc")}</span>
       )}
       <span data-fc="time" className="shrink-0 text-muted-foreground">
         {timeAgo(event.createdAt)}

@@ -1,8 +1,11 @@
-import { QueryErrorState, useQueryView } from "@/components/QueryView";
-import { ChangeEvent, type ReactNode, useEffect, useId, useState } from "react";
+import { controlText } from "@/i18n/controls";
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
+import { ChangeEvent, useEffect, useState } from "react";
 import { AgentObservabilitySettingsSection } from "../components/observability/AgentObservabilitySettings";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   type InteractionResolverGovernance,
   type IssueThreadInteractionKind,
@@ -15,12 +18,10 @@ import { resolveCompanyArchiveDeparture } from "../lib/company-selection";
 import { cloudPortfolioManageUrl } from "../lib/cloudLinks";
 import { navigateTopLevel } from "@/lib/browserNavigation";
 import { companiesApi } from "../api/companies";
-import { accessApi } from "../api/access";
 import { assetsApi } from "../api/assets";
 import { describeError } from "@/api/errors";
 import { queryKeys } from "../lib/queryKeys";
 import { Button } from "@/components/ui/button";
-import { NativeSelect } from "@/components/ui/select";
 import { SlidersHorizontal } from "lucide-react";
 import {
   InteractionGovernancePanel,
@@ -31,12 +32,13 @@ import {
 import { CompanyPatternIcon } from "../components/CompanyPatternIcon";
 import {
   Field,
-  HintIcon,
   ToggleField,
 } from "../components/agent-config-primitives";
 import { InstanceGeneralSettings } from "./InstanceGeneralSettings";
 
 export function CompanySettings() {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const {
     companies,
     selectedCompany,
@@ -58,24 +60,14 @@ export function CompanySettings() {
   const [logoUploadError, setLogoUploadError] = useState<string | null>(null);
   const [governance, setGovernance] = useState<InteractionResolverGovernance>({});
 
-  // Sync local state from the selected company. Keyed on the saved values, not
-  // the company object: the sections that save on change (Hiring, Decisions,
-  // governance, logo) refetch the company list, and that fresh object must not
-  // wipe an unsaved name or description draft.
-  const savedName = selectedCompany?.name ?? null;
-  const savedDescription = selectedCompany?.description ?? "";
-  const savedLogoUrl = selectedCompany?.logoUrl ?? "";
-  const savedGovernance = selectedCompany?.interactionResolverGovernance;
+  // Sync local state from selected company
   useEffect(() => {
-    if (savedName === null) return;
-    setCompanyName(savedName);
-    setDescription(savedDescription);
-  }, [selectedCompanyId, savedName, savedDescription]);
-  useEffect(() => {
-    if (savedName === null) return;
-    setLogoUrl(savedLogoUrl);
-    setGovernance(savedGovernance ?? {});
-  }, [selectedCompanyId, savedName, savedLogoUrl, savedGovernance]);
+    if (!selectedCompany) return;
+    setCompanyName(selectedCompany.name);
+    setDescription(selectedCompany.description ?? "");
+    setLogoUrl(selectedCompany.logoUrl ?? "");
+    setGovernance(selectedCompany.interactionResolverGovernance ?? {});
+  }, [selectedCompany]);
 
   const generalDirty =
     !!selectedCompany &&
@@ -101,41 +93,6 @@ export function CompanySettings() {
       queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
     }
   });
-
-  // Members populate the default decision owner and budget owner pickers.
-  // Ownerless "Needs You" cards route to the default decision owner's "For
-  // you" list; clearing it sends them to the claimable Unassigned pool
-  // (PAP-749 task 1d-lite). A budget hard stop also goes to the budget owner,
-  // and Company keeps showing it (task 1d).
-  const membersQuery = useQuery({
-    queryKey: queryKeys.access.companyMembers(selectedCompanyId ?? ""),
-    queryFn: () => accessApi.listMembers(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
-  });
-
-  // Each owner saves on change with only its own field, so neither belongs to
-  // the General draft or its "Save changes" button. Waiting for the refetch
-  // keeps the picker on the new owner instead of flashing back to the old one.
-  async function saveDefaultDecisionOwner(defaultDecisionOwnerUserId: string | null) {
-    const company = await companiesApi.update(selectedCompanyId!, { defaultDecisionOwnerUserId });
-    await queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
-    return company;
-  }
-
-  async function saveBudgetOwner(budgetOwnerUserId: string | null) {
-    const company = await companiesApi.update(selectedCompanyId!, { budgetOwnerUserId });
-    await queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
-    return company;
-  }
-
-  const membersView = useQueryView(membersQuery);
-  const memberOptions = (membersQuery.data?.members ?? [])
-    .filter((member) => member.user?.id)
-    .map((member) => (
-      <option key={member.user!.id} value={member.user!.id}>
-        {member.user!.name || member.user!.email || member.user!.id}
-      </option>
-    ));
 
   const governanceMutation = useMutation({
     mutationFn: (next: InteractionResolverGovernance) =>
@@ -243,16 +200,14 @@ export function CompanySettings() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: selectedCompany?.name ?? "Company", href: "/dashboard" },
-      { label: "Settings" }
+      { label: selectedCompany?.name ?? interfaceNotice("interface:company_7a1994"), href: "/dashboard" },
+      { label: interfaceNotice("interface:settings_c7f73b") }
     ]);
   }, [setBreadcrumbs, selectedCompany?.name]);
 
   if (!selectedCompany) {
     return (
-      <div className="text-sm text-muted-foreground">
-        No organization selected. Select an organization from the switcher above.
-      </div>
+      <div className="text-sm text-muted-foreground">{pageText("noOrganizationSelectedSelectAnOrganizationFromThe_160135")}</div>
     );
   }
 
@@ -267,16 +222,14 @@ export function CompanySettings() {
     <div className="max-w-6xl space-y-8">
       <div className="flex items-center gap-2">
         <SlidersHorizontal className="h-5 w-5 text-muted-foreground" />
-        <h1 className="text-lg font-semibold">General</h1>
+        <h1 className="text-lg font-semibold">{translateUi("interfaceCopy.general")}</h1>
       </div>
 
       {/* General */}
       <div className="max-w-2xl space-y-4">
-        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          General
-        </div>
+        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{translateUi("interfaceCopy.general")}</div>
         <div className="space-y-3">
-          <Field label="Organization name" hint="The display name for your organization.">
+          <Field label={pageText("organizationName_9eab9e")} hint={pageText("theDisplayNameForYourOrganization_cabcc0")}>
             <input
               className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
               type="text"
@@ -284,21 +237,18 @@ export function CompanySettings() {
               onChange={(e) => setCompanyName(e.target.value)}
             />
             {isCloudManaged && (
-              <p className="mt-1 text-xs text-muted-foreground">
-                Renaming can change this company's task ID prefix. Existing task IDs are
-                renumbered and old task links stop resolving.
-              </p>
+              <p className="mt-1 text-xs text-muted-foreground">{pageText("renamingCanChangeThisCompanySTaskID_f94fbe")}</p>
             )}
           </Field>
           <Field
-            label="Description"
-            hint="Optional description shown in the organization profile."
+            label={translateUi("interfaceCopy.description")}
+            hint={pageText("optionalDescriptionShownInTheOrganizationProfile_5f7f6e")}
           >
             <input
               className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
               type="text"
               value={description}
-              placeholder="Optional organization description"
+              placeholder={pageText("optionalOrganizationDescription_db1d77")}
               onChange={(e) => setDescription(e.target.value)}
             />
           </Field>
@@ -307,9 +257,7 @@ export function CompanySettings() {
 
       {/* Appearance */}
       <div className="max-w-2xl space-y-4">
-        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          Appearance
-        </div>
+        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{pageText("appearance_41def7")}</div>
         <div className="space-y-3">
           <div className="flex items-start gap-4">
             <div className="shrink-0">
@@ -321,8 +269,8 @@ export function CompanySettings() {
             </div>
             <div className="flex-1 space-y-3">
               <Field
-                label="Logo"
-                hint="Upload a PNG, JPEG, WEBP, GIF, or SVG logo image."
+                label={pageText("logo_83fce8")}
+                hint={pageText("uploadAPNGJPEGWEBPGIFOrSVG_cde5cc")}
               >
                 <div className="space-y-2">
                   <input
@@ -339,7 +287,7 @@ export function CompanySettings() {
                         onClick={handleClearLogo}
                         disabled={clearLogoMutation.isPending}
                       >
-                        {clearLogoMutation.isPending ? "Removing..." : "Remove logo"}
+                        {clearLogoMutation.isPending ? pageText("removing_2a76d4") : pageText("removeLogo_a42817")}
                       </Button>
                     </div>
                   )}
@@ -354,7 +302,7 @@ export function CompanySettings() {
                     </span>
                   )}
                   {logoUploadMutation.isPending && (
-                    <span className="text-xs text-muted-foreground">Uploading logo...</span>
+                    <span className="text-xs text-muted-foreground">{pageText("uploadingLogo_5b3e69")}</span>
                   )}
                 </div>
               </Field>
@@ -371,10 +319,10 @@ export function CompanySettings() {
             onClick={handleSaveGeneral}
             disabled={generalMutation.isPending || !companyName.trim()}
           >
-            {generalMutation.isPending ? "Saving..." : "Save changes"}
+            {generalMutation.isPending ? pageText("saving_ae7e88") : pageText("saveChanges_179359")}
           </Button>
           {generalMutation.isSuccess && (
-            <span className="text-xs text-muted-foreground">Saved</span>
+            <span className="text-xs text-muted-foreground">{translateUi("interfaceCopy.saved")}</span>
           )}
           {generalMutation.error && (
             <span className="text-xs text-destructive">
@@ -386,13 +334,11 @@ export function CompanySettings() {
 
       {/* Hiring */}
       <div className="max-w-2xl space-y-4" data-testid="company-settings-team-section">
-        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-          Hiring
-        </div>
+        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{pageText("hiring_9ce5d6")}</div>
         <div>
           <ToggleField
-            label="Require board approval for new hires"
-            hint="New agent hires stay pending until approved by board."
+            label={pageText("requireBoardApprovalForNewHires_4cfbce")}
+            hint={pageText("newAgentHiresStayPendingUntilApprovedBy_fa48b6")}
             checked={!!selectedCompany.requireBoardApprovalForNewAgents}
             onChange={(v) => settingsMutation.mutate(v)}
             toggleTestId="company-settings-team-approval-toggle"
@@ -400,71 +346,23 @@ export function CompanySettings() {
         </div>
       </div>
 
-      {/* Decisions */}
-      <div className="max-w-2xl space-y-4" data-testid="company-settings-decisions-section">
-        <div className="space-y-1">
-          <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-            Decisions
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Each owner saves as soon as you choose it.
-          </p>
-        </div>
-        {membersView.kind === "error" ? <QueryErrorState error={membersView.error} onRetry={membersView.retry} /> : null}
-        <DecisionOwnerField
-          label="Default decision owner"
-          hint="When a card needs a person but has no explicit owner, it goes to this user's For you list. Leave as Unassigned to keep ownerless cards in the claimable pool."
-          testId="company-settings-default-decision-owner"
-          unsetLabel="Unassigned (no default owner)"
-          savedUserId={selectedCompany.defaultDecisionOwnerUserId ?? null}
-          memberOptions={memberOptions}
-          membersLoading={membersQuery.isLoading}
-          fallbackError="Couldn't save the default decision owner."
-          save={saveDefaultDecisionOwner}
-        />
-        <DecisionOwnerField
-          label="Budget owner"
-          hint="A budget hard stop also goes to this user's For you list, with Raise limit and Keep paused. The Company view still shows it to every operator."
-          testId="company-settings-budget-owner"
-          unsetLabel="No budget owner (Company view only)"
-          savedUserId={selectedCompany.budgetOwnerUserId ?? null}
-          memberOptions={memberOptions}
-          membersLoading={membersQuery.isLoading}
-          fallbackError="Couldn't save the budget owner."
-          save={saveBudgetOwner}
-        />
-      </div>
+      {/* Interaction governance */}
+      <InteractionGovernancePanel
+        governance={governance}
+        onChange={handleGovernanceChange}
+        isPending={governanceMutation.isPending}
+        errorMessage={governanceMutation.error ? describeError(governanceMutation.error).body : null}
+      />
 
-      {/* Interaction governance. Held to the form column like the sections
-          above; the wrapper scrolls rather than letting the policy grid push
-          past the column when the content area is narrow. The padding keeps
-          the selects' focus rings inside the scroll box, and the negative
-          inline margin keeps the panel aligned with the other sections. */}
-      <div
-        className="-mx-1 min-w-0 max-w-2xl overflow-x-auto p-1"
-        data-testid="company-settings-interaction-governance-frame"
-      >
-        <InteractionGovernancePanel
-          governance={governance}
-          onChange={handleGovernanceChange}
-          isPending={governanceMutation.isPending}
-          errorMessage={governanceMutation.error ? describeError(governanceMutation.error).body : null}
-        />
-      </div>
       <AgentObservabilitySettingsSection companyId={selectedCompanyId!} />
 
       <InstanceGeneralSettings embedded />
 
       {/* Danger Zone */}
       <div className="space-y-4">
-        <div className="text-xs font-medium text-destructive uppercase tracking-wide">
-          Danger Zone
-        </div>
+        <div className="text-xs font-medium text-destructive uppercase tracking-wide">{pageText("dangerZone_8fc83a")}</div>
         <div className="space-y-3 bg-destructive/5 px-4 py-4">
-          <p className="text-sm text-muted-foreground">
-            Archive this organization to hide it from the sidebar. This persists in
-            the database.
-          </p>
+          <p className="text-sm text-muted-foreground">{pageText("archiveThisOrganizationToHideItFromThe_e66ae4")}</p>
           <div className="flex items-center gap-2">
             <Button
               size="sm"
@@ -476,17 +374,17 @@ export function CompanySettings() {
               onClick={() => {
                 if (!selectedCompanyId) return;
                 const confirmed = window.confirm(
-                  `Archive organization "${selectedCompany.name}"? It will be hidden from the sidebar.`
+                  controlText("Archive organization \"{{name}}\"? It will be hidden from the sidebar.", { name: selectedCompany.name })
                 );
                 if (!confirmed) return;
                 archiveMutation.mutate({ companyId: selectedCompanyId });
               }}
             >
               {archiveMutation.isPending
-                ? "Archiving..."
+                ? pageText("archiving_c47aa0")
                 : selectedCompany.status === "archived"
-                ? "Already archived"
-                : "Archive organization"}
+                ? pageText("alreadyArchived_0c389d")
+                : pageText("archiveOrganization_26b2c4")}
             </Button>
             {archiveMutation.error && (
               <span className="text-xs text-destructive">
@@ -496,80 +394,6 @@ export function CompanySettings() {
           </div>
         </div>
       </div>
-    </div>
-  );
-}
-
-/**
- * One Decisions owner picker. It saves on change, on its own, so the page's
- * General "Save changes" never carries it. A real `<label htmlFor>` names the
- * select, and the line under it reports saving, saved, or the server's error
- * (for example the 422 for an owner who is not an active member).
- */
-function DecisionOwnerField({
-  label,
-  hint,
-  testId,
-  unsetLabel,
-  savedUserId,
-  memberOptions,
-  membersLoading,
-  fallbackError,
-  save,
-}: {
-  label: string;
-  hint: string;
-  testId: string;
-  unsetLabel: string;
-  savedUserId: string | null;
-  memberOptions: ReactNode;
-  membersLoading: boolean;
-  fallbackError: string;
-  save: (userId: string | null) => Promise<unknown>;
-}) {
-  const controlId = useId();
-  const errorId = `${controlId}-error`;
-  const mutation = useMutation({
-    mutationFn: save,
-    // Quick successive picks save in order, so the last choice is what sticks.
-    scope: { id: `company-settings:${testId}` },
-  });
-  // Show the choice while it saves. Otherwise show what the server holds, so
-  // a rejected owner snaps back beside its error.
-  const value = mutation.isPending ? (mutation.variables ?? "") : (savedUserId ?? "");
-  const errorMessage = mutation.error ? describeError(mutation.error).body ?? fallbackError : null;
-
-  return (
-    <div className="space-y-1">
-      <div className="flex items-center gap-1.5">
-        <label htmlFor={controlId} className="text-xs text-muted-foreground">
-          {label}
-        </label>
-        <HintIcon text={hint} />
-      </div>
-      <NativeSelect
-        id={controlId}
-        data-testid={testId}
-        value={value}
-        // Not disabled while saving: disabling would drop keyboard focus.
-        disabled={membersLoading}
-        aria-busy={mutation.isPending || undefined}
-        aria-invalid={errorMessage ? true : undefined}
-        aria-describedby={errorMessage ? errorId : undefined}
-        onChange={(event) => mutation.mutate(event.target.value === "" ? null : event.target.value)}
-      >
-        <option value="">{unsetLabel}</option>
-        {memberOptions}
-      </NativeSelect>
-      {errorMessage ? (
-        <p id={errorId} role="alert" className="text-xs text-destructive">
-          {errorMessage}
-        </p>
-      ) : (
-        <p role="status" className="min-h-4 text-xs text-muted-foreground">
-          {mutation.isPending ? "Saving…" : mutation.isSuccess ? "Saved" : null}
-        </p>
-      )}
     </div>
   );
 }

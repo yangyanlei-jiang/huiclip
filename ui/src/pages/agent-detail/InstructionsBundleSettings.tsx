@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from "react";
 import { ChevronDown, Loader2, Settings2 } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -44,6 +45,7 @@ export function InstructionsBundleSettings({
   blocked: boolean;
   onSwitched: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const [root, setRoot] = useState(mode === "external" ? rootPath : "");
   const [entry, setEntry] = useState(mode === "external" ? entryFile : "");
@@ -100,19 +102,17 @@ export function InstructionsBundleSettings({
   return (
     <Collapsible defaultOpen={mode === "external"} className="flex flex-col gap-(--agent-detail-module-gap)">
       <CollapsibleTrigger className="group flex w-fit items-center gap-1.5 rounded-sm text-sm text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring data-[state=open]:text-foreground">
-        <Settings2 className="size-4" aria-hidden />
-        Advanced management
-        <ChevronDown className="size-4 transition-transform group-data-[state=open]:rotate-180" aria-hidden />
+        <Settings2 className="size-4" aria-hidden />{pageText("advancedManagement_77c392")}<ChevronDown className="size-4 transition-transform group-data-[state=open]:rotate-180" aria-hidden />
       </CollapsibleTrigger>
       <CollapsibleContent data-agent-disclosure>
-        <AgentPanel className="gap-4 p-(--agent-identity-panel-gap)" aria-label="External management">
+        <AgentPanel className="gap-4 p-(--agent-identity-panel-gap)" aria-label={pageText("externalManagement_825498")}>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-foreground">External management</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">Point this agent at a directory on disk. Paperclip checks that the root file exists before it switches over.</p>
+            <p className="text-sm font-semibold text-foreground">{pageText("externalManagement_825498")}</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">{pageText("pointThisAgentAtADirectoryOnDisk_44dc43")}</p>
           </div>
           <div className="grid gap-(--agent-detail-module-gap) sm:grid-cols-2">
             <label className="flex min-w-0 flex-col gap-1.5">
-              <span className="text-xs text-muted-foreground">Root path</span>
+              <span className="text-xs text-muted-foreground">{pageText("rootPath_7d6857")}</span>
               <Input
                 value={root}
                 onChange={(event) => edit(setRoot)(event.target.value)}
@@ -123,7 +123,7 @@ export function InstructionsBundleSettings({
               />
             </label>
             <label className="flex min-w-0 flex-col gap-1.5">
-              <span className="text-xs text-muted-foreground">Root file</span>
+              <span className="text-xs text-muted-foreground">{pageText("rootFile_d7a793")}</span>
               <Input
                 value={entry}
                 onChange={(event) => edit(setEntry)(event.target.value)}
@@ -136,23 +136,20 @@ export function InstructionsBundleSettings({
           </div>
           <div className="flex flex-wrap items-center justify-end gap-3">
             {mode === "external" ? (
-              <Button variant="ghost" size="sm" className="mr-auto -ml-3" onClick={() => void switchToManaged()} disabled={busy || blocked}>
-                Use managed bundle
-              </Button>
+              <Button variant="ghost" size="sm" className="mr-auto -ml-3" onClick={() => void switchToManaged()} disabled={busy || blocked}>{pageText("useManagedBundle_763930")}</Button>
             ) : null}
             <p role="status" aria-live="polite" className="flex min-w-0 items-center gap-2 text-xs">
-              {blocked ? <span className="text-muted-foreground">Save or discard your file changes first.</span> : null}
+              {blocked ? <span className="text-muted-foreground">{pageText("saveOrDiscardYourFileChangesFirst_5b18bf")}</span> : null}
               {!blocked && load.kind === "error" ? <span className="text-destructive">{load.message}</span> : null}
               {!blocked && load.kind === "loaded" ? (
                 <span className="flex items-center gap-2 text-muted-foreground">
-                  <span className="size-1.5 shrink-0 rounded-full bg-(--agent-detail-dot-saved)" aria-hidden />
-                  Loaded {load.entry} from {load.root}
+                  <span className="size-1.5 shrink-0 rounded-full bg-(--agent-detail-dot-saved)" aria-hidden />{pageText("loaded_6db90a") + " "}{load.entry}{" " + pageText("from_0b1e95") + " "}{load.root}
                 </span>
               ) : null}
             </p>
             <Button size="sm" onClick={() => void loadProfile()} disabled={!trimmedRoot || !trimmedEntry || busy || blocked || unchanged}>
               {busy ? <Loader2 className="animate-spin motion-reduce:animate-none" /> : null}
-              {busy ? "Loading…" : "Load profile"}
+              {busy ? pageText("loading_33ce41") : pageText("loadProfile_3a4843")}
             </Button>
           </div>
         </AgentPanel>

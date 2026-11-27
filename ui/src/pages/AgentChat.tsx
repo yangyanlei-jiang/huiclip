@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useCallback, useEffect, useRef } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { agentChatsApi } from "@/api/agentChats";
 import { agentsApi } from "@/api/agents";
@@ -12,11 +13,9 @@ import { Link, useParams } from "@/lib/router";
 import { agentRouteRef } from "@/lib/utils";
 import { TaskDetailSurface } from "./IssueDetail";
 import { isUuidLike, type Issue } from "@paperclipai/shared";
-import { afterVisibleConversationPaint } from "@/lib/onboarding-chat";
-import { captureOnboardingStepFailed } from "@/lib/analytics/onboarding-analytics";
-import { Button } from "@/components/ui/button";
 
 export function AgentChat() {
+  const { t: pageText } = usePageTranslation("interface");
   const { agentRef = "" } = useParams<{ agentRef: string }>();
   const { selectedCompanyId } = useCompany();
   const { enabled, loaded } = useAgentChatEnabled();
@@ -61,27 +60,6 @@ export function AgentChat() {
   const historyView = useQueryView(historyAgent);
   const chatView = useQueryView(chat);
   const creating = useRef<Promise<Issue> | null>(null);
-  const [readyIssueId, setReadyIssueId] = useState<string | null>(null);
-  const [greetingError, setGreetingError] = useState<string | null>(null);
-  const [greetingAttempt, setGreetingAttempt] = useState(0);
-  const onReady = useCallback(() => setReadyIssueId(chat.data?.id ?? null), [chat.data?.id]);
-  useEffect(() => {
-    setGreetingError(null);
-    if (!enabled || !agent || !selectedCompanyId || !session.isSuccess
-      || readyIssueId !== chat.data?.id || chat.data?.originKind !== "onboarding_chat") return;
-    let cancelled = false;
-    const cancelPaint = afterVisibleConversationPaint(() => {
-      void agentChatsApi.greet(selectedCompanyId, agent.id).then(() => {
-        if (!cancelled) void client.invalidateQueries({ queryKey: queryKeys.issues.detail(chat.data!.id) });
-      }).catch(error => {
-        if (!cancelled) {
-          captureOnboardingStepFailed({ step: "launch", reason: "greeting_failed" });
-          setGreetingError(error instanceof Error ? error.message : "The welcome could not start.");
-        }
-      });
-    });
-    return () => { cancelled = true; cancelPaint(); };
-  }, [enabled, agent?.id, selectedCompanyId, userId, session.isSuccess, readyIssueId, chat.data?.id, chat.data?.originKind, greetingAttempt, client]);
   useEffect(() => {
     creating.current = null;
   }, [selectedCompanyId, userId, agent?.id]);
@@ -113,15 +91,13 @@ export function AgentChat() {
     || chatView.kind === "reconnecting" || (!rosterAgent && historyView.kind === "reconnecting");
   if (!loaded || agents.isPending || session.isPending || historyAgent.isFetching && !agent || reconnecting)
     return (
-      <p className="text-sm text-muted-foreground">Loading conversation…</p>
+      <p className="text-sm text-muted-foreground">{pageText("loadingConversation_6a8beb")}</p>
     );
   if (!enabled && !chat.data)
     return (
-      <p className="text-sm text-muted-foreground">
-        Agent Chat is disabled for this instance. An administrator can enable it in{" "}
-        <Link className="underline underline-offset-4" to="/company/settings/instance/experimental#experimental-enableAgentChat">Experimental settings</Link>.
-        {" "}Your workspace preference does not change Chat availability. Existing history remains available through task links.
-      </p>
+      <p className="text-sm text-muted-foreground">{pageText("agentChatIsDisabledForThisInstanceAn_f52198")}{" "}
+        <Link className="underline underline-offset-4" to="/company/settings/instance/experimental#experimental-enableAgentChat">{pageText("experimentalSettings_2502ec")}</Link>.
+        {" "}{pageText("yourWorkspacePreferenceDoesNotChangeChatAvailability_99c837")}</p>
     );
   const failed = [agentsView, chatView, ...(rosterAgent ? [] : [historyView])].find((view) => view.kind === "error");
   if (failed)
@@ -135,21 +111,15 @@ export function AgentChat() {
       />
     );
   if (!agent)
-    return <p className="text-sm text-destructive">Agent not found.</p>;
+    return <p className="text-sm text-destructive">{pageText("agentNotFound_157b19")}</p>;
   if (chat.isPending)
     return (
-      <p className="text-sm text-muted-foreground">Loading conversation…</p>
+      <p className="text-sm text-muted-foreground">{pageText("loadingConversation_6a8beb")}</p>
     );
   return (
-    <>
-      {greetingError && <div role="alert" className="flex items-center gap-2 text-sm text-destructive">
-        <span>{greetingError}</span>
-        <Button variant="outline" size="sm" onClick={() => setGreetingAttempt(attempt => attempt + 1)}>Retry welcome</Button>
-      </div>}
-      <TaskDetailSurface
-        key={`${agent.id}:${userId}`}
-        conversation={{ agent, issue: chat.data ?? null, ensureIssue, onReady }}
-      />
-    </>
+    <TaskDetailSurface
+      key={`${agent.id}:${userId}`}
+      conversation={{ agent, issue: chat.data ?? null, ensureIssue }}
+    />
   );
 }

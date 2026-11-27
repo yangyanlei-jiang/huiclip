@@ -1,3 +1,6 @@
+import { controlText } from "@/i18n/controls";
+import { t as timeText } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type { ReactNode } from "react";
 import type {
   ToolRiskLevel,
@@ -12,14 +15,15 @@ import { StatusBadge } from "@/components/StatusBadge";
 
 /** Risk classification badge for a catalog tool. */
 export function RiskBadge({ risk }: { risk: ToolRiskLevel | null | undefined }) {
-  if (!risk) return <Badge variant="outline">unknown</Badge>;
+  const { t: pageText } = usePageTranslation("interface");
+  if (!risk) return <Badge variant="outline">{pageText("unknown_50d8b4")}</Badge>;
   const variant =
     risk === "high" || risk === "critical"
       ? "destructive"
       : risk === "medium"
         ? "secondary"
         : "outline";
-  return <Badge variant={variant}>{risk}</Badge>;
+  return <Badge variant={variant}>{controlText(risk)}</Badge>;
 }
 
 /** Read/Write/Destructive capability chips. */
@@ -32,11 +36,12 @@ export function CapabilityBadges({
   isWrite?: boolean;
   isDestructive?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <span className="inline-flex flex-wrap gap-1">
-      {isReadOnly ? <Badge variant="outline">read-only</Badge> : null}
-      {isWrite ? <Badge variant="secondary">write</Badge> : null}
-      {isDestructive ? <Badge variant="destructive">destructive</Badge> : null}
+      {isReadOnly ? <Badge variant="outline">{pageText("readOnly_1d8d39")}</Badge> : null}
+      {isWrite ? <Badge variant="secondary">{pageText("write_e1d0c6")}</Badge> : null}
+      {isDestructive ? <Badge variant="destructive">{pageText("destructive_10f096")}</Badge> : null}
     </span>
   );
 }
@@ -116,7 +121,8 @@ export function DecisionBadge({ decision }: { decision: ToolPolicyDecision | str
 
 /** Compact relative time, falling back to absolute. */
 export function RelativeTime({ value }: { value: Date | string | null | undefined }) {
-  if (!value) return <span className="text-muted-foreground">never</span>;
+  const { t: pageText } = usePageTranslation("interface");
+  if (!value) return <span className="text-muted-foreground">{pageText("never_85777c")}</span>;
   const date = typeof value === "string" ? new Date(value) : value;
   if (Number.isNaN(date.getTime())) return <span className="text-muted-foreground">—</span>;
   const diffMs = Date.now() - date.getTime();
@@ -124,7 +130,7 @@ export function RelativeTime({ value }: { value: Date | string | null | undefine
   const mins = Math.round(abs / 60000);
   const isFuture = diffMs < 0;
   let text: string;
-  if (mins < 1) text = "just now";
+  if (mins < 1) text = timeText("interface:relativeNow");
   else {
     const value =
       mins < 60 ? `${mins}m` : mins < 1440 ? `${Math.round(mins / 60)}h` : `${Math.round(mins / 1440)}d`;
@@ -198,6 +204,7 @@ export function PendingBackendNotice({
   body: ReactNode;
   issue?: { identifier: string; href: string };
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <Card className="border-dashed">
       <CardContent className="flex flex-col gap-2 py-8">
@@ -207,8 +214,7 @@ export function PendingBackendNotice({
         </div>
         <p className="max-w-2xl text-sm text-muted-foreground">{body}</p>
         {issue ? (
-          <a href={issue.href} className="text-sm font-medium text-primary hover:underline">
-            Tracked in {issue.identifier} →
+          <a href={issue.href} className="text-sm font-medium text-primary hover:underline">{pageText("trackedIn_779545") + " "}{issue.identifier} →
           </a>
         ) : null}
       </CardContent>

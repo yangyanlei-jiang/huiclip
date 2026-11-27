@@ -1,3 +1,5 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ExternalLink, FileImage, AlertTriangle } from 'lucide-react';
@@ -10,13 +12,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Button } from '@/components/ui/button';
 import { Link } from '@/lib/router';
 import type { SkillTreeCandidate } from './SkillSourceTree';
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
-import { cn } from "@/lib/utils";
 
 export function SkillPackagePreview({ companyId, repository, commitSha, skill, initialFile, repositoryPackage, onClose }: {
   companyId: string; repository: SkillSourceDiscoveryRequest; commitSha: string | null;
   repositoryPackage?: SkillRepositoryPackage; skill: SkillTreeCandidate; initialFile?: string; onClose: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const inspection = repositoryPackage ? { ...repositoryPackage, references: [] } : skill.inspection;
   const [filePath, setFilePath] = useState(initialFile ?? (repositoryPackage ? skill.path : 'SKILL.md'));
   const nodes = buildFileTree(Object.fromEntries((inspection?.files ?? []).map(file => [file.path, null]))).sort((a, b) => Number(b.name === 'SKILL.md') - Number(a.name === 'SKILL.md'));
@@ -36,49 +37,49 @@ export function SkillPackagePreview({ companyId, repository, commitSha, skill, i
   return <Dialog open onOpenChange={open => { if (!open) onClose(); }}>
     <DialogContent className="flex max-h-(--sz-calc-18) flex-col overflow-y-auto p-4 sm:max-w-4xl sm:p-6">
       <DialogHeader>
-        <DialogTitle>{repositoryPackage ? 'Included repository files' : skill.name}</DialogTitle>
-        <DialogDescription className="break-all font-mono text-xs">{repositoryPackage ? 'Repository root' : root || 'Repository root'}/ · {inspection?.files.length ?? skill.fileCount ?? '?'} files{commitSha ? ` · ${commitSha.slice(0, 8)}` : ''}</DialogDescription>
+        <DialogTitle>{repositoryPackage ? pageText("includedRepositoryFiles_2a4e8b") : skill.name}</DialogTitle>
+        <DialogDescription className="break-all font-mono text-xs">{repositoryPackage ? pageText("repositoryRoot_e14963") : root || pageText("repositoryRoot_e14963")}/ · {inspection?.files.length ?? skill.fileCount ?? '?'}{" " + pageText("files_a1f13b")}{commitSha ? ` · ${commitSha.slice(0, 8)}` : ''}</DialogDescription>
       </DialogHeader>
-      {!inspection && <p role="status" className="text-sm text-muted-foreground">Refresh this source to inspect its complete package contents.</p>}
-      {skill.error && <p className="text-sm text-muted-foreground">Needs setup: {skill.error}</p>}
+      {!inspection && <p role="status" className="text-sm text-muted-foreground">{pageText("refreshThisSourceToInspectItsCompletePackage_83aa9c")}</p>}
+      {skill.error && <p className="text-sm text-muted-foreground">{pageText("needsSetup_8cf643") + " "}{skill.error}</p>}
       {inspection?.requirements && <section className="rounded-md border border-border bg-muted/30 p-3 text-sm">
-        <h3 className="font-medium">Runtime requirements</h3>
+        <h3 className="font-medium">{pageText("runtimeRequirements_6997fb")}</h3>
         <p className="mt-1 whitespace-pre-wrap text-muted-foreground">{inspection.requirements}</p>
       </section>}
-      {Boolean(inspection?.references.length) && <section className="rounded-md border border-border p-3 text-sm" aria-label="Package reference warnings">
-        <h3 className="flex items-center gap-2 font-medium"><AlertTriangle className="size-4" />Files not included</h3>
+      {Boolean(inspection?.references.length) && <section className="rounded-md border border-border p-3 text-sm" aria-label={pageText("packageReferenceWarnings_3efd5e")}>
+        <h3 className="flex items-center gap-2 font-medium"><AlertTriangle className="size-4" />{pageText("filesNotIncluded_d273e3")}</h3>
         <ul className="mt-2 space-y-2">
           {inspection!.references.map(reference => <li key={`${reference.fromPath}:${reference.resolvedPath}`} className="break-all text-xs">
-            <span className="font-mono">{reference.target}</span> · {reference.kind === 'outside_package' ? 'Outside this package' : 'Not found'}
-            <span className="text-muted-foreground"> · referenced in {reference.fromPath}</span>
+            <span className="font-mono">{reference.target}</span> · {reference.kind === 'outside_package' ? pageText("outsideThisPackage_c762d9") : pageText("notFound_475c84")}
+            <span className="text-muted-foreground">{" " + pageText("referencedIn_37a5eb") + " "}{reference.fromPath}</span>
           </li>)}
         </ul>
       </section>}
       {Boolean(inspection?.warnings.length) && <details className="text-xs text-muted-foreground">
-        <summary className="cursor-pointer">Content audit · {inspection!.warnings.length} {inspection!.warnings.length === 1 ? 'notice' : 'notices'}</summary>
+        <summary className="cursor-pointer">{pageText("contentAudit_1a7548") + " "}{inspection!.warnings.length} {inspection!.warnings.length === 1 ? pageText("notice_a81b09") : pageText("notices_51586e")}</summary>
         <ul className="mt-2 space-y-1">{inspection!.warnings.map(warning => <li key={warning}>{warning}</li>)}</ul>
       </details>}
       {inspection && <div className="flex min-h-0 flex-col overflow-hidden rounded-md border border-border md:flex-row">
         <div className="max-h-48 shrink-0 overflow-auto border-b border-border py-1 md:max-h-(--sz-480px) md:w-56 md:border-b-0 md:border-r">
           <FileTree nodes={nodes} selectedFile={filePath} expandedDirs={expanded} showCheckboxes={false} wrapLabels={false}
-            ariaLabel="Included package files" onSelectFile={setFilePath} onToggleDir={path => setCollapsed(previous => { const next = new Set(previous); if (next.has(path)) next.delete(path); else next.add(path); return next; })} />
+            ariaLabel={interfaceNotice("interface:includedPackageFiles_3063b4")} onSelectFile={setFilePath} onToggleDir={path => setCollapsed(previous => { const next = new Set(previous); if (next.has(path)) next.delete(path); else next.add(path); return next; })} />
         </div>
         <div className="flex min-w-0 flex-1 flex-col">
           <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-muted/30 px-3 py-2 text-xs">
             <span className="break-all font-mono">{filePath}</span>
-            {file && <span className="text-muted-foreground">{file.sizeBytes.toLocaleString()} bytes{file.executable ? ' · executable' : ''}</span>}
+            {file && <span className="text-muted-foreground">{file.sizeBytes.toLocaleString()}{" " + pageText("bytes_daf529")}{file.executable ? " " + pageText("executable_4c44de") : ''}</span>}
           </div>
           <div className="max-h-(--sz-480px) min-h-40 overflow-auto p-3">
-            {(preview.isFetching || previewView.kind === 'reconnecting') && <p role="status" className="text-sm text-muted-foreground">Loading preview…</p>}
-            {previewView.kind === 'error' && <div className="space-y-2 text-sm"><QueryErrorState size="inline" error={preview.error} action="load the preview" onRetry={previewView.retry} retrying={previewView.isFetching} /> <Link to="/apps" className="underline">Manage GitHub access</Link></div>}
-            {skill.error && <p className="text-sm text-muted-foreground">Preview unavailable for a package that failed validation.</p>}
-            {preview.data?.file.encoding === 'base64' && <div className="flex flex-col items-center gap-3 py-8 text-sm text-muted-foreground"><FileImage className="size-6" /><p>Binary asset · included without changes</p><p className="text-xs">Open on GitHub to preview or download this file.</p></div>}
-            {preview.data?.content !== null && preview.data?.content !== undefined && <pre className={cn("whitespace-pre-wrap break-words font-mono text-xs leading-relaxed", ANALYTICS_MASK_CLASS)}>{preview.data.content}</pre>}
-            {preview.data?.truncated && <p className="mt-3 text-xs text-muted-foreground">Showing the first 64 KB. The complete file is imported.</p>}
+            {(preview.isFetching || previewView.kind === 'reconnecting') && <p role="status" className="text-sm text-muted-foreground">{pageText("loadingPreview_1b6d8c")}</p>}
+            {previewView.kind === 'error' && <div className="space-y-2 text-sm"><QueryErrorState size="inline" error={preview.error} action="load the preview" onRetry={previewView.retry} retrying={previewView.isFetching} /> <Link to="/apps" className="underline">{pageText("manageGitHubAccess_324ae6")}</Link></div>}
+            {skill.error && <p className="text-sm text-muted-foreground">{pageText("previewUnavailableForAPackageThatFailedValidation_21ce2f")}</p>}
+            {preview.data?.file.encoding === 'base64' && <div className="flex flex-col items-center gap-3 py-8 text-sm text-muted-foreground"><FileImage className="size-6" /><p>{pageText("binaryAssetIncludedWithoutChanges_cdcef4")}</p><p className="text-xs">{pageText("openOnGitHubToPreviewOrDownloadThis_f59444")}</p></div>}
+            {preview.data?.content !== null && preview.data?.content !== undefined && <pre className="whitespace-pre-wrap break-words font-mono text-xs leading-relaxed">{preview.data.content}</pre>}
+            {preview.data?.truncated && <p className="mt-3 text-xs text-muted-foreground">{pageText("showingTheFirst64KBTheCompleteFile_2ad21a")}</p>}
           </div>
         </div>
       </div>}
-      <div className="flex items-center justify-between gap-3"><Button type="button" variant="outline" onClick={onClose}>Back to selection</Button><Button asChild variant="ghost" size="sm"><a href={githubUrl} target="_blank" rel="noreferrer">Open on GitHub<ExternalLink className="size-3.5" /></a></Button></div>
+      <div className="flex items-center justify-between gap-3"><Button type="button" variant="outline" onClick={onClose}>{pageText("backToSelection_4e3e73")}</Button><Button asChild variant="ghost" size="sm"><a href={githubUrl} target="_blank" rel="noreferrer">{pageText("openOnGitHub_8b81ad")}<ExternalLink className="size-3.5" /></a></Button></div>
     </DialogContent>
   </Dialog>;
 }

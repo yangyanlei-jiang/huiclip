@@ -1,3 +1,5 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useWorkspaceIsolationControls } from "@/hooks/useWorkspaceIsolationControls";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "@/lib/router";
@@ -48,6 +50,7 @@ function BreakablePath({ text }: { text: string }) {
 }
 
 function CopyableInline({ value, label, mono }: { value: string; label?: string; mono?: boolean }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [copied, setCopied] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -72,8 +75,8 @@ function CopyableInline({ value, label, mono }: { value: string; label?: string;
         type="button"
         className="shrink-0 p-0.5 rounded hover:bg-accent/50 transition-colors text-muted-foreground hover:text-foreground opacity-0 group-hover/copy:opacity-100 focus:opacity-100"
         onClick={handleCopy}
-        title={copied ? "Copied!" : "Copy"}
-        aria-label={copied ? "Copied to clipboard" : `Copy ${label ?? "value"}`}
+        title={copied ? pageText("copied_b7c3ca") : pageText("copy_af74f7")}
+        aria-label={copied ? pageText("copiedToClipboard_0e7383") : `Copy ${label ?? "value"}`}
       >
         {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
       </button>
@@ -194,6 +197,8 @@ export function IssueWorkspaceCard({
   onBrowseFiles,
   onOpenFileByPath,
 }: IssueWorkspaceCardProps) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const { visible: workspaceIsolationControlsVisible } = useWorkspaceIsolationControls();
   const { selectedCompanyId } = useCompany();
   const companyId = issue.companyId ?? selectedCompanyId;
@@ -253,11 +258,15 @@ export function IssueWorkspaceCard({
 
   const [draftSelection, setDraftSelection] = useState(currentSelection);
   const [draftExecutionWorkspaceId, setDraftExecutionWorkspaceId] = useState(issue.executionWorkspaceId ?? "");
+  const projectEnvironmentId = environmentsEnabled
+    ? project?.executionWorkspacePolicy?.environmentId ?? null
+    : null;
   const currentReusableEnvironmentId = selectedReusableExecutionWorkspace?.config?.environmentId ?? null;
   const currentEnvironmentId = environmentsEnabled
     ? (
         (currentSelection === "reuse_existing" && currentReusableEnvironmentId)
         ?? workspace?.config?.environmentId
+        ?? projectEnvironmentId
       )
     : null;
   const currentEnvironment =
@@ -355,16 +364,13 @@ export function IssueWorkspaceCard({
                   className="h-6 px-2 text-xs text-muted-foreground"
                   onClick={handleCancel}
                 >
-                  <X className="h-3 w-3 mr-1" />Cancel
-                </Button>
+                  <X className="h-3 w-3 mr-1" />{pageText("cancel_77dfd2")}</Button>
                 <Button
                   size="sm"
                   className="h-6 px-2 text-xs"
                   onClick={handleSave}
                   disabled={!canSaveWorkspaceConfig}
-                >
-                  Save
-                </Button>
+                >{translateUi("interfaceCopy.save")}</Button>
               </>
             ) : (
               <Button
@@ -373,8 +379,7 @@ export function IssueWorkspaceCard({
                 className="h-6 px-2 text-xs text-muted-foreground"
                 onClick={() => setEditing(true)}
               >
-                <Pencil className="h-3 w-3 mr-1" />Edit
-              </Button>
+                <Pencil className="h-3 w-3 mr-1" />{pageText("edit_530164")}</Button>
             )}
           </div>
         )}
@@ -397,30 +402,30 @@ export function IssueWorkspaceCard({
           )}
           {workspace?.repoUrl && (
             <div className="flex items-center gap-1.5 text-muted-foreground">
-              <span className="text-(length:--text-micro)">Repo:</span>
+              <span className="text-(length:--text-micro)">{pageText("repo_468d55")}</span>
               <CopyableInline value={workspace.repoUrl} mono />
             </div>
           )}
           {environmentsEnabled && currentEnvironmentId && (
-            <div className="text-muted-foreground" style={{ overflowWrap: "anywhere" }}>
-              Environment: <span className="text-foreground">{currentEnvironment?.name ?? currentEnvironmentId}</span>
+            <div className="text-muted-foreground" style={{ overflowWrap: "anywhere" }}>{pageText("environment_f3d7eb") + " "}<span className="text-foreground">{currentEnvironment?.name ?? currentEnvironmentId}</span>
               {currentSelection === "reuse_existing" && currentReusableEnvironmentId === currentEnvironmentId
-                ? " · reused workspace"
+                ? " " + pageText("reusedWorkspace_7dd7e4")
+                : !issue.executionWorkspaceSettings?.environmentId && projectEnvironmentId === currentEnvironmentId
+                ? " " + pageText("projectDefault_5cf8c7")
                 : null}
             </div>
           )}
           {!workspace && (
             <div className="text-muted-foreground">
               {currentSelection === "isolated_workspace"
-                ? "A fresh isolated workspace will be created when this task runs."
+                ? pageText("aFreshIsolatedWorkspaceWillBeCreatedWhen_bed78f")
                 : currentSelection === "reuse_existing"
-                  ? "This task will reuse an existing workspace when it runs."
-                  : "This task will use the project default workspace configuration when it runs."}
+                  ? pageText("thisTaskWillReuseAnExistingWorkspaceWhen_27808f")
+                  : pageText("thisTaskWillUseTheProjectDefaultWorkspace_e2b9dd")}
             </div>
           )}
           {currentSelection === "reuse_existing" && selectedReusableExecutionWorkspace && (
-            <div className="text-muted-foreground" style={{ overflowWrap: "anywhere" }}>
-              Reusing:{" "}
+            <div className="text-muted-foreground" style={{ overflowWrap: "anywhere" }}>{pageText("reusing_0e6b46")}{" "}
               {selectedReusableWorkspaceLink ? (
                 <Link
                   to={selectedReusableWorkspaceLink}
@@ -438,9 +443,7 @@ export function IssueWorkspaceCard({
               <Link
                 to={currentWorkspaceLink}
                 className="text-(length:--text-micro) text-muted-foreground hover:text-foreground hover:underline"
-              >
-                View workspace details →
-              </Link>
+              >{pageText("viewWorkspaceDetails_a844e3")}</Link>
             </div>
           )}
         </div>
@@ -465,7 +468,7 @@ export function IssueWorkspaceCard({
             {EXECUTION_WORKSPACE_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.value === "reuse_existing" && configuredReusableWorkspace?.mode === "isolated_workspace"
-                  ? "Existing isolated workspace"
+                  ? pageText("existingIsolatedWorkspace_7c51ac")
                   : option.label}
               </option>
             ))}
@@ -484,8 +487,7 @@ export function IssueWorkspaceCard({
           {/* Current workspace summary when editing */}
           {workspace && (
             <div className="text-(length:--text-micro) text-muted-foreground space-y-0.5 pt-1 border-t border-border/50">
-              <div style={{ overflowWrap: "anywhere" }}>
-                Current:{" "}
+              <div style={{ overflowWrap: "anywhere" }}>{pageText("current_19889c")}{" "}
                 {currentWorkspaceLink ? (
                   <Link
                     to={currentWorkspaceLink}
@@ -512,17 +514,13 @@ export function IssueWorkspaceCard({
             onClick={onBrowseFiles}
             className="inline-flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground"
           >
-            <FolderSearch className="h-3.5 w-3.5 shrink-0" />
-            Browse files…
-          </button>
+            <FolderSearch className="h-3.5 w-3.5 shrink-0" />{pageText("browseFiles_af7c13")}</button>
           <button
             type="button"
             onClick={onOpenFileByPath ?? onBrowseFiles}
             className="inline-flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground"
           >
-            <FileSearch className="h-3.5 w-3.5 shrink-0" />
-            Open file by path…
-          </button>
+            <FileSearch className="h-3.5 w-3.5 shrink-0" />{pageText("openFileByPath_3783fc")}</button>
         </div>
       )}
     </div>

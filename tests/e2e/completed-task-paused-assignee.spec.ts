@@ -6,6 +6,33 @@ async function json<T = Record<string, any>>(response: APIResponse): Promise<T> 
   return response.json();
 }
 
+let cleanup: { companyId: string; enableClassicTaskInterface: boolean; coordinatorWorkspaceEnabled: boolean } | undefined;
+
+test.afterEach(async ({ request }, testInfo) => {
+  const state = cleanup;
+  cleanup = undefined;
+  if (!state) return;
+  testInfo.setTimeout(15_000);
+  const workspaceResult = await request.put(`/api/companies/${state.companyId}/workspace-preferences/me`, {
+    data: { coordinatorWorkspaceEnabled: state.coordinatorWorkspaceEnabled }, timeout: 5_000,
+  });
+  expect(workspaceResult.ok()).toBe(true);
+  const results = await Promise.allSettled([
+    request.patch("/api/instance/settings/experimental", {
+      data: { enableClassicTaskInterface: state.enableClassicTaskInterface }, timeout: 5_000,
+    }),
+    request.patch(`/api/companies/${state.companyId}`, { data: { status: "archived" }, timeout: 5_000 }),
+  ]);
+  const failures = results.flatMap((result, index) => result.status === "rejected"
+    ? [`Cleanup ${index}: ${String(result.reason)}`]
+    : result.value.ok() ? [] : [`Cleanup ${index}: HTTP ${result.value.status()}`]);
+  if (!failures.length) return;
+  await testInfo.attach("cleanup-failure", {
+    body: Buffer.from(JSON.stringify({ companyId: state.companyId, failures })), contentType: "application/json",
+  });
+  if (testInfo.status === "passed") throw new Error(failures.join("\n"));
+});
+
 for (const classic of [false, true]) {
   test(`${classic ? "classic" : "task chat"}: paused assignee warnings follow the task's current status without resuming the agent`, async ({ page, request }, testInfo) => {
     page.setDefaultTimeout(10_000);
@@ -14,13 +41,14 @@ for (const classic of [false, true]) {
       data: { name: `Completed task status ${randomUUID()}` },
     }));
     const workspace = await json(await request.get("/api/workspace-preferences/me"));
-    await page.route("**/api/workspace-preferences/me", route => route.fulfill({ json: {
-      ...workspace, coordinatorWorkspaceEnabled: !classic,
-    } }));
-    await page.route("**/api/instance/settings/experimental", route => route.fulfill({ json: {
-      ...settings, enableClassicTaskInterface: classic,
-    } }));
-    try {
+    cleanup = { companyId: company.id, enableClassicTaskInterface: settings.enableClassicTaskInterface,
+      coordinatorWorkspaceEnabled: workspace.coordinatorWorkspaceEnabled };
+    await json(await request.put(`/api/companies/${company.id}/workspace-preferences/me`, {
+      data: { coordinatorWorkspaceEnabled: !classic },
+    }));
+    await json(await request.patch("/api/instance/settings/experimental", {
+      data: { enableClassicTaskInterface: classic },
+    }));
     // This command is deliberately not a model adapter. Heartbeats are disabled
     // and the agent is paused before assignment, so the journey starts no work.
     const agent = await json(await request.post(`/api/companies/${company.id}/agents`, { data: {
@@ -53,12 +81,11 @@ for (const classic of [false, true]) {
       await testInfo.attach(name, { path, contentType: "image/png" });
     };
     const observe = async (status: string, warningVisible: boolean) => {
-      const header = page.getByTestId("issue-detail-header");
-      await expect(header.getByRole("heading", { name: task.title, exact: true })).toBeVisible();
+      await expect(page.getByText(task.title, { exact: true }).first()).toBeVisible();
       const showProperties = page.getByRole("button", { name: "Show properties", exact: true });
       if (await showProperties.isVisible()) await showProperties.click();
       const statusLabel = status[0].toUpperCase() + status.slice(1);
-      await expect(header.getByRole("button", {
+      await expect(page.getByTestId("issue-detail-header").getByRole("button", {
         name: status === "blocked"
           ? /^Change status \(current: Blocked(?: · [^)]*)?\)$/
           : `Change status (current: ${statusLabel})`,
@@ -117,8 +144,5 @@ for (const classic of [false, true]) {
       }, null, 2)),
       contentType: "application/json",
     });
-    } finally {
-      await request.patch(`/api/companies/${company.id}`, { data: { status: "archived" }, timeout: 5_000 }).catch(() => {});
-    }
   });
 }

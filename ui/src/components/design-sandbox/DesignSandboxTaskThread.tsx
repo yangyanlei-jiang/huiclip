@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { TaskChatShimmerScope } from "../task-chat/TaskChatShimmer";
 import { revealWords, wordCount } from "./word-reveal";
 import { MarkdownWordStreaming } from "../MarkdownWordStreaming";
@@ -36,6 +37,7 @@ export default function DesignSandboxTaskThread({
   defaultConversation: boolean;
   previewMode?: "catalog" | "playback";
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [params, setParams] = useSearchParams();
   const requested = params.get("threadPreview") ?? (defaultConversation ? "staging-conversation" : "saved");
   const aliased = THREAD_PREVIEW_ALIASES[requested] ?? requested;
@@ -56,18 +58,18 @@ export default function DesignSandboxTaskThread({
 
   return <div className="flex min-h-0 flex-1 flex-col" data-testid="sandbox-task-thread" data-preview-state={selected}>
     <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-border bg-background py-2 text-xs">
-      <label htmlFor="sandbox-thread-state" className="font-normal text-foreground">Thread preview</label>
-      <NativeSelect id="sandbox-thread-state" value={selected} onChange={event => choose(event.target.value)} className="w-auto min-w-0 max-w-full text-xs" aria-label="Thread preview state">
-        <option value="saved">Saved thread</option>
-        <option value="all">All states ({THREAD_PREVIEW_CASES.length})</option>
+      <label htmlFor="sandbox-thread-state" className="font-normal text-foreground">{pageText("threadPreview_96f2b7")}</label>
+      <NativeSelect id="sandbox-thread-state" value={selected} onChange={event => choose(event.target.value)} className="w-auto min-w-0 max-w-full text-xs" aria-label={pageText("threadPreviewState_babda0")}>
+        <option value="saved">{pageText("savedThread_0e9217")}</option>
+        <option value="all">{pageText("allStates_9923e3")}{THREAD_PREVIEW_CASES.length})</option>
         {[...new Set(THREAD_PREVIEW_CASES.map(item => item.group))].map(group => <optgroup key={group} label={group}>
           {THREAD_PREVIEW_CASES.filter(item => item.group === group).map(item => <option key={item.id} value={item.id}>{item.label}</option>)}
         </optgroup>)}
       </NativeSelect>
       {selected !== "saved" ? <>
-        <Button size="sm" variant="outline" onClick={() => setGeneration(value => value + 1)}>Reset / replay</Button>
-        <Button size="sm" variant="ghost" onClick={() => choose("saved")}>Show saved thread</Button>
-        <span className="text-muted-foreground">Production renderers · synthetic data · preview actions stay local</span>
+        <Button size="sm" variant="outline" onClick={() => setGeneration(value => value + 1)}>{pageText("resetReplay_2496a2")}</Button>
+        <Button size="sm" variant="ghost" onClick={() => choose("saved")}>{pageText("showSavedThread_3d3a1b")}</Button>
+        <span className="text-muted-foreground">{pageText("productionRenderersSyntheticDataPreviewActionsStayLocal_9fc79b")}</span>
       </> : null}
     </div>
     {selected === "saved" ? children : <TaskChatPresentationProvider mode={streamlined ? "streamlined" : "production"}>
@@ -82,6 +84,7 @@ export default function DesignSandboxTaskThread({
 function PreviewCase({ example, header, agentName, agent, replay, streamlined }: {
   example: ThreadPreviewCase; header: ReactNode; agentName: string; agent?: Agent; replay: boolean; streamlined: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const scenario = useMemo(() => example.build(), [example]);
   const startedAt = useRef(Date.now() - 40_000);
   const [characters, setCharacters] = useState(replay ? 1 : Infinity);
@@ -143,7 +146,7 @@ function PreviewCase({ example, header, agentName, agent, replay, streamlined }:
         onRuntimeRequestDecision={runtimeDecision}
       /> : <TaskChatShimmerScope items={items}>
         <TaskChatLiveRunPill status={status} startedAtMs={status === "queued" ? null : startedAt.current} finishedAtMs={terminal ? startedAt.current + 40_000 : null} toolSummary={toolCountSummaryFromEntries(scenario.entries)} />
-        <MarkdownWordStreaming.Provider value={replay}><TaskChatLiveTail items={items} emptyMessage={scenario.emptyMessage ?? "Waiting for transcript…"} onRuntimeRequestDecision={runtimeDecision} /></MarkdownWordStreaming.Provider>
+        <MarkdownWordStreaming.Provider value={replay}><TaskChatLiveTail items={items} emptyMessage={scenario.emptyMessage ?? pageText("waitingForTranscript_03f07c")} onRuntimeRequestDecision={runtimeDecision} /></MarkdownWordStreaming.Provider>
         {failed ? <TaskChatThreadView items={[{ id: "synthetic-run-stop", kind: "marker", variant: "interrupted", tone: status === "cancelled" ? "neutral" : "error", collapsible: true, label: status === "cancelled" ? "Run cancelled" : status === "timed_out" ? "Run timed out" : "Run failed", detail: status === "cancelled" ? "The synthetic run was stopped; no saved task was changed." : "Synthetic provider failure: the test process stopped before a final reply was available." }]} scroll={false} /> : null}
       </TaskChatShimmerScope>}
     </> : null} />

@@ -155,8 +155,7 @@ describe("Codex app-server Codex driver", () => {
           "permissions.paperclip-runner-workspace-only.filesystem=",
         ),
         "permissions.paperclip-runner-workspace-only.network.enabled=false",
-        'shell_environment_policy.inherit="all"',
-        "shell_environment_policy.ignore_default_excludes=true",
+        'shell_environment_policy.inherit="none"',
         expect.stringContaining(
           'shell_environment_policy.set={PATH="/bin",LANG="C.UTF-8"}',
         ),

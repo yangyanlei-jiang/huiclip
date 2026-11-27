@@ -1,4 +1,3 @@
-import { toolInputVariantError } from "../contracts/tool-input-variants.js";
 import { Ajv2020 } from "ajv/dist/2020.js";
 import type { ValidateFunction } from "ajv/dist/2020.js";
 
@@ -220,11 +219,6 @@ export class PaperclipSemanticDispatcher {
         "input_invalid",
         formatValidationError(inputValidator),
       );
-      return this.#denial(call, "input_invalid", descriptor, context, decision);
-    }
-    const variantError = toolInputVariantError(descriptor.operationId, call.input);
-    if (variantError !== null) {
-      decision = deniedDecision(decision, "input_invalid", variantError);
       return this.#denial(call, "input_invalid", descriptor, context, decision);
     }
 

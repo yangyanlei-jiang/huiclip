@@ -125,28 +125,23 @@ export function chatChannelRoutes(db: Db, options: ChatChannelRouteOptions) {
     assertBoard(req);
     const userId = actorUserId(req);
     if (!userId) throw badRequest("A signed-in Paperclip user is required");
-    // Enforce rollout per provider after resolving the token: invited nonmembers
-    // cannot read the board's experimental-settings API, and GitHub/AgentMail
-    // links remain available while experimental chat connectors are off.
+    // Enforce rollout here: invited nonmembers cannot read the board's
+    // experimental-settings API. A private token never bypasses this gate.
     const experimental = await instanceSettingsService(db).getExperimental();
+    if (!experimental.enableChatConnectors && !experimental.enableGitHubReviewBots) {
+      throw forbidden("Chat connectors are not enabled on this instance");
+    }
     return { userId, experimental };
   }
 
   function assertIdentityProviderEnabled(
     provider: string,
-    experimental: { enableChatConnectors: boolean },
+    experimental: { enableChatConnectors: boolean; enableGitHubReviewBots: boolean },
   ) {
-    const enabled = provider === "agentmail" || provider === "github" || experimental.enableChatConnectors;
+    const enabled = provider === "agentmail" || (provider === "github"
+      ? experimental.enableGitHubReviewBots
+      : experimental.enableChatConnectors);
     if (!enabled) throw forbidden("This connector is not enabled on this instance");
-  }
-
-  function assertChatProviderEnabledForCreate(
-    provider: string,
-    experimental: { enableChatConnectors: boolean },
-  ) {
-    if (provider === "agentmail" || provider === "github") return;
-    if (experimental.enableChatConnectors) return;
-    throw forbidden("Chat connectors is turned off on this instance, so this chat endpoint cannot be created. An instance admin turns it on in Experimental settings at /<prefix>/company/settings/instance/experimental. Agents cannot change instance settings.");
   }
 
   async function assertConnectionManager(
@@ -200,7 +195,6 @@ export function chatChannelRoutes(db: Db, options: ChatChannelRouteOptions) {
     async (req, res) => {
       const companyId = req.params.companyId as string;
       await assertConnectionManager(req, companyId);
-      assertChatProviderEnabledForCreate(req.body.provider, await instanceSettingsService(db).getExperimental());
       if (req.body.provider === "slack" && !req.body.slackSetupMethod) {
         req.body.slackSetupMethod = service.slackRegistration.managerGrants.defaultMethod();
       }
@@ -466,11 +460,6 @@ export function chatChannelRoutes(db: Db, options: ChatChannelRouteOptions) {
       .json(
         await service.generateSetupSecret(endpointId(req), actorUserId(req), connectionRequestContext(req)),
       );
-  });
-
-  router.post("/chat-endpoints/:endpointId/provider-work/:actionId/retry", managementGuard("connections:configure", "POST /chat-endpoints/:endpointId/provider-work/:actionId/retry"), validate(z.object({}).strict()), async (req, res) => {
-    if (!(await assertEndpointManagementAccess(req, res))) return;
-    res.json(await service.retrySlackFormReceipt(endpointId(req), String(req.params.actionId), connectionRequestContext(req)));
   });
 
   router.post("/chat-endpoints/:endpointId/test", managementGuard("connections:configure", "POST /chat-endpoints/:endpointId/test"), async (req, res) => {

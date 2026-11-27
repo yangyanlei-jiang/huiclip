@@ -133,22 +133,6 @@ export function githubWebhookIngressPayload(
   return payload as GitHubWebhookIngressPayload;
 }
 
-/**
- * Every resolved secret is a vault read plus an access-audit row, and a GitHub
- * App connection stores seven of them. Webhook steps read only the keys they
- * use; the App private key and OAuth client secret stay sealed on this path.
- */
-export function githubCredentialRefsFor(
-  refs: ToolCredentialSecretRef[],
-  keys: readonly string[],
-): ToolCredentialSecretRef[] {
-  return refs.filter((ref) =>
-    keys.includes(ref.configPath.replace(/^credentials\./, "")),
-  );
-}
-
-const GITHUB_APP_TOKEN_KEYS = ["appId", "privateKey", "installationId"] as const;
-
 export function redactedGitHubWebhookIngressPayload(
   payload: GitHubWebhookIngressPayload,
 ): RedactedGitHubWebhookIngressPayload {
@@ -274,31 +258,34 @@ export function createGitHubWebhookIngress(db: Db, options: GitHubWebhookIngress
         return { kind: "ignored" };
       }
       const context = runtimeContextForRecord(record);
-      const credentialsSuperseded = async () => {
+      let credentials: Record<string, string>;
+      try {
+        credentials = await resolveCredentialRefs(
+          record.endpoint,
+          record.credentialSecretRefs,
+        );
+      } catch (error) {
         const latest = await endpointRecord(endpoint.id);
-        return (
-          latest !== null &&
+        if (
+          latest &&
           (runtimeGeneration(latest.endpoint.setup) !== context.generation ||
             credentialFingerprint(latest.credentialSecretRefs) !==
               context.credentialFingerprint)
-        );
-      };
-      const resolveKeys = (keys: readonly string[]) =>
-        resolveCredentialRefs(
-          record.endpoint,
-          githubCredentialRefsFor(record.credentialSecretRefs, keys),
-        );
-      let credentials: Record<string, string>;
-      try {
-        // Unsigned or forged traffic must not decrypt anything beyond the
-        // signing secret.
-        credentials = await resolveKeys(["webhookSecret"]);
-      } catch (error) {
-        if (await credentialsSuperseded()) continue;
+        ) {
+          continue;
+        }
         throw error;
       }
       if (!githubSignatureIsValid(body, signature, credentials.webhookSecret)) {
-        if (await credentialsSuperseded()) continue;
+        const latest = await endpointRecord(endpoint.id);
+        if (
+          latest &&
+          (runtimeGeneration(latest.endpoint.setup) !== context.generation ||
+            credentialFingerprint(latest.credentialSecretRefs) !==
+              context.credentialFingerprint)
+        ) {
+          continue;
+        }
         return { kind: "invalid_signature" };
       }
 
@@ -309,21 +296,6 @@ export function createGitHubWebhookIngress(db: Db, options: GitHubWebhookIngress
           ? (parsedPayload as { installation?: { id?: unknown } }).installation
               ?.id
           : undefined;
-      try {
-        // A signed event that names an installation is checked against the
-        // bound one; the App id scopes the recovery-receipt denial below.
-        Object.assign(
-          credentials,
-          await resolveKeys(
-            incomingInstallationId !== undefined && eventType !== "installation"
-              ? ["installationId", "appId"]
-              : ["appId"],
-          ),
-        );
-      } catch (error) {
-        if (await credentialsSuperseded()) continue;
-        throw error;
-      }
       if (
         incomingInstallationId !== undefined &&
         String(incomingInstallationId) !== credentials.installationId &&
@@ -845,11 +817,9 @@ export function createGitHubWebhookIngress(db: Db, options: GitHubWebhookIngress
     }
 
     try {
-      // Replay re-signs the retained body for internal authentication. Only a
-      // recovered delivery also needs an App token to recheck its source.
       const credentials = await resolveCredentialRefs(
         record.endpoint,
-        githubCredentialRefsFor(record.credentialSecretRefs, ["webhookSecret"]),
+        record.credentialSecretRefs,
       );
       const recovery = await db
         .select({ payload: chatActions.payload, status: chatActions.status })
@@ -870,13 +840,7 @@ export function createGitHubWebhookIngress(db: Db, options: GitHubWebhookIngress
         (recovery.status === "cancelled" ||
           !(await githubRecoverySourceIsCurrent(
             (recovery.payload as GitHubRecoveryReceipt).original,
-            await resolveCredentialRefs(
-              record.endpoint,
-              githubCredentialRefsFor(
-                record.credentialSecretRefs,
-                GITHUB_APP_TOKEN_KEYS,
-              ),
-            ),
+            credentials,
           )))
       ) {
         await settleGitHubWebhookIngress(action.id, {
@@ -1253,10 +1217,7 @@ export function createGitHubWebhookIngress(db: Db, options: GitHubWebhookIngress
       }
       const credentials = await resolveCredentialRefs(
         record.endpoint,
-        githubCredentialRefsFor(
-          record.credentialSecretRefs,
-          GITHUB_APP_TOKEN_KEYS,
-        ),
+        record.credentialSecretRefs,
       );
       if (credentials.appId !== window.appId || !credentials.installationId)
         return;

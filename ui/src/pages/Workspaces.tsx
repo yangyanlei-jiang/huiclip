@@ -1,3 +1,5 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useMemo } from "react";
 import { Link, Navigate } from "@/lib/router";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
@@ -78,6 +80,7 @@ function buildProjectWorkspaceGroups(items: WorkspaceOverviewItem[]): ProjectWor
 }
 
 export function Workspaces() {
+  const { t: pageText } = usePageTranslation("interface");
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const experimentalSettingsQuery = useQuery({
@@ -99,7 +102,7 @@ export function Workspaces() {
   const overviewView = useQueryView(overviewQuery);
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Workspaces" }]);
+    setBreadcrumbs([{ label: interfaceNotice("interface:workspaces_205b45") }]);
   }, [setBreadcrumbs]);
 
   const overviewPages = overviewQuery.data?.pages ?? [];
@@ -138,18 +141,18 @@ export function Workspaces() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold">Workspaces</h2>
+        <h2 className="text-xl font-bold">{pageText("workspaces_205b45")}</h2>
       </div>
 
       <SummarySlotCard
         companyId={selectedCompanyId}
         scopeKind="workspaces_overview"
-        title="Workspace summary"
-        description="Summarizer tracks workspace activity, live services, and follow-up needs across projects."
+        title={pageText("workspaceSummary_734e41")}
+        description={pageText("summarizerTracksWorkspaceActivityLiveServicesAndFollow_2c5491")}
       />
 
       {groups.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No workspace activity yet.</p>
+        <p className="text-sm text-muted-foreground">{pageText("noWorkspaceActivityYet_9a09c7")}</p>
       ) : (
         <div className="space-y-8">
           {groups.map((group) => (
@@ -164,7 +167,7 @@ export function Workspaces() {
                   </Link> : <h3 className="text-base font-semibold">{group.projectName}</h3>}
                 </div>
                 <span className="text-xs text-muted-foreground">
-                  {group.summaries.length} workspace{group.summaries.length === 1 ? "" : "s"}
+                  {group.summaries.length}{" " + pageText("workspace_a279fe")}{group.summaries.length === 1 ? "" : "s"}
                 </span>
               </div>
               <ProjectWorkspacesContent
@@ -177,9 +180,7 @@ export function Workspaces() {
           ))}
           {overviewQuery.hasNextPage ? (
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
-              <p className="text-sm text-muted-foreground">
-                Showing {overviewItems.length} of {totalWorkspaceCount} workspaces.
-              </p>
+              <p className="text-sm text-muted-foreground">{pageText("showing_163d81") + " "}{overviewItems.length}{" " + pageText("of_de04fa") + " "}{totalWorkspaceCount}{" " + pageText("workspaces_76abb1")}</p>
               <Button
                 type="button"
                 variant="outline"
@@ -187,7 +188,7 @@ export function Workspaces() {
                 onClick={() => void overviewQuery.fetchNextPage()}
                 disabled={overviewQuery.isFetchingNextPage}
               >
-                {overviewQuery.isFetchingNextPage ? "Loading..." : "Load more"}
+                {overviewQuery.isFetchingNextPage ? pageText("loading_b04ba4") : pageText("loadMore_dfe60c")}
               </Button>
             </div>
           ) : null}

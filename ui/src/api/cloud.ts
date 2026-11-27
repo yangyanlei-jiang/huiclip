@@ -17,8 +17,6 @@ export type CloudStackSummary = {
 
 export type CloudStackPortfolio = {
   stacks: CloudStackSummary[];
-  /** Scoped to the calling tenant. Older deployments omit the shortcut. */
-  slackFeedback?: { href: string } | { message: string };
 };
 
 export const cloudApi = {

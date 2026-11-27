@@ -1,3 +1,6 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FlaskConical, Loader2, Plus } from "lucide-react";
@@ -21,6 +24,8 @@ import { StatusCardDetailDrawer } from "./StatusCardDetailDrawer";
 import type { StatusCardView } from "./types";
 
 export function StatusCards() {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const navigate = useNavigate();
@@ -35,7 +40,7 @@ export function StatusCards() {
   const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Status" }]);
+    setBreadcrumbs([{ label: interfaceNotice("interface:status_bae7d5") }]);
   }, [setBreadcrumbs]);
 
   const activeQuery = useQuery({
@@ -119,31 +124,25 @@ export function StatusCards() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <h1 className="text-xl font-bold">Status</h1>
+          <h1 className="text-xl font-bold">{translateUi("interfaceCopy.status")}</h1>
           <Badge variant="secondary" className="gap-1">
-            <FlaskConical className="h-3 w-3" />
-            Experimental
-          </Badge>
+            <FlaskConical className="h-3 w-3" />{pageText("experimental_b718f8")}</Badge>
         </div>
         <div className="flex items-center gap-4">
           {showCostMeter ? (
-            <span className="text-xs text-muted-foreground">
-              Today: {formatTokens(todayTotals.tokens)} · ~{formatCents(todayTotals.cents)}
+            <span className="text-xs text-muted-foreground">{pageText("today_f200b2") + " "}{formatTokens(todayTotals.tokens)} · ~{formatCents(todayTotals.cents)}
             </span>
           ) : null}
           <Button onClick={() => setCreateOpen(true)} disabled={!selectedCompanyId}>
-            <Plus className="h-4 w-4" />
-            New card
-          </Button>
+            <Plus className="h-4 w-4" />{pageText("newCard_cf9c15")}</Button>
         </div>
       </div>
 
-      {actionError ? <InlineBanner tone="warning" title="Heads up">{actionError}</InlineBanner> : null}
+      {actionError ? <InlineBanner tone="warning" title={pageText("headsUp_edf31e")}>{actionError}</InlineBanner> : null}
 
       {activeView.kind === "loading" || activeView.kind === "reconnecting" ? (
         <div className="flex items-center gap-2 py-12 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" /> Loading cards…
-        </div>
+          <Loader2 className="h-4 w-4 animate-spin" />{" " + pageText("loadingCards_0ffec1")}</div>
       ) : activeView.kind === "error" ? (
         <QueryErrorState
           error={activeView.error}
@@ -154,8 +153,8 @@ export function StatusCards() {
       ) : activeCards.length === 0 ? (
         <EmptyState
           icon={FlaskConical}
-          title="No status cards yet"
-          message="Create a card to keep a living summary of the issues you care about."
+          title={pageText("noStatusCardsYet_db8aa7")}
+          message={pageText("createACardToKeepALivingSummary_21d1ac")}
           action={selectedCompanyId ? "New card" : undefined}
           onAction={() => setCreateOpen(true)}
         />
@@ -186,7 +185,7 @@ export function StatusCards() {
             onClick={() => setShowArchived((prev) => !prev)}
             className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
           >
-            {showArchived ? "Hide archived" : `Show archived (${archivedCards.length})`}
+            {showArchived ? pageText("hideArchived_1e23e8") : `Show archived (${archivedCards.length})`}
           </button>
           {showArchived
             ? archivedCards.map((card) => (

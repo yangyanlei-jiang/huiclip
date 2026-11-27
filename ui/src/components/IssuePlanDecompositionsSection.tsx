@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { Agent, AcceptedPlanDecompositionSummary } from "@paperclipai/shared";
@@ -14,19 +15,16 @@ interface IssuePlanDecompositionsSectionProps {
 }
 
 function StatusBadge({ status }: { status: AcceptedPlanDecompositionSummary["status"] }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (status === "completed") {
     return (
       <span className="inline-flex items-center gap-1 rounded-sm border border-emerald-500/50 bg-emerald-500/10 px-2 py-0.5 text-(length:--text-micro) font-medium text-emerald-900 dark:text-emerald-100">
-        <CheckCircle2 className="h-3 w-3" />
-        Completed
-      </span>
+        <CheckCircle2 className="h-3 w-3" />{pageText("completed_1798b3")}</span>
     );
   }
   return (
     <span className="inline-flex items-center gap-1 rounded-sm border border-amber-500/50 bg-amber-500/10 px-2 py-0.5 text-(length:--text-micro) font-medium text-amber-900 dark:text-amber-100">
-      <Loader2 className="h-3 w-3 animate-spin" />
-      In flight
-    </span>
+      <Loader2 className="h-3 w-3 animate-spin" />{pageText("inFlight_58b6dc")}</span>
   );
 }
 
@@ -35,6 +33,7 @@ export function IssuePlanDecompositionsSection({
   issueIdentifier,
   agentMap,
 }: IssuePlanDecompositionsSectionProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const { data: decompositions } = useQuery({
     queryKey: queryKeys.issues.acceptedPlanDecompositions(issueId),
     queryFn: () => issuesApi.listAcceptedPlanDecompositions(issueId),
@@ -46,9 +45,9 @@ export function IssuePlanDecompositionsSection({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-sm font-medium text-muted-foreground">Plan decomposition</h3>
+        <h3 className="text-sm font-medium text-muted-foreground">{pageText("planDecomposition_a1e630")}</h3>
         <span className="text-(length:--text-micro) text-muted-foreground/80">
-          {items.length === 1 ? "1 accepted plan revision" : `${items.length} accepted plan revisions`}
+          {items.length === 1 ? pageText("1AcceptedPlanRevision_6b11f2") : `${items.length} accepted plan revisions`}
         </span>
       </div>
 
@@ -90,42 +89,36 @@ export function IssuePlanDecompositionsSection({
             >
               <div className="flex flex-wrap items-center gap-2">
                 <StatusBadge status={record.status} />
-                <span className="text-xs text-muted-foreground">
-                  Plan {revisionLabel}
+                <span className="text-xs text-muted-foreground">{pageText("plan_ae2f98") + " "}{revisionLabel}
                 </span>
                 <span className="text-xs text-muted-foreground/70">·</span>
                 <span className="inline-flex items-center gap-1 text-xs text-foreground">
                   <GitBranch className="h-3 w-3 text-muted-foreground" />
-                  {created} of {requested} child {requested === 1 ? "task" : "tasks"} created
-                </span>
+                  {created}{" " + pageText("of_de04fa") + " "}{requested}{" " + pageText("child_0e9306") + " "}{requested === 1 ? pageText("task_7fbb72") : pageText("tasks_55d872")}{" " + pageText("created_21c508")}</span>
                 {record.status === "completed" && requested > 0 ? (
                   <span
                     className="inline-flex items-center gap-1 rounded-sm border border-sky-500/40 bg-sky-500/10 px-1.5 py-0.5 text-(length:--text-nano) font-medium text-sky-900 dark:text-sky-100"
-                    title="Repeat attempts with this fingerprint reuse this record instead of creating new children"
+                    title={pageText("repeatAttemptsWithThisFingerprintReuseThisRecord_f3262a")}
                   >
-                    <Repeat className="h-3 w-3" />
-                    Idempotent claim
-                  </span>
+                    <Repeat className="h-3 w-3" />{pageText("idempotentClaim_651d3a")}</span>
                 ) : null}
               </div>
 
               <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-(length:--text-micro) text-muted-foreground">
-                {ownerName ? <span>Owner: {ownerName}</span> : null}
+                {ownerName ? <span>{pageText("owner_719379") + " "}{ownerName}</span> : null}
                 {startedAt ? (
-                  <span title={formatDateTime(startedAt)}>Started {relativeTime(startedAt)}</span>
+                  <span title={formatDateTime(startedAt)}>{pageText("started_faa9e7") + " "}{relativeTime(startedAt)}</span>
                 ) : null}
                 {completedAt ? (
-                  <span title={formatDateTime(completedAt)}>Completed {relativeTime(completedAt)}</span>
+                  <span title={formatDateTime(completedAt)}>{pageText("completed_1798b3") + " "}{relativeTime(completedAt)}</span>
                 ) : updatedAt ? (
-                  <span title={formatDateTime(updatedAt)}>Updated {relativeTime(updatedAt)}</span>
+                  <span title={formatDateTime(updatedAt)}>{pageText("updated_f2f857") + " "}{relativeTime(updatedAt)}</span>
                 ) : null}
                 {issueIdentifier ? (
                   <Link
                     to={`/issues/${issueIdentifier}#document-plan`}
                     className="underline-offset-2 hover:underline"
-                  >
-                    Plan document
-                  </Link>
+                  >{pageText("planDocument_996c4b")}</Link>
                 ) : null}
               </div>
 

@@ -24,11 +24,8 @@ export function bundledRemoteProviderPackManifestPath(moduleUrl = import.meta.ur
   throw new Error("Bundled remote provider pack requires a package file layout");
 }
 
-/**
- * The packaged Linux daemon and its release digest, after the release-manifest
- * checks. Callers verify the bytes; the server streams that digest.
- */
-export function bundledRemoteRunnerRelease(moduleUrl = import.meta.url, target: BundledRemoteProviderPackTarget = "linux-x64"): { binary: string; sha256: string } {
+/** A macOS controller must authorize Linux bytes for its Daytona daemon. */
+export function bundledRemoteRunnerBinary(moduleUrl = import.meta.url, target: BundledRemoteProviderPackTarget = "linux-x64"): string {
   const manifestPath = bundledRemoteProviderPackManifestPath(moduleUrl, target);
   const outputRoot = resolve(dirname(manifestPath), "../..");
   const release = JSON.parse(readFileSync(join(outputRoot, "bin/release-manifest.json"), "utf8"));
@@ -37,17 +34,10 @@ export function bundledRemoteRunnerRelease(moduleUrl = import.meta.url, target: 
       artifact?.path !== `${target}/paperclip-runnerd` || !/^sha256:[a-f0-9]{64}$/.test(artifact.sha256 ?? "")) {
     throw new Error("runner_remote_artifact_unavailable: install the complete Paperclip release with its Linux daemon");
   }
-  return { binary: join(outputRoot, "bin", artifact.path), sha256: artifact.sha256 };
-}
-
-export const BUNDLED_REMOTE_RUNNER_IDENTITY_MISMATCH = "runner_remote_artifact_incompatible: packaged Linux daemon identity mismatch";
-
-/** A macOS controller must authorize Linux bytes for its Daytona daemon. */
-export function bundledRemoteRunnerBinary(moduleUrl = import.meta.url, target: BundledRemoteProviderPackTarget = "linux-x64"): string {
-  const { binary, sha256 } = bundledRemoteRunnerRelease(moduleUrl, target);
+  const binary = join(outputRoot, "bin", artifact.path);
   const bytes = readFileSync(binary);
-  if (runnerBinaryTarget(bytes) !== target || "sha256:" + createHash("sha256").update(bytes).digest("hex") !== sha256) {
-    throw new Error(BUNDLED_REMOTE_RUNNER_IDENTITY_MISMATCH);
+  if (runnerBinaryTarget(bytes) !== target || "sha256:" + createHash("sha256").update(bytes).digest("hex") !== artifact.sha256) {
+    throw new Error("runner_remote_artifact_incompatible: packaged Linux daemon identity mismatch");
   }
   return binary;
 }

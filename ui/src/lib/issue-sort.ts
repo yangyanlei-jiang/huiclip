@@ -19,8 +19,6 @@ export type IssueSortContext = {
   assignee?: string | null;
   project?: string | null;
   parentTask?: string | null;
-  /** The time a list shows as "Last updated"; defaults to the stored `updatedAt`. */
-  updated?: Date | string | null;
 };
 
 const collator = new Intl.Collator(undefined, { numeric: true, sensitivity: "base" });
@@ -37,7 +35,7 @@ export function sortIssues(issues: readonly Issue[], sort: IssueSort, context: (
       case "priority": return issuePriorityOrder.indexOf(issue.priority);
       case "title": return issue.title;
       case "created": return new Date(issue.createdAt).getTime();
-      case "updated": return new Date(context(issue).updated ?? issue.updatedAt).getTime();
+      case "updated": return new Date(issue.updatedAt).getTime();
       case "taskId": return issue.identifier;
       case "createdBy": return context(issue).createdBy;
       case "assignee": return context(issue).assignee;
@@ -47,14 +45,12 @@ export function sortIssues(issues: readonly Issue[], sort: IssueSort, context: (
       case "worktree": return issue.currentExecutionWorkspace?.branchName;
     }
   };
-  // Read each task's value once; context lookups can scan agent lists.
-  const keyed = issues.map(issue => ({ issue, key: value(issue) }));
-  return keyed.sort((a, b) => {
-    const left = a.key, right = b.key;
+  return [...issues].sort((a, b) => {
+    const left = value(a), right = value(b);
     const missing = (value: string | number | null | undefined) => value == null || value === "" || (typeof value === "number" && !Number.isFinite(value));
     const leftMissing = missing(left), rightMissing = missing(right);
     if (leftMissing || rightMissing) return Number(leftMissing) - Number(rightMissing);
     const result = typeof left === "number" && typeof right === "number" ? left - right : collator.compare(String(left), String(right));
     return sort.sortDir === "asc" ? result : -result;
-  }).map(entry => entry.issue);
+  });
 }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="zh-CN" class="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -49,14 +49,14 @@
     <section id="paperclip-startup" role="status" aria-live="polite" hidden>
       <div class="mx-auto flex min-h-screen max-w-2xl flex-col justify-center space-y-4 px-4 py-10">
         <div>
-          <h1 id="paperclip-startup-title" class="text-lg font-semibold">Paperclip couldn’t start</h1>
+          <h1 id="paperclip-startup-title" class="text-lg font-semibold">Paperclip 无法启动</h1>
           <p id="paperclip-startup-message" class="mt-1 text-sm text-muted-foreground">
-            Part of the app failed to load. Check your connection and reload this page to try again.
+            有些内容未能加载。请检查网络连接，然后重新加载页面。
           </p>
         </div>
         <div>
           <button id="paperclip-startup-reload" type="button" class="inline-flex items-center rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium shadow-sm hover:bg-accent hover:text-accent-foreground">
-            Reload page
+            重新加载页面
           </button>
         </div>
       </div>
@@ -70,6 +70,31 @@
         const title = document.getElementById("paperclip-startup-title");
         const message = document.getElementById("paperclip-startup-message");
         const reload = document.getElementById("paperclip-startup-reload");
+        let locale = "zh-CN";
+        try {
+          const selected = window.localStorage.getItem("paperclip.ui.locale");
+          // The full locale catalog belongs to the application. Preserve a
+          // well-formed preference while booting without importing any modules.
+          if (selected && /^[a-z]{2,3}(?:-[A-Z]{2})?$/.test(selected)) locale = selected;
+        } catch {
+          // The fallback still works when browser storage is unavailable.
+        }
+        document.documentElement.lang = locale;
+        notice.lang = locale === "zh-CN" ? "zh-CN" : "en";
+        const copy = locale !== "zh-CN" ? {
+          errorTitle: "Paperclip couldn’t start",
+          errorMessage: "Part of the app failed to load. Check your connection and reload this page to try again.",
+          slowTitle: "Paperclip is taking longer to load",
+          slowMessage: "You can keep waiting, or reload this page to try again.",
+          reload: "Reload page",
+        } : {
+          errorTitle: "Paperclip 无法启动",
+          errorMessage: "有些内容未能加载。请检查网络连接，然后重新加载页面。",
+          slowTitle: "Paperclip 加载时间比预期更长",
+          slowMessage: "你可以继续等待，或重新加载页面再试一次。",
+          reload: "重新加载页面",
+        };
+        reload.textContent = copy.reload;
         const retry = () => window.location.reload();
         const finished = () => root.childElementCount > 0;
         const cleanup = () => {
@@ -82,8 +107,8 @@
         };
         const onFailure = () => {
           if (finished()) return cleanup();
-          title.textContent = "Paperclip couldn’t start";
-          message.textContent = "Part of the app failed to load. Check your connection and reload this page to try again.";
+          title.textContent = copy.errorTitle;
+          message.textContent = copy.errorMessage;
           notice.hidden = false;
         };
         const onError = (event) => {
@@ -97,8 +122,8 @@
         const timer = setTimeout(() => {
           if (finished()) return cleanup();
           if (!notice.hidden) return;
-          title.textContent = "Paperclip is taking longer to load";
-          message.textContent = "You can keep waiting, or reload this page to try again.";
+          title.textContent = copy.slowTitle;
+          message.textContent = copy.slowMessage;
           notice.hidden = false;
         }, 30_000);
         window.addEventListener("error", onError, true);

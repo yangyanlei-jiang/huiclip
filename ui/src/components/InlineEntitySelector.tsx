@@ -1,3 +1,4 @@
+import { t as plainText } from "@/i18n";
 import { forwardRef, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Check, Search, X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -20,8 +21,6 @@ interface InlineEntitySelectorProps {
   noneAtTop?: boolean;
   /** Keep the no-selection action after the project choices. */
   noneAtEnd?: boolean;
-  /** Leave out the no-selection action, for a value that can be changed but not cleared. */
-  hideNone?: boolean;
   searchPlaceholder: string;
   emptyMessage: string;
   onChange: (id: string) => void;
@@ -78,7 +77,6 @@ export const InlineEntitySelector = forwardRef<HTMLButtonElement, InlineEntitySe
       noneLabel,
       noneAtTop = false,
       noneAtEnd = false,
-      hideNone = false,
       searchPlaceholder,
       emptyMessage,
       onChange,
@@ -110,12 +108,11 @@ export const InlineEntitySelector = forwardRef<HTMLButtonElement, InlineEntitySe
     const isPointerDownRef = useRef(false);
 
     const allOptions = useMemo<InlineEntityOption[]>(() => {
-      if (hideNone) return orderItemsBySelectedAndRecent([...options], value, recentOptionIds);
       const baseOptions = [{ id: "", label: noneLabel, searchText: noneLabel }, ...options];
       const ordered = orderItemsBySelectedAndRecent(baseOptions, value, recentOptionIds);
       if (noneAtTop) return [baseOptions[0]!, ...ordered.filter((option) => option.id)];
       return noneAtEnd ? [...ordered.filter((option) => option.id), baseOptions[0]!] : ordered;
-    }, [hideNone, noneAtEnd, noneAtTop, noneLabel, options, recentOptionIds, value]);
+    }, [noneAtEnd, noneAtTop, noneLabel, options, recentOptionIds, value]);
 
     const filteredOptions = useMemo(() => {
       const term = query.trim().toLowerCase();
@@ -227,7 +224,7 @@ export const InlineEntitySelector = forwardRef<HTMLButtonElement, InlineEntitySe
             <button
               type="button"
               className="inline-flex size-9 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
-              aria-label="Close selector"
+              aria-label={plainText("interface:closeSelector_3e8c63")}
               onClick={() => {
                 shouldPreventCloseAutoFocusRef.current = true;
                 setOpen(false);

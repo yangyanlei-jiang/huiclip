@@ -63,7 +63,9 @@ function createMemoryReaperStore(): AdapterAuthReaperStore & {
       return [...rows.values()].filter((row) => row.status === "cleanup_pending");
     },
     async listLeaseReferences() {
-      return [...rows.values()].flatMap(row => row.providerLeaseId ? [{ sessionId: row.id, environmentId: row.environmentId, providerLeaseId: row.providerLeaseId }] : []);
+      return [...rows.values()]
+        .map((row) => row.providerLeaseId)
+        .filter((value): value is string => value != null);
     },
     async setStatus(input) {
       const row = rows.get(input.sessionId);
@@ -130,7 +132,7 @@ describe("device login reaper", () => {
 
     const result = await reaper.sweep();
 
-    expect(deleteCalls).toEqual([{ sessionId: seeded.id, environmentId, providerLeaseId: "lease-1" }]);
+    expect(deleteCalls).toEqual([{ environmentId, providerLeaseId: "lease-1" }]);
     expect(result.expiredTimedOut).toBe(1);
     const row = await store.get(seeded.id);
     expect(row?.status).toBe("timed_out");
@@ -194,7 +196,7 @@ describe("device login reaper", () => {
     const result = await reaper.sweep();
 
     // The stale claim is reclaimed: the reaper deletes the sandbox and times out.
-    expect(deleteCalls).toEqual([{ sessionId: seeded.id, environmentId, providerLeaseId: "lease-1" }]);
+    expect(deleteCalls).toEqual([{ environmentId, providerLeaseId: "lease-1" }]);
     expect(result.expiredTimedOut).toBe(1);
     expect((await store.get(seeded.id))?.status).toBe("timed_out");
   });
@@ -261,7 +263,7 @@ describe("device login reaper", () => {
     const environmentId = randomUUID();
     // A live session references its own lease. The reaper never deletes it.
     store.seed({
-      id: "linked-session",
+      id: randomUUID(),
       environmentId,
       status: "waiting_for_user",
       providerLeaseId: "linked-1",
@@ -278,7 +280,7 @@ describe("device login reaper", () => {
     const result = await reaper.sweep();
 
     // Only the orphan lease is deleted; the referenced lease is untouched.
-    expect(deleteCalls).toEqual([{ sessionId: "orphan-session", environmentId, providerLeaseId: "orphan-1" }]);
+    expect(deleteCalls).toEqual([{ environmentId, providerLeaseId: "orphan-1" }]);
     expect(result.orphanLeasesDeleted).toBe(1);
   });
 

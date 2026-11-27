@@ -1,3 +1,4 @@
+import { t as plainText } from "@/i18n";
 import { describeError } from "@/api/errors";
 import { Component, Suspense, type ErrorInfo, type ReactNode } from "react";
 import { useLocation, useNavigate } from "@/lib/router";
@@ -82,21 +83,15 @@ class RouteErrorBoundaryInner extends Component<RouteErrorBoundaryInnerProps, Ro
     return (
       <div className="mx-auto max-w-2xl space-y-4 px-4 py-10">
         <div>
-          <h1 className="text-lg font-semibold">This page hit an error</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Something went wrong while rendering this page. You can go back and try again, or reload.
-          </p>
+          <h1 className="text-lg font-semibold">{plainText("interface:thisPageHitAnError_63282d")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{plainText("interface:somethingWentWrongWhileRenderingThisPageYou_a9eaf5")}</p>
         </div>
         <pre className="overflow-auto rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive whitespace-pre-wrap">
           {describeError(error).body}{/* // query-error-ok: error boundary; crash diagnostics, not a query read */}
         </pre>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={this.props.onReset}>
-            Go back
-          </Button>
-          <Button size="sm" onClick={() => window.location.reload()}>
-            Reload page
-          </Button>
+          <Button variant="outline" size="sm" onClick={this.props.onReset}>{plainText("interface:goBack_e84712")}</Button>
+          <Button size="sm" onClick={() => window.location.reload()}>{plainText("interface:reloadPage_37614e")}</Button>
         </div>
       </div>
     );

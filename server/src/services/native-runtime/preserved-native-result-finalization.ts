@@ -1,5 +1,4 @@
 import { and, eq, gte, inArray, ne, or, sql } from "drizzle-orm";
-import { nativeEffectiveRunTerminalStateSql } from "./native-accepted-outcome.js";
 import { completionContracts, heartbeatRuns, issueRecoveryActions, issues, nativeRunFinalizations,
   nativeRunResults, type Db } from "@paperclipai/db";
 import { z } from "zod";
@@ -64,7 +63,7 @@ export async function readPreservedNativeResultFinalization(db: Db, binding: {
       disposition: sql<string>`${nativeRunResults.resultJson}#>>'{result,reportedWorkDisposition}'`,
       continuation: sql<string>`${nativeRunResults.resultJson}#>>'{result,continuation,kind}'`,
       terminalDisposition: sql<string>`${nativeRunResults.resultJson}#>>'{terminal,reportedWorkDisposition}'`,
-      terminalState: nativeEffectiveRunTerminalStateSql(nativeRunResults.resultJson) },
+      terminalState: sql<string>`${nativeRunResults.resultJson}#>>'{terminal,runTerminalState}'` },
     contract: { id: completionContracts.id, sha256: completionContracts.canonicalSha256 },
     actionId: issueRecoveryActions.id,
     evidence: sql<Record<string, unknown>>`jsonb_build_object('runId', ${issueRecoveryActions.evidence}->'runId',

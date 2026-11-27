@@ -1,3 +1,5 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { fastResponsesApi } from "@/api/fast-responses";
 import { DecisionHistoryTable } from "@/components/decision-models/DecisionHistory";
@@ -12,6 +14,8 @@ export function FastResponseHistory({
   from?: string | null;
   to?: string | null;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const { enabled } = useFastResponsesEnabled();
   const query = useQuery({
     queryKey: ["fast-response-history", companyId, from, to],
@@ -28,17 +32,13 @@ export function FastResponseHistory({
   });
   if (query.isPending)
     return (
-      <p className="text-sm text-muted-foreground">Loading fast responses…</p>
+      <p className="text-sm text-muted-foreground">{pageText("loadingFastResponses_d97dce")}</p>
     );
   if (query.error)
     return (
       <div role="alert">
-        <p className="text-sm text-destructive">
-          Could not load fast responses.
-        </p>
-        <Button variant="outline" onClick={() => void query.refetch()}>
-          Try again
-        </Button>
+        <p className="text-sm text-destructive">{pageText("couldNotLoadFastResponses_0a528b")}</p>
+        <Button variant="outline" onClick={() => void query.refetch()}>{translateUi("interfaceCopy.tryAgain")}</Button>
       </div>
     );
   return <DecisionHistoryTable entries={query.data ?? []} fastResponse fastResponsesEnabled={enabled} />;

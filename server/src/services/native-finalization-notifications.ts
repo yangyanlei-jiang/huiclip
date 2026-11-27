@@ -12,12 +12,11 @@ import { notifyNativeStatusReassessment } from "./native-status-reassessment-not
 import { notifyNativeReviewResponse } from "./native-review-response-notifications.js";
 import { notifyNativeResponsePresentation } from "./native-response-presentation-notifications.js";
 import { DELIVERY_QUEUES, notifyDeliveryWork } from "./delivery-work-notifications.js";
-import { notifyQueuedRunDispatch } from "./run-dispatch-notifications.js";
 
 export type NativeFinalizationWorkScope = { companyId: string; runId?: string; issueId?: string };
 
 export async function notifyNativeFinalizationWork(transaction: object, scope: NativeFinalizationWorkScope) {
-  if (!scope.issueId && !scope.runId) await notifyAttentionRetentionWork(transaction, { companyId: scope.companyId });
+  await notifyAttentionRetentionWork(transaction, { companyId: scope.companyId });
   if (scope.issueId || scope.runId) {
     await notifyLiveRunRecovery(transaction, scope);
     await notifyNativeEnvironmentSettlement(transaction, scope);
@@ -32,7 +31,6 @@ export async function notifyNativeFinalizationWork(transaction: object, scope: N
     await notifyNativeResponsePresentation(transaction, scope);
     await notifyNativeReviewResponse(transaction, scope);
   }
-  await notifyQueuedRunDispatch(transaction, { companyId: scope.companyId });
   await notifyDeliveryWork(transaction, DELIVERY_QUEUES.nativePendingEffects,
     JSON.stringify({ companyId: scope.companyId, runId: scope.runId }));
 }

@@ -1,3 +1,5 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo } from "react";
 import {
   humanizeConnectionDisplayName,
@@ -11,7 +13,6 @@ import { cn } from "@/lib/utils";
 import { timeAgo } from "@/lib/timeAgo";
 import { appTabHref } from "../app-tabs";
 import type { ActivityPanelProps } from "./types";
-import { googleAccessRetrySummary } from "../../../features/connections/googleAccessRemoval";
 
 export function ActivityPanel(props: ActivityPanelProps) {
   return <RecentActivity {...props} />;
@@ -39,6 +40,8 @@ function RecentActivity({
   appName,
   userLabelById,
 }: ActivityPanelProps) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const nameById = useMemo(() => new Map(agents.map((a) => [a.id, a.name])), [agents]);
 
   const rows = useMemo<TimelineRow[]>(() => {
@@ -77,7 +80,7 @@ function RecentActivity({
   return (
     <section className="space-y-5">
       <div>
-        <h2 className="text-lg font-semibold text-foreground">Recent activity</h2>
+        <h2 className="text-lg font-semibold text-foreground">{translateUi("interfaceCopy.recentActivity")}</h2>
       </div>
       {loading ? (
         <div className="space-y-2 py-4">
@@ -85,7 +88,7 @@ function RecentActivity({
           <Skeleton className="h-4 w-2/3" />
         </div>
       ) : rows.length === 0 ? (
-        <p className="py-5 text-sm text-muted-foreground">No activity yet.</p>
+        <p className="py-5 text-sm text-muted-foreground">{translateUi("interfaceCopy.noActivityYet")}</p>
       ) : (
         <ul className="divide-y divide-border">
           {rows.map((row) => (
@@ -95,8 +98,7 @@ function RecentActivity({
                 <span className="block text-foreground">{row.primary}</span>
                 <span className="block truncate text-xs text-muted-foreground">
                   {row.issue ? (
-                    <>
-                      while working on{" "}
+                    <>{pageText("whileWorkingOn_40c4aa")}{" "}
                       <Link
                         to={`/issues/${row.issue.identifier}`}
                         className="font-medium text-muted-foreground hover:text-foreground hover:underline"
@@ -230,9 +232,6 @@ function humanizeLifecycleEvent(
       const count = numberFrom(event.details?.count);
       return `${count} new ${count === 1 ? "action" : "actions"} need review`;
     }
-    case "google_access_ended":
-    case "google_access_not_ended":
-      return googleAccessRetrySummary(event.type, event.details);
     default:
       return `${who} updated this app`;
   }
@@ -278,6 +277,5 @@ function dotColor(event: ToolCallEvent): string {
 function lifecycleDotColor(event: ToolConnectionLifecycleEvent): string {
   if (event.type === "disconnected") return "bg-red-400";
   if (event.type === "app_paused" || event.type === "actions_quarantined") return "bg-amber-400";
-  if (event.type === "google_access_not_ended" && event.details?.result !== "other_connections_remain") return "bg-amber-400";
   return "bg-emerald-400";
 }

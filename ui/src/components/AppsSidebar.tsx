@@ -1,29 +1,35 @@
+import { optionLabel } from "@/i18n/option-label";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useLocation } from "@/lib/router";
 import { ChatDetailSidebar } from "./chat/ChatDetailSidebar";
 import { ChatSetupSidebar } from "./chat/ChatSetupNavigation";
-import { Store } from "lucide-react";
+import { Store, ShieldQuestion } from "lucide-react";
 import { DEVELOPER_TABS, advancedTabHref, isExperimentalToolTab } from "@/pages/tools/tool-tabs";
 import { useSmokeLabEnabled } from "@/hooks/useSmokeLabEnabled";
+import { useReviewCount } from "@/pages/apps/useReviewCount";
 import { SidebarNavItem } from "./SidebarNavItem";
 import { contextualSidebarStyles } from "./contextual-sidebar-styles";
 
-/** Developer tabs that are switched on for this instance; Gateways and Profiles stay hidden until they ship. */
-export function useAppsDeveloperTabs() {
+/**
+ * Secondary sidebar for the Apps area.
+ *
+ * Connectors combines discovery, account management, and connection health.
+ * Review keeps governed actions waiting on the user's approval. Advanced
+ * developer surfaces remain hidden unless one is explicitly enabled.
+ */
+export function AppsSidebar() {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
+  const { pathname } = useLocation();
+  const reviewCount = useReviewCount();
   const { enabled: smokeLabEnabled } = useSmokeLabEnabled();
-  return DEVELOPER_TABS.filter((tab) => {
+  const developerTabs = DEVELOPER_TABS.filter((tab) => {
+    // Temporarily hide Gateways and Profiles until they are ready to ship.
+    // Keep their tab definitions and routes intact so we can bring them back later.
     if (tab.key === "gateways" || tab.key === "profiles") return false;
     return !isExperimentalToolTab(tab.key) || smokeLabEnabled;
   });
-}
-
-/**
- * Secondary sidebar for the parts of the Apps area that still need one: chat
- * setup and detail, and the developer pages. The Plugins marketplace and
- * Review have no rail; their page headers link to each other.
- */
-export function AppsSidebar() {
-  const { pathname } = useLocation();
-  const developerTabs = useAppsDeveloperTabs();
 
   if (pathname.endsWith("/apps/chat/connect")) return <ChatSetupSidebar />;
   const chatDetail = pathname.match(/\/apps\/chat\/([^/]+)(?:\/(?:settings|access|conversations|activity)|\/reviews(?:\/[^/]+)?)?\/?$/);
@@ -32,33 +38,37 @@ export function AppsSidebar() {
   return (
     <aside className="w-full h-full min-h-0 border-r border-border bg-background flex flex-col">
       <nav
-        aria-label="Plugins"
+        aria-label={pageText("connectors_4b1e95")}
         data-slot="contextual-sidebar-nav"
         className={contextualSidebarStyles.nav}
       >
         <div data-slot="contextual-sidebar-group" className={contextualSidebarStyles.group}>
-          <SidebarNavItem to="/apps" label="All plugins" icon={Store} end />
+          <SidebarNavItem to="/apps" label={pageText("browse_2f3b5c")} icon={Store} end />
+          <SidebarNavItem
+            to="/apps/review"
+            label={translateUi("interfaceCopy.review")}
+            icon={ShieldQuestion}
+            badge={reviewCount > 0 ? reviewCount : undefined}
+            badgeTone="warning"
+            badgeLabel="waiting for your OK"
+          />
         </div>
         {developerTabs.length > 0 ? (
           <div data-slot="contextual-sidebar-section" className={contextualSidebarStyles.section}>
             <div
               data-slot="contextual-sidebar-section-label"
               className={contextualSidebarStyles.sectionLabel}
-            >
-              Developer
-            </div>
+            >{pageText("developer_7e08eb")}</div>
             <p
               data-slot="contextual-sidebar-section-description"
               className={contextualSidebarStyles.sectionDescription}
-            >
-              Advanced setup for developers.
-            </p>
+            >{pageText("advancedSetupForDevelopers_3cfd7a")}</p>
             <div data-slot="contextual-sidebar-group" className={contextualSidebarStyles.group}>
               {developerTabs.map((tab) => (
                 <SidebarNavItem
                   key={tab.key}
                   to={advancedTabHref(tab.key)}
-                  label={tab.label}
+                  label={optionLabel(tab.label)}
                   icon={tab.icon}
                   end
                 />

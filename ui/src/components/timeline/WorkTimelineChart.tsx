@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { agentAvatarUrl } from "@/lib/agent-avatar-url";
 import { resolveAgentAppearance } from "@paperclipai/shared";
 /**
@@ -779,6 +780,7 @@ function TimeAxisOverlay({
 }
 
 function Tooltip({ tooltip, now }: { tooltip: TooltipState; now: number }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { bar } = tooltip;
   const startMs = new Date(bar.span.start).getTime();
   const endMs = bar.span.end ? new Date(bar.span.end).getTime() : now;
@@ -792,13 +794,12 @@ function Tooltip({ tooltip, now }: { tooltip: TooltipState; now: number }) {
     >
       <div className="text-(length:--text-compact) font-medium text-foreground">{truncate(title)}</div>
       <div className="mt-0.5 text-muted-foreground">
-        {fmtClock(startMs)}–{bar.span.end ? fmtClock(endMs) : "now"} · {formatDuration(startMs, endMs)} ·{" "}
+        {fmtClock(startMs)}–{bar.span.end ? fmtClock(endMs) : pageText("now_c9bc84")} · {formatDuration(startMs, endMs)} ·{" "}
         <span className="font-medium text-foreground">{bar.span.status}</span>
       </div>
       {bar.kickoff && (
-        <div className="text-muted-foreground">
-          kicked off by: {(bar.kickoff as WorkTimelineActor).name}
-          {bar.span.retryOfRunId ? " · retry" : ""}
+        <div className="text-muted-foreground">{pageText("kickedOffBy_5ca96c") + " "}{(bar.kickoff as WorkTimelineActor).name}
+          {bar.span.retryOfRunId ? " " + pageText("retry_52e592") : ""}
         </div>
       )}
       {tooltip.connectorHint && (

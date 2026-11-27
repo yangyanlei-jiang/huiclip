@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type { CostByAgent } from "@paperclipai/shared";
 import { Badge } from "./ui/badge";
 
@@ -6,6 +7,7 @@ export function CostEstimateLabel({
   eventCount,
   estimatedEventCount,
 }: Partial<Pick<CostByAgent, "eventCount" | "estimatedEventCount">>) {
+  const { t: pageText } = usePageTranslation("interface");
   if (!estimatedEventCount) return null;
   const allEstimated = estimatedEventCount === eventCount;
   return (
@@ -14,7 +16,7 @@ export function CostEstimateLabel({
       className="font-normal text-muted-foreground"
       title={`${estimatedEventCount} estimated ${estimatedEventCount === 1 ? "charge" : "charges"}. Calculated from token usage and published rates; provider bills may differ.`}
     >
-      {allEstimated ? "Estimated" : "Partially estimated"}
+      {allEstimated ? pageText("estimated_ae64c7") : pageText("partiallyEstimated_24affb")}
     </Badge>
   );
 }

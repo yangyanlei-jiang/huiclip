@@ -1,3 +1,4 @@
+import { t as plainText, useTranslation } from "@/i18n";
 import { FILE_DROP_TARGET_ATTRIBUTE } from "../lib/file-drop-target";
 import { AgentAvatar } from "./AgentAvatar";
 import {
@@ -60,10 +61,9 @@ import {
 import { unescapeBlockquoteMarkers } from "../lib/blockquote-markdown";
 import { unescapeIntrawordUnderscores } from "../lib/underscore-markdown";
 import { unescapeEqualsSigns } from "../lib/equals-markdown";
-import { preserveTrailingMarkdownSpaces, restoreTrailingMarkdownSpaces } from "../lib/trailing-markdown-spaces";
+import { restoreTrailingMarkdownSpaces } from "../lib/trailing-markdown-spaces";
 import { pasteNormalizationPlugin } from "../lib/paste-normalization";
 import { cn } from "../lib/utils";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 import { useEditorAutocomplete, type SlashCommandOption } from "../context/EditorAutocompleteContext";
 
 /* ---- Mention types ---- */
@@ -182,7 +182,7 @@ function prepareMarkdownForEditor(value: string): string {
   // HTML construct would throw and drop the whole component to raw source.
   // Escaping those brackets keeps ordinary prose — `<name>`, `</close>` — in the
   // rich editor. `toStoredMarkdown` reverses it on the way out.
-  return preserveTrailingMarkdownSpaces(escapeUnsupportedAngleBrackets(withImages));
+  return escapeUnsupportedAngleBrackets(withImages);
 }
 
 /**
@@ -592,16 +592,16 @@ function mentionMarkdown(option: MentionOption): string {
     // Insert a compact issue link (e.g. `[PAP-123](/issues/PAP-123)`). The chip
     // decorator recognizes this href as an `issue` mention and renders it as a
     // task chip; MarkdownBody linkifies the same href on display.
-    return `[${option.issueIdentifier}](${buildIssueReferenceHref(option.issueIdentifier)})`;
+    return `[${option.issueIdentifier}](${buildIssueReferenceHref(option.issueIdentifier)}) `;
   }
   if (option.kind === "project" && option.projectId) {
-    return `[@${option.name}](${buildProjectMentionHref(option.projectId, option.projectColor ?? null)})`;
+    return `[@${option.name}](${buildProjectMentionHref(option.projectId, option.projectColor ?? null)}) `;
   }
   if (option.kind === "user" && option.userId) {
-    return `[@${option.name}](${buildUserMentionHref(option.userId)})`;
+    return `[@${option.name}](${buildUserMentionHref(option.userId)}) `;
   }
   const agentId = option.agentId ?? option.id.replace(/^agent:/, "");
-  return `[@${option.name}](${buildAgentMentionHref(agentId, option.agentIcon ?? null)})`;
+  return `[@${option.name}](${buildAgentMentionHref(agentId, option.agentIcon ?? null)}) `;
 }
 
 function slashCommandLabel(option: SlashCommandOption): string {
@@ -611,18 +611,20 @@ function slashCommandLabel(option: SlashCommandOption): string {
 }
 
 function slashCommandMarkdown(option: SlashCommandOption): string {
-  if (option.kind === "action") return `/${option.command}`;
+  // MDXEditor trims an ordinary trailing space when setMarkdown re-imports the
+  // command. Keep a non-breaking separator in the document so subsequent text
+  // is inserted as the command argument instead of being glued to the token.
+  if (option.kind === "action") return `/${option.command}\u00a0`;
   if (option.kind === "routine") {
-    return `[${slashCommandLabel(option)}](${buildRoutineMentionHref(option.routineId)})`;
+    return `[${slashCommandLabel(option)}](${buildRoutineMentionHref(option.routineId)}) `;
   }
-  return `[/${option.slug}](${option.href})`;
+  return `[/${option.slug}](${option.href}) `;
 }
 
 function autocompleteMarkdown(option: AutocompleteOption): string {
-  const token = option.kind === "skill" || option.kind === "routine" || option.kind === "action"
+  return option.kind === "skill" || option.kind === "routine" || option.kind === "action"
     ? slashCommandMarkdown(option)
     : mentionMarkdown(option);
-  return `${token} `;
 }
 
 export function shouldAcceptAutocompleteKey(
@@ -706,20 +708,17 @@ export function placeCaretAfterMentionAnchor(target: HTMLAnchorElement): boolean
 
   const range = document.createRange();
   const nextSibling = target.nextSibling;
-  const nextText = nextSibling instanceof HTMLElement && nextSibling.hasAttribute("data-lexical-text")
-    ? nextSibling.firstChild
-    : nextSibling;
-  if (nextText?.nodeType === Node.TEXT_NODE) {
-    const text = nextText.textContent ?? "";
-    if (text.startsWith(" ") || text.startsWith("\u00a0")) {
-      range.setStart(nextText, 1);
+  if (nextSibling?.nodeType === Node.TEXT_NODE) {
+    const text = nextSibling.textContent ?? "";
+    if (text.startsWith(" ")) {
+      range.setStart(nextSibling, 1);
       range.collapse(true);
       selection.removeAllRanges();
       selection.addRange(range);
       return true;
     }
     if (text.length > 0) {
-      range.setStart(nextText, 0);
+      range.setStart(nextSibling, 0);
       range.collapse(true);
       selection.removeAllRanges();
       selection.addRange(range);
@@ -738,9 +737,7 @@ export function placeCaretAtEditableEnd(target: HTMLElement): boolean {
   const selection = window.getSelection();
   if (!selection) return false;
   const range = document.createRange();
-  let end: Node = target;
-  while (end.lastChild) end = end.lastChild;
-  range.selectNodeContents(end.nodeType === Node.TEXT_NODE ? end : target);
+  range.selectNodeContents(target);
   range.collapse(false);
   selection.removeAllRanges();
   selection.addRange(range);
@@ -749,12 +746,11 @@ export function placeCaretAtEditableEnd(target: HTMLElement): boolean {
 
 /** Replace the active autocomplete token in the markdown string with the selected token. */
 function applyMention(markdown: string, state: MentionState, option: AutocompleteOption): string {
-  const source = restoreTrailingMarkdownSpaces(markdown);
   const search = `${state.marker}${state.query}`;
   const replacement = autocompleteMarkdown(option);
-  const idx = source.lastIndexOf(search);
+  const idx = markdown.lastIndexOf(search);
   if (idx === -1) return markdown;
-  return source.slice(0, idx) + replacement + source.slice(idx + search.length);
+  return markdown.slice(0, idx) + replacement + markdown.slice(idx + search.length);
 }
 
 /* ---- Component ---- */
@@ -777,6 +773,7 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
   submitKey = "mod-enter",
   readOnly = false,
 }: MarkdownEditorProps, forwardedRef) {
+  const { t: editorText } = useTranslation("interface");
   const editorValue = useMemo(() => prepareMarkdownForEditor(value), [value]);
   function isSubmitShortcut(event: KeyboardEvent<HTMLElement>): boolean {
     return !readOnly
@@ -1237,7 +1234,7 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
       if (!state) return false;
       if (option.kind === "action" && option.disabled) return false;
       const current = latestValueRef.current;
-      const next = preserveTrailingMarkdownSpaces(applyMention(current, state, option));
+      const next = applyMention(current, state, option);
       if (next !== current) {
         latestValueRef.current = next;
         echoIgnoreMarkdownRef.current = next;
@@ -1379,8 +1376,7 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
         )}
       >
         <div className="flex items-start justify-between gap-3 px-3 pt-2 text-xs text-muted-foreground">
-          <p>
-            Rich editor unavailable for this markdown. Showing raw source instead.{" "}
+          <p>{plainText("interface:richEditorUnavailableForThisMarkdownShowingRaw_23d762")}{" "}
             <span data-testid="markdown-editor-fallback-code" className="font-mono">
               {richEditorError.code}
             </span>
@@ -1395,9 +1391,7 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
               initialChildOnChangeRef.current = true;
               setRichEditorError(null);
             }}
-          >
-            Retry rich editor
-          </button>
+          >{plainText("interface:retryRichEditor_44e0eb")}</button>
         </div>
         <textarea
           ref={fallbackTextareaRef}
@@ -1433,8 +1427,6 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
       {...(canDropFile && !readOnly ? { [FILE_DROP_TARGET_ATTRIBUTE]: "" } : {})}
       className={cn(
         "relative paperclip-mdxeditor-scope",
-        // Customer content: masked in session replay, skipped by autocapture.
-        ANALYTICS_MASK_CLASS,
         bordered ? "rounded-md border border-border bg-transparent" : "bg-transparent",
         isDragOver && "ring-1 ring-primary/60 bg-accent/20",
         className,
@@ -1578,10 +1570,7 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
           translation={(key, fallback, interpolations = {}) =>
             key === "contentArea.editableMarkdown" && ariaLabel
               ? ariaLabel
-              : Object.entries(interpolations).reduce(
-                  (text, [name, value]) => text.replaceAll(`{{${name}}}`, String(value)),
-                  fallback,
-                )
+              : editorText(`editor_${key.replaceAll(".", "_")}`, { ...interpolations, defaultValue: fallback })
           }
           markdown={editorValue}
           iconComponentFor={editorIconFor}
@@ -1748,29 +1737,19 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
                   </span>
                 )}
                 {option.kind === "issue" && (
-                  <span className="ml-auto text-(length:--text-nano) uppercase tracking-wide text-muted-foreground">
-                    Task
-                  </span>
+                  <span className="ml-auto text-(length:--text-nano) uppercase tracking-wide text-muted-foreground">{plainText("interface:task_7bb0dd")}</span>
                 )}
                 {option.kind === "project" && option.projectId && (
-                  <span className="ml-auto text-(length:--text-nano) uppercase tracking-wide text-muted-foreground">
-                    Project
-                  </span>
+                  <span className="ml-auto text-(length:--text-nano) uppercase tracking-wide text-muted-foreground">{plainText("interface:project_f6f4da")}</span>
                 )}
                 {option.kind === "user" && (
-                  <span className="ml-auto text-(length:--text-nano) uppercase tracking-wide text-muted-foreground">
-                    User
-                  </span>
+                  <span className="ml-auto text-(length:--text-nano) uppercase tracking-wide text-muted-foreground">{plainText("interface:user_9f8a23")}</span>
                 )}
                 {option.kind === "skill" && (
-                  <span className="ml-auto shrink-0 text-(length:--text-nano) uppercase tracking-wide text-popover-foreground/70">
-                    Skill
-                  </span>
+                  <span className="ml-auto shrink-0 text-(length:--text-nano) uppercase tracking-wide text-popover-foreground/70">{plainText("interface:skill_ec9f63")}</span>
                 )}
                 {option.kind === "routine" && (
-                  <span className="ml-auto text-(length:--text-nano) uppercase tracking-wide text-muted-foreground">
-                    Routine
-                  </span>
+                  <span className="ml-auto text-(length:--text-nano) uppercase tracking-wide text-muted-foreground">{plainText("interface:routine_482273")}</span>
                 )}
                 {option.kind === "action" && (
                   <span className="ml-auto max-w-28 truncate text-(length:--text-nano) text-popover-foreground/70">
@@ -1789,9 +1768,7 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
             "pointer-events-none absolute inset-1 z-40 flex items-center justify-center rounded-md border border-dashed border-primary/80 bg-primary/10 text-xs font-medium text-primary",
             !bordered && "inset-0 rounded-sm",
           )}
-        >
-          Drop {onDropFile ? "file" : "image"} to upload
-        </div>
+        >{plainText("interface:drop_0a088b") + " "}{onDropFile ? plainText("interface:file_971c41") : plainText("interface:image_0e7629")}{" " + plainText("interface:toUpload_690c5a")}</div>
       )}
       {uploadError && (
         <p className="px-3 pb-2 text-xs text-destructive">{uploadError}</p>

@@ -1,3 +1,5 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Agent, DocumentAnnotationThreadWithComments } from "@paperclipai/shared";
 import { Button } from "@/components/ui/button";
@@ -27,13 +29,15 @@ export interface DocumentAnnotationPopoverProps {
 }
 
 export function DocumentAnnotationPopover(props: DocumentAnnotationPopoverProps) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const copyAnnotationLink = useCopyAnnotationLink();
   const cardRef = useRef<HTMLDivElement | null>(null);
   const composerRef = useRef<HTMLTextAreaElement | null>(null);
   const [composer, setComposer] = useState("");
   const [reply, setReply] = useState("");
   const target = useMemo(() => props.target, [props.target]);
-  const { createThread, addReply, updateStatus, toggleReaction, mutationError } = useDocumentAnnotationMutations({
+  const { createThread, addReply, updateStatus, mutationError } = useDocumentAnnotationMutations({
     target,
     baseRevisionId: props.baseRevisionId,
     baseRevisionNumber: props.baseRevisionNumber,
@@ -79,7 +83,7 @@ export function DocumentAnnotationPopover(props: DocumentAnnotationPopoverProps)
     <div
       ref={cardRef}
       role="dialog"
-      aria-label={props.pendingAnchor ? "Add annotation comment" : "Annotation thread"}
+      aria-label={props.pendingAnchor ? pageText("addAnnotationComment_6fc8ea") : pageText("annotationThread_7bbf34")}
       data-testid="document-annotation-popover"
       className="absolute z-(--z-20) w-80 max-w-full rounded-lg border border-border bg-popover text-popover-foreground shadow-xl"
       style={{ top, left }}
@@ -102,14 +106,14 @@ export function DocumentAnnotationPopover(props: DocumentAnnotationPopoverProps)
                 submitComposer();
               }
             }}
-            placeholder="Write a comment…"
+            placeholder={pageText("writeAComment_ee6540")}
             disabled={props.newCommentDisabled || createThread.isPending}
             className="resize-y text-sm"
           />
           <div className="mt-2 flex justify-end gap-2">
-            <Button type="button" size="sm" variant="ghost" onClick={props.onClose}>Cancel</Button>
+            <Button type="button" size="sm" variant="ghost" onClick={props.onClose}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button type="button" size="sm" disabled={!composer.trim() || createThread.isPending || props.newCommentDisabled || !props.baseRevisionId} onClick={submitComposer}>
-              {createThread.isPending ? "Posting…" : "Comment"}
+              {createThread.isPending ? pageText("posting_20c00d") : pageText("comment_153d7a")}
             </Button>
           </div>
         </div>
@@ -130,9 +134,6 @@ export function DocumentAnnotationPopover(props: DocumentAnnotationPopoverProps)
             onCopyLink={() => copyAnnotationLink(props.documentKey, props.thread!.id)}
             pendingReply={addReply.isPending}
             pendingStatus={updateStatus.isPending}
-            onToggleReaction={(commentId, reaction, present) =>
-              toggleReaction.mutate({ threadId: props.thread!.id, commentId, reaction, present })
-            }
             agentMap={props.agentMap}
             userProfileMap={props.userProfileMap}
           />

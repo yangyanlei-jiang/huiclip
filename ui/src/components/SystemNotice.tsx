@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useId, useState, type ReactNode } from "react";
 import {
   ChevronDown,
@@ -248,6 +249,7 @@ export function SystemNotice({
   timestamp,
   className,
 }: SystemNoticeProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const tokens = TONE_TOKENS[tone];
   const ToneIcon = tokens.icon;
   const [open, setOpen] = useState(detailsDefaultOpen);
@@ -326,7 +328,7 @@ export function SystemNotice({
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
             )}
           >
-            <span>{open ? "Hide details" : "Details"}</span>
+            <span>{open ? pageText("hideDetails_f8c248") : pageText("details_dc3dec")}</span>
             <ChevronDown
               className={cn(
                 "h-3.5 w-3.5 transition-transform duration-150",

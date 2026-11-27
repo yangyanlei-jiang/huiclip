@@ -50,8 +50,7 @@ export async function probeKimiExecutionTarget(apiKey: string, target: AdapterEx
       const runner = target.transport === "ssh" ? createSshCommandManagedRuntimeRunner({ spec: target.spec, defaultCwd: target.remoteCwd }) : target.runner;
       if (!runner) throw INSTALLATION_INVALID();
       const prepared = await prepareRemoteProviderPackOnTarget({ target, runner,
-        configuredProviderPackRoot: selected.configuredRoot, manifest: selected.manifest,
-        provider: { kind: "acpx", agent: "kimi" } });
+        configuredProviderPackRoot: selected.configuredRoot, manifest: selected.manifest });
       locations = [`'${prepared.root.replaceAll("'", "'\\''")}'`];
     } catch { throw INSTALLATION_INVALID(); }
   }

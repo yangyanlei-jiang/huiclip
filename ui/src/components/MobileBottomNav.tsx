@@ -1,3 +1,5 @@
+import { controlText } from "@/i18n/controls";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useCoordinatorWorkspaceEnabled } from "@/hooks/useCoordinatorWorkspaceEnabled";
 import { useMemo } from "react";
 import { useCoordinatorAttentionCount } from "@/hooks/useCoordinatorAttentionCount";
@@ -17,8 +19,6 @@ import { cn } from "../lib/utils";
 import { useInboxBadge } from "../hooks/useInboxBadge";
 import { useAgentChatEnabled } from "@/hooks/useAgentChatEnabled";
 import { useCombinedInboxTasksEnabled } from "@/hooks/useCombinedInboxTasksEnabled";
-import { useCompanyHomePath } from "@/hooks/useCompanyHomePath";
-import { useResponsibilitiesEnabled } from "@/hooks/useResponsibilitiesEnabled";
 import { Badge } from "@/components/ui/badge";
 
 interface MobileBottomNavProps {
@@ -43,6 +43,7 @@ interface MobileNavActionItem {
 type MobileNavItem = MobileNavLinkItem | MobileNavActionItem;
 
 export function MobileBottomNav({ visible }: MobileBottomNavProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const location = useLocation();
   const { selectedCompanyId } = useCompany();
   const { openNewIssue } = useDialogActions();
@@ -51,10 +52,6 @@ export function MobileBottomNav({ visible }: MobileBottomNavProps) {
   const inboxBadge = useInboxBadge(coordinatorWorkspaceEnabled ? null : selectedCompanyId);
   const { enabled: combinedInboxTasksEnabled } = useCombinedInboxTasksEnabled();
   const attentionCount = useCoordinatorAttentionCount(selectedCompanyId, coordinatorWorkspaceEnabled);
-  // Home is the company home (Responsibilities when that experiment is on).
-  // Coordinator has no Home tab; it gains one only while Responsibilities is home.
-  const { path: homePath } = useCompanyHomePath();
-  const { enabled: responsibilitiesHome } = useResponsibilitiesEnabled();
 
   // PAP-670: with both flags off the bar is the original Home · Tasks · + ·
   // Agents · Inbox. Agent Chat adds Chat in the second slot (Home · Chat · + ·
@@ -63,15 +60,12 @@ export function MobileBottomNav({ visible }: MobileBottomNavProps) {
   // tracks the live count, so the bar stays evenly divided in every mix.
   const items = useMemo<MobileNavItem[]>(
     () => coordinatorWorkspaceEnabled ? [
-      ...(responsibilitiesHome
-        ? [{ type: "link", to: homePath, label: "Home", icon: House } as MobileNavItem]
-        : []),
       { type: "link", to: "/chats", label: "Chat", icon: MessageCircle },
       { type: "link", to: "/issues", label: "Tasks", icon: CircleCheck },
       { type: "link", to: "/decisions", label: "Inbox", icon: Inbox, badge: attentionCount },
       { type: "action", label: "New task", icon: SquarePen, onClick: () => openNewIssue() },
     ] : !agentChatEnabled && !combinedInboxTasksEnabled ? [
-      { type: "link", to: homePath, label: "Home", icon: House },
+      { type: "link", to: "/dashboard", label: "Home", icon: House },
       { type: "link", to: "/issues", label: "Tasks", icon: CircleCheck },
       { type: "action", label: "New Task", icon: SquarePen, onClick: () => openNewIssue() },
       { type: "link", to: "/agents/all", label: "Agents", icon: Users },
@@ -83,7 +77,7 @@ export function MobileBottomNav({ visible }: MobileBottomNavProps) {
         badge: inboxBadge.inbox,
       },
     ] : [
-      { type: "link", to: homePath, label: "Home", icon: House },
+      { type: "link", to: "/dashboard", label: "Home", icon: House },
       ...(agentChatEnabled
         ? [{ type: "link", to: "/chats", label: "Chat", icon: MessageCircle } as MobileNavItem]
         : []),
@@ -100,7 +94,7 @@ export function MobileBottomNav({ visible }: MobileBottomNavProps) {
         ? [{ type: "link", to: "/inbox", label: "Inbox", icon: Inbox, badge: inboxBadge.inbox } as MobileNavItem]
         : []),
     ],
-    [openNewIssue, inboxBadge.inbox, agentChatEnabled, combinedInboxTasksEnabled, coordinatorWorkspaceEnabled, attentionCount, homePath, responsibilitiesHome],
+    [openNewIssue, inboxBadge.inbox, agentChatEnabled, combinedInboxTasksEnabled, coordinatorWorkspaceEnabled, attentionCount],
   );
 
   return (
@@ -110,7 +104,7 @@ export function MobileBottomNav({ visible }: MobileBottomNavProps) {
       )}
       data-visible={visible}
       inert={!visible}
-      aria-label="Mobile navigation"
+      aria-label={pageText("mobileNavigation_058f36")}
     >
       <div
         className="grid h-16 px-1"
@@ -133,7 +127,7 @@ export function MobileBottomNav({ visible }: MobileBottomNavProps) {
                 )}
               >
                 <Icon className="h-(--sz-18px) w-(--sz-18px)" />
-                <span className="truncate">{item.label}</span>
+                <span className="truncate">{controlText(item.label)}</span>
               </button>
             );
           }
@@ -163,7 +157,7 @@ export function MobileBottomNav({ visible }: MobileBottomNavProps) {
                       </Badge>
                     )}
                   </span>
-                  <span className="truncate">{item.label}</span>
+                  <span className="truncate">{controlText(item.label)}</span>
                 </>
               )}
             </NavLink>

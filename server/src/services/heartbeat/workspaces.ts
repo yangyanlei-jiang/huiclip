@@ -1,5 +1,4 @@
 import { retainCurrentWorkspaceSource } from "../workspace-source-lock.js";
-import { isGitMountBoundaryMessage } from "../git-mount-boundary-message.js";
 import { localWorkspaceSourcePaths } from "../execution-workspace-source-roots.js";
 import { effectiveProjectWorkspacePolicy } from "../project-workspace-provider.js";
 import { canonicalRepositoryRoot } from "../execution-workspace-source-roots.js";
@@ -16,7 +15,6 @@ import { sql } from "drizzle-orm";
 import { materializeIsolatedTaskDirectory } from "../isolated-task-directory.js";
 import { readConnectionFailure, type GitConnectionFailure } from "@paperclipai/adapter-utils/connection-failure";
 import { managedAiSessionFingerprintConfig } from "../ai-connection-runtime.js";
-import { paperclipRunnerSessionAdapterConfig, sessionAgentRuntimeConfig, sessionEnvironment } from "./session-fingerprint-inputs.js";
 import {
   PROJECT_REPOSITORIES_DIR,
   readGitWorkspaceSnapshot,
@@ -858,8 +856,7 @@ async function probeGitWorktreeBase(cwd: string) {
     // corruption and I/O failures must remain reportable in Sentry.
     const notRepository = failure.code === 128 && failure.signal == null &&
       typeof failure.stderr === "string" &&
-      (/^fatal: not a git repository \(or any of the parent directories\): \.git\r?\n?$/.test(failure.stderr) ||
-        isGitMountBoundaryMessage(failure.stderr)) &&
+      /^fatal: not a git repository \(or any of the parent directories\): \.git\r?\n?$/.test(failure.stderr) &&
       !process.env.GIT_DIR && !process.env.GIT_WORK_TREE && !process.env.GIT_COMMON_DIR &&
       await hasNoGitMetadataInWorkspaceAncestors(cwd);
     return { isCheckout: false, notRepository };
@@ -2128,7 +2125,7 @@ const PAPERCLIP_SESSION_METADATA_KEYS = new Set([
   SESSION_CONFIG_CATEGORY_FINGERPRINTS_KEY,
 ]);
 
-export const WORKSPACE_CONFIG_FINGERPRINT_METADATA_KEY = "configFingerprint";
+const WORKSPACE_CONFIG_FINGERPRINT_METADATA_KEY = "configFingerprint";
 
 const EFFECTIVE_RUN_SESSION_CONFIG_CATEGORIES = [
   "adapter",
@@ -2782,7 +2779,7 @@ async function resolveInstructionsConfigFingerprintMetadata(
   return metadata;
 }
 
-export function buildSessionConfigCategoryValues(input: {
+function buildSessionConfigCategoryValues(input: {
   adapterType: string;
   effectiveAdapterConfig: Record<string, unknown>;
   agentRuntimeConfig: unknown;
@@ -2797,7 +2794,6 @@ export function buildSessionConfigCategoryValues(input: {
   runtimeSkills: unknown;
   agentConfigRevision: unknown;
   agentIdentityKeyId?: string;
-  legacyComposition?: boolean;
 }) {
   const sanitizedSecretManifest = sanitizeSecretManifestForConfigFingerprint(
     input.secretManifest,
@@ -2820,21 +2816,18 @@ export function buildSessionConfigCategoryValues(input: {
   const issueSettings = { ...parseObject(workspaceConfig.issueSettings) };
   if (issueSettings.mode === workspaceConfig.requestedMode) delete issueSettings.mode;
   workspaceConfig.issueSettings = Object.keys(issueSettings).length ? issueSettings : null;
-  const legacy = input.legacyComposition === true;
   return {
     adapter: {
       adapterType: input.adapterType,
       ...(input.agentIdentityKeyId ? { agentIdentityKeyId: input.agentIdentityKeyId } : {}),
-      ...(legacy ? { agentConfigRevision: input.agentConfigRevision } : {}),
+      agentConfigRevision: input.agentConfigRevision,
     },
-    adapterConfig: legacy || input.adapterType !== "paperclip_runner"
-      ? input.effectiveAdapterConfig
-      : paperclipRunnerSessionAdapterConfig(input.effectiveAdapterConfig),
-    agentRuntimeConfig: legacy ? input.agentRuntimeConfig : sessionAgentRuntimeConfig(input.agentRuntimeConfig),
+    adapterConfig: input.effectiveAdapterConfig,
+    agentRuntimeConfig: input.agentRuntimeConfig,
     instructions: input.instructions,
     issueOverrides: input.issueOverrides,
     workspaceConfig,
-    environment: legacy ? input.environment : sessionEnvironment(input.environment),
+    environment: input.environment,
     envBindings: {
       environment: { env: input.environmentEnv },
       project: { env: input.projectEnv },
@@ -2862,7 +2855,6 @@ export async function buildEffectiveRunSessionConfigMetadata(input: {
   runtimeSkills: unknown;
   agentConfigRevision?: unknown;
   agentIdentityKeyId?: string;
-  legacyComposition?: boolean;
 }): Promise<EffectiveRunSessionConfigMetadata> {
   const secretManifest = input.secretManifest ?? [];
   const instructions = input.managedInstructions ? {
@@ -2908,7 +2900,6 @@ export async function buildEffectiveRunSessionConfigMetadata(input: {
     runtimeSkills: versionedSkills(input.runtimeSkills),
     agentConfigRevision: input.agentConfigRevision ?? null,
     agentIdentityKeyId: input.agentIdentityKeyId,
-    legacyComposition: input.legacyComposition,
   });
   const fingerprints = createEffectiveRunConfigFingerprints({
     session: categoryValues,
@@ -3034,7 +3025,6 @@ export function resolveExecutionWorkspaceConfigFreshness(input: {
   existingWorkspaceMetadata: Record<string, unknown> | null | undefined;
   inferredMetadata?: EffectiveRunWorkspaceConfigMetadata | null;
   nextMetadata: EffectiveRunWorkspaceConfigMetadata | null;
-  providerOwnedStorage?: boolean;
 }): ExecutionWorkspaceConfigFreshnessDecision {
   if (!input.hasExistingWorkspace) {
     return {
@@ -3139,10 +3129,8 @@ export function resolveExecutionWorkspaceConfigFreshness(input: {
     previous: previous.categoryFingerprints,
     next: input.nextMetadata.categoryFingerprints,
   });
-  const replacementRequired = changedCategories.some(
-    (category) =>
-      WORKSPACE_REPLACEMENT_CONFIG_CATEGORIES.has(category) &&
-      !(input.providerOwnedStorage && category === "environment"),
+  const replacementRequired = changedCategories.some((category) =>
+    WORKSPACE_REPLACEMENT_CONFIG_CATEGORIES.has(category),
   );
   const action: WorkspaceConfigFreshnessDecisionAction = replacementRequired
     ? "replace"

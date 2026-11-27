@@ -1,8 +1,14 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import englishInterface from "../../../i18n/interface/en.json";
 
 function source(relativePath: string) {
-  return readFileSync(new URL(relativePath, import.meta.url), "utf8");
+  const sourceText = readFileSync(new URL(relativePath, import.meta.url), "utf8");
+  // Check the English copy at its actual call site even when it lives in the locale catalog.
+  return sourceText.replace(/(?:pageText|interfaceNotice|plainText|interfaceMessage)\("(?:interface:)?([\w]+)"\)/g, (call, key: string) => {
+    const copy = englishInterface[key as keyof typeof englishInterface];
+    return copy === undefined ? call : JSON.stringify(copy);
+  });
 }
 
 describe("chat connector UI contract", () => {
@@ -184,9 +190,7 @@ describe("chat connector UI contract", () => {
     expect(setup).not.toContain("/setprivacy");
     expect(setup).toContain("/task@bot_username");
     expect(setup).toContain("registers its command menu automatically");
-    expect(setup).toContain(
-      "ordinary\n          mentions are not delivered to bots",
-    );
+    expect(setup).toMatch(/ordinary\s+mentions are not delivered to bots/);
     expect(setup).toContain("Create Azure Bot");
     expect(setup).toContain("Microsoft 365 work or school organization");
     expect(setup).toContain("teams.live.com");

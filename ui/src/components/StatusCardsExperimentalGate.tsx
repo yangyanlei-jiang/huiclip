@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { CompanyHomeRedirect } from "@/components/CompanyHomeRedirect";
+import { Navigate } from "@/lib/router";
 import { instanceSettingsApi } from "@/api/instanceSettings";
 import { queryKeys } from "@/lib/queryKeys";
 
@@ -12,7 +12,7 @@ export function StatusCardsExperimentalGate({ children }: { children: ReactNode 
 
   if (!isFetched) return null;
   if (experimentalSettings?.enableStatusCards !== true) {
-    return <CompanyHomeRedirect />;
+    return <Navigate to="/dashboard" replace />;
   }
   return <>{children}</>;
 }

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { cn } from "@/lib/utils";
 import type { LabArtifact } from "../../kit";
 
@@ -66,13 +67,13 @@ export function StateDot({ review, className }: { review: LabArtifact["review"];
  * artifacts — a panel section, a folder's pocket, an opened stack's caption.
  */
 export function ReviewTally({ count, className }: { count: number; className?: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (count <= 0) return null;
   return (
     <p data-tally className={cn("flex shrink-0 items-center gap-1.5 text-xs font-medium leading-4 text-foreground", className)}>
       <StateDot review="needs_review" />
       <span>
-        <span className="font-mono text-(length:--text-micro)">{count}</span> to review
-      </span>
+        <span className="font-mono text-(length:--text-micro)">{count}</span>{" " + pageText("toReview_cc9941")}</span>
     </p>
   );
 }

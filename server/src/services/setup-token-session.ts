@@ -37,7 +37,6 @@ import type { ConnectionManagementContext } from "./connection-management.js";
 import { randomBytes } from "node:crypto";
 import { and, eq, gt, inArray, isNotNull, isNull, lte, notInArray, or, sql } from "drizzle-orm";
 import type { Db } from "@paperclipai/db";
-import { environmentService } from "./environments.js";
 import { adapterAuthSessions } from "@paperclipai/db";
 import type { AgentAdapterType } from "@paperclipai/shared";
 
@@ -113,7 +112,6 @@ export const SETUP_TOKEN_CANCELLABLE_STATES: readonly SetupTokenSessionState[] =
  * per environment.
  */
 export interface SetupTokenSessionScope {
-  agentId?: string;
   managementContext?: ConnectionManagementContext;
   aiConnection?: import("@paperclipai/shared").AiConnectionLoginIntent;
   companyId: string;
@@ -257,7 +255,6 @@ export interface SetupTokenCleanupIdentity {
  * already consumed. The store persists no secret.
  */
 export interface SetupTokenCleanupStore {
-  getLoginAgentId?(leaseId: string, companyId: string): Promise<string | undefined>;
   record(record: SetupTokenCleanupRecord): Promise<void>;
   /**
    * Marks the state only when the full owner scope and the session id match. The
@@ -314,25 +311,10 @@ export interface SetupTokenCleanupStore {
 
 /** The counts one reaper sweep produced over the durable cleanup store. */
 export interface SetupTokenReapResult {
-  /** The reapable records cleared after releasing any lease they held. */
+  /** The reapable records whose lease released and whose row cleared. */
   released: number;
-  /** The reapable records whose cleanup failed. The row stays for a retry. */
+  /** The reapable records whose lease release failed. The row stays for a retry. */
   failed: number;
-}
-
-function releaseFailureLink(error: unknown): string {
-  const name = error instanceof Error && /^[A-Za-z][A-Za-z0-9_]{0,63}$/.test(error.name) ? error.name : "unknown error";
-  const code = error && typeof error === "object" && "code" in error ? (error as { code?: unknown }).code : undefined;
-  return typeof code === "string" && /^[A-Za-z0-9_.-]{1,64}$/.test(code) ? `${name} (${code})` : name;
-}
-
-function releaseFailureCause(error: unknown): string {
-  const links: string[] = [];
-  for (let current = error, depth = 0; current !== undefined && current !== null && depth < 4; depth++) {
-    links.push(releaseFailureLink(current));
-    current = current instanceof Error ? current.cause : undefined;
-  }
-  return links.join(" > ");
 }
 
 /**
@@ -357,9 +339,7 @@ export async function reapSetupTokenLeases(
   let failed = 0;
   for (const record of records) {
     try {
-      if (record.leaseId) {
-        await deps.leases.releaseById(record.leaseId);
-      }
+      await deps.leases.releaseById(record.leaseId);
       await deps.store.remove({
         sessionId: record.sessionId,
         companyId: record.companyId,
@@ -367,9 +347,9 @@ export async function reapSetupTokenLeases(
         adapterType: record.adapterType,
       });
       released += 1;
-    } catch (error) {
+    } catch {
       failed += 1;
-      log(`[paperclip] Setup-token reaper: a cleanup failed; it stays retryable. Cause: ${releaseFailureCause(error)}.`);
+      log("[paperclip] Setup-token reaper: a lease release failed; it stays retryable.");
     }
   }
   return { released, failed };
@@ -710,7 +690,6 @@ export interface SetupTokenPromptView {
  * response returns the login URL through the confidential transport guard.
  */
 export interface SetupTokenSessionDescriptor {
-  agentId?: string;
   aiConnection?: import("@paperclipai/shared").AiConnectionLoginIntent;
   sessionId: string;
   state: SetupTokenSessionState;
@@ -1145,7 +1124,6 @@ export class SetupTokenSessionService {
       sessionId: session.id,
       state: session.state,
       environmentId: session.scope.environmentId,
-      ...(session.scope.agentId ? { agentId: session.scope.agentId } : {}),
       deadline: session.deadline,
       loginUrl: session.loginUrl,
       ...(session.scope.aiConnection ? { aiConnection: session.scope.aiConnection } : {}),
@@ -1221,9 +1199,7 @@ export class SetupTokenSessionService {
     }
     const durable = await this.store.findActiveDurable(key, this.now());
     if (!durable) return null;
-    const agentId = await this.store.getLoginAgentId?.(durable.leaseId, key.companyId);
     return {
-      ...(agentId ? { agentId } : {}),
       sessionId: durable.sessionId,
       ...(durable.aiConnection ? { aiConnection: durable.aiConnection } : {}),
       state: durable.state,
@@ -1570,10 +1546,6 @@ export function createDbSetupTokenCleanupStore(db: Db): SetupTokenCleanupStore {
   const scopeMatch = setupTokenScopeMatch;
 
   return {
-    async getLoginAgentId(leaseId, companyId) {
-      const lease = await environmentService(db).getLeaseById(leaseId);
-      return lease?.companyId === companyId && lease.metadata?.purpose === "login" ? (typeof lease.metadata.agentId === "string" ? lease.metadata.agentId : undefined) : undefined;
-    },
     async record(record): Promise<void> {
       // The database generates `id`. The store fills `public_session_id` with the
       // service session id, which the service builds from a CSPRNG at start.

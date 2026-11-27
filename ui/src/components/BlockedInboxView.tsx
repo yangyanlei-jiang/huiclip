@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { AgentIdentity } from "@/components/AgentIdentity";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -8,7 +9,6 @@ import { issuesApi } from "../api/issues";
 import { queryKeys } from "../lib/queryKeys";
 import { cn } from "../lib/utils";
 import { applyIssueFilters, type IssueFilterState, type IssueFilterWorkspaceContext } from "../lib/issue-filters";
-import { useIssueUpdatedFilterNow } from "../hooks/useIssueUpdatedFilterNow";
 import { resolveInboxIssueBlockerAttention } from "../lib/inbox-live-descendants";
 import {
   blockedRowMatchesSearch,
@@ -29,8 +29,6 @@ import { StatusIcon } from "./StatusIcon";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { taskStatusIconProps } from "@/lib/task-status-presentation";
-
-const EMPTY_BLOCKED_ISSUES: Issue[] = [];
 
 interface BlockedInboxViewProps {
   companyId: string;
@@ -73,6 +71,7 @@ export function BlockedInboxView({
   showUpdatedColumn,
   presentation = "legacy",
 }: BlockedInboxViewProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const [collapsedVariants, setCollapsedVariants] = useState<Set<string>>(() => new Set());
 
   const blockedQuery = useQuery({
@@ -90,18 +89,16 @@ export function BlockedInboxView({
       }),
   });
   const {
-    data: issues,
+    data: issues = [] as Issue[],
     isLoading,
   } = blockedQuery;
-  const blockedIssues = issues ?? EMPTY_BLOCKED_ISSUES;
   const blockedView = useQueryView(blockedQuery);
 
-  const allRows = useMemo(() => buildBlockedInboxRows(blockedIssues), [blockedIssues]);
+  const allRows = useMemo(() => buildBlockedInboxRows(issues), [issues]);
   const filteredRows = useMemo(
     () => allRows.filter((row) => blockedRowMatchesSearch(row, searchQuery)),
     [allRows, searchQuery],
   );
-  const updatedFilterNow = useIssueUpdatedFilterNow(blockedIssues, issueFilters.updatedWithin);
   const issueFilteredRows = useMemo(() => {
     const visibleIssueIds = new Set(
       applyIssueFilters(
@@ -111,11 +108,10 @@ export function BlockedInboxView({
         false,
         liveIssueIds,
         workspaceFilterContext,
-        updatedFilterNow,
       ).map((issue) => issue.id),
     );
     return filteredRows.filter((row) => visibleIssueIds.has(row.issue.id));
-  }, [currentUserId, filteredRows, issueFilters, liveIssueIds, workspaceFilterContext, updatedFilterNow]);
+  }, [currentUserId, filteredRows, issueFilters, liveIssueIds, workspaceFilterContext]);
   const sortedRows = useMemo(() => sortBlockedInboxRows(issueFilteredRows, sortBy), [issueFilteredRows, sortBy]);
   const groups = useMemo(
     () => groupBlockedInboxRows(issueFilteredRows, sortBy),
@@ -170,9 +166,8 @@ export function BlockedInboxView({
         <div className="flex items-start gap-2">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
           <div className="flex-1 space-y-1">
-            <p className="text-sm font-medium">Couldn't load the Blocked tab.</p>
-            <p className="text-xs opacity-80">
-              Other Inbox tabs still work. {describeError(blockedView.error, { action: "load the Blocked tab" }).body}
+            <p className="text-sm font-medium">{pageText("couldnTLoadTheBlockedTab_da9c20")}</p>
+            <p className="text-xs opacity-80">{pageText("otherInboxTabsStillWork_2bf5ad") + " "}{describeError(blockedView.error, { action: "load the Blocked tab" }).body}
             </p>
           </div>
           <Button
@@ -183,7 +178,7 @@ export function BlockedInboxView({
             onClick={blockedView.retry}
             disabled={blockedView.isFetching}
           >
-            {blockedView.isFetching ? "Trying…" : "Try again"}
+            {blockedView.isFetching ? pageText("trying_b7e35a") : pageText("tryAgain_042c86")}
           </Button>
         </div>
       </div>
@@ -200,10 +195,8 @@ export function BlockedInboxView({
           <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
         </span>
         <div className="space-y-1">
-          <p className="text-sm font-medium text-foreground">No work is stopped.</p>
-          <p className="text-xs text-muted-foreground">
-            Tasks that need a decision, recovery, or external action will appear here.
-          </p>
+          <p className="text-sm font-medium text-foreground">{pageText("noWorkIsStopped_74bb52")}</p>
+          <p className="text-xs text-muted-foreground">{pageText("tasksThatNeedADecisionRecoveryOrExternal_91c253")}</p>
         </div>
       </Card>
     );
@@ -215,9 +208,7 @@ export function BlockedInboxView({
         <Card
           data-testid="blocked-inbox-no-search-results"
           className="block border-border/70 bg-card/40 px-4 py-6 text-center text-sm text-muted-foreground"
-        >
-          No stopped items match your search.
-        </Card>
+        >{pageText("noStoppedItemsMatchYourSearch_89937d")}</Card>
       </div>
     );
   }

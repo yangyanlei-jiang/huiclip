@@ -7,8 +7,6 @@ export type LeaseSpanName =
   | "lease.channel_cleanup"
   | "lease.start"
   | "lease.recover"
-  | "lease.wait_transition"
-  | "lease.force_stop"
   | "lease.verify"
   | "lease.workspace"
   | "lease.sentinel"
@@ -17,17 +15,12 @@ export type LeaseSpanName =
   | "lease.expiry"
   | "lease.cleanup";
 
-// A closed set: the settled states plus the transitions a start waits out.
-const LABELLED_STATES: ReadonlySet<string> = new Set([
-  "started", "stopped", "archived", "error",
-  "starting", "stopping", "restoring", "archiving", "resizing",
-]);
-
 /** Keep provider state useful without exporting a new SDK value as free text. */
 export function leaseStateAttributes(state: unknown): Record<string, string> {
   return {
     "paperclip.sandbox.startup.state":
-      typeof state === "string" && LABELLED_STATES.has(state) ? state : "other",
+      state === "started" || state === "stopped" || state === "archived" || state === "error"
+        ? state : "other",
   };
 }
 

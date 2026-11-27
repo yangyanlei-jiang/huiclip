@@ -21,9 +21,7 @@ export const companySecretProposals = pgTable(
     valueCiphertext: jsonb("value_ciphertext").$type<Record<string, unknown> | null>(),
     valueFingerprintSha256: text("value_fingerprint_sha256"),
     valueLength: integer("value_length"),
-    // Binding proposals require exactly one source reference (shape check), so
-    // they go with the secret they reference, like secretProposalId below.
-    secretId: uuid("secret_id").references(() => companySecrets.id, { onDelete: "cascade" }),
+    secretId: uuid("secret_id").references(() => companySecrets.id, { onDelete: "set null" }),
     secretProposalId: uuid("secret_proposal_id").references((): AnyPgColumn => companySecretProposals.id, { onDelete: "cascade" }),
     targetType: text("target_type"),
     targetId: uuid("target_id").references(() => agents.id, { onDelete: "cascade" }),

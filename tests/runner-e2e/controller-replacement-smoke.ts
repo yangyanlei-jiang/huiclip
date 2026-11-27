@@ -17,7 +17,6 @@ import { paperclipConfigSchema } from "../../packages/shared/src/config-schema.j
 import { configuredControllerOutage, validControllerOutageReceipt, type ControllerOutage } from "./controller-outage.js";
 import { runnerE2EServerControlPaths } from "./harness-env.js";
 import { reserveRunnerE2EServerPort } from "./ports.js";
-import { releaseInstance } from "./instance-retention.js";
 import { createRunnerE2ETemporaryRoot, prepareRunnerE2EServerConfig } from "./server-config.js";
 import { createRunnerE2EServerStopper } from "./server-stop.js";
 import { cleanupControllerSmokeDatabase } from "./controller-smoke-cleanup.js";
@@ -197,12 +196,7 @@ try {
   report.cleanupConfirmed = cleanupErrors.length === 0;
   if (cleanupErrors.length) { report.cleanupErrors = cleanupErrors; report.passed = false; }
   await new Promise<void>(resolve => log.end(resolve));
-  try {
-    await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`, { mode: 0o600 });
-  } finally {
-    await releaseInstance(temporaryRoot, { keep: false, stopFailed: !report.cleanupConfirmed, owner: "controller-replacement-smoke",
-      retain: entry => entry === path.basename(reportPath) || entry.endsWith(".log") }).catch(error => console.warn(`Temporary root cleanup failed at ${temporaryRoot}: ${String(error)}`));
-  }
+  await writeFile(reportPath, `${JSON.stringify(report, null, 2)}\n`, { mode: 0o600 });
   console.info(JSON.stringify({ passed: report.passed, evidence: reportPath, cleanupConfirmed: report.cleanupConfirmed }));
 }
 if (failure) throw failure;

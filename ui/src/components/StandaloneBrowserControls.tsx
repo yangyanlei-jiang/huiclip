@@ -1,3 +1,5 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { ExternalLink, RefreshCw, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -35,6 +37,8 @@ function ControlButton({
 }
 
 export function StandaloneBrowserControls({ mobile }: { mobile: boolean }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [chromeless, setChromeless] = useState(() =>
     typeof window !== "undefined" && mobile ? isChromelessDisplayMode() : false,
   );
@@ -88,13 +92,13 @@ export function StandaloneBrowserControls({ mobile }: { mobile: boolean }) {
 
   return (
     <div className="flex h-10 items-center justify-end gap-1 border-b border-border bg-background/95 px-3 backdrop-blur supports-[backdrop-filter]:bg-background/85">
-      <ControlButton label="Refresh" onClick={refresh}>
+      <ControlButton label={translateUi("interfaceCopy.refresh")} onClick={refresh}>
         <RefreshCw className="h-4 w-4" />
       </ControlButton>
-      <ControlButton label="Share" onClick={share}>
+      <ControlButton label={pageText("share_09ca55")} onClick={share}>
         <Share2 className="h-4 w-4" />
       </ControlButton>
-      <ControlButton label="Open in Browser" onClick={openInBrowser}>
+      <ControlButton label={pageText("openInBrowser_56c8f9")} onClick={openInBrowser}>
         <ExternalLink className="h-4 w-4" />
       </ControlButton>
     </div>

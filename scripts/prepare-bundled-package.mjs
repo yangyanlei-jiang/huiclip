@@ -417,7 +417,8 @@ export function prepareBundledPackage(sourceDir, destinationDir, { sourceRoot = 
       readFileSync(resolve(destinationDir, "node_modules/acpx/package.json"), "utf8"),
     );
     const expectedPatchMarker = {
-      "0.22.0": "requestExtension",
+      "0.12.0": "onAgentStderr",
+      "0.13.1": "spawnEnvironment",
     }[acpxPackage.version];
     const acpxRuntime = readFileSync(
       resolve(destinationDir, "node_modules/acpx/dist/runtime.js"),

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useTaskChatExpansion } from "./expansion-state";
 import { cn } from "@/lib/utils";
 import {
@@ -13,10 +14,6 @@ import { toolTaxonomy } from "./tool-taxonomy";
 import { useTaskChatShimmer } from "./TaskChatShimmer";
 import { TaskChatDiffCounts, TaskChatDiffView } from "./TaskChatDiffView";
 import { useTaskReferenceLabel, withTaskReference } from "./task-reference";
-import { ProviderToolIcon, useProviderToolIcons } from "@/components/ProviderToolIcon";
-import type { ToolCallProgressSnapshot } from "@paperclipai/shared";
-import { TaskChatToolProgress, useToolCallProgress } from "./tool-call-progress";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 const STATUS_ICON = {
   pending: { Icon: Loader2, spin: false, tone: "text-muted-foreground" },
@@ -51,18 +48,11 @@ function TaskReferenceToolTarget({ taskRefId, target }: { taskRefId: string; tar
  * inset). An edit row carries its `+N −M` counts and opens to a compact,
  * height-capped diff of that one edit.
  */
-export function TaskChatToolCard({ item, progress: givenProgress }: {
-  item: TaskChatToolItem;
-  /** A fixed progress state (stories); otherwise a running call's live progress is shown. */
-  progress?: ToolCallProgressSnapshot | null;
-}) {
+export function TaskChatToolCard({ item }: { item: TaskChatToolItem }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { Icon, spin, tone } = STATUS_ICON[item.status];
-  const liveProgress = useToolCallProgress(item);
-  // Progress belongs to the running call only; a finished row drops it.
-  const progress = item.status === "in_progress" ? (givenProgress !== undefined ? givenProgress : liveProgress) : null;
   const shimmer = useTaskChatShimmer(item.id);
   const RowIcon = toolTaxonomy(item.rawName ?? item.name).icon;
-  const providerIcons = useProviderToolIcons(item.rawName ?? item.name);
   const [showDetail, setShowDetail] = useTaskChatExpansion(item.id, false);
   const expandable = Boolean(item.target || item.detail || item.diff);
 
@@ -80,11 +70,10 @@ export function TaskChatToolCard({ item, progress: givenProgress }: {
         )}
       >
         <span className="flex w-5 shrink-0 items-center justify-center">
-          <ProviderToolIcon
-            icons={providerIcons}
-            fallback={RowIcon}
+          <RowIcon
             className="h-3.5 w-3.5 shrink-0"
-            testId="task-chat-tool-icon"
+            aria-hidden
+            data-testid="task-chat-tool-icon"
           />
         </span>
         <span data-conversation-tool-running={item.status === "in_progress" && shimmer ? "true" : undefined} className="flex min-w-0 flex-1 items-baseline gap-2 overflow-hidden">
@@ -134,13 +123,10 @@ export function TaskChatToolCard({ item, progress: givenProgress }: {
             aria-hidden
           />
           {item.status === "interrupted" ? (
-            <span className="text-(length:--text-micro) text-muted-foreground">
-              Interrupted
-            </span>
+            <span className="text-(length:--text-micro) text-muted-foreground">{pageText("interrupted_50be3a")}</span>
           ) : null}
         </span>
       </button>
-      {progress ? <TaskChatToolProgress progress={progress} /> : null}
       {item.target && showDetail && !item.diff?.lines?.length ? (
         <div
           className="task-chat-expanded-line-wrap ml-1.5 mt-0.5 min-w-0 max-w-full overflow-hidden border-l-2 border-border py-1 pl-2.5 font-mono text-(length:--text-micro) leading-relaxed text-muted-foreground"
@@ -150,7 +136,7 @@ export function TaskChatToolCard({ item, progress: givenProgress }: {
         </div>
       ) : null}
       {item.detail && showDetail ? (
-        <pre className={cn("task-chat-expanded-line-wrap ml-1.5 mt-0.5 min-w-0 max-w-full overflow-hidden whitespace-pre-wrap border-l-2 border-border py-1 pl-2.5 font-mono text-(length:--text-micro) leading-relaxed text-muted-foreground", ANALYTICS_MASK_CLASS)}>
+        <pre className="task-chat-expanded-line-wrap ml-1.5 mt-0.5 min-w-0 max-w-full overflow-hidden whitespace-pre-wrap border-l-2 border-border py-1 pl-2.5 font-mono text-(length:--text-micro) leading-relaxed text-muted-foreground">
           {item.detail}
         </pre>
       ) : null}
@@ -165,7 +151,7 @@ export function TaskChatToolCard({ item, progress: givenProgress }: {
             data-testid="task-chat-tool-change-summary"
           >
             <div className="flex min-w-0 items-center gap-2 text-(length:--text-micro) text-muted-foreground">
-              <span className="shrink-0">Changed</span>
+              <span className="shrink-0">{pageText("changed_cb5424")}</span>
               {item.diff.path ? (
                 <span className="min-w-0 truncate font-mono text-foreground">
                   {item.diff.path}

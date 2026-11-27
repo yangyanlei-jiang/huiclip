@@ -1,3 +1,6 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { goalsApi } from "../api/goals";
@@ -13,12 +16,14 @@ import { Button } from "@/components/ui/button";
 import { Target, Plus } from "lucide-react";
 
 export function Goals() {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const { selectedCompanyId } = useCompany();
   const { openNewGoal } = useDialogActions();
   const { setBreadcrumbs } = useBreadcrumbs();
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Goals" }]);
+    setBreadcrumbs([{ label: interfaceNotice("interface:goals_48d8c6") }]);
   }, [setBreadcrumbs]);
 
   const goalsQuery = useQuery({
@@ -30,7 +35,7 @@ export function Goals() {
   const goalsView = useQueryView(goalsQuery);
 
   if (!selectedCompanyId) {
-    return <EmptyState placement="upper" icon={Target} message="Select an organization to view goals." />;
+    return <EmptyState icon={Target} message={translateUi("interfaceCopy.selectAnOrganizationToViewGoals")} />;
   }
 
   // Keep a loaded list on screen through a failed refetch; only a real
@@ -53,10 +58,10 @@ export function Goals() {
   return (
     <div className="space-y-4">
       {goals && goals.length === 0 && (
-        <EmptyState placement="upper"
+        <EmptyState
           icon={Target}
-          message="No goals yet."
-          action="Add Goal"
+          message={translateUi("interfaceCopy.noGoalsYet")}
+          action={translateUi("interfaceCopy.addGoal")}
           onAction={() => openNewGoal()}
         />
       )}
@@ -65,9 +70,7 @@ export function Goals() {
         <>
           <div className="flex items-center justify-start">
             <Button size="sm" variant="outline" onClick={() => openNewGoal()}>
-              <Plus className="h-3.5 w-3.5 mr-1.5" />
-              New Goal
-            </Button>
+              <Plus className="h-3.5 w-3.5 mr-1.5" />{pageText("newGoal_5e8164")}</Button>
           </div>
           <GoalTree goals={goals} goalLink={(goal) => `/goals/${goal.id}`} />
         </>

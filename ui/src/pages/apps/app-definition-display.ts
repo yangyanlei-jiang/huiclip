@@ -1,7 +1,6 @@
-import { aiConnectionSourceSlug, type AppDefinition, type ToolApplication, type ToolConnection } from "@paperclipai/shared";
+import { bundledAppDescription } from "@/i18n/bundled-app-description";
+import { aiConnectionCatalogSlug, aiConnectionMetadataSchema, type AppDefinition, type ToolApplication, type ToolConnection } from "@paperclipai/shared";
 import { aiConnectionRouterSlug, aiConnectionRouterPluginKey } from "@paperclipai/shared";
-
-export { aiConnectionSourceSlug };
 
 export type AppGalleryDisplayEntry = AppDefinition & {
   key?: string;
@@ -19,7 +18,7 @@ export function appDefinitionName(entry: AppGalleryDisplayEntry | null | undefin
 }
 
 export function appDefinitionDescription(entry: AppGalleryDisplayEntry | null | undefined): string {
-  return entry?.description ?? entry?.tagline ?? "";
+  return bundledAppDescription(appDefinitionSlug(entry), entry?.description ?? entry?.tagline ?? "");
 }
 
 export function appDefinitionLogoUrl(entry: AppGalleryDisplayEntry | null | undefined): string | undefined {
@@ -52,8 +51,10 @@ export function appApplicationSourceSlug(application: ToolApplication | null | u
 
 export function appConnectionSourceSlug(connection: ToolConnection | null | undefined): string | null {
   if (!connection) return null;
-  const aiSource = aiConnectionSourceSlug(connection);
-  if (aiSource) return aiSource;
+  if (connection.connectionPurpose === "ai") {
+    const metadata = aiConnectionMetadataSchema.safeParse(connection.config?.ai);
+    if (metadata.success) return aiConnectionCatalogSlug(metadata.data.provider, metadata.data.routing);
+  }
   const router = aiConnectionRouterPluginKey(connection);
   if (router) return aiConnectionRouterSlug(router);
   const source = connection.config?.sourceTemplateKey ?? connection.transportConfig?.sourceTemplateKey;
@@ -66,7 +67,7 @@ export function galleryEntryFor(
   application: ToolApplication | undefined,
 ): AppGalleryDisplayEntry | null {
   if (!connection) return null;
-  const sourceSlug = aiConnectionSourceSlug(connection) ?? appApplicationSourceSlug(application) ?? appConnectionSourceSlug(connection);
+  const sourceSlug = appApplicationSourceSlug(application) ?? appConnectionSourceSlug(connection);
   if (sourceSlug) {
     const keyed = apps.find((app) => appDefinitionSlug(app) === sourceSlug);
     if (keyed) return keyed;

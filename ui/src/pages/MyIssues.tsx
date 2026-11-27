@@ -1,3 +1,5 @@
+import { optionLabel } from "@/i18n/option-label";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { issuesApi } from "../api/issues";
@@ -16,13 +18,14 @@ import { useStreamlinedUiEnabled } from "../hooks/useStreamlinedUiEnabled";
 import { taskStatusIconProps } from "@/lib/task-status-presentation";
 
 export function MyIssues() {
+  const { t: pageText } = usePageTranslation("interface");
   const { enabled: streamlinedUiEnabled } = useStreamlinedUiEnabled();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "My Tasks" }]);
-  }, [setBreadcrumbs]);
+    setBreadcrumbs([{ label: optionLabel("My Tasks") }]);
+  }, [pageText, setBreadcrumbs]);
 
   const issuesQuery = useQuery({
     queryKey: queryKeys.issues.list(selectedCompanyId!),
@@ -37,8 +40,8 @@ export function MyIssues() {
       <EmptyState
         icon={ListTodo}
         message={streamlinedUiEnabled
-          ? "Select an organization to view your tasks."
-          : "Select a company to view your tasks."}
+          ? pageText("selectAnOrganizationToViewYourTasks_bf7e0d")
+          : pageText("selectACompanyToViewYourTasks_cd38aa")}
       />
     );
   }
@@ -68,7 +71,7 @@ export function MyIssues() {
   return (
     <div className="space-y-4">
       {myIssues.length === 0 && (
-        <EmptyState icon={ListTodo} message="No tasks assigned to you." />
+        <EmptyState icon={ListTodo} message={pageText("noTasksAssignedToYou_eeb52e")} />
       )}
 
       {myIssues.length > 0 && (

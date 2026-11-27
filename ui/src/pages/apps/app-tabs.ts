@@ -1,3 +1,4 @@
+import { controlText } from "@/i18n/controls";
 import { Inbox, ShieldCheck } from "lucide-react";
 
 export const APP_TABS = [
@@ -20,5 +21,5 @@ export function isAppTabKey(value: string | undefined): value is AppTabKey {
 }
 
 export function appTabLabel(tabKey: AppTabKey): string {
-  return APP_TABS.find((tab) => tab.key === tabKey)?.label ?? "Permissions";
+  return controlText(APP_TABS.find((tab) => tab.key === tabKey)?.label ?? "Permissions");
 }

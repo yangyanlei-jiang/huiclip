@@ -1,4 +1,10 @@
-import { companyProjectsQuery } from "@/lib/company-projects-query";
+import { controlText } from "@/i18n/controls";
+import { optionLabel } from "@/i18n/option-label";
+import { t as interfaceNotice } from "@/i18n";
+import { t as translateDynamic } from "../i18n";
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { describeError } from "../api/errors";
 import { useSelectedHeartbeatRun } from "../hooks/useSelectedHeartbeatRun";
 import { AgentCharacter } from "../components/AgentCharacter";
@@ -25,6 +31,7 @@ import { SHOW_TASK_PRIORITY_UI } from "../lib/ui-flags";
 import { activityApi } from "../api/activity";
 import { accessApi } from "../api/access";
 import { issuesApi } from "../api/issues";
+import { projectsApi } from "../api/projects";
 import { usePanel } from "../context/PanelContext";
 import { useSidebar } from "../context/SidebarContext";
 import { useCompany } from "../context/CompanyContext";
@@ -65,8 +72,6 @@ import { SourceResolvedFoldBadge } from "../components/SourceResolvedFoldBadge";
 import { readSourceResolvedWatchdogFold } from "../lib/source-resolved-watchdog-fold";
 import { formatCents, formatDate, relativeTime, formatTokens, visibleRunCostUsd, visibleRunTokenTotal } from "../lib/utils";
 import { cn } from "../lib/utils";
-import { ProviderLimitMessage } from "../components/ProviderLimitMessage";
-import { runFailureMessage } from "@paperclipai/shared";
 import { describeRunRetryState } from "../lib/runRetryState";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -97,6 +102,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
 import { AgentToolsTab } from "./AgentToolsTab";
 import { AgentChannelsPanel } from "../components/chat/AgentChannelsPanel";
+import { useChatConnectorsEnabled } from "@/hooks/useChatConnectorsEnabled";
 import {
   isUuidLike,
   type Agent,
@@ -130,7 +136,6 @@ export {
   heartbeatProgressLogLineKey,
   RunInvocationCard,
 } from "../components/run-log/RunDetails";
-import { ANALYTICS_NO_CAPTURE_CLASS, ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 const runStatusIcons: Record<string, { icon: typeof CheckCircle2; color: string }> = {
   succeeded: { icon: CheckCircle2, color: "text-green-600 dark:text-green-400" },
@@ -192,7 +197,7 @@ export function confirmAgentConfigNavigation(
   confirm: (message: string) => boolean = (message) =>
     typeof window === "undefined" || window.confirm(message),
 ): boolean {
-  return !dirty || confirm(DISCARD_AGENT_CONFIG_CHANGES_MESSAGE);
+  return !dirty || confirm(controlText(DISCARD_AGENT_CONFIG_CHANGES_MESSAGE));
 }
 
 export function agentConfigHistoryRestoreDelta(currentIndex: unknown, nextIndex: unknown): number | null {
@@ -282,6 +287,8 @@ export function runDetailRefetchIntervalMs(status: HeartbeatRun["status"]): 5000
 }
 
 export function AgentDetail() {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const { companyPrefix, agentId, tab: urlTab, runId: urlRunId } = useParams<{
     companyPrefix?: string;
     agentId: string;
@@ -296,7 +303,10 @@ export function AgentDetail() {
   const location = useLocation();
   const [actionError, setActionError] = useState<string | null>(null);
   const [dismissedLeftAgentIds, setDismissedLeftAgentIds] = useState<Set<string>>(() => new Set());
-  const activeView = urlRunId ? "runs" as AgentDetailView : parseAgentDetailView(urlTab ?? null);
+  const { enabled: chatEnabled, githubEnabled, loaded: chatConnectorsLoaded } = useChatConnectorsEnabled();
+  const chatConnectorsEnabled = chatEnabled || githubEnabled;
+  const activeView = urlRunId ? "runs" as AgentDetailView
+    : urlTab === "channels" && !chatConnectorsEnabled ? "dashboard" : parseAgentDetailView(urlTab ?? null);
   const needsDashboardData = activeView === "dashboard";
   const needsRunData = activeView === "runs" || Boolean(urlRunId);
   const shouldLoadHeartbeats = needsDashboardData || needsRunData;
@@ -374,7 +384,7 @@ export function AgentDetail() {
       builtInAgentsApi.reset(resolvedCompanyId!, builtInState!.definition.key, [kind]),
     onSuccess: invalidateBuiltIn,
     onError: (error) => {
-      setActionError(error instanceof Error ? error.message : "Failed to update bundle resource");
+      setActionError(error instanceof Error ? error.message : interfaceMessage("interface:errorFailedToUpdateBundleResource"));
     },
   });
   const runBuiltInRoutine = useMutation({
@@ -382,7 +392,7 @@ export function AgentDetail() {
       builtInAgentsApi.runRoutine(resolvedCompanyId!, builtInState!.definition.key, routineKey),
     onSuccess: invalidateBuiltIn,
     onError: (error) => {
-      setActionError(error instanceof Error ? error.message : "Failed to run built-in routine");
+      setActionError(error instanceof Error ? error.message : interfaceMessage("interface:errorFailedToRunBuiltInRoutine"));
     },
   });
   const enableBuiltInSchedule = useMutation({
@@ -390,7 +400,7 @@ export function AgentDetail() {
       builtInAgentsApi.enableRoutineSchedule(resolvedCompanyId!, builtInState!.definition.key, routineKey),
     onSuccess: invalidateBuiltIn,
     onError: (error) => {
-      setActionError(error instanceof Error ? error.message : "Failed to enable routine schedule");
+      setActionError(error instanceof Error ? error.message : interfaceMessage("interface:errorFailedToEnableRoutineSchedule"));
     },
   });
   const disableBuiltInSchedule = useMutation({
@@ -398,7 +408,7 @@ export function AgentDetail() {
       builtInAgentsApi.disableRoutineSchedule(resolvedCompanyId!, builtInState!.definition.key, routineKey),
     onSuccess: invalidateBuiltIn,
     onError: (error) => {
-      setActionError(error instanceof Error ? error.message : "Failed to disable routine schedule");
+      setActionError(error instanceof Error ? error.message : interfaceMessage("interface:errorFailedToDisableRoutineSchedule"));
     },
   });
   const builtInRoutineActionPending =
@@ -486,6 +496,7 @@ export function AgentDetail() {
 
   useEffect(() => {
     if (!agent) return;
+    if (!urlRunId && urlTab === "channels" && !chatConnectorsLoaded) return;
     if (urlRunId) {
       if (routeAgentRef !== canonicalAgentRef) {
         navigate(`/agents/${canonicalAgentRef}/runs/${urlRunId}`, { replace: true });
@@ -514,7 +525,7 @@ export function AgentDetail() {
       navigate(`/agents/${canonicalAgentRef}/${canonicalTab}${location.search}`, { replace: true });
       return;
     }
-  }, [agent, routeAgentRef, canonicalAgentRef, urlRunId, urlTab, activeView, navigate, location.search]);
+  }, [agent, routeAgentRef, canonicalAgentRef, urlRunId, urlTab, activeView, navigate, chatConnectorsLoaded, location.search]);
 
   useEffect(() => {
     if (!agent?.companyId || agent.companyId === selectedCompanyId) return;
@@ -545,7 +556,7 @@ export function AgentDetail() {
       }
     },
     onError: (err) => {
-      setActionError(err instanceof Error ? err.message : "Action failed");
+      setActionError(err instanceof Error ? err.message : interfaceNotice("interface:actionFailed_57af94"));
     },
   });
 
@@ -590,13 +601,13 @@ export function AgentDetail() {
       }
     },
     onError: (err) => {
-      setActionError(err instanceof Error ? err.message : "Failed to update permissions");
+      setActionError(err instanceof Error ? err.message : interfaceMessage("interface:errorFailedToUpdatePermissions"));
     },
   });
 
   useEffect(() => {
     const crumbs: { label: string; href?: string }[] = [
-      { label: "Agents", href: "/agents" },
+      { label: controlText("Agents"), href: "/agents" },
     ];
     const agentName = agent?.name ?? routeAgentRef ?? "Agent";
     if (activeView === "dashboard" && !urlRunId) {
@@ -604,7 +615,7 @@ export function AgentDetail() {
     } else {
       crumbs.push({ label: agentName, href: `/agents/${canonicalAgentRef}/dashboard` });
       if (urlRunId) {
-        crumbs.push({ label: "Runs", href: `/agents/${canonicalAgentRef}/runs` });
+        crumbs.push({ label: controlText("Runs"), href: `/agents/${canonicalAgentRef}/runs` });
         crumbs.push({ label: `Run ${urlRunId.slice(0, 8)}` });
       } else if (activeView === "instructions") {
         crumbs.push({ label: "Instructions" });
@@ -617,7 +628,7 @@ export function AgentDetail() {
       } else if (activeView === "tools") {
         crumbs.push({ label: "Tools" });
       } else if (activeView === "runs") {
-        crumbs.push({ label: "Runs" });
+        crumbs.push({ label: controlText("Runs") });
       } else if (activeView === "budget") {
         crumbs.push({ label: "Budget" });
       } else {
@@ -750,9 +761,7 @@ export function AgentDetail() {
     <div className={cn("space-y-6", isMobile && showConfigActionBar && "pb-24")}>
       {showLeftAgentNotice ? (
         <div className="flex items-center gap-3 border border-yellow-300/35 bg-yellow-300/10 px-3 py-2 text-sm text-yellow-900 dark:text-yellow-100">
-          <p className="min-w-0 flex-1">
-            You left this agent. It no longer appears in your sidebar.
-          </p>
+          <p className="min-w-0 flex-1">{pageText("youLeftThisAgentItNoLongerAppears_1f21d1")}</p>
           <MembershipAction
             compact
             state="left"
@@ -775,7 +784,7 @@ export function AgentDetail() {
           <button
             type="button"
             className="h-6 w-6 shrink-0 text-yellow-900/70 hover:text-yellow-900 dark:text-yellow-100/70 dark:hover:text-yellow-100"
-            aria-label="Dismiss agent membership notice"
+            aria-label={pageText("dismissAgentMembershipNotice_0880d1")}
             onClick={() => setDismissedLeftAgentIds((current) => new Set(current).add(agent.id))}
           >
             ×
@@ -786,7 +795,7 @@ export function AgentDetail() {
         <div className="flex items-start gap-3 border border-amber-300/35 bg-amber-300/10 px-3 py-2 text-sm text-amber-900 dark:text-amber-100">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
           <div className="min-w-0 space-y-1">
-            <p className="font-medium">Escalation path is paused</p>
+            <p className="font-medium">{pageText("escalationPathIsPaused_19a6f6")}</p>
             <p className="text-amber-900/90 dark:text-amber-100/90">{pausedEscalationWarning}</p>
           </div>
         </div>
@@ -795,19 +804,16 @@ export function AgentDetail() {
         <div className="flex items-start gap-3 border border-amber-300/35 bg-amber-300/10 px-3 py-2 text-sm text-amber-900 dark:text-amber-100">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
           <div className="min-w-0 space-y-1">
-            <p className="font-medium">Invalid reporting chain</p>
+            <p className="font-medium">{pageText("invalidReportingChain_720f9d")}</p>
             <p className="text-amber-900/90 dark:text-amber-100/90">
-              {agent.name} cannot accept tasks or start runs until its reporting chain is repaired.
-            </p>
+              {agent.name}{" " + pageText("cannotAcceptTasksOrStartRunsUntilIts_9bae87")}</p>
             <p className="break-words font-mono text-xs text-amber-900/80 dark:text-amber-100/80">
               {formatOrgChainHealthPath(agent)}
             </p>
             {agent.orgChainHealth?.repairGuidance ? (
               <p className="text-amber-900/85 dark:text-amber-100/85">{agent.orgChainHealth.repairGuidance}</p>
             ) : (
-              <p className="text-amber-900/85 dark:text-amber-100/85">
-                Assign this agent to an active manager/root, or explicitly pause or terminate the affected agent/subtree.
-              </p>
+              <p className="text-amber-900/85 dark:text-amber-100/85">{pageText("assignThisAgentToAnActiveManagerRoot_ca5b52")}</p>
             )}
           </div>
         </div>
@@ -821,7 +827,7 @@ export function AgentDetail() {
               <h2 className="text-2xl font-bold truncate">{agent.name}</h2>
             </div>
             <p className="text-sm text-muted-foreground truncate">
-              {roleLabels[agent.role] ?? agent.role}
+              {roleLabels[agent.role] ? optionLabel(roleLabels[agent.role]) : agent.role}
               {agent.title ? ` - ${agent.title}` : ""}
             </p>
           </div>
@@ -855,13 +861,12 @@ export function AgentDetail() {
             pauseConfirm={
               builtInState
                 ? {
-                    title: `Pause the ${builtInState.definition.displayName}?`,
+                    title: translateDynamic("dynamic:pauseBuiltIn", { name: builtInState.definition.displayName }),
                     description: (
                       <>
-                        {builtInFeatureLabel} depends on this agent. While paused,{" "}
-                        {builtInFeatureLabel.toLowerCase()} generation is skipped and the{" "}
-                        {builtInFeatureLabel} page shows a warning.
-                      </>
+                        {builtInFeatureLabel}{" " + pageText("dependsOnThisAgentWhilePaused_443a3e")}{" "}
+                        {builtInFeatureLabel.toLowerCase()}{" " + pageText("generationIsSkippedAndThe_a05b38")}{" "}
+                        {builtInFeatureLabel}{" " + pageText("pageShowsAWarning_a589b2")}</>
                     ),
                   }
                 : undefined
@@ -876,7 +881,7 @@ export function AgentDetail() {
                   <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
                 </span>
-                <span className="text-(length:--text-micro) font-medium text-blue-600 dark:text-blue-400">Live</span>
+                <span className="text-(length:--text-micro) font-medium text-blue-600 dark:text-blue-400">{translateUi("interfaceCopy.live")}</span>
               </Link>
             )}
           </AgentActionButtons>
@@ -886,7 +891,7 @@ export function AgentDetail() {
       {builtInState && (
         <InlineBanner
           tone="info"
-          title="Built-in agent"
+          title={pageText("builtInAgent_0941ba")}
           actions={
             <Button
               variant="outline"
@@ -894,13 +899,10 @@ export function AgentDetail() {
               onClick={() => resetBuiltIn.mutate()}
               disabled={resetBuiltIn.isPending}
             >
-              {resetBuiltIn.isPending ? "Resetting…" : "Reset to defaults"}
+              {resetBuiltIn.isPending ? pageText("resetting_6d27dc") : pageText("resetToDefaults_ddefe4")}
             </Button>
           }
-        >
-          Ships with Paperclip and powers <strong>{builtInFeatureLabel}</strong>. Configure it like
-          any agent — model, instructions, budget. It can be paused but not deleted; pausing it
-          pauses {builtInFeatureLabel}.
+        >{pageText("shipsWithPaperclipAndPowers_ddc880") + " "}<strong>{builtInFeatureLabel}</strong>{pageText("configureItLikeAnyAgentModelInstructionsBudget_dcbc34") + " "}{builtInFeatureLabel}.
         </InlineBanner>
       )}
 
@@ -937,7 +939,7 @@ export function AgentDetail() {
           onValueChange={handleAgentTabChange}
         >
           <PageTabBar
-            items={AGENT_DETAIL_TABS}
+            items={AGENT_DETAIL_TABS.filter((item) => item.value !== "channels" || chatConnectorsEnabled)}
             value={activeView}
             onValueChange={handleAgentTabChange}
           />
@@ -947,7 +949,7 @@ export function AgentDetail() {
       {actionError && <p className="text-sm text-destructive">{actionError}</p>}
       {isPendingApproval && (
         <div className="flex flex-wrap items-center gap-3 rounded-md border border-amber-300/60 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-400/40 dark:bg-amber-950/30 dark:text-amber-200">
-          <span>This agent is pending board approval and cannot be invoked yet.</span>
+          <span>{pageText("thisAgentIsPendingBoardApprovalAndCannot_4ef8b0")}</span>
           <Button
             variant="outline"
             size="sm"
@@ -955,7 +957,7 @@ export function AgentDetail() {
             disabled={agentAction.isPending}
           >
             <CheckCircle2 className="h-3.5 w-3.5 sm:mr-1" />
-            <span>Approve agent</span>
+            <span>{pageText("approveAgent_276f84")}</span>
           </Button>
         </div>
       )}
@@ -969,15 +971,13 @@ export function AgentDetail() {
               size="sm"
               onClick={() => cancelConfigActionRef.current?.()}
               disabled={configSaving}
-            >
-              Cancel
-            </Button>
+            >{translateUi("interfaceCopy.cancel")}</Button>
             <Button
               size="sm"
               onClick={() => saveConfigActionRef.current?.()}
               disabled={configSaving}
             >
-              {configSaving ? "Saving…" : "Save"}
+              {configSaving ? pageText("saving_56a228") : pageText("save_efc007")}
             </Button>
           </div>
         </div>
@@ -995,15 +995,13 @@ export function AgentDetail() {
               size="sm"
               onClick={() => cancelConfigActionRef.current?.()}
               disabled={configSaving}
-            >
-              Cancel
-            </Button>
+            >{translateUi("interfaceCopy.cancel")}</Button>
             <Button
               size="sm"
               onClick={() => saveConfigActionRef.current?.()}
               disabled={configSaving}
             >
-              {configSaving ? "Saving…" : "Save"}
+              {configSaving ? pageText("saving_56a228") : pageText("save_efc007")}
             </Button>
           </div>
         </div>
@@ -1161,6 +1159,7 @@ function LatestRunCard({
   agentId: string;
   issuesById: Map<string, LatestRunIssue>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const sorted = useMemo(
     () =>
       [...runs].sort(
@@ -1242,7 +1241,7 @@ function LatestRunCard({
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
               </span>
             )}
-            <span>{isLive ? "Live Run" : "Latest Run"}</span>
+            <span>{isLive ? pageText("liveRun_eb981f") : pageText("latestRun_c1a81e")}</span>
             <span className="font-mono text-xs font-normal text-muted-foreground">
               &middot; {run.id.slice(0, 8)}
             </span>
@@ -1312,6 +1311,7 @@ function AgentOverview({
   agentId: string;
   agentRouteId: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const issuesById = useMemo(() => {
     const map = new Map<string, (typeof assignedIssues)[number]>();
     for (const issue of assignedIssues) map.set(issue.id, issue);
@@ -1325,19 +1325,19 @@ function AgentOverview({
 
       {/* Charts */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <ChartCard title="Run Activity" subtitle="Last 14 days">
+        <ChartCard title={pageText("runActivity_786f98")} subtitle="Last 14 days">
           <RunActivityChart runs={runs} />
         </ChartCard>
         {/* PAP-411: "Tasks by Priority" chart hidden behind SHOW_TASK_PRIORITY_UI. */}
         {SHOW_TASK_PRIORITY_UI && (
-          <ChartCard title="Tasks by Priority" subtitle="Last 14 days">
+          <ChartCard title={pageText("tasksByPriority_8c416b")} subtitle="Last 14 days">
             <PriorityChart issues={assignedIssues} />
           </ChartCard>
         )}
-        <ChartCard title="Tasks by Status" subtitle="Last 14 days">
+        <ChartCard title={pageText("tasksByStatus_52e778")} subtitle="Last 14 days">
           <IssueStatusChart issues={assignedIssues} />
         </ChartCard>
-        <ChartCard title="Success Rate" subtitle="Last 14 days">
+        <ChartCard title={pageText("successRate_a6db4a")} subtitle="Last 14 days">
           <SuccessRateChart runs={runs} />
         </ChartCard>
       </div>
@@ -1345,16 +1345,14 @@ function AgentOverview({
       {/* Recent Issues */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium">Recent Tasks</h3>
+          <h3 className="text-sm font-medium">{pageText("recentTasks_b91b93")}</h3>
           <Link
             to={`/issues?participantAgentId=${agentId}`}
             className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            See All &rarr;
-          </Link>
+          >{pageText("seeAll_ba6551")}</Link>
         </div>
         {assignedIssues.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No recent tasks.</p>
+          <p className="text-sm text-muted-foreground">{pageText("noRecentTasks_5cdb1b")}</p>
         ) : (
           <div className="border border-border rounded-lg">
             {assignedIssues.slice(0, 10).map((issue) => (
@@ -1368,8 +1366,7 @@ function AgentOverview({
             ))}
             {assignedIssues.length > 10 && (
               <div className="px-3 py-2 text-xs text-muted-foreground text-center border-t border-border">
-                +{assignedIssues.length - 10} more tasks
-              </div>
+                +{assignedIssues.length - 10}{" " + pageText("moreTasks_36eaac")}</div>
             )}
           </div>
         )}
@@ -1377,7 +1374,7 @@ function AgentOverview({
 
       {/* Costs */}
       <div className="space-y-3">
-        <h3 className="text-sm font-medium">Costs</h3>
+        <h3 className="text-sm font-medium">{pageText("costs_799b3e")}</h3>
         <CostsSection runtimeState={runtimeState} runs={runs} />
       </div>
     </div>
@@ -1393,6 +1390,8 @@ function CostsSection({
   runtimeState?: AgentRuntimeState;
   runs: HeartbeatRun[];
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const runsWithCost = runs
     .filter((r) => {
       const metrics = runMetrics(r);
@@ -1406,19 +1405,19 @@ function CostsSection({
         <div className="border border-border rounded-lg p-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 tabular-nums">
             <div>
-              <span className="text-xs text-muted-foreground block">Input tokens</span>
+              <span className="text-xs text-muted-foreground block">{pageText("inputTokens_92f7d2")}</span>
               <span className="text-lg font-semibold">{formatTokens(runtimeState.totalInputTokens)}</span>
             </div>
             <div>
-              <span className="text-xs text-muted-foreground block">Output tokens</span>
+              <span className="text-xs text-muted-foreground block">{pageText("outputTokens_b879f5")}</span>
               <span className="text-lg font-semibold">{formatTokens(runtimeState.totalOutputTokens)}</span>
             </div>
             <div>
-              <span className="text-xs text-muted-foreground block">Cached tokens</span>
+              <span className="text-xs text-muted-foreground block">{pageText("cachedTokens_7b9fd9")}</span>
               <span className="text-lg font-semibold">{formatTokens(runtimeState.totalCachedInputTokens)}</span>
             </div>
             <div>
-              <span className="text-xs text-muted-foreground block">Total cost</span>
+              <span className="text-xs text-muted-foreground block">{pageText("totalCost_2f6997")}</span>
               <span className="text-lg font-semibold">{formatCents(runtimeState.totalCostCents)}</span>
             </div>
           </div>
@@ -1429,11 +1428,11 @@ function CostsSection({
           <table className="w-full text-xs">
             <thead>
               <tr className="border-b border-border bg-accent/20">
-                <th scope="col" className="text-left px-3 py-2 font-medium text-muted-foreground">Date</th>
-                <th scope="col" className="text-left px-3 py-2 font-medium text-muted-foreground">Run</th>
-                <th scope="col" className="text-right px-3 py-2 font-medium text-muted-foreground">Input</th>
-                <th scope="col" className="text-right px-3 py-2 font-medium text-muted-foreground">Output</th>
-                <th scope="col" className="text-right px-3 py-2 font-medium text-muted-foreground">Cost</th>
+                <th scope="col" className="text-left px-3 py-2 font-medium text-muted-foreground">{pageText("date_eb9a4b")}</th>
+                <th scope="col" className="text-left px-3 py-2 font-medium text-muted-foreground">{translateUi("interfaceCopy.run")}</th>
+                <th scope="col" className="text-right px-3 py-2 font-medium text-muted-foreground">{translateUi("interfaceCopy.input")}</th>
+                <th scope="col" className="text-right px-3 py-2 font-medium text-muted-foreground">{translateUi("interfaceCopy.output")}</th>
+                <th scope="col" className="text-right px-3 py-2 font-medium text-muted-foreground">{translateUi("interfaceCopy.cost")}</th>
               </tr>
             </thead>
             <tbody>
@@ -1506,6 +1505,7 @@ function AgentConfigurePage({
   onSavingChange: (saving: boolean) => void;
   updatePermissions: { mutate: (permissions: AgentPermissionUpdate) => void; isPending: boolean };
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { tab: urlTab } = useParams<{ tab?: string }>();
@@ -1541,7 +1541,7 @@ function AgentConfigurePage({
         hideInstructionsFile
       />
       <div>
-        <h3 className="text-sm font-medium mb-3">API Keys</h3>
+        <h3 className="text-sm font-medium mb-3">{pageText("apiKeys_e18ffc")}</h3>
         <KeysTab agentId={agentId} companyId={companyId} />
       </div>
 
@@ -1554,14 +1554,12 @@ function AgentConfigurePage({
           {revisionsOpen
             ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
             : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-          }
-          Configuration Revisions
-          <span className="text-xs font-normal text-muted-foreground">{configRevisions?.length ?? 0}</span>
+          }{pageText("configurationRevisions_40a6c2")}<span className="text-xs font-normal text-muted-foreground">{configRevisions?.length ?? 0}</span>
         </button>
         {revisionsOpen && (
           <div className="mt-3">
             {(configRevisions ?? []).length === 0 ? (
-              <p className="text-sm text-muted-foreground">No configuration revisions yet.</p>
+              <p className="text-sm text-muted-foreground">{pageText("noConfigurationRevisionsYet_8b8140")}</p>
             ) : (
               <div className="space-y-2">
                 {(configRevisions ?? []).slice(0, 10).map((revision) => (
@@ -1580,13 +1578,10 @@ function AgentConfigurePage({
                         className="h-7 px-2.5 text-xs"
                         onClick={() => rollbackConfig.mutate(revision.id)}
                         disabled={rollbackConfig.isPending}
-                      >
-                        Restore
-                      </Button>
+                      >{pageText("restore_3cbe6d")}</Button>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      Changed:{" "}
-                      {revision.changedKeys.length > 0 ? revision.changedKeys.join(", ") : "no tracked changes"}
+                    <p className="text-xs text-muted-foreground">{pageText("changed_eda3bd")}{" "}
+                      {revision.changedKeys.length > 0 ? revision.changedKeys.join(", ") : pageText("noTrackedChanges_317564")}
                     </p>
                   </div>
                 ))}
@@ -1624,6 +1619,7 @@ export function ConfigurationTab({
   hideInstructionsFile?: boolean;
   content?: "configuration" | "secrets";
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { tab: urlTab } = useParams<{ tab?: string }>();
@@ -1644,7 +1640,8 @@ export function ConfigurationTab({
   const lowTrustSelected = getTrustPreset(agent.permissions) === "low_trust_review";
 
   const { data: boundaryProjects, isLoading: boundaryProjectsLoading } = useQuery({
-    ...companyProjectsQuery(companyId ?? ""),
+    queryKey: companyId ? queryKeys.projects.list(companyId) : ["projects", "__low-trust-disabled"],
+    queryFn: () => projectsApi.list(companyId!),
     enabled: Boolean(companyId && lowTrustSelected) && content === "configuration",
   });
 
@@ -1668,7 +1665,7 @@ export function ConfigurationTab({
       if (!syncAgentRouteAfterRename(queryClient, navigate, agent, updated, urlTab ?? content)) {
         queryClient.invalidateQueries({ queryKey: queryKeys.agents.detail(agent.urlKey) });
       }
-      pushToast({ title: "Agent saved", tone: "success" });
+      pushToast({ title: interfaceNotice("interface:agentSaved_6f1f08"), tone: "success" });
     },
     onError: (err) => {
       setAwaitingRefreshAfterSave(false);
@@ -1678,7 +1675,7 @@ export function ConfigurationTab({
           : err instanceof Error
             ? err.message
             : "Could not save agent";
-      pushToast({ title: "Save failed", body: message, tone: "error" });
+      pushToast({ title: interfaceNotice("interface:saveFailed_0a4444"), body: message, tone: "error" });
     },
   });
 
@@ -1729,9 +1726,7 @@ export function ConfigurationTab({
         environmentVariablesPlacement={content === "secrets" ? "secrets" : "configuration"}
       />
       {content === "configuration" ? (
-        <p className="text-xs text-muted-foreground">
-          Saved adapter config affects the next run. Active runs keep the config they started with, and config changes may start a fresh adapter session.
-        </p>
+        <p className="text-xs text-muted-foreground">{pageText("savedAdapterConfigAffectsTheNextRunActive_2b3144")}</p>
       ) : null}
 
       {content === "configuration" ? <TrustPresetSection
@@ -1759,14 +1754,12 @@ export function ConfigurationTab({
       /> : null}
 
       {content === "configuration" ? <div>
-        <h3 className="text-sm font-medium mb-3">Permissions</h3>
+        <h3 className="text-sm font-medium mb-3">{pageText("permissions_d06d55")}</h3>
         <div className="border border-border rounded-lg p-4 space-y-4">
           <div className="flex items-center justify-between gap-4 text-sm">
             <div className="space-y-1">
-              <div>Can create new agents</div>
-              <p className="text-xs text-muted-foreground">
-                Lets this agent create or hire agents. This also grants task assignment authority.
-              </p>
+              <div>{pageText("canCreateNewAgents_e20981")}</div>
+              <p className="text-xs text-muted-foreground">{pageText("letsThisAgentCreateOrHireAgentsThis_f2235b")}</p>
             </div>
             <ToggleSwitch
               checked={canCreateAgents}
@@ -1782,10 +1775,8 @@ export function ConfigurationTab({
           </div>
           <div className="flex items-center justify-between gap-4 text-sm">
             <div className="space-y-1">
-              <div>Can create/import skills</div>
-              <p className="text-xs text-muted-foreground">
-                Lets this agent install, import, create, and scan company skills without creating agents.
-              </p>
+              <div>{pageText("canCreateImportSkills_f2a50d")}</div>
+              <p className="text-xs text-muted-foreground">{pageText("letsThisAgentInstallImportCreateAndScan_62ad2a")}</p>
             </div>
             <ToggleSwitch
               checked={canCreateSkills}
@@ -1801,7 +1792,7 @@ export function ConfigurationTab({
           </div>
           <div className="flex items-center justify-between gap-4 text-sm">
             <div className="space-y-1">
-              <div>Can assign tasks</div>
+              <div>{pageText("canAssignTasks_e35724")}</div>
               <p className="text-xs text-muted-foreground">
                 {taskAssignHint}
               </p>
@@ -1841,6 +1832,8 @@ export function PromptsTab({
   onCancelActionChange: (cancel: (() => void) | null) => void;
   onSavingChange: (saving: boolean) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { selectedCompanyId } = useCompany();
   const { isMobile } = useSidebar();
@@ -2161,9 +2154,7 @@ export function PromptsTab({
   if (!isLocal) {
     return (
       <div className="max-w-3xl">
-        <p className="text-sm text-muted-foreground">
-          Instructions bundles are only available for local adapters.
-        </p>
+        <p className="text-sm text-muted-foreground">{pageText("instructionsBundlesAreOnlyAvailableForLocalAdapters_2b7609")}</p>
       </div>
     );
   }
@@ -2183,28 +2174,20 @@ export function PromptsTab({
           ))}
         </div>
       )}
-      <p className="text-xs text-muted-foreground">
-        Saved instructions affect the next run. Active runs keep the instructions they started with, and instruction changes may start a fresh adapter session.
-      </p>
+      <p className="text-xs text-muted-foreground">{pageText("savedInstructionsAffectTheNextRunActiveRuns_4e9e10")}</p>
 
       <Collapsible defaultOpen={currentMode === "external"}>
         <CollapsibleTrigger className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors group">
-          <ChevronRight className="h-3 w-3 transition-transform group-data-[state=open]:rotate-90" />
-          Advanced
-        </CollapsibleTrigger>
+          <ChevronRight className="h-3 w-3 transition-transform group-data-[state=open]:rotate-90" />{pageText("advanced_4d0647")}</CollapsibleTrigger>
         <CollapsibleContent className="pt-4 pb-6">
           <TooltipProvider>
             <div className="grid gap-x-6 gap-y-4 md:grid-cols-(--gtc-18)">
               <label className="space-y-1.5 min-w-0">
-                <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                  Mode
-                  <Tooltip>
+                <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">{pageText("mode_a7b93d")}<Tooltip>
                     <TooltipTrigger asChild>
                       <HelpCircle className="h-3 w-3 text-muted-foreground cursor-help" />
                     </TooltipTrigger>
-                    <TooltipContent side="right" sideOffset={4}>
-                      Managed: Paperclip stores and serves the instructions bundle. External: you provide a path on disk where the instructions live.
-                    </TooltipContent>
+                    <TooltipContent side="right" sideOffset={4}>{pageText("managedPaperclipStoresAndServesTheInstructionsBundle_cf5d55")}</TooltipContent>
                   </Tooltip>
                 </span>
                 <div className="flex gap-2">
@@ -2228,9 +2211,7 @@ export function PromptsTab({
                       });
                       setSelectedFile(nextEntryFile);
                     }}
-                  >
-                    Managed
-                  </Button>
+                  >{pageText("managed_7f0cab")}</Button>
                   <Button
                     type="button"
                     size="sm"
@@ -2245,26 +2226,20 @@ export function PromptsTab({
                       });
                       setSelectedFile(externalBundle?.selectedFile ?? nextEntryFile);
                     }}
-                  >
-                    External
-                  </Button>
+                  >{pageText("external_8d10c6")}</Button>
                 </div>
               </label>
               <label className="space-y-1.5 min-w-0">
-                <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                  Root path
-                  <Tooltip>
+                <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">{pageText("rootPath_7d6857")}<Tooltip>
                     <TooltipTrigger asChild>
                       <HelpCircle className="h-3 w-3 text-muted-foreground cursor-help" />
                     </TooltipTrigger>
-                    <TooltipContent side="right" sideOffset={4}>
-                      The absolute directory on disk where the instructions bundle lives. In managed mode this is set by Paperclip automatically.
-                    </TooltipContent>
+                    <TooltipContent side="right" sideOffset={4}>{pageText("theAbsoluteDirectoryOnDiskWhereTheInstructions_48aa7f")}</TooltipContent>
                   </Tooltip>
                 </span>
                 {currentMode === "managed" ? (
                   <div className="flex items-center gap-1.5 font-mono text-xs text-muted-foreground pt-1.5">
-                    <span className="min-w-0 truncate" title={currentRootPath || undefined}>{currentRootPath || "(managed)"}</span>
+                    <span className="min-w-0 truncate" title={currentRootPath || undefined}>{currentRootPath || pageText("managed_66a066")}</span>
                     {currentRootPath && (
                       <CopyText text={currentRootPath} className="shrink-0">
                         <Copy className="h-3.5 w-3.5" />
@@ -2300,15 +2275,11 @@ export function PromptsTab({
                 )}
               </label>
               <label className="space-y-1.5">
-                <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                  Entry file
-                  <Tooltip>
+                <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">{pageText("entryFile_eb6dfe")}<Tooltip>
                     <TooltipTrigger asChild>
                       <HelpCircle className="h-3 w-3 text-muted-foreground cursor-help" />
                     </TooltipTrigger>
-                    <TooltipContent side="right" sideOffset={4}>
-                      The main file the agent reads first when loading instructions. Defaults to AGENTS.md.
-                    </TooltipContent>
+                    <TooltipContent side="right" sideOffset={4}>{pageText("theMainFileTheAgentReadsFirstWhen_8a3783")}</TooltipContent>
                   </Tooltip>
                 </span>
                 <Input
@@ -2355,7 +2326,7 @@ export function PromptsTab({
           isMobile && !showFilePanel && "hidden",
         )}>
           <div className="flex items-center justify-between">
-            <h4 className="text-sm font-medium">Files</h4>
+            <h4 className="text-sm font-medium">{translateUi("interfaceCopy.files")}</h4>
             <div className="flex items-center gap-1">
               {!showNewFileInput && (
                 <Button
@@ -2412,9 +2383,7 @@ export function PromptsTab({
                     setNewFilePath("");
                     setShowNewFileInput(false);
                   }}
-                >
-                  Create
-                </Button>
+                >{translateUi("interfaceCopy.create")}</Button>
                 <Button
                   type="button"
                   size="sm"
@@ -2424,9 +2393,7 @@ export function PromptsTab({
                     setShowNewFileInput(false);
                     setNewFilePath("");
                   }}
-                >
-                  Cancel
-                </Button>
+                >{translateUi("interfaceCopy.cancel")}</Button>
               </div>
             </div>
           )}
@@ -2456,19 +2423,15 @@ export function PromptsTab({
                 return (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="ml-3 shrink-0 rounded border border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-200 px-1.5 py-0.5 text-(length:--text-nano) uppercase tracking-wide cursor-help">
-                        virtual file
-                      </span>
+                      <span className="ml-3 shrink-0 rounded border border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-200 px-1.5 py-0.5 text-(length:--text-nano) uppercase tracking-wide cursor-help">{pageText("virtualFile_be4282")}</span>
                     </TooltipTrigger>
-                    <TooltipContent side="right" sideOffset={4}>
-                      Legacy inline prompt — this deprecated virtual file preserves the old promptTemplate content
-                    </TooltipContent>
+                    <TooltipContent side="right" sideOffset={4}>{pageText("legacyInlinePromptThisDeprecatedVirtualFilePreserves_db99d5")}</TooltipContent>
                   </Tooltip>
                 );
               }
               return (
                 <span className="ml-3 shrink-0 rounded border border-border text-muted-foreground px-1.5 py-0.5 text-(length:--text-nano) uppercase tracking-wide">
-                  {file.isEntryFile ? "entry" : `${file.size}b`}
+                  {file.isEntryFile ? pageText("entry_61c412") : `${file.size}b`}
                 </span>
               );
             }}
@@ -2502,9 +2465,9 @@ export function PromptsTab({
                 <p className="text-xs text-muted-foreground">
                   {selectedFileExists
                     ? selectedFileSummary?.deprecated
-                      ? "Deprecated virtual file"
+                      ? pageText("deprecatedVirtualFile_1e0f4e")
                       : `${selectedFileDetail?.language ?? "text"} file`
-                    : "New file in this bundle"}
+                    : pageText("newFileInThisBundle_659fb8")}
                 </p>
               </div>
             </div>
@@ -2512,8 +2475,8 @@ export function PromptsTab({
               {!fileLoading && (
                 <CopyText
                   text={displayValue}
-                  ariaLabel="Copy instructions file as markdown"
-                  title="Copy as markdown"
+                  ariaLabel={interfaceNotice("interface:copyInstructionsFileAsMarkdown_86a1e9")}
+                  title={pageText("copyAsMarkdown_87358c")}
                   copiedLabel="Copied"
                   className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-accent hover:text-foreground"
                 >
@@ -2526,7 +2489,7 @@ export function PromptsTab({
                   size="sm"
                   variant="outline"
                   onClick={() => {
-                    if (confirm(`Delete ${selectedOrEntryFile}?`)) {
+                    if (confirm(controlText("Delete {{file}}?", { file: selectedOrEntryFile }))) {
                       deleteFile.mutate(selectedOrEntryFile, {
                         onSuccess: () => {
                           setSelectedFile(currentEntryFile);
@@ -2536,9 +2499,7 @@ export function PromptsTab({
                     }
                   }}
                   disabled={deleteFile.isPending}
-                >
-                  Delete
-                </Button>
+                >{translateUi("interfaceCopy.delete")}</Button>
               )}
             </div>
           </div>
@@ -2564,7 +2525,7 @@ export function PromptsTab({
               value={displayValue}
               onChange={(event) => setDraft(event.target.value)}
               className="min-h-(--sz-420px) w-full min-w-0 rounded-md border border-border bg-transparent px-3 py-2 font-mono text-sm outline-none"
-              placeholder="File contents"
+              placeholder={pageText("fileContents_3b4cbf")}
             />
           )}
         </div>
@@ -2631,6 +2592,7 @@ function PromptEditorSkeleton() {
 /* ---- Runs Tab ---- */
 
 function RunListItem({ run, isSelected, agentId }: { run: HeartbeatRun; isSelected: boolean; agentId: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const statusInfo = runStatusIcons[run.status] ?? { icon: Clock, color: "text-neutral-400" };
   const StatusIcon = statusInfo.icon;
   const metrics = runMetrics(run);
@@ -2673,7 +2635,7 @@ function RunListItem({ run, isSelected, agentId }: { run: HeartbeatRun; isSelect
       )}
       {(metrics.totalTokens > 0 || metrics.cost > 0) && (
         <div className="flex items-center gap-2 pl-5.5 text-(length:--text-micro) text-muted-foreground tabular-nums">
-          {metrics.totalTokens > 0 && <span>{formatTokens(metrics.totalTokens)} tok</span>}
+          {metrics.totalTokens > 0 && <span>{formatTokens(metrics.totalTokens)}{" " + pageText("tok_79bead")}</span>}
           {metrics.cost > 0 && <span>${metrics.cost.toFixed(3)}</span>}
         </div>
       )}
@@ -2698,6 +2660,8 @@ export function RunsTab({
   adapterType: string;
   adapterConfig: Record<string, unknown>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const { isMobile } = useSidebar();
 
   // Sort by created descending
@@ -2710,13 +2674,13 @@ export function RunsTab({
   const selection = useSelectedHeartbeatRun(sorted, effectiveRunId, companyId, agentId);
   const selectedRun = selection.run;
   if (selectedRunId && !selectedRun) {
-    if (selection.loading) return <p className="text-sm text-muted-foreground">Loading run…</p>;
+    if (selection.loading) return <p className="text-sm text-muted-foreground">{pageText("loadingRun_f91e59")}</p>;
     return <div role="alert">
-      <p className="text-sm text-destructive">{selection.error instanceof Error ? selection.error.message : "This run is unavailable for this agent."}</p>
-      {selection.error && <Button variant="outline" onClick={() => { void selection.retry(); }}>Try again</Button>}
+      <p className="text-sm text-destructive">{selection.error instanceof Error ? selection.error.message : pageText("thisRunIsUnavailableForThisAgent_8a6e75")}</p>
+      {selection.error && <Button variant="outline" onClick={() => { void selection.retry(); }}>{translateUi("interfaceCopy.tryAgain")}</Button>}
     </div>;
   }
-  if (runs.length === 0 && !selectedRun) return <p className="text-sm text-muted-foreground">No runs yet.</p>;
+  if (runs.length === 0 && !selectedRun) return <p className="text-sm text-muted-foreground">{pageText("noRunsYet_7a8b1c")}</p>;
 
   // Mobile: show either run list OR run detail with back button
   if (isMobile) {
@@ -2727,9 +2691,7 @@ export function RunsTab({
             to={`/agents/${agentRouteId}/runs`}
             className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors no-underline"
           >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Back to runs
-          </Link>
+            <ArrowLeft className="h-3.5 w-3.5" />{pageText("backToRuns_f49d11")}</Link>
           <RunDetail key={selectedRun.id} run={selectedRun} agentRouteId={agentRouteId} adapterType={adapterType} adapterConfig={adapterConfig} />
         </div>
       );
@@ -2771,6 +2733,8 @@ export function RunsTab({
 /* ---- Run Detail (expanded) ---- */
 
 function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }: { run: HeartbeatRun; agentRouteId: string; adapterType: string; adapterConfig: Record<string, unknown> }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { data: hydratedRun } = useQuery({
@@ -2954,7 +2918,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                   disabled={resumeRun.isPending}
                 >
                   <RotateCcw className="h-3.5 w-3.5 mr-1" />
-                  {resumeRun.isPending ? "Resuming…" : "Resume"}
+                  {resumeRun.isPending ? pageText("resuming_ab0bec") : pageText("resume_b3bd0b")}
                 </Button>
               )}
               {canRetryRun && !canResumeLostRun && (
@@ -2966,7 +2930,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                   disabled={retryRun.isPending}
                 >
                   <RotateCcw className="h-3.5 w-3.5 mr-1" />
-                  {retryRun.isPending ? "Retrying…" : "Retry"}
+                  {retryRun.isPending ? pageText("retrying_231013") : pageText("retry_9f5cd8")}
                 </Button>
               )}
             </div>
@@ -2995,8 +2959,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
               <div
                 data-testid="run-detail-on-behalf-of"
                 className="text-xs text-muted-foreground"
-              >
-                On behalf of{" "}
+              >{pageText("onBehalfOf_903002")}{" "}
                 <span className="text-foreground">
                   {responsibleUserName ?? responsibleUserLabel(null)}
                 </span>
@@ -3004,17 +2967,17 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
             )}
             {cancelRun.error && (
               <div className="text-xs text-destructive" role="alert">
-                {cancelRun.error instanceof Error ? cancelRun.error.message : "Failed to stop run"}
+                {cancelRun.error instanceof Error ? cancelRun.error.message : interfaceMessage("interface:errorFailedToStopRun")}
               </div>
             )}
             {resumeRun.isError && ( // query-error-ok: mutation result, not a query
               <div className="text-xs text-destructive">
-                {resumeRun.error instanceof Error ? resumeRun.error.message : "Failed to resume run"}
+                {resumeRun.error instanceof Error ? resumeRun.error.message : interfaceMessage("interface:errorFailedToResumeRun")}
               </div>
             )}
             {retryRun.isError && ( // query-error-ok: mutation result, not a query
               <div className="text-xs text-destructive">
-                {retryRun.error instanceof Error ? retryRun.error.message : "Failed to retry run"}
+                {retryRun.error instanceof Error ? retryRun.error.message : interfaceMessage("interface:errorFailedToRetryRun")}
               </div>
             )}
             {startTime && (
@@ -3029,15 +2992,14 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                   {run.finishedAt && <> &rarr; {relativeTime(run.finishedAt)}</>}
                 </div>
                 {displayDurationSec !== null && (
-                  <div className="text-xs text-muted-foreground">
-                    Duration: {displayDurationSec >= 60 ? `${Math.floor(displayDurationSec / 60)}m ${displayDurationSec % 60}s` : `${displayDurationSec}s`}
+                  <div className="text-xs text-muted-foreground">{pageText("duration_9693ae") + " "}{displayDurationSec >= 60 ? `${Math.floor(displayDurationSec / 60)}m ${displayDurationSec % 60}s` : `${displayDurationSec}s`}
                   </div>
                 )}
               </div>
             )}
-            {runFailureMessage(run) && (
+            {run.error && (
               <div className="text-xs">
-                <span className="text-destructive"><ProviderLimitMessage>{runFailureMessage(run)!}</ProviderLimitMessage></span>
+                <span className="text-red-600 dark:text-red-400">{run.error}</span>
                 {run.errorCode && <span className="text-muted-foreground ml-1">({run.errorCode})</span>}
               </div>
             )}
@@ -3050,19 +3012,17 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                   onClick={() => runClaudeLogin.mutate()}
                   disabled={runClaudeLogin.isPending}
                 >
-                  {runClaudeLogin.isPending ? "Running claude login..." : "Login to Claude Code"}
+                  {runClaudeLogin.isPending ? pageText("runningClaudeLogin_cb3e21") : pageText("loginToClaudeCode_e16271")}
                 </Button>
                 {runClaudeLogin.isError && ( // query-error-ok: mutation result, not a query
                   <p className="text-xs text-destructive">
                     {runClaudeLogin.error instanceof Error
                       ? runClaudeLogin.error.message
-                      : "Failed to run Claude login"}
+                      : interfaceMessage("interface:errorFailedToRunClaudeLogin")}
                   </p>
                 )}
                 {claudeLoginResult?.loginUrl && (
-                  <p className="text-xs">
-                    Login URL:
-                    <a
+                  <p className="text-xs">{pageText("loginURL_32363c")}<a
                       href={claudeLoginResult.loginUrl}
                       className="text-blue-600 underline underline-offset-2 ml-1 break-all dark:text-blue-400"
                       target="_blank"
@@ -3075,12 +3035,12 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                 {claudeLoginResult && (
                   <>
                     {!!claudeLoginResult.stdout && (
-                      <pre className={cn("bg-neutral-100 dark:bg-neutral-950 rounded-md p-3 text-xs font-mono text-foreground overflow-x-auto whitespace-pre-wrap", ANALYTICS_MASK_CLASS)}>
+                      <pre className="bg-neutral-100 dark:bg-neutral-950 rounded-md p-3 text-xs font-mono text-foreground overflow-x-auto whitespace-pre-wrap">
                         {claudeLoginResult.stdout}
                       </pre>
                     )}
                     {!!claudeLoginResult.stderr && (
-                      <pre className={cn("bg-neutral-100 dark:bg-neutral-950 rounded-md p-3 text-xs font-mono text-red-700 dark:text-red-300 overflow-x-auto whitespace-pre-wrap", ANALYTICS_MASK_CLASS)}>
+                      <pre className="bg-neutral-100 dark:bg-neutral-950 rounded-md p-3 text-xs font-mono text-red-700 dark:text-red-300 overflow-x-auto whitespace-pre-wrap">
                         {claudeLoginResult.stderr}
                       </pre>
                     )}
@@ -3095,9 +3055,8 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
               />
             )}
             {hasNonZeroExit && (
-              <div className="text-xs text-red-600 dark:text-red-400">
-                Exit code {run.exitCode}
-                {run.signal && <span className="text-muted-foreground ml-1">(signal: {run.signal})</span>}
+              <div className="text-xs text-red-600 dark:text-red-400">{pageText("exitCode_5df6a0") + " "}{run.exitCode}
+                {run.signal && <span className="text-muted-foreground ml-1">{pageText("signal_e6a83f") + " "}{run.signal})</span>}
               </div>
             )}
             {retryState && (
@@ -3130,19 +3089,19 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
           {hasMetrics && (
             <div className="border-t sm:border-t-0 sm:border-l border-border p-4 grid grid-cols-2 gap-x-4 sm:gap-x-8 gap-y-3 content-center tabular-nums">
               <div>
-                <div className="text-xs text-muted-foreground">Input</div>
+                <div className="text-xs text-muted-foreground">{translateUi("interfaceCopy.input")}</div>
                 <div className="text-sm font-medium font-mono">{formatTokens(metrics.input)}</div>
               </div>
               <div>
-                <div className="text-xs text-muted-foreground">Output</div>
+                <div className="text-xs text-muted-foreground">{translateUi("interfaceCopy.output")}</div>
                 <div className="text-sm font-medium font-mono">{formatTokens(metrics.output)}</div>
               </div>
               <div>
-                <div className="text-xs text-muted-foreground">Cached</div>
+                <div className="text-xs text-muted-foreground">{pageText("cached_b169be")}</div>
                 <div className="text-sm font-medium font-mono">{formatTokens(metrics.cached)}</div>
               </div>
               <div>
-                <div className="text-xs text-muted-foreground">Cost</div>
+                <div className="text-xs text-muted-foreground">{translateUi("interfaceCopy.cost")}</div>
                 <div className="text-sm font-medium font-mono">{metrics.cost > 0 ? `$${metrics.cost.toFixed(4)}` : "-"}</div>
               </div>
             </div>
@@ -3156,21 +3115,19 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
               className="flex items-center gap-1.5 w-full px-4 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
               onClick={() => setSessionOpen((v) => !v)}
             >
-              <ChevronRight className={cn("h-3 w-3 transition-transform", sessionOpen && "rotate-90")} />
-              Session
-              {sessionChanged && <span className="text-yellow-400 ml-1">(changed)</span>}
+              <ChevronRight className={cn("h-3 w-3 transition-transform", sessionOpen && "rotate-90")} />{pageText("session_f7f199")}{sessionChanged && <span className="text-yellow-400 ml-1">{pageText("changed_1588c0")}</span>}
             </button>
             {sessionOpen && (
               <div className="px-4 pb-3 space-y-1 text-xs">
                 {run.sessionIdBefore && (
                   <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground w-12">{sessionChanged ? "Before" : "ID"}</span>
+                    <span className="text-muted-foreground w-12">{sessionChanged ? pageText("before_74f396") : "ID"}</span>
                     <CopyText text={run.sessionIdBefore} className="font-mono" />
                   </div>
                 )}
                 {sessionChanged && run.sessionIdAfter && (
                   <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground w-12">After</span>
+                    <span className="text-muted-foreground w-12">{pageText("after_79ba5e")}</span>
                     <CopyText text={run.sessionIdAfter} className="font-mono" />
                   </div>
                 )}
@@ -3190,14 +3147,14 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                       }}
                     >
                       {clearSessionsForTouchedIssues.isPending
-                        ? "clearing session..."
-                        : "clear session for these tasks"}
+                        ? pageText("clearingSession_9c3ea2")
+                        : pageText("clearSessionForTheseTasks_f65b1a")}
                     </button>
                     {clearSessionsForTouchedIssues.isError && ( // query-error-ok: mutation result, not a query
                       <p className="text-(length:--text-micro) text-destructive mt-1">
                         {clearSessionsForTouchedIssues.error instanceof Error
                           ? clearSessionsForTouchedIssues.error.message
-                          : "Failed to clear sessions"}
+                          : interfaceMessage("interface:errorFailedToClearSessions")}
                       </p>
                     )}
                   </div>
@@ -3211,7 +3168,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
       {/* Issues touched by this run */}
       {touchedIssues && touchedIssues.length > 0 && (
         <div className="space-y-2">
-          <span className="text-xs font-medium text-muted-foreground">Tasks Touched ({touchedIssues.length})</span>
+          <span className="text-xs font-medium text-muted-foreground">{pageText("tasksTouched_f6742b")}{touchedIssues.length})</span>
           <div className="border border-border rounded-lg divide-y divide-border">
             {touchedIssues.map((issue) => (
               <Link
@@ -3234,7 +3191,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
       {run.stderrExcerpt && (
         <div className="space-y-1">
           <span className="text-xs font-medium text-red-600 dark:text-red-400">stderr</span>
-          <pre className={cn("bg-neutral-100 dark:bg-neutral-950 rounded-md p-3 text-xs font-mono text-red-700 dark:text-red-300 overflow-x-auto whitespace-pre-wrap", ANALYTICS_MASK_CLASS)}>{run.stderrExcerpt}</pre>
+          <pre className="bg-neutral-100 dark:bg-neutral-950 rounded-md p-3 text-xs font-mono text-red-700 dark:text-red-300 overflow-x-auto whitespace-pre-wrap">{run.stderrExcerpt}</pre>
         </div>
       )}
 
@@ -3242,7 +3199,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
       {run.stdoutExcerpt && !run.logRef && (
         <div className="space-y-1">
           <span className="text-xs font-medium text-muted-foreground">stdout</span>
-          <pre className={cn("bg-neutral-100 dark:bg-neutral-950 rounded-md p-3 text-xs font-mono text-foreground overflow-x-auto whitespace-pre-wrap", ANALYTICS_MASK_CLASS)}>{run.stdoutExcerpt}</pre>
+          <pre className="bg-neutral-100 dark:bg-neutral-950 rounded-md p-3 text-xs font-mono text-foreground overflow-x-auto whitespace-pre-wrap">{run.stdoutExcerpt}</pre>
         </div>
       )}
 
@@ -3263,6 +3220,8 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
 /* ---- Keys Tab ---- */
 
 function KeysTab({ agentId, companyId }: { agentId: string; companyId?: string }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const [newKeyName, setNewKeyName] = useState("");
@@ -3300,7 +3259,7 @@ function KeysTab({ agentId, companyId }: { agentId: string; companyId?: string }
         setTimeout(() => setCopied(false), 2000);
       })
       .catch(() => {
-        pushToast({ title: "Copy failed", body: "Clipboard access is unavailable.", tone: "error" });
+        pushToast({ title: interfaceNotice("interface:copyFailed_bd5acb"), body: interfaceNotice("interface:clipboardAccessIsUnavailable_0d01be"), tone: "error" });
       });
   }
 
@@ -3312,18 +3271,16 @@ function KeysTab({ agentId, companyId }: { agentId: string; companyId?: string }
       {/* New token banner */}
       {newToken && (
         <div className="border border-yellow-300 dark:border-yellow-600/40 bg-yellow-50 dark:bg-yellow-500/5 rounded-lg p-4 space-y-2">
-          <p className="text-sm font-medium text-yellow-700 dark:text-yellow-400">
-            API key created — copy it now, it will not be shown again.
-          </p>
+          <p className="text-sm font-medium text-yellow-700 dark:text-yellow-400">{pageText("apiKeyCreatedCopyItNowItWill_62f343")}</p>
           <div className="flex items-center gap-2">
-            <code className={cn("flex-1 bg-neutral-100 dark:bg-neutral-950 rounded px-3 py-1.5 text-xs font-mono text-green-700 dark:text-green-300 truncate", ANALYTICS_NO_CAPTURE_CLASS)}>
+            <code className="flex-1 bg-neutral-100 dark:bg-neutral-950 rounded px-3 py-1.5 text-xs font-mono text-green-700 dark:text-green-300 truncate">
               {tokenVisible ? newToken : newToken.replace(/./g, "•")}
             </code>
             <Button
               variant="ghost"
               size="icon-sm"
               onClick={() => setTokenVisible((v) => !v)}
-              title={tokenVisible ? "Hide" : "Show"}
+              title={tokenVisible ? pageText("hide_34d8b6") : pageText("show_d97d1e")}
             >
               {tokenVisible ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
             </Button>
@@ -3331,35 +3288,29 @@ function KeysTab({ agentId, companyId }: { agentId: string; companyId?: string }
               variant="ghost"
               size="icon-sm"
               onClick={copyToken}
-              title="Copy"
+              title={pageText("copy_af74f7")}
             >
               <Copy className="h-3.5 w-3.5" />
             </Button>
-            {copied && <span className="text-xs text-green-400">Copied!</span>}
+            {copied && <span className="text-xs text-green-400">{translateUi("interfaceCopy.copied")}</span>}
           </div>
           <Button
             variant="ghost"
             size="sm"
             className="text-muted-foreground text-xs"
             onClick={() => setNewToken(null)}
-          >
-            Dismiss
-          </Button>
+          >{pageText("dismiss_70afe9")}</Button>
         </div>
       )}
 
       {/* Create new key */}
       <div className="border border-border rounded-lg p-4 space-y-3">
         <h3 className="text-xs font-medium text-muted-foreground flex items-center gap-2">
-          <Key className="h-3.5 w-3.5" />
-          Create API Key
-        </h3>
-        <p className="text-xs text-muted-foreground">
-          API keys allow this agent to authenticate calls to the Paperclip server.
-        </p>
+          <Key className="h-3.5 w-3.5" />{pageText("createAPIKey_b68d55")}</h3>
+        <p className="text-xs text-muted-foreground">{pageText("apiKeysAllowThisAgentToAuthenticateCalls_3092bd")}</p>
         <div className="flex items-center gap-2">
           <Input
-            placeholder="Key name (e.g. production)"
+            placeholder={pageText("keyNameEGProduction_235f39")}
             value={newKeyName}
             onChange={(e) => setNewKeyName(e.target.value)}
             className="h-8 text-sm"
@@ -3372,31 +3323,26 @@ function KeysTab({ agentId, companyId }: { agentId: string; companyId?: string }
             onClick={() => createKey.mutate()}
             disabled={createKey.isPending}
           >
-            <Plus className="h-3.5 w-3.5 mr-1" />
-            Create
-          </Button>
+            <Plus className="h-3.5 w-3.5 mr-1" />{pageText("create_6e157c")}</Button>
         </div>
       </div>
 
       {/* Active keys */}
-      {isLoading && <p className="text-sm text-muted-foreground">Loading keys...</p>}
+      {isLoading && <p className="text-sm text-muted-foreground">{pageText("loadingKeys_1dae6c")}</p>}
 
       {!isLoading && activeKeys.length === 0 && !newToken && (
-        <p className="text-sm text-muted-foreground">No active API keys.</p>
+        <p className="text-sm text-muted-foreground">{pageText("noActiveAPIKeys_c04df7")}</p>
       )}
 
       {activeKeys.length > 0 && (
         <div>
-          <h3 className="text-xs font-medium text-muted-foreground mb-2">
-            Active Keys
-          </h3>
+          <h3 className="text-xs font-medium text-muted-foreground mb-2">{pageText("activeKeys_ddf919")}</h3>
           <div className="border border-border rounded-lg divide-y divide-border">
             {activeKeys.map((key: AgentKey) => (
               <div key={key.id} className="flex items-center justify-between px-4 py-2.5">
                 <div>
                   <span className="text-sm font-medium">{key.name}</span>
-                  <span className="text-xs text-muted-foreground ml-3">
-                    Created {formatDate(key.createdAt)}
+                  <span className="text-xs text-muted-foreground ml-3">{pageText("created_accf40") + " "}{formatDate(key.createdAt)}
                   </span>
                 </div>
                 <Button
@@ -3405,9 +3351,7 @@ function KeysTab({ agentId, companyId }: { agentId: string; companyId?: string }
                   className="text-destructive hover:text-destructive text-xs"
                   onClick={() => revokeKey.mutate(key.id)}
                   disabled={revokeKey.isPending}
-                >
-                  Revoke
-                </Button>
+                >{pageText("revoke_0be720")}</Button>
               </div>
             ))}
           </div>
@@ -3417,16 +3361,13 @@ function KeysTab({ agentId, companyId }: { agentId: string; companyId?: string }
       {/* Revoked keys */}
       {revokedKeys.length > 0 && (
         <div>
-          <h3 className="text-xs font-medium text-muted-foreground mb-2">
-            Revoked Keys
-          </h3>
+          <h3 className="text-xs font-medium text-muted-foreground mb-2">{pageText("revokedKeys_8f9174")}</h3>
           <div className="border border-border rounded-lg divide-y divide-border opacity-50">
             {revokedKeys.map((key: AgentKey) => (
               <div key={key.id} className="flex items-center justify-between px-4 py-2.5">
                 <div>
                   <span className="text-sm line-through">{key.name}</span>
-                  <span className="text-xs text-muted-foreground ml-3">
-                    Revoked {key.revokedAt ? formatDate(key.revokedAt) : ""}
+                  <span className="text-xs text-muted-foreground ml-3">{pageText("revoked_85f17a") + " "}{key.revokedAt ? formatDate(key.revokedAt) : ""}
                   </span>
                 </div>
               </div>

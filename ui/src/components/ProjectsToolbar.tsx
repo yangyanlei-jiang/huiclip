@@ -1,3 +1,6 @@
+import { optionLabel } from "@/i18n/option-label";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { ArrowUpDown, Check, Plus } from "lucide-react";
 import { ToolbarSearch } from "./ToolbarSearch";
 import { Button } from "./ui/button";
@@ -22,14 +25,16 @@ export function ProjectsToolbar({ query, onQueryChange, sortField, sortDir, onSo
   onSortChange: (field: ProjectSortField, direction: ProjectSortDir) => void;
   onNewProject: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const sortLabel = PROJECT_SORT_OPTIONS.find(option => option.field === sortField)?.label ?? "Name";
-  return <div data-canonical-toolbar="projects" role="toolbar" aria-label="Projects controls" className="flex flex-wrap items-center gap-4">
-    <ToolbarSearch query={query} onQueryChange={onQueryChange} label="Search projects" placeholder="Search projects…" />
+  return <div data-canonical-toolbar="projects" role="toolbar" aria-label={pageText("projectsControls_099dcb")} className="flex flex-wrap items-center gap-4">
+    <ToolbarSearch query={query} onQueryChange={onQueryChange} label={pageText("searchProjects_30c3c3")} placeholder={pageText("searchProjects_16f8bb")} />
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" title="Sort">
+        <Button variant="outline" size="sm" title={translateUi("interfaceCopy.sort")}>
           <ArrowUpDown className="h-3.5 w-3.5 sm:h-3 sm:w-3 sm:mr-1" />
-          <span>Sort: {sortLabel}</span>
+          <span>{pageText("sort_8b335a") + " "}{optionLabel(sortLabel)}</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-44 p-0">
@@ -49,11 +54,11 @@ export function ProjectsToolbar({ query, onQueryChange, sortField, sortDir, onSo
                   : (option.field === "name" || option.field === "targetDate" ? "asc" : "desc"));
               }}
             >
-              <span>{option.label}</span>
+              <span>{optionLabel(option.label)}</span>
               {sortField === option.field ? (
                 <span className="flex items-center gap-1 text-xs text-muted-foreground">
                   <Check className="h-3 w-3" />
-                  {sortDir === "asc" ? "Asc" : "Desc"}
+                  {sortDir === "asc" ? pageText("asc_4fee0a") : pageText("desc_01e635")}
                 </span>
               ) : null}
             </button>
@@ -63,9 +68,7 @@ export function ProjectsToolbar({ query, onQueryChange, sortField, sortDir, onSo
     </Popover>
     <div className="design-toolbar-actions">
       <Button size="sm" variant="outline" data-toolbar-primary onClick={openNewProject}>
-          <Plus className="h-4 w-4 mr-1" />
-          Create project
-      </Button>
+          <Plus className="h-4 w-4 mr-1" />{pageText("createProject_a8d8ff")}</Button>
     </div>
   </div>;
 }

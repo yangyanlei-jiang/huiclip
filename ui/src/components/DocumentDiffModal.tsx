@@ -1,3 +1,5 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { QueryKey } from "@tanstack/react-query";
@@ -20,8 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
-import { cn } from "@/lib/utils";
 
 function getRevisionLabel(revision: DocumentRevision) {
   const actor = revision.createdByUserId
@@ -49,6 +49,8 @@ export function DocumentDiffModal({
   revisionsQueryKey?: QueryKey;
   revisionsQueryFn?: () => Promise<DocumentRevision[]>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const { data: revisions } = useQuery({
     queryKey: revisionsQueryKey ?? queryKeys.issues.documentRevisions(issueId ?? "", documentKey),
     queryFn: () => revisionsQueryFn ? revisionsQueryFn() : issuesApi.listDocumentRevisions(issueId ?? "", documentKey),
@@ -96,20 +98,19 @@ export function DocumentDiffModal({
       <DialogContent className="!max-w-(--pct-90) w-full max-h-(--sz-85vh) overflow-hidden flex flex-col">
         <div className="flex items-center justify-between gap-4">
           <DialogHeader className="shrink-0">
-            <DialogTitle>
-              Diff — <span className="font-mono text-sm">{documentKey}</span>
+            <DialogTitle>{pageText("diff_0decad") + " "}<span className="font-mono text-sm">{documentKey}</span>
             </DialogTitle>
           </DialogHeader>
 
           <div className="flex items-center gap-4 shrink-0">
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="border-red-500/30 bg-red-500/10 text-(length:--text-nano) uppercase tracking-wider text-red-400">Old</Badge>
+              <Badge variant="outline" className="border-red-500/30 bg-red-500/10 text-(length:--text-nano) uppercase tracking-wider text-red-400">{translateUi("interfaceCopy.old")}</Badge>
               <Select
                 value={effectiveLeftId ?? ""}
                 onValueChange={(value) => setLeftRevisionId(value)}
               >
                 <SelectTrigger className="h-7 w-60 text-xs border-border/60">
-                  <SelectValue placeholder="Select revision" />
+                  <SelectValue placeholder={pageText("selectRevision_0a6ee4")} />
                 </SelectTrigger>
                 <SelectContent>
                   {sortedRevisions.map((revision) => (
@@ -121,13 +122,13 @@ export function DocumentDiffModal({
               </Select>
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="border-green-500/30 bg-green-500/10 text-(length:--text-nano) uppercase tracking-wider text-green-400">New</Badge>
+              <Badge variant="outline" className="border-green-500/30 bg-green-500/10 text-(length:--text-nano) uppercase tracking-wider text-green-400">{translateUi("interfaceCopy.new")}</Badge>
               <Select
                 value={effectiveRightId ?? ""}
                 onValueChange={(value) => setRightRevisionId(value)}
               >
                 <SelectTrigger className="h-7 w-60 text-xs border-border/60">
-                  <SelectValue placeholder="Select revision" />
+                  <SelectValue placeholder={pageText("selectRevision_0a6ee4")} />
                 </SelectTrigger>
                 <SelectContent>
                   {sortedRevisions.map((revision) => (
@@ -143,18 +144,18 @@ export function DocumentDiffModal({
 
         <div className="overflow-auto flex-1 rounded-md border border-border text-xs">
           {!revisions ? (
-            <div className="p-6 text-center text-muted-foreground text-sm">Loading revisions...</div>
+            <div className="p-6 text-center text-muted-foreground text-sm">{pageText("loadingRevisions_496692")}</div>
           ) : !leftRevision || !rightRevision ? (
-            <div className="p-6 text-center text-muted-foreground text-sm">Select two revisions to compare.</div>
+            <div className="p-6 text-center text-muted-foreground text-sm">{pageText("selectTwoRevisionsToCompare_a6b919")}</div>
           ) : leftRevision.id === rightRevision.id ? (
-            <div className="p-6 text-center text-muted-foreground text-sm">Both sides are the same revision.</div>
+            <div className="p-6 text-center text-muted-foreground text-sm">{pageText("bothSidesAreTheSameRevision_c6a358")}</div>
           ) : (
             <div className="font-mono text-xs leading-6">
               <div className="grid grid-cols-(--gtc-1) border-b border-border/60 bg-muted/30 px-3 py-2 text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">
-                <span>Old</span>
-                <span>New</span>
+                <span>{translateUi("interfaceCopy.old")}</span>
+                <span>{translateUi("interfaceCopy.new")}</span>
                 <span />
-                <span>Content</span>
+                <span>{translateUi("interfaceCopy.content")}</span>
               </div>
               {diffRows.map((row, index) => (
                 <div
@@ -170,7 +171,7 @@ export function DocumentDiffModal({
                   <span className="select-none px-3 text-center text-muted-foreground">
                     {markerByKind[row.kind]}
                   </span>
-                  <pre className={cn("overflow-x-auto whitespace-pre-wrap break-words px-3 py-0 text-inherit", ANALYTICS_MASK_CLASS)}>
+                  <pre className="overflow-x-auto whitespace-pre-wrap break-words px-3 py-0 text-inherit">
                     {row.text.length > 0 ? row.text : " "}
                   </pre>
                 </div>

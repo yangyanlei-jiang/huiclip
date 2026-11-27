@@ -7,6 +7,7 @@ use std::io::Write;
 use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use std::process::Stdio;
 use std::time::Duration;
 
 use paperclip_runner_core::local_runner::HarnessCommand;
@@ -16,16 +17,13 @@ use paperclip_runner_core::process_supervisor::{
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 
-/// Whether the process has not exited. A zombie has exited and waits only
-/// for its parent; a worker re-parented to init waits for init, which can
-/// take longer than any fixed sleep. A process that cannot be read counts as
-/// running, so the check never passes on a platform it cannot see.
-fn process_running(pid: u64) -> bool {
-    match paperclip_process_table::read(i32::try_from(pid).unwrap()) {
-        paperclip_process_table::Read::Present(entry) => !entry.zombie,
-        paperclip_process_table::Read::Gone => false,
-        paperclip_process_table::Read::Unreadable => true,
-    }
+fn process_exists(pid: u64) -> bool {
+    Command::new("kill")
+        .args(["-0", &pid.to_string()])
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status()
+        .is_ok_and(|status| status.success())
 }
 
 fn write_executable(path: &Path, contents: &str) {
@@ -418,8 +416,8 @@ fn spawn_linger_process() -> (SupervisedProcess, u32, u64) {
         }
     }
     let worker_pid = worker_pid.expect("linger script should report its worker pid");
-    assert!(process_running(u64::from(harness_pid)));
-    assert!(process_running(worker_pid));
+    assert!(process_exists(u64::from(harness_pid)));
+    assert!(process_exists(worker_pid));
     (process, harness_pid, worker_pid)
 }
 
@@ -430,9 +428,9 @@ fn forced_process_group_cleanup_stops_harness_and_worker() {
     process
         .terminate_group()
         .expect("process group cleanup should finish");
-    // Cleanup returns only after it proves every recorded process exited.
-    assert!(!process_running(u64::from(harness_pid)));
-    assert!(!process_running(worker_pid));
+    std::thread::sleep(Duration::from_millis(20));
+    assert!(!process_exists(u64::from(harness_pid)));
+    assert!(!process_exists(worker_pid));
 }
 
 #[test]
@@ -450,9 +448,9 @@ fn natural_harness_exit_also_cleans_up_workers() {
         .wait()
         .expect("harness should exit after interruption");
 
-    // Waiting returns only after it proves every recorded process exited.
-    assert!(!process_running(u64::from(harness_pid)));
-    assert!(!process_running(worker_pid));
+    std::thread::sleep(Duration::from_millis(20));
+    assert!(!process_exists(u64::from(harness_pid)));
+    assert!(!process_exists(worker_pid));
 }
 
 #[test]

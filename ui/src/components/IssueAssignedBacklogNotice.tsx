@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { Flag } from "lucide-react";
 import type { Agent } from "@paperclipai/shared";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ export function IssueAssignedBacklogNotice({
   onResume,
   resuming,
 }: IssueAssignedBacklogNoticeProps) {
+  const { t: pageText } = usePageTranslation("interface");
   if (issueStatus !== "backlog") return null;
   if (!assigneeAgent && !assigneeUserId) return null;
 
@@ -32,13 +34,10 @@ export function IssueAssignedBacklogNotice({
         <Flag className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-300" />
         <div className="min-w-0 flex-1 space-y-1.5">
           <p className="leading-5">
-            <span className="font-medium">Parked</span> —{" "}
-            <span className="font-medium">{assigneeLabel}</span> will not be asked to work on this until status changes to To do or In progress.
-          </p>
+            <span className="font-medium">{pageText("parked_e445e2")}</span> —{" "}
+            <span className="font-medium">{assigneeLabel}</span>{" " + pageText("willNotBeAskedToWorkOnThis_3396c4")}</p>
           {assigneeAgent ? (
-            <p className="text-xs leading-5 text-amber-800 dark:text-amber-200">
-              Comments still notify the assignee for questions or triage. Leave this parked only if the work is intentionally on hold.
-            </p>
+            <p className="text-xs leading-5 text-amber-800 dark:text-amber-200">{pageText("commentsStillNotifyTheAssigneeForQuestionsOr_33eab2")}</p>
           ) : null}
           {onResume ? (
             <div className="pt-0.5">
@@ -50,7 +49,7 @@ export function IssueAssignedBacklogNotice({
                 disabled={resuming}
                 data-testid="issue-assigned-backlog-resume"
               >
-                {resuming ? "Resuming…" : "Resume now"}
+                {resuming ? pageText("resuming_ab0bec") : pageText("resumeNow_94bd2d")}
               </Button>
             </div>
           ) : null}

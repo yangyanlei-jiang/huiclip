@@ -1,3 +1,6 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { type FormEvent, useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { ToolMcpGatewayContextScopeType, ToolProfileWithDetails } from "@paperclipai/shared";
@@ -16,8 +19,6 @@ import { useToast } from "@/context/ToastContext";
 import { queryKeys } from "@/lib/queryKeys";
 import { allowedToolsLabel } from "./gateway-helpers";
 import { describeError } from "@/api/errors";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
-import { cn } from "@/lib/utils";
 
 export const gatewaysQueryKey = (companyId: string) => ["tools", "gateways", companyId] as const;
 
@@ -37,6 +38,8 @@ export function NewGatewayDialog({
   onOpenChange: (open: boolean) => void;
   onCreated?: (gatewayId: string) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToast();
   const [name, setName] = useState("");
@@ -66,7 +69,7 @@ export function NewGatewayDialog({
         contextScopeType: "company" satisfies ToolMcpGatewayContextScopeType,
       }),
     onSuccess: async (gateway) => {
-      pushToast({ title: "Gateway created", body: gateway.name, tone: "success" });
+      pushToast({ title: interfaceNotice("interface:gatewayCreated_c68536"), body: gateway.name, tone: "success" });
       await queryClient.invalidateQueries({ queryKey: gatewaysQueryKey(companyId) });
       setName("");
       setDescription("");
@@ -75,7 +78,7 @@ export function NewGatewayDialog({
     },
     onError: (error) => {
       pushToast({
-        title: "Gateway was not created",
+        title: interfaceNotice("interface:gatewayWasNotCreated_5f046d"),
         body: describeError(error).body,
         tone: "error",
       });
@@ -93,27 +96,24 @@ export function NewGatewayDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={cn("sm:max-w-lg", ANALYTICS_MASK_CLASS)}>
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>New gateway</DialogTitle>
-          <DialogDescription>
-            One safe MCP endpoint that exposes only the apps in its access profile. Hand it to a client
-            like Cursor or Claude Desktop.
-          </DialogDescription>
+          <DialogTitle>{pageText("newGateway_e170c1")}</DialogTitle>
+          <DialogDescription>{pageText("oneSafeMCPEndpointThatExposesOnlyThe_e19675")}</DialogDescription>
         </DialogHeader>
         <form className="space-y-4" onSubmit={submit}>
           <label className="block space-y-1.5">
-            <span className="text-xs font-medium text-muted-foreground">Name</span>
+            <span className="text-xs font-medium text-muted-foreground">{translateUi("interfaceCopy.name")}</span>
             <Input
               value={name}
               onChange={(event) => setName(event.target.value)}
-              placeholder="CTO agents"
+              placeholder={pageText("ctoAgents_284a98")}
               required
               autoFocus
             />
           </label>
           <label className="block space-y-1.5">
-            <span className="text-xs font-medium text-muted-foreground">Access profile</span>
+            <span className="text-xs font-medium text-muted-foreground">{pageText("accessProfile_e59e8b")}</span>
             <select
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               value={profileId}
@@ -122,7 +122,7 @@ export function NewGatewayDialog({
               disabled={noProfiles}
             >
               <option value="" disabled>
-                {profilesLoading ? "Loading profiles…" : "Choose a profile"}
+                {profilesLoading ? pageText("loadingProfiles_b8f34c") : pageText("chooseAProfile_f47537")}
               </option>
               {activeProfiles.map((profile) => (
                 <option key={profile.id} value={profile.id}>
@@ -130,33 +130,27 @@ export function NewGatewayDialog({
                 </option>
               ))}
             </select>
-            <span className="text-xs text-muted-foreground">
-              The profile decides which tools this gateway allows. You can change it later.
-            </span>
+            <span className="text-xs text-muted-foreground">{pageText("theProfileDecidesWhichToolsThisGatewayAllows_15bac9")}</span>
           </label>
           <label className="block space-y-1.5">
-            <span className="text-xs font-medium text-muted-foreground">Description (optional)</span>
+            <span className="text-xs font-medium text-muted-foreground">{pageText("descriptionOptional_388de6")}</span>
             <textarea
               className="min-h-16 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               value={description}
               onChange={(event) => setDescription(event.target.value)}
-              placeholder="Who this endpoint is for and when it should be rotated."
+              placeholder={pageText("whoThisEndpointIsForAndWhenIt_7a01fc")}
             />
           </label>
           {noProfiles ? (
-            <p className="text-xs text-destructive">
-              Create an access profile under Advanced before adding a gateway.
-            </p>
+            <p className="text-xs text-destructive">{pageText("createAnAccessProfileUnderAdvancedBeforeAdding_b3bfca")}</p>
           ) : null}
           <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button
               type="submit"
               disabled={createMutation.isPending || noProfiles || !name.trim() || !profileId}
             >
-              {createMutation.isPending ? "Creating…" : "Create gateway"}
+              {createMutation.isPending ? pageText("creating_94d7d8") : pageText("createGateway_857f02")}
             </Button>
           </DialogFooter>
         </form>

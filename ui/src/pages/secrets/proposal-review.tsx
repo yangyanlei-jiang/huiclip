@@ -1,9 +1,12 @@
+import { t as interfaceNotice } from "@/i18n";
+import { t as translateDynamic } from "../../i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { useCallback, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Copy, Fingerprint, KeyRound, Link2, ShieldAlert, Variable, ServerCog } from "lucide-react";
 import type {
-  ApproveSecretProposalInput,
   CompanySecretProviderConfig,
   SecretProposalAgentRef,
   SecretProposalView,
@@ -77,10 +80,10 @@ export function FingerprintChip({
       type="button"
       onClick={() => {
         copyTextToClipboard(full)
-          .then(() => pushToast({ title: "Fingerprint copied", tone: "success" }))
-          .catch(() => pushToast({ title: "Couldn’t copy fingerprint", tone: "error" }));
+          .then(() => pushToast({ title: interfaceNotice("interface:fingerprintCopied_acb67f"), tone: "success" }))
+          .catch(() => pushToast({ title: interfaceNotice("interface:couldnTCopyFingerprint_bcd044"), tone: "error" }));
       }}
-      title={`Copy full digest — ${full}`}
+      title={translateDynamic("dynamic:copyFullDigest", { value1: full })}
       className={cn(
         "inline-flex items-center gap-1 font-mono hover:text-foreground",
         className,
@@ -103,32 +106,14 @@ export function FingerprintChip({
 export function ProposalJustification({
   justification,
   className,
-  variant = "captioned",
 }: {
   justification: string;
   className?: string;
-  /**
-   * `captioned` (default) shows the "Reason given by the agent" caption above
-   * the quote. `quote` is one quiet quoted line with the caption kept for
-   * screen readers, for surfaces whose heading already names the agent.
-   */
-  variant?: "captioned" | "quote";
 }) {
-  if (variant === "quote") {
-    return (
-      <p
-        className={cn(
-          "whitespace-pre-wrap break-words border-l-2 border-border pl-3 text-sm text-muted-foreground",
-          className,
-        )}
-      >
-        <span className="sr-only">Reason given by the agent: </span>“{justification}”
-      </p>
-    );
-  }
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className={cn("space-y-0.5", className)}>
-      <p className="text-(length:--text-micro) text-muted-foreground">Reason given by the agent</p>
+      <p className="text-(length:--text-micro) text-muted-foreground">{pageText("reasonGivenByTheAgent_25c929")}</p>
       <p className="whitespace-pre-wrap break-words text-xs text-foreground/80">
         “{justification}”
       </p>
@@ -175,6 +160,7 @@ export function DeliveryBadge({ configPath }: { configPath: string | null }) {
 
 /** Distinct "Proposed" pill used wherever a proposal is inlined among live rows. */
 export function ProposedBadge({ className }: { className?: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <Badge
       variant="outline"
@@ -184,8 +170,7 @@ export function ProposedBadge({ className }: { className?: string }) {
         className,
       )}
     >
-      <ShieldAlert className="size-3" /> Proposed
-    </Badge>
+      <ShieldAlert className="size-3" />{" " + pageText("proposed_70cbd1")}</Badge>
   );
 }
 
@@ -235,33 +220,22 @@ export interface UseProposalReview {
   dialogs: React.ReactNode;
 }
 
-export interface UseProposalDecision {
-  /** Approve a proposal, optionally with edits (secret) or a cascade (access). */
-  approve: (proposal: SecretProposalView, input?: ApproveSecretProposalInput) => void;
-  /** Reject a proposal. The API requires a non-empty reason. */
-  reject: (proposal: SecretProposalView, reason: string) => void;
-  approving: boolean;
-  rejecting: boolean;
-  /** True while an approve/reject request is in flight. */
-  isBusy: boolean;
-  /** Readable message from the last failed request, if any. */
-  error: string | null;
-  clearError: () => void;
-}
-
 /**
- * Approve/reject requests for one review surface: API calls, toasts, cache
- * invalidation and the last error. Surfaces own their presentation — dialogs
- * (`useProposalReview`) or inline rows (the Secrets page Proposals tab).
+ * Shared approve/reject workflow for secret & binding proposals. Both the
+ * board Proposals tab and the agent-settings "Proposed" rows use this so the
+ * confirm/reject affordances behave identically everywhere.
  */
-export function useProposalDecision(
+export function useProposalReview(
   companyId: string | null,
-  callbacks: { onApproved?: () => void; onRejected?: () => void } = {},
-): UseProposalDecision {
+  providerConfigs: CompanySecretProviderConfig[] = [],
+): UseProposalReview {
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
+
+  const [approveDraft, setApproveDraft] = useState<ApproveDraft | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<SecretProposalView | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const { onApproved, onRejected } = callbacks;
 
   const invalidate = useCallback(() => {
     if (!companyId) return;
@@ -270,19 +244,35 @@ export function useProposalDecision(
   }, [companyId, queryClient]);
 
   const approveMutation = useMutation({
-    mutationFn: ({ proposal, input }: { proposal: SecretProposalView; input: ApproveSecretProposalInput }) =>
-      secretsApi.approveProposal(companyId!, proposal.id, input),
+    mutationFn: (draft: ApproveDraft) => {
+      const { proposal } = draft;
+      if (proposal.kind === "secret") {
+        const name = draft.folder.trim()
+          ? `${draft.folder.trim().replace(/\/+$/, "")}/${draft.leaf.trim()}`
+          : draft.leaf.trim();
+        return secretsApi.approveProposal(companyId!, proposal.id, {
+          overrides: {
+            name,
+            description: draft.description.trim() || null,
+            providerConfigId: draft.providerConfigId || null,
+          },
+        });
+      }
+      return secretsApi.approveProposal(companyId!, proposal.id, {
+        cascade: draft.cascade || undefined,
+      });
+    },
     onSuccess: (result) => {
       pushToast({
-        title: result.kind === "secret" ? "Secret approved" : "Access approved",
+        title: result.kind === "secret" ? interfaceNotice("interface:secretApproved_c49f48") : interfaceNotice("interface:bindingApproved_c853a6"),
         body:
           result.kind === "secret"
-            ? (result.proposedName ?? "Secret created")
-            : `${result.target?.name ?? "Agent"} · ${bindingEnvKey(result) || "access"}`,
+            ? (result.proposedName ?? interfaceNotice("interface:secretCreated_f3d57c"))
+            : `${result.target?.name ?? "Agent"} · ${bindingEnvKey(result) || "binding"}`,
         tone: "success",
       });
+      setApproveDraft(null);
       setError(null);
-      onApproved?.();
       invalidate();
     },
     onError: (err) => setError(readableError(err)),
@@ -293,81 +283,21 @@ export function useProposalDecision(
       secretsApi.rejectProposal(companyId!, proposal.id, { reason: reason.trim() }),
     onSuccess: (result) => {
       pushToast({
-        title: "Proposal rejected",
+        title: interfaceNotice("interface:proposalRejected_a2f390"),
         body: result.kind === "secret" ? (result.proposedName ?? undefined) : undefined,
         tone: "info",
       });
+      setRejectTarget(null);
+      setRejectReason("");
       setError(null);
-      onRejected?.();
       invalidate();
     },
     onError: (err) => setError(readableError(err)),
   });
 
-  const { mutate: mutateApprove } = approveMutation;
-  const { mutate: mutateReject } = rejectMutation;
-  const approve = useCallback(
-    (proposal: SecretProposalView, input: ApproveSecretProposalInput = {}) =>
-      mutateApprove({ proposal, input }),
-    [mutateApprove],
-  );
-  const reject = useCallback(
-    (proposal: SecretProposalView, reason: string) => mutateReject({ proposal, reason }),
-    [mutateReject],
-  );
-  const clearError = useCallback(() => setError(null), []);
-
-  return {
-    approve,
-    reject,
-    approving: approveMutation.isPending,
-    rejecting: rejectMutation.isPending,
-    isBusy: approveMutation.isPending || rejectMutation.isPending,
-    error,
-    clearError,
-  };
-}
-
-function approveInputFromDraft(draft: ApproveDraft): ApproveSecretProposalInput {
-  if (draft.proposal.kind === "secret") {
-    const name = draft.folder.trim()
-      ? `${draft.folder.trim().replace(/\/+$/, "")}/${draft.leaf.trim()}`
-      : draft.leaf.trim();
-    return {
-      overrides: {
-        name,
-        description: draft.description.trim() || null,
-        providerConfigId: draft.providerConfigId || null,
-      },
-    };
-  }
-  return { cascade: draft.cascade || undefined };
-}
-
-/**
- * Shared approve/reject dialogs for secret & access proposals, used where a
- * proposal is reviewed among other rows (the agent-settings "Proposed" rows).
- */
-export function useProposalReview(
-  companyId: string | null,
-  providerConfigs: CompanySecretProviderConfig[] = [],
-): UseProposalReview {
-  const [approveDraft, setApproveDraft] = useState<ApproveDraft | null>(null);
-  const [rejectTarget, setRejectTarget] = useState<SecretProposalView | null>(null);
-  const [rejectReason, setRejectReason] = useState("");
-
-  const decision = useProposalDecision(companyId, {
-    onApproved: () => setApproveDraft(null),
-    onRejected: () => {
-      setRejectTarget(null);
-      setRejectReason("");
-    },
-  });
-  const { error, clearError } = decision;
-
   const requestApprove = useCallback(
     (proposal: SecretProposalView) => {
-      clearError();
+      setError(null);
       const segments = (proposal.proposedName ?? "").split("/");
       const leaf = segments.pop() ?? "";
       setApproveDraft({
@@ -384,42 +314,42 @@ export function useProposalReview(
         cascade: Boolean(proposal.secretProposalId),
       });
     },
-    [providerConfigs, clearError],
+    [providerConfigs],
   );
 
   const requestReject = useCallback((proposal: SecretProposalView) => {
-    clearError();
+    setError(null);
     setRejectReason("");
     setRejectTarget(proposal);
-  }, [clearError]);
+  }, []);
 
   const dialogs = (
     <>
       <ApproveDialog
         draft={approveDraft}
         error={error}
-        pending={decision.approving}
+        pending={approveMutation.isPending}
         providerConfigs={providerConfigs}
         onChange={setApproveDraft}
         onCancel={() => {
           setApproveDraft(null);
-          clearError();
+          setError(null);
         }}
-        onConfirm={() => approveDraft && decision.approve(approveDraft.proposal, approveInputFromDraft(approveDraft))}
+        onConfirm={() => approveDraft && approveMutation.mutate(approveDraft)}
       />
       <RejectDialog
         proposal={rejectTarget}
         reason={rejectReason}
         error={error}
-        pending={decision.rejecting}
+        pending={rejectMutation.isPending}
         onReasonChange={setRejectReason}
         onCancel={() => {
           setRejectTarget(null);
           setRejectReason("");
-          clearError();
+          setError(null);
         }}
         onConfirm={() =>
-          rejectTarget && decision.reject(rejectTarget, rejectReason)
+          rejectTarget && rejectMutation.mutate({ proposal: rejectTarget, reason: rejectReason })
         }
       />
     </>
@@ -428,7 +358,7 @@ export function useProposalReview(
   return {
     requestApprove,
     requestReject,
-    isBusy: decision.isBusy,
+    isBusy: approveMutation.isPending || rejectMutation.isPending,
     dialogs,
   };
 }
@@ -454,6 +384,8 @@ function ApproveDialog({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const isSecret = draft?.proposal.kind === "secret";
   const previewName = draft
     ? draft.folder.trim()
@@ -470,19 +402,19 @@ function ApproveDialog({
           <>
             <DialogHeader>
               <DialogTitle>
-                {isSecret ? "Approve and save secret" : "Approve access"}
+                {isSecret ? pageText("approveCreateSecret_6862eb") : pageText("approveBinding_b90500")}
               </DialogTitle>
               <DialogDescription>
                 {isSecret
-                  ? "The value is saved exactly as the agent recorded it. You can rename it or move it to another folder first."
-                  : "Give the agent access to this secret. Access is granted with your permissions."}
+                  ? pageText("theValueIsCreatedAsTheProposingAgent_3423ac")
+                  : pageText("grantTheTargetAgentAccessToThisSecret_01636c")}
               </DialogDescription>
             </DialogHeader>
 
             {/* Provenance recap — keeps the social-engineering surface visible. */}
             <div className="space-y-1.5 rounded-md border border-border bg-muted/30 p-2.5 text-xs">
               <div className="flex items-center gap-1.5 text-muted-foreground">
-                <span>Proposed by</span>
+                <span>{pageText("proposedBy_788df0")}</span>
                 <AgentRefChip agent={draft.proposal.proposedBy} className="font-medium text-foreground" />
               </div>
               <ProposalJustification justification={draft.proposal.justification} />
@@ -492,7 +424,7 @@ function ApproveDialog({
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-2">
                   <div className="space-y-1">
-                    <Label htmlFor="approve-folder">Folder</Label>
+                    <Label htmlFor="approve-folder">{pageText("folder_30baa2")}</Label>
                     <Input
                       id="approve-folder"
                       value={draft.folder}
@@ -502,7 +434,7 @@ function ApproveDialog({
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label htmlFor="approve-name">Name</Label>
+                    <Label htmlFor="approve-name">{translateUi("interfaceCopy.name")}</Label>
                     <Input
                       id="approve-name"
                       value={draft.leaf}
@@ -514,28 +446,27 @@ function ApproveDialog({
                     />
                   </div>
                 </div>
-                <p className="text-(length:--text-micro) text-muted-foreground">
-                  Saved as{" "}
+                <p className="text-(length:--text-micro) text-muted-foreground">{pageText("landsAs_da3894")}{" "}
                   {previewName ? (
                     <SecretPathName name={previewName} className="font-mono" />
                   ) : (
-                    <span className="italic">enter a name</span>
+                    <span className="italic">{pageText("enterAName_7b1572")}</span>
                   )}
                 </p>
 
                 <div className="space-y-1">
-                  <Label htmlFor="approve-description">Description</Label>
+                  <Label htmlFor="approve-description">{translateUi("interfaceCopy.description")}</Label>
                   <Input
                     id="approve-description"
                     value={draft.description}
                     onChange={(event) => onChange({ ...draft, description: event.target.value })}
-                    placeholder="Optional"
+                    placeholder={translateUi("interfaceCopy.optional")}
                   />
                 </div>
 
                 {localConfigs.length > 0 ? (
                   <div className="space-y-1">
-                    <Label htmlFor="approve-provider-config">Stored in</Label>
+                    <Label htmlFor="approve-provider-config">{translateUi("interfaceCopy.providerVault")}</Label>
                     <select
                       id="approve-provider-config"
                       value={draft.providerConfigId}
@@ -544,7 +475,7 @@ function ApproveDialog({
                       }
                       className="h-9 w-full rounded-md border border-input bg-transparent px-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
                     >
-                      <option value="">Default vault</option>
+                      <option value="">{pageText("deploymentDefault_aa39f7")}</option>
                       {localConfigs.map((config) => (
                         <option key={config.id} value={config.id}>
                           {config.displayName}
@@ -572,17 +503,15 @@ function ApproveDialog({
             ) : null}
 
             <DialogFooter>
-              <Button variant="ghost" onClick={onCancel} disabled={pending}>
-                Cancel
-              </Button>
+              <Button variant="ghost" onClick={onCancel} disabled={pending}>{translateUi("interfaceCopy.cancel")}</Button>
               <Button onClick={onConfirm} disabled={pending || !canConfirm}>
                 {pending
-                  ? "Approving…"
+                  ? pageText("approving_26fb03")
                   : isSecret
-                    ? "Approve and save secret"
+                    ? pageText("approveCreate_33e056")
                     : draft.cascade
-                      ? "Approve access and save secret"
-                      : "Approve access"}
+                      ? pageText("approveSecretBind_a9b21e")
+                      : pageText("approveBinding_b90500")}
               </Button>
             </DialogFooter>
           </>
@@ -599,6 +528,8 @@ function BindingApproveBody({
   draft: ApproveDraft;
   onChange: (next: ApproveDraft) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const { proposal } = draft;
   const secret = bindingSecretLabel(proposal);
   const envKey = bindingEnvKey(proposal);
@@ -606,7 +537,7 @@ function BindingApproveBody({
     <div className="space-y-3 text-sm">
       <div className="space-y-2 rounded-md border border-border p-3">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-xs text-muted-foreground">Agent</span>
+          <span className="text-xs text-muted-foreground">{pageText("targetAgent_2c44aa")}</span>
           {proposal.target ? (
             <AgentRefChip agent={proposal.target} className="text-sm font-medium" />
           ) : (
@@ -614,14 +545,14 @@ function BindingApproveBody({
           )}
         </div>
         <div className="flex items-center justify-between gap-2">
-          <span className="text-xs text-muted-foreground">Delivered as</span>
+          <span className="text-xs text-muted-foreground">{pageText("deliveredAs_f9972b")}</span>
           <span className="flex items-center gap-1.5">
             <DeliveryBadge configPath={proposal.configPath} />
             <code className="font-mono text-xs">{envKey || proposal.configPath}</code>
           </span>
         </div>
         <div className="flex items-center justify-between gap-2">
-          <span className="text-xs text-muted-foreground">Secret</span>
+          <span className="text-xs text-muted-foreground">{translateUi("interfaceCopy.secret")}</span>
           <span className="flex items-center gap-1.5">
             <KeyRound className="size-3.5 text-muted-foreground" />
             <span className="font-medium">{secret.name}</span>
@@ -637,13 +568,10 @@ function BindingApproveBody({
             checked={draft.cascade}
             onCheckedChange={(checked) => onChange({ ...draft, cascade: checked === true })}
             className="mt-0.5"
-            aria-label="Also approve the proposed secret"
+            aria-label={pageText("alsoApproveTheProposedSecret_54c090")}
           />
-          <span className="text-foreground/90">
-            Also approve the proposed secret{" "}
-            <span className="font-medium">{secret.name}</span> and save it in the same step. Access
-            can’t be approved without it.
-          </span>
+          <span className="text-foreground/90">{pageText("alsoApproveTheProposedSecret_54c090")}{" "}
+            <span className="font-medium">{secret.name}</span>{" " + pageText("andCreateItInTheSameStepThe_f2b34c")}</span>
         </label>
       ) : null}
     </div>
@@ -671,6 +599,8 @@ function RejectDialog({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const canConfirm = reason.trim().length > 0;
   return (
     <Dialog open={Boolean(proposal)} onOpenChange={(open) => !open && onCancel()}>
@@ -678,22 +608,19 @@ function RejectDialog({
         {proposal ? (
           <>
             <DialogHeader>
-              <DialogTitle>Reject proposal</DialogTitle>
-              <DialogDescription>
-                The reason is sent back to{" "}
-                <AgentRefChip agent={proposal.proposedBy} className="text-foreground" />. Requests to
-                use this secret are rejected too.
-              </DialogDescription>
+              <DialogTitle>{pageText("rejectProposal_9492f4")}</DialogTitle>
+              <DialogDescription>{pageText("theReasonIsSentBackTo_e76650")}{" "}
+                <AgentRefChip agent={proposal.proposedBy} className="text-foreground" />{pageText("dependentBindingsAreRejectedToo_35e7f9")}</DialogDescription>
             </DialogHeader>
             <div className="space-y-1">
-              <Label htmlFor="reject-reason">Reason</Label>
+              <Label htmlFor="reject-reason">{translateUi("interfaceCopy.reason")}</Label>
               <Textarea
                 id="reject-reason"
                 value={reason}
                 onChange={(event) => onReasonChange(event.target.value)}
                 rows={3}
                 autoFocus
-                placeholder="Why is this being rejected?"
+                placeholder={pageText("whyIsThisBeingRejected_62f59c")}
               />
             </div>
             {error ? (
@@ -702,11 +629,9 @@ function RejectDialog({
               </p>
             ) : null}
             <DialogFooter>
-              <Button variant="ghost" onClick={onCancel} disabled={pending}>
-                Cancel
-              </Button>
+              <Button variant="ghost" onClick={onCancel} disabled={pending}>{translateUi("interfaceCopy.cancel")}</Button>
               <Button variant="destructive" onClick={onConfirm} disabled={pending || !canConfirm}>
-                {pending ? "Rejecting…" : "Reject"}
+                {pending ? pageText("rejecting_812b8d") : pageText("reject_2b03b5")}
               </Button>
             </DialogFooter>
           </>
@@ -733,6 +658,7 @@ export function ProposalActions({
   disabled?: boolean;
   size?: "sm" | "xs";
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const blocked = !proposal.viewerCanApprove;
   const heightClass = size === "xs" ? "h-7 px-2 text-xs" : "";
   const approveButton = (
@@ -741,9 +667,7 @@ export function ProposalActions({
       className={heightClass}
       disabled={disabled || blocked}
       onClick={() => onApprove(proposal)}
-    >
-      Approve
-    </Button>
+    >{pageText("approve_7b2c7f")}</Button>
   );
   return (
     <div className="flex items-center gap-1.5">
@@ -754,7 +678,7 @@ export function ProposalActions({
               <span tabIndex={0}>{approveButton}</span>
             </TooltipTrigger>
             <TooltipContent className="max-w-72">
-              {proposal.approveBlockReason ?? "You don’t have permission to approve this."}
+              {proposal.approveBlockReason ?? pageText("youDonTHavePermissionToApproveThis_8d1a80")}
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
@@ -767,9 +691,7 @@ export function ProposalActions({
         className={heightClass}
         disabled={disabled}
         onClick={() => onReject(proposal)}
-      >
-        Reject
-      </Button>
+      >{pageText("reject_2b03b5")}</Button>
     </div>
   );
 }

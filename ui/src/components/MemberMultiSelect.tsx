@@ -1,3 +1,6 @@
+import { t as translateDynamic } from "../i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState, type ComponentProps, type ReactNode } from "react";
 import { ChevronRight } from "lucide-react";
 import { Identity } from "@/components/Identity";
@@ -68,6 +71,8 @@ export function MemberMultiSelect({
   filterPlaceholder?: string;
   onOpenChange?: (open: boolean) => void;
 }): ReactNode {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState("");
   const [draftUserIds, setDraftUserIds] = useState<Set<string>>(new Set(selectedUserIds));
@@ -123,7 +128,7 @@ export function MemberMultiSelect({
             <span className="flex min-w-0 items-center">
               <span className="truncate">
                 {triggerLabel ?? (selectedCount === 0
-                  ? "Select people"
+                  ? pageText("selectPeople_ad3b53")
                   : `${selectedCount} ${selectedCount === 1 ? "person" : "people"} selected`)}
               </span>
             </span>
@@ -160,7 +165,7 @@ export function MemberMultiSelect({
                   >
                     <Checkbox
                       checked={workingUserIds.has(member.userId)}
-                      aria-label={`Allow ${label}`}
+                      aria-label={translateDynamic("dynamic:allow", { value1: label })}
                       onCheckedChange={(checked) => {
                         const next = new Set(workingUserIds);
                         if (checked) next.add(member.userId);
@@ -178,19 +183,17 @@ export function MemberMultiSelect({
                 );
               })}
               {filteredMembers.length === 0 ? (
-                <div className="px-3 py-4 text-sm text-muted-foreground">No matches.</div>
+                <div className="px-3 py-4 text-sm text-muted-foreground">{translateUi("interfaceCopy.noMatches")}</div>
               ) : null}
             </div>
           )}
           <div className="flex items-center justify-between border-t border-border px-3 py-2">
             <span className="text-xs text-muted-foreground" aria-live="polite">
-              {workingUserIds.size === 0 ? "No people selected" : `${workingUserIds.size} selected`}
+              {workingUserIds.size === 0 ? pageText("noPeopleSelected_67132b") : `${workingUserIds.size} selected`}
             </span>
             <div className="flex items-center gap-2">
               {staged ? (
-                <Button type="button" variant="ghost" size="sm" onClick={() => setOpen(false)} disabled={pending}>
-                  Cancel
-                </Button>
+                <Button type="button" variant="ghost" size="sm" onClick={() => setOpen(false)} disabled={pending}>{translateUi("interfaceCopy.cancel")}</Button>
               ) : null}
               <Button
                 type="button"
@@ -201,7 +204,7 @@ export function MemberMultiSelect({
                 }}
                 disabled={pending}
               >
-                {staged ? (pending ? "Saving…" : "Save") : "Done"}
+                {staged ? (pending ? pageText("saving_56a228") : pageText("save_efc007")) : pageText("done_e9b450")}
               </Button>
             </div>
           </div>
@@ -215,9 +218,7 @@ export function MemberMultiSelect({
             </div>
           ))}
           {selectedMembers.length > 3 ? (
-            <p className="px-1.5 pt-0.5 text-xs text-muted-foreground">
-              and {selectedMembers.length - 3} more
-            </p>
+            <p className="px-1.5 pt-0.5 text-xs text-muted-foreground">{pageText("and_cffa50") + " "}{selectedMembers.length - 3}{" " + pageText("more_e7c95b")}</p>
           ) : null}
         </div>
       ) : null}

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { AgentIdentity } from "@/components/AgentIdentity";
 import { useMemo, useState } from "react";
 import { Link } from "@/lib/router";
@@ -188,6 +189,7 @@ function KanbanColumn({
   revealIncrement: number;
   onShowMore: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { setNodeRef, isOver } = useDroppable({ id: status, disabled: status === "monitoring" });
 
   const isEmpty = issues.length === 0;
@@ -258,13 +260,10 @@ function KanbanColumn({
             type="button"
             className="mt-1 flex w-full items-center justify-center rounded-md border border-dashed border-border bg-background/70 px-2 py-2 text-xs font-medium text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
             onClick={onShowMore}
-          >
-            Show {nextRevealCount} more
-          </button>
+          >{pageText("show_d97d1e") + " "}{nextRevealCount}{" " + pageText("more_e7c95b")}</button>
         ) : null}
         {issues.length > 0 && (hiddenCount > 0 || issues.length >= visibleCount) ? (
-          <p className="px-1 pt-1 text-(length:--text-micro) text-muted-foreground">
-            Showing {visibleIssues.length} of {issues.length}
+          <p className="px-1 pt-1 text-(length:--text-micro) text-muted-foreground">{pageText("showing_163d81") + " "}{visibleIssues.length}{" " + pageText("of_de04fa") + " "}{issues.length}
           </p>
         ) : null}
       </div>
@@ -291,6 +290,7 @@ function KanbanCard({
   compact?: boolean;
   className?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const {
     attributes,
     listeners,
@@ -341,12 +341,10 @@ function KanbanCard({
           {isSuccessfulRunHandoffRequired(issue) ? (
             <Badge variant="outline"
               className="border-amber-400/45 bg-amber-50/60 px-1.5 text-(length:--text-nano) text-amber-700 dark:border-amber-300/35 dark:bg-amber-400/10 dark:text-amber-300"
-              title="This task needs a next step"
-              aria-label="Needs next step"
+              title={pageText("thisTaskNeedsANextStep_5f1c69")}
+              aria-label={pageText("needsNextStep_76833e")}
             >
-              <AlertTriangle className="h-3 w-3" />
-              Next step
-            </Badge>
+              <AlertTriangle className="h-3 w-3" />{pageText("nextStep_5500ee")}</Badge>
           ) : null}
           {isLive && (
             <span className="inline-flex shrink-0 items-center gap-1 text-(length:--text-nano) font-medium text-blue-600 dark:text-blue-400">
@@ -354,7 +352,7 @@ function KanbanCard({
                 <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
               </span>
-              {compact ? "Live" : null}
+              {compact ? pageText("live_65c821") : null}
             </span>
           )}
           {!isLive && subtreeLiveCount > 0 && (
@@ -363,8 +361,7 @@ function KanbanCard({
               title={`${subtreeLiveCount} sub-task${subtreeLiveCount === 1 ? "" : "s"} running below`}
             >
               <span className="h-2 w-2 shrink-0 rounded-full border border-muted-foreground/60" aria-hidden="true" />
-              {subtreeLiveCount} live below
-            </Badge>
+              {subtreeLiveCount}{" " + pageText("liveBelow_c8d79e")}</Badge>
           )}
         </div>
         <p className={`${compact ? "mb-1.5 text-xs" : "mb-2 text-sm"} leading-snug line-clamp-2`}>{issue.title}</p>
@@ -400,6 +397,7 @@ export function KanbanBoard({
   showOverflowFades = false,
   onUpdateIssue,
 }: KanbanBoardProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const [activeId, setActiveId] = useState<string | null>(null);
   const paginationKey = `${initialVisibleCount}:${revealIncrement}`;
   const [visibleState, setVisibleState] = useState<{
@@ -493,7 +491,7 @@ export function KanbanBoard({
       onDragEnd={handleDragEnd}
     >
       {showOverflowFades
-        ? <HorizontalScrollViewport label="Task board columns" contentClassName="flex gap-3 pb-4 px-2">{columns}</HorizontalScrollViewport>
+        ? <HorizontalScrollViewport label={pageText("taskBoardColumns_853041")} contentClassName="flex gap-3 pb-4 px-2">{columns}</HorizontalScrollViewport>
         : <div className="flex gap-3 overflow-x-auto pb-4 -mx-2 px-2">{columns}</div>}
       <DragOverlay>
         {activeIssue ? (

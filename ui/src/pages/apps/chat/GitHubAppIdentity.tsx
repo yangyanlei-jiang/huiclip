@@ -1,3 +1,5 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { ExternalLink, RefreshCw } from "lucide-react";
 import type { ChatEndpoint } from "@/api/chatEndpoints";
 import { AgentAvatarDownload } from "@/components/AgentAvatarDownload";
@@ -24,12 +26,13 @@ export function gitHubAppSettingsUrl(endpoint: ChatEndpoint) {
 }
 
 export function GitHubBotMention({ endpoint }: { endpoint: ChatEndpoint }) {
+  const { t: pageText } = usePageTranslation("interface");
   const mention = gitHubBotMention(endpoint);
   return mention ? (
     <CopyText
       text={mention}
-      ariaLabel="Copy GitHub mention"
-      title="Copy GitHub mention"
+      ariaLabel={interfaceNotice("interface:copyGitHubMention_78ae53")}
+      title={pageText("copyGitHubMention_78ae53")}
       className="break-all font-mono text-xs"
     >
       {mention}
@@ -45,13 +48,11 @@ export function GitHubAppBranding({
   endpoint: ChatEndpoint;
   avatarUrl?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
-    <GitHubSettingsDisclosure title="GitHub App name and logo">
+    <GitHubSettingsDisclosure title={pageText("githubAppNameAndLogo_bf54a5")}>
       <div className="mt-4 space-y-4">
-        <p className="text-sm text-muted-foreground">
-          Change the name or upload a logo in the App’s Display information
-          settings on GitHub.
-        </p>
+        <p className="text-sm text-muted-foreground">{pageText("changeTheNameOrUploadALogoIn_f03737")}</p>
         <div className="flex flex-wrap items-center gap-3">
           {avatarUrl && (
             <>
@@ -71,22 +72,16 @@ export function GitHubAppBranding({
               href={gitHubAppSettingsUrl(endpoint)}
               target="_blank"
               rel="noreferrer"
-              aria-label="Edit App name and logo on GitHub"
-            >
-              Edit on GitHub <ExternalLink className="size-4" />
+              aria-label={pageText("editAppNameAndLogoOnGitHub_41cbbb")}
+            >{pageText("editOnGitHub_ba3fa8") + " "}<ExternalLink className="size-4" />
             </a>
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground">
-          Renaming also changes its @mention.{" "}
+        <p className="text-xs text-muted-foreground">{pageText("renamingAlsoChangesItsMention_7c9401")}{" "}
           <Link
             className="underline underline-offset-4"
             to={`/apps/chat/connect?provider=github&resume=${endpoint.id}&reconnect=1`}
-          >
-            Reconnect afterward
-          </Link>{" "}
-          to update it here.
-        </p>
+          >{pageText("reconnectAfterward_cf827d")}</Link>{" "}{pageText("toUpdateItHere_c1a519")}</p>
       </div>
     </GitHubSettingsDisclosure>
   );
@@ -100,6 +95,7 @@ export function GitHubAppIdentityActions({
   endpoint: ChatEndpoint;
   avatarUrl?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="flex flex-wrap items-center gap-1">
       {avatarUrl && (
@@ -114,17 +110,16 @@ export function GitHubAppIdentityActions({
           href={gitHubAppSettingsUrl(endpoint)}
           target="_blank"
           rel="noreferrer"
-          aria-label="Edit App name and logo on GitHub"
-          title="Change the App name or upload its logo on GitHub"
-        >
-          Edit App <ExternalLink className="size-3.5" />
+          aria-label={pageText("editAppNameAndLogoOnGitHub_41cbbb")}
+          title={pageText("changeTheAppNameOrUploadItsLogo_dedbc3")}
+        >{pageText("editApp_fb53f5") + " "}<ExternalLink className="size-3.5" />
         </a>
       </Button>
       <Button variant="ghost" size="icon" asChild>
         <Link
           to={`/apps/chat/connect?provider=github&resume=${endpoint.id}&reconnect=1`}
-          aria-label="Refresh GitHub App identity"
-          title="Reconnect after renaming the App to refresh its @mention"
+          aria-label={pageText("refreshGitHubAppIdentity_48428a")}
+          title={pageText("reconnectAfterRenamingTheAppToRefreshIts_6a3abd")}
         >
           <RefreshCw className="size-3.5" />
         </Link>

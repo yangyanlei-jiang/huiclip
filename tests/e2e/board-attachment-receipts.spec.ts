@@ -352,10 +352,7 @@ for (const classic of [false, true]) {
       fullPage: true,
     });
   });
-}
 
-{
-  const classic = false;
   test(`lost accepted response settles from its exact receipt without replay (classic=${classic})`, async ({
     page,
     request,

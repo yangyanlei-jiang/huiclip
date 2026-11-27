@@ -1,3 +1,5 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
 import { Link } from "@/lib/router";
 import { useQuery } from "@tanstack/react-query";
@@ -86,11 +88,12 @@ function OrgTreeNode({
 }
 
 export function Org() {
+  const { t: pageText } = usePageTranslation("interface");
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Org Chart" }]);
+    setBreadcrumbs([{ label: interfaceNotice("interface:orgChart_989088") }]);
   }, [setBreadcrumbs]);
 
   const orgQuery = useQuery({
@@ -102,7 +105,7 @@ export function Org() {
   const orgView = useQueryView(orgQuery);
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={GitBranch} message="Select an organization to view org chart." />;
+    return <EmptyState icon={GitBranch} message={pageText("selectAnOrganizationToViewOrgChart_af0990")} />;
   }
 
   // Keep a loaded chart on screen through a failed refetch; only a real
@@ -127,7 +130,7 @@ export function Org() {
       {data && data.length === 0 && (
         <EmptyState
           icon={GitBranch}
-          message="No agents in the organization. Create agents to build your org chart."
+          message={pageText("noAgentsInTheOrganizationCreateAgentsTo_a607e2")}
         />
       )}
 

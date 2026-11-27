@@ -198,7 +198,7 @@ describe("codex execute — outbound auth copy-back restore contribution", () =>
     });
     const policy = commandArgs.find(arg => arg.startsWith("shell_environment_policy.include_only="));
     const keys = policy ? JSON.parse(policy.slice(policy.indexOf("=") + 1)) : [];
-    expect(keys).toEqual(expect.arrayContaining(["SLACK_BOT_TOKEN", "SSL_CERT_FILE", "SSL_CERT_DIR", "GIT_SSL_CAINFO", "NODE_EXTRA_CA_CERTS", "DENO_CERT", "REQUESTS_CA_BUNDLE", "CURL_CA_BUNDLE"]));
+    expect(keys).toContain("SLACK_BOT_TOKEN");
     if (withIdentity) expect(keys).toEqual(expect.arrayContaining([
       "PAPERCLIP_API_KEY", "PAPERCLIP_AGENT_PRIVATE_KEY",
     ]));

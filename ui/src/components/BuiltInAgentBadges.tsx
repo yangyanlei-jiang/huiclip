@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { brandChipBadge } from "@/lib/status-colors";
@@ -17,6 +18,7 @@ export function BuiltInLifecycleChip({
   compact?: boolean;
   className?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (status !== "needs_setup" && status !== "pending_approval") return null;
   const isPendingApproval = status === "pending_approval";
   return (
@@ -29,11 +31,11 @@ export function BuiltInLifecycleChip({
       )}
       title={
         isPendingApproval
-          ? "Waiting on board hire approval before the feature can run"
-          : "Needs adapter/model setup before the feature can run"
+          ? pageText("waitingOnBoardHireApprovalBeforeTheFeature_2181b6")
+          : pageText("needsAdapterModelSetupBeforeTheFeatureCan_19070f")
       }
     >
-      {isPendingApproval ? (compact ? "Approval" : "Pending approval") : compact ? "Setup" : "Needs setup"}
+      {isPendingApproval ? (compact ? pageText("approval_8cc047") : pageText("pendingApproval_25d1b4")) : compact ? pageText("setup_cdd7bb") : pageText("needsSetup_522eba")}
     </Badge>
   );
 }

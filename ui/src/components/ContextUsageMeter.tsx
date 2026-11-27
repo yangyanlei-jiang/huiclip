@@ -1,3 +1,6 @@
+import { t as translateDynamic } from "../i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useRef, useState } from "react";
 import { FoldVertical, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -88,6 +91,7 @@ export type ContextCompactState =
   | { status: "unavailable"; reason: string };
 
 function CompactAction({ compact, level }: { compact: ContextCompactState; level: ContextUsageLevel }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="mt-3 flex flex-col gap-1.5 border-t border-border pt-3">
       <Button
@@ -102,14 +106,14 @@ function CompactAction({ compact, level }: { compact: ContextCompactState; level
         {compact.status === "pending"
           ? <Loader2 className="size-3.5 animate-spin" aria-hidden />
           : <FoldVertical className="size-3.5" aria-hidden />}
-        {compact.status === "pending" ? "Compacting…" : "Compact now"}
+        {compact.status === "pending" ? pageText("compacting_399fec") : pageText("compactNow_10c986")}
       </Button>
       <p className="text-muted-foreground" role={compact.status === "unavailable" ? "note" : undefined}>
         {compact.status === "unavailable"
           ? compact.reason
           : compact.status === "pending"
-            ? "The agent is summarizing its conversation. This usually takes under a minute."
-            : "Summarizes the conversation so far so the agent has room to keep working."}
+            ? pageText("theAgentIsSummarizingItsConversationThisUsually_ab7d66")
+            : pageText("summarizesTheConversationSoFarSoTheAgent_eb26c1")}
       </p>
     </div>
   );
@@ -117,50 +121,51 @@ function CompactAction({ compact, level }: { compact: ContextCompactState; level
 
 /** The hover card body; exported for Storybook galleries. */
 export function ContextUsageCard({ usage, compact }: { usage: ContextUsage; compact?: ContextCompactState | null }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const percent = Math.min(100, Math.round((usage.usedTokens / usage.contextWindow) * 100));
   const level = contextUsageLevel(usage);
   const totals = usage.totals;
   return (
     <div className="flex flex-col">
       <div className="flex items-baseline justify-between gap-2">
-        <span className="font-medium text-foreground">Context window</span>
+        <span className="font-medium text-foreground">{pageText("contextWindow_061386")}</span>
         <span className={cn("font-medium tabular-nums", LEVEL_TEXT[level])}>{percent}%</span>
       </div>
       <p className="mt-0.5 text-muted-foreground tabular-nums">
-        {formatContextTokens(usage.usedTokens)} of {formatContextTokens(usage.contextWindow)} tokens
-        {usage.observedAt ? <> · updated {timeAgo(usage.observedAt)}</> : null}
+        {formatContextTokens(usage.usedTokens)}{" " + pageText("of_de04fa") + " "}{formatContextTokens(usage.contextWindow)}{" " + pageText("tokens_339143")}{usage.observedAt ? <>{" " + pageText("updated_c456ed") + " "}{timeAgo(usage.observedAt)}</> : null}
       </p>
       <Bar percent={percent} level={level} className="mt-2 w-full" />
       {level !== "normal" ? (
         <p className={cn("mt-2", LEVEL_TEXT[level])}>
           {usage.autoCompactTokens
             ? `Compacts automatically near ${formatContextTokens(usage.autoCompactTokens)}.`
-            : "Close to full. The agent will compact its context soon."}
+            : pageText("closeToFullTheAgentWillCompactIts_f71f7f")}
         </p>
       ) : null}
       {totals || usage.lastTurn || usage.costUsd != null || usage.compactions ? (
         <dl className="mt-3 flex flex-col gap-1 border-t border-border pt-2">
           {totals?.inputTokens != null ? (
             <Row
-              label="Input"
+              label={translateUi("interfaceCopy.input")}
               value={totals.cachedInputTokens
                 ? `${formatContextTokens(totals.inputTokens)} · ${formatContextTokens(totals.cachedInputTokens)} cached`
                 : formatContextTokens(totals.inputTokens)}
             />
           ) : null}
-          {totals?.outputTokens != null ? <Row label="Output" value={formatContextTokens(totals.outputTokens)} /> : null}
+          {totals?.outputTokens != null ? <Row label={translateUi("interfaceCopy.output")} value={formatContextTokens(totals.outputTokens)} /> : null}
           {totals?.reasoningOutputTokens ? (
-            <Row label="Reasoning" value={formatContextTokens(totals.reasoningOutputTokens)} muted />
+            <Row label={pageText("reasoning_e272c5")} value={formatContextTokens(totals.reasoningOutputTokens)} muted />
           ) : null}
           {usage.lastTurn ? (
             <Row
-              label="Last request"
+              label={pageText("lastRequest_c452f5")}
               value={`${formatContextTokens(usage.lastTurn.inputTokens ?? 0)} in · ${formatContextTokens(usage.lastTurn.outputTokens ?? 0)} out`}
               muted
             />
           ) : null}
-          {usage.costUsd != null ? <Row label="Cost" value={`$${usage.costUsd.toFixed(2)}`} /> : null}
-          {usage.compactions ? <Row label="Compactions" value={String(usage.compactions)} muted /> : null}
+          {usage.costUsd != null ? <Row label={translateUi("interfaceCopy.cost")} value={`$${usage.costUsd.toFixed(2)}`} /> : null}
+          {usage.compactions ? <Row label={pageText("compactions_2a02a9")} value={String(usage.compactions)} muted /> : null}
         </dl>
       ) : null}
       {compact ? <CompactAction compact={compact} level={level} /> : null}
@@ -182,6 +187,7 @@ export function ContextUsageMeter({
   compact?: ContextCompactState | null;
   defaultOpen?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [open, setOpen] = useState(defaultOpen);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const percent = Math.min(100, Math.round((usage.usedTokens / usage.contextWindow) * 100));
@@ -201,7 +207,7 @@ export function ContextUsageMeter({
       <PopoverTrigger asChild>
         <button
           type="button"
-          aria-label={`Context window: ${percent}% of ${windowLabel} tokens used`}
+          aria-label={translateDynamic("dynamic:contextWindowOfTokensUsed", { value1: percent, value2: windowLabel })}
           data-testid="context-usage-meter"
           data-level={level}
           onMouseEnter={show}
@@ -211,7 +217,7 @@ export function ContextUsageMeter({
           <Bar percent={percent} level={level} className="w-12 shrink-0" />
           <span className={cn("truncate tabular-nums", level === "normal" ? "text-foreground" : LEVEL_TEXT[level])}>
             {percent}%
-            <span className="text-muted-foreground"> of {windowLabel}</span>
+            <span className="text-muted-foreground">{" " + pageText("of_de04fa") + " "}{windowLabel}</span>
           </span>
         </button>
       </PopoverTrigger>

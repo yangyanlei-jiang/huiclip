@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { createContext, useContext, useId, type CSSProperties, type ReactNode } from "react";
 import { DndContext, PointerSensor, closestCenter, pointerWithin, useSensor, useSensors } from "@dnd-kit/core";
 import { SortableContext, horizontalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
@@ -38,13 +39,14 @@ export function TaskListViewport({ children, visibleColumns = defaultTaskListCol
   columnOrder?: readonly TaskListColumnId[];
   controls?: ReactNode;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { scrollRef, contentRef, edges } = useHorizontalScrollEdges();
   const orderedColumns = columnOrder.filter(id => visibleColumns.includes(id));
 
   return (
     <ColumnContext.Provider value={{ columns: orderedColumns, order: columnOrder }}>
-      <div role="table" aria-label="Task list" data-slot="task-list-viewport" data-overflow-left={edges.left} data-overflow-right={edges.right} className="task-list-viewport" style={columnLayout(orderedColumns, Boolean(controls))}>
-        <div ref={scrollRef} role="region" aria-label="Task list columns" tabIndex={0} className="task-list-columns-scroll">
+      <div role="table" aria-label={pageText("taskTable")} data-slot="task-list-viewport" data-overflow-left={edges.left} data-overflow-right={edges.right} className="task-list-viewport" style={columnLayout(orderedColumns, Boolean(controls))}>
+        <div ref={scrollRef} role="region" aria-label={pageText("taskListColumns")} tabIndex={0} className="task-list-columns-scroll">
           <div ref={contentRef} className="task-list-columns-content">{children}</div>
         </div>
         {controls ? <div className="task-list-header-controls">{controls}</div> : null}
@@ -73,6 +75,7 @@ function SortableColumnHeader({ id, label, start, sort, onSortChange, onColumnOr
   helpId: string;
 }) {
   const { columns, order } = useContext(ColumnContext);
+  const { t: pageText } = usePageTranslation("interface");
   const sortable = useSortable({ id, disabled: !onColumnOrderChange, transition: null });
   const active = sort?.column === id;
   const direction = active && sort.direction === "ascending" ? "descending" : "ascending";
@@ -96,7 +99,7 @@ function SortableColumnHeader({ id, label, start, sort, onSortChange, onColumnOr
           {...sortable.listeners}
           type="button" variant="ghost" size="sm" className="task-list-sort-button"
           data-active={active || undefined} data-reorderable={Boolean(onColumnOrderChange)}
-          aria-label={onSortChange ? `${label}: sort ${direction}` : label}
+          aria-label={onSortChange ? pageText(direction === "ascending" ? "sortColumnAscending" : "sortColumnDescending", { label }) : label}
           aria-describedby={onColumnOrderChange ? helpId : undefined}
           aria-keyshortcuts={onColumnOrderChange ? "Alt+ArrowLeft Alt+ArrowRight" : undefined}
           onClick={() => onSortChange?.({ column: id, direction })}
@@ -123,6 +126,7 @@ export function TaskListColumnHeader({ sort, onSortChange, onColumnOrderChange }
   onColumnOrderChange?: (columns: readonly TaskListColumnId[]) => void;
 }) {
   const { columns, order } = useContext(ColumnContext);
+  const { t: pageText } = usePageTranslation("interface");
   const helpId = useId();
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
   return (
@@ -131,12 +135,12 @@ export function TaskListColumnHeader({ sort, onSortChange, onColumnOrderChange }
       return targets.length ? targets : closestCenter(args);
     }} onDragEnd={({ active, over }) => {
       if (over) onColumnOrderChange?.(reorderTaskListColumns(order, active.id as TaskListColumnId, over.id as TaskListColumnId));
-    }} accessibility={{ screenReaderInstructions: { draggable: "Click to sort. Drag horizontally to reorder, or use Alt plus Left or Right Arrow." } }}>
-      <span id={helpId} className="sr-only">Drag to reorder columns, or use Alt plus Left or Right Arrow. Click to sort.</span>
+    }} accessibility={{ screenReaderInstructions: { draggable: pageText("dragColumns") } }}>
+      <span id={helpId} className="sr-only">{pageText("dragColumnsHelp")}</span>
       <SortableContext items={[...columns]} strategy={horizontalListSortingStrategy}>
         <div role="row" data-slot="task-list-column-header" className="task-list-column-header">
-          {!columns.includes("task") ? <span role="columnheader" aria-label="Task hierarchy" /> : null}
-          {columns.map(id => <SortableColumnHeader key={id} id={id} label={taskListColumns.find(column => column.id === id)!.label} start={taskListColumnStart(columns, id)} sort={sort} onSortChange={onSortChange} onColumnOrderChange={onColumnOrderChange} helpId={helpId} />)}
+          {!columns.includes("task") ? <span role="columnheader" aria-label={pageText("taskHierarchy")} /> : null}
+          {columns.map(id => <SortableColumnHeader key={id} id={id} label={pageText(`taskColumn_${id}`)} start={taskListColumnStart(columns, id)} sort={sort} onSortChange={onSortChange} onColumnOrderChange={onColumnOrderChange} helpId={helpId} />)}
         </div>
       </SortableContext>
     </DndContext>
@@ -150,14 +154,15 @@ export function TaskListColumnSettings({ visibleColumns, onVisibleColumnsChange,
   onColumnOrderChange?: (columns: readonly TaskListColumnId[]) => void;
   onResetDefaults?: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { order } = useContext(ColumnContext);
   return (
     <FlyoutAppearanceProvider><DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button type="button" variant="ghost" size="icon-xs" className="task-list-settings-trigger" aria-label="Columns"><Ellipsis aria-hidden /></Button>
+        <Button type="button" variant="ghost" size="icon-xs" className="task-list-settings-trigger" aria-label={pageText("columns_cf723c")}><Ellipsis aria-hidden /></Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="task-list-options" aria-label="Columns">
-        <DropdownMenuLabel asChild><FlyoutHeader className="task-list-options-heading">Columns</FlyoutHeader></DropdownMenuLabel>
+      <DropdownMenuContent align="end" className="task-list-options" aria-label={pageText("columns_cf723c")}>
+        <DropdownMenuLabel asChild><FlyoutHeader className="task-list-options-heading">{pageText("columns_cf723c")}</FlyoutHeader></DropdownMenuLabel>
         <FlyoutOptions className="task-list-options-items">
           {order.map(id => (
             <DropdownMenuCheckboxItem
@@ -168,10 +173,10 @@ export function TaskListColumnSettings({ visibleColumns, onVisibleColumnsChange,
               onSelect={event => event.preventDefault()}
               onCheckedChange={checked => onVisibleColumnsChange(order.filter(column => column === id ? checked === true : visibleColumns.includes(column)))}
             >
-              {taskListColumns.find(column => column.id === id)!.label}
+              {pageText(`taskColumn_${id}`)}
             </DropdownMenuCheckboxItem>
           ))}
-          <DropdownMenuItem className="task-list-options-reset" onSelect={event => { event.preventDefault(); onColumnOrderChange?.(allTaskListColumns); onVisibleColumnsChange(defaultTaskListColumns); onResetDefaults?.(); }}>Reset defaults</DropdownMenuItem>
+          <DropdownMenuItem className="task-list-options-reset" onSelect={event => { event.preventDefault(); onColumnOrderChange?.(allTaskListColumns); onVisibleColumnsChange(defaultTaskListColumns); onResetDefaults?.(); }}>{pageText("resetDefaults")}</DropdownMenuItem>
         </FlyoutOptions>
       </DropdownMenuContent>
     </DropdownMenu></FlyoutAppearanceProvider>

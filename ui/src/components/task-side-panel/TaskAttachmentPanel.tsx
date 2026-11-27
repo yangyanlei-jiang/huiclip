@@ -1,3 +1,6 @@
+import { t as translateDynamic } from "../../i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Download } from "lucide-react";
@@ -16,8 +19,6 @@ import { attachmentDownloadPath, isMarkdownAttachment, isTextAttachment } from "
 import { queryKeys } from "@/lib/queryKeys";
 
 import { readTextPreview, TEXT_PREVIEW_MAX_BYTES } from "@/lib/text-preview";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
-import { cn } from "@/lib/utils";
 export { readTextPreview, TEXT_PREVIEW_MAX_BYTES } from "@/lib/text-preview";
 
 export function TextAttachmentPreview({ title, text, markdown, html = false, csv = false, patch = isPatchFile(title), downloadUrl }: {
@@ -29,6 +30,7 @@ export function TextAttachmentPreview({ title, text, markdown, html = false, csv
   patch?: boolean;
   downloadUrl: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [mode, setMode] = useState<FilePreviewMode>("rendered");
   useEffect(() => setMode("rendered"), [title]);
   const renderCsv = csv && mode === "rendered" && text.length > 0;
@@ -37,24 +39,26 @@ export function TextAttachmentPreview({ title, text, markdown, html = false, csv
     <div className="flex h-full min-h-0 min-w-0 max-w-full flex-col">
       <header className="flex min-w-0 items-center gap-2 border-b border-border px-3 py-2">
         <h2 className="min-w-0 flex-1 truncate text-sm font-medium" title={title}>{title}</h2>
-        {markdown || html || csv ? <FilePreviewModeToggle mode={mode} onChange={setMode} label={html ? "HTML view" : csv ? "CSV view" : "Markdown view"} /> : null}
+        {markdown || html || csv ? <FilePreviewModeToggle mode={mode} onChange={setMode} label={html ? pageText("htmlView_057be8") : csv ? pageText("csvView_d8d628") : pageText("markdownView_06a3f0")} /> : null}
         <Button asChild variant="ghost" size="icon-sm">
-          <a href={downloadUrl} download aria-label={`Download ${title}`} title={`Download ${title}`}><Download aria-hidden /></a>
+          <a href={downloadUrl} download aria-label={translateDynamic("dynamic:download", { value1: title })} title={translateDynamic("dynamic:download", { value1: title })}><Download aria-hidden /></a>
         </Button>
       </header>
-      <div className={cn(renderHtml || renderCsv ? "flex min-h-0 flex-1 flex-col overflow-hidden" : "min-h-0 min-w-0 flex-1 overflow-auto p-4", ANALYTICS_MASK_CLASS)}>
-        {text.length === 0 ? <p className="text-sm text-muted-foreground">File is empty.</p>
+      <div className={renderHtml || renderCsv ? "flex min-h-0 flex-1 flex-col overflow-hidden" : "min-h-0 min-w-0 flex-1 overflow-auto p-4"}>
+        {text.length === 0 ? <p className="text-sm text-muted-foreground">{pageText("fileIsEmpty_2846e0")}</p>
           : renderCsv ? <CsvPreview text={text} title={title} />
           : renderHtml ? <HtmlArtifactPreview html={text} title={title} />
           : markdown && mode === "rendered" ? <MarkdownBody mediaMode="reference">{text}</MarkdownBody>
-          : patch ? <pre className={cn("paperclip-patch-source m-0 min-w-0 whitespace-pre-wrap wrap-anywhere font-mono text-sm", ANALYTICS_MASK_CLASS)} aria-label={`${title} patch`}><code><PatchLines text={text} /></code></pre>
-          : <pre className={cn("whitespace-pre-wrap wrap-anywhere font-mono text-sm", ANALYTICS_MASK_CLASS)} aria-label={`${title} raw text`}>{text}</pre>}
+          : patch ? <pre className="paperclip-patch-source m-0 min-w-0 whitespace-pre-wrap wrap-anywhere font-mono text-sm" aria-label={`${title} patch`}><code><PatchLines text={text} /></code></pre>
+          : <pre className="whitespace-pre-wrap wrap-anywhere font-mono text-sm" aria-label={`${title} raw text`}>{text}</pre>}
       </div>
     </div>
   );
 }
 
 export function TaskAttachmentPanel({ issueId, attachmentId }: { issueId: string; attachmentId: string }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const attachments = useQuery({
     queryKey: queryKeys.issues.attachments(issueId),
     queryFn: () => issuesApi.listAttachments(issueId),
@@ -72,7 +76,7 @@ export function TaskAttachmentPanel({ issueId, attachmentId }: { issueId: string
   });
   const attachmentsView = useQueryView(attachments);
   const contentView = useQueryView(content);
-  if (attachments.isLoading || attachmentsView.kind === "reconnecting") return <p className="p-4 text-sm" role="status">Loading file…</p>;
+  if (attachments.isLoading || attachmentsView.kind === "reconnecting") return <p className="p-4 text-sm" role="status">{pageText("loadingFile_4ee4f5")}</p>;
   if (attachmentsView.kind === "error") {
     return (
       <QueryErrorState
@@ -84,17 +88,17 @@ export function TaskAttachmentPanel({ issueId, attachmentId }: { issueId: string
       />
     );
   }
-  if (!attachment) return <p className="p-4 text-sm" role="status">File no longer available. Close this tab or choose another file.</p>;
+  if (!attachment) return <p className="p-4 text-sm" role="status">{pageText("fileNoLongerAvailableCloseThisTabOr_ea8058")}</p>;
   const downloadUrl = attachmentDownloadPath(attachment);
   if (!eligible || contentView.kind === "error") {
     return (
       <div className="space-y-3 p-4" role="alert">
-        <p className="text-sm">{contentView.kind === "error" ? "Could not preview this file. Retry or download it." : "This file is too large or is not supported for text preview. Download it instead."}</p>
-        {eligible ? <Button onClick={() => void content.refetch()}>Retry</Button> : null}
-        <Button asChild variant="outline"><a href={downloadUrl} download>Download file</a></Button>
+        <p className="text-sm">{contentView.kind === "error" ? pageText("couldNotPreviewThisFileRetryOrDownload_ec3c40") : pageText("thisFileIsTooLargeOrIsNot_aec692")}</p>
+        {eligible ? <Button onClick={() => void content.refetch()}>{translateUi("interfaceCopy.retry")}</Button> : null}
+        <Button asChild variant="outline"><a href={downloadUrl} download>{pageText("downloadFile_774025")}</a></Button>
       </div>
     );
   }
-  if (content.data === undefined) return <p className="p-4 text-sm" role="status">Loading file…</p>;
+  if (content.data === undefined) return <p className="p-4 text-sm" role="status">{pageText("loadingFile_4ee4f5")}</p>;
   return <TextAttachmentPreview key={attachment.id} title={attachment.originalFilename ?? attachment.id} text={content.data} patch={isPatchFile(attachment.originalFilename, attachment.contentType)} csv={isCsvFile(attachment.originalFilename ?? "", attachment.contentType)} markdown={isMarkdownAttachment(attachment)} html={isHtmlPreview(attachment.contentType, attachment.originalFilename)} downloadUrl={downloadUrl} />;
 }

@@ -1,3 +1,5 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { Clock, RotateCcw, AlertCircle, Loader2, CheckCircle2 } from "lucide-react";
 import { Link } from "@/lib/router";
 import { Button } from "@/components/ui/button";
@@ -28,6 +30,7 @@ export function IssueScheduledRetryCard({
   issueId,
   scheduledRetry,
 }: IssueScheduledRetryCardProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const retryNow = useRetryNowMutation(issueId);
 
   if (!scheduledRetry || !issueId) return null;
@@ -35,8 +38,7 @@ export function IssueScheduledRetryCard({
 
   // Workspace contention is a transient wait with nothing for the user to do.
   // The composer strip and properties row carry the quiet status instead.
-  if (scheduledRetry.scheduledRetryReason === "workspace_busy"
-    || scheduledRetry.scheduledRetryReason === "environment_provider_wait") return null;
+  if (scheduledRetry.scheduledRetryReason === "workspace_busy") return null;
 
   const continuation = isContinuationReason(scheduledRetry.scheduledRetryReason);
   const dueAtIso = scheduledRetry.scheduledRetryAt
@@ -86,7 +88,7 @@ export function IssueScheduledRetryCard({
               {badgeLabel}
             </Badge>
             {attempt !== null ? (
-              <span className="text-muted-foreground">Attempt {attempt}</span>
+              <span className="text-muted-foreground">{pageText("attempt_43d44f") + " "}{attempt}</span>
             ) : null}
             {reason ? (
               <span className="text-muted-foreground">{reason}</span>
@@ -98,8 +100,7 @@ export function IssueScheduledRetryCard({
               {absolute ? <span>{absolute}</span> : null}
               {absolute && scheduledRetry.retryOfRunId ? <span>{" · "}</span> : null}
               {scheduledRetry.retryOfRunId ? (
-                <span>
-                  Replaces run{" "}
+                <span>{pageText("replacesRun_f302f1")}{" "}
                   <Link
                     to={`/agents/${scheduledRetry.agentId}/runs/${scheduledRetry.retryOfRunId}`}
                     className="font-mono text-foreground hover:underline"
@@ -111,9 +112,7 @@ export function IssueScheduledRetryCard({
             </div>
           ) : null}
           {scheduledRetry.error ? (
-            <div className="mt-1 text-xs text-muted-foreground">
-              Last attempt failed: {scheduledRetry.error}{/[.!?]$/.test(scheduledRetry.error.trim()) ? "" : "."} Paperclip will retry automatically.
-            </div>
+            <div className="mt-1 text-xs text-muted-foreground">{pageText("lastAttemptFailed_304a88") + " "}{scheduledRetry.error}{/[.!?]$/.test(scheduledRetry.error.trim()) ? "" : "."}{" " + pageText("paperclipWillRetryAutomatically_989a8e")}</div>
           ) : null}
           {isError ? ( // query-error-ok: mutation result
 
@@ -138,30 +137,25 @@ export function IssueScheduledRetryCard({
           >
             {retryNow.isPending ? (
               <span className="inline-flex items-center gap-1.5">
-                <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
-                Retrying…
-              </span>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />{pageText("retrying_231013")}</span>
             ) : isSuccessTransient ? (
               <span className="inline-flex items-center gap-1.5">
                 <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
-                {retryNow.data?.outcome === "already_promoted" ? "Already promoted" : "Promoted"}
+                {retryNow.data?.outcome === "already_promoted" ? pageText("alreadyPromoted_72d0f7") : pageText("promoted_2eb0c3")}
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5">
-                <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
-                Retry now
-              </span>
+                <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />{pageText("retryNow_84ce86")}</span>
             )}
           </Button>
           <span className="text-right text-xs text-muted-foreground sm:max-w-(--sz-12rem)">
             {retryNow.isPending
-              ? "Promoting scheduled retry"
+              ? pageText("promotingScheduledRetry_5a4b51")
               : isSuccessTransient
                 ? retryNow.data?.outcome === "already_promoted"
-                  ? "Already promoted — run starting"
-                  : "Promoted — run starting"
-                : (retryNow.data?.outcome === "waiting" && retryNow.data.scheduledRetry?.runId === scheduledRetry.runId)
-                    || retryNow.data?.outcome === "no_scheduled_retry"
+                  ? pageText("alreadyPromotedRunStarting_756018")
+                  : pageText("promotedRunStarting_bd6975")
+                : retryNow.data?.outcome === "waiting" && retryNow.data.scheduledRetry?.runId === scheduledRetry.runId
                   ? retryNow.data.message
                   : helperIdle}
           </span>
@@ -178,6 +172,8 @@ interface RetryErrorBandProps {
 }
 
 export function RetryErrorBand({ error, onRetry, className }: RetryErrorBandProps) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   if (!error) return null;
   return (
     <div
@@ -190,16 +186,14 @@ export function RetryErrorBand({ error, onRetry, className }: RetryErrorBandProp
     >
       <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
       <div className="min-w-0 flex-1">
-        <div className="font-medium">Couldn't retry now</div>
+        <div className="font-medium">{pageText("couldnTRetryNow_cc7b7e")}</div>
         <div className="mt-0.5 text-muted-foreground">{describeError({ status: error.status, body: { message: error.message } }).body}</div>
       </div>
       <button
         type="button"
         onClick={onRetry}
         className="shrink-0 font-medium text-rose-700 hover:underline dark:text-rose-300"
-      >
-        Try again
-      </button>
+      >{translateUi("interfaceCopy.tryAgain")}</button>
     </div>
   );
 }

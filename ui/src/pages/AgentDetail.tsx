@@ -1,4 +1,10 @@
-import { companyProjectsQuery } from "@/lib/company-projects-query";
+import { optionLabel } from "@/i18n/option-label";
+import { controlText } from "@/i18n/controls";
+import { t as interfaceNotice } from "@/i18n";
+import { t as translateDynamic } from "../i18n";
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { describeError } from "../api/errors";
 import { useSelectedHeartbeatRun } from "../hooks/useSelectedHeartbeatRun";
 import { grokBotApi } from "@/api/grokBot";
@@ -6,7 +12,7 @@ import { GrokBotWorkSummary } from "@/components/GrokBotWorkSummary";
 import { PrimaryAgentCrownButton } from "@/components/primary-agent/PrimaryAgentPresentation";
 import { AiConnectionPoolRunDetails } from "@/components/ai-connections/AiConnectionPoolRunDetails";
 import { ProviderFailureNotice } from "@/components/ProviderFailureNotice";
-import { readProviderFailure, runFailureMessage } from "@paperclipai/shared";
+import { readProviderFailure } from "@paperclipai/shared";
 import { AgentConnectionInstructions } from "@/features/connections/ConnectionInstructions";
 import type { AgentInstructionCandidate, AgentInstructionsBundle } from "@paperclipai/shared";
 import { InstructionHistory } from "../components/InstructionHistory";
@@ -31,10 +37,10 @@ import { ApiError } from "../api/client";
 import { activityApi } from "../api/activity";
 import { accessApi } from "../api/access";
 import { issuesApi } from "../api/issues";
+import { projectsApi } from "../api/projects";
 import { usePanel } from "../context/PanelContext";
 import { useSidebar } from "../context/SidebarContext";
 import { useCompany } from "../context/CompanyContext";
-import { useDialogActions } from "../context/DialogContext";
 import { useToastActions } from "../context/ToastContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { queryKeys } from "../lib/queryKeys";
@@ -73,7 +79,6 @@ import { SourceResolvedFoldBadge } from "../components/SourceResolvedFoldBadge";
 import { readSourceResolvedWatchdogFold } from "../lib/source-resolved-watchdog-fold";
 import { formatCents, formatDate, relativeTime, formatTokens, visibleRunCostUsd, visibleRunTokenTotal, hasUnavailableProviderAccounting, supportsRawProviderTrace } from "../lib/utils";
 import { cn } from "../lib/utils";
-import { ProviderLimitMessage } from "../components/ProviderLimitMessage";
 import { RunRetryDetails } from "../components/RunRetryDetails";
 import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
@@ -82,7 +87,6 @@ import { AuditFeed } from "./audit/AuditFeed";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
-  Paperclip,
   CheckCircle2,
   XCircle,
   Clock,
@@ -98,7 +102,6 @@ import {
   ChevronRight,
   ChevronDown,
   ArrowLeft,
-  ArrowUpRight,
   HelpCircle,
   FolderOpen,
   AlertTriangle,
@@ -169,6 +172,7 @@ import {
 } from "../hooks/useResourceMemberships";
 import { Badge } from "@/components/ui/badge";
 import {
+  AGENT_DETAIL_NAVIGATION,
   agentDetailHref,
   agentDetailSegment,
   agentDetailViewLabel,
@@ -189,7 +193,6 @@ export {
   heartbeatProgressLogLineKey,
   RunInvocationCard,
 } from "../components/run-log/RunDetails";
-import { ANALYTICS_MASK_CLASS, ANALYTICS_NO_CAPTURE_CLASS } from "@/lib/analytics/privacy";
 
 const AgentAdvancedTab = lazy(() => import("./AgentAdvancedTab").then(module => ({ default: module.AgentAdvancedTab })));
 
@@ -231,6 +234,21 @@ const sourceLabels: Record<string, string> = {
   automation: "Automation",
 };
 
+/** @deprecated Use AGENT_DETAIL_NAVIGATION for contextual navigation. */
+export const AGENT_DETAIL_TABS = AGENT_DETAIL_NAVIGATION.flatMap((section) => section.items);
+
+const LEGACY_AGENT_DETAIL_TABS = [
+  { value: "dashboard", label: "Dashboard" },
+  { value: "instructions", label: "Instructions" },
+  { value: "skills", label: "Skills" },
+  { value: "configuration", label: "Configuration" },
+  { value: "secrets", label: "Secrets" },
+  { value: "tools", label: "Tools" },
+  { value: "runs", label: "Runs" },
+  { value: "audit", label: "Audit" },
+  { value: "budget", label: "Budget" },
+] as const;
+
 export const DISCARD_AGENT_CONFIG_CHANGES_MESSAGE = "Discard unsaved agent configuration changes?";
 
 export function confirmAgentConfigNavigation(
@@ -238,7 +256,7 @@ export function confirmAgentConfigNavigation(
   confirm: (message: string) => boolean = (message) =>
     typeof window === "undefined" || window.confirm(message),
 ): boolean {
-  return !dirty || confirm(DISCARD_AGENT_CONFIG_CHANGES_MESSAGE);
+  return !dirty || confirm(controlText(DISCARD_AGENT_CONFIG_CHANGES_MESSAGE));
 }
 
 export function agentConfigHistoryRestoreDelta(currentIndex: unknown, nextIndex: unknown): number | null {
@@ -341,6 +359,8 @@ function agentViewDescription(view: AgentDetailView, name: string): string | nul
 }
 
 export function AgentDetail() {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const { companyPrefix, agentId, tab: urlTab, runId: urlRunId } = useParams<{
     companyPrefix?: string;
     agentId: string;
@@ -376,10 +396,22 @@ export function AgentDetail() {
   const shouldLoadHeartbeats = needsOverviewData || needsRunData;
   const [configDirty, setConfigDirty] = useState(false);
   const [configSaving, setConfigSaving] = useState(false);
-  const [configSaveVersion, setConfigSaveVersion] = useState(0);
-  const onConfigSaved = useCallback(() => setConfigSaveVersion(value => value + 1), []);
+  const [configJustSaved, setConfigJustSaved] = useState(false);
+  const [identitySaveVersion, setIdentitySaveVersion] = useState(0);
+  const onIdentitySaved = useCallback(() => setIdentitySaveVersion(value => value + 1), []);
   const [pendingLeave, setPendingLeave] = useState<HTMLAnchorElement | null>(null);
   const leaveBypassRef = useRef(false);
+  const configWasSavingRef = useRef(false);
+  useEffect(() => {
+    if (configWasSavingRef.current && !configSaving && !configDirty) setConfigJustSaved(true);
+    configWasSavingRef.current = configSaving;
+  }, [configSaving, configDirty]);
+  useEffect(() => {
+    if (configDirty) setConfigJustSaved(false);
+  }, [configDirty]);
+  useEffect(() => {
+    setConfigJustSaved(false);
+  }, [activeView]);
   const saveConfigActionRef = useRef<(() => void) | null>(null);
   const cancelConfigActionRef = useRef<(() => void) | null>(null);
   const { isMobile } = useSidebar();
@@ -464,7 +496,7 @@ export function AgentDetail() {
       builtInAgentsApi.reset(resolvedCompanyId!, builtInState!.definition.key, [kind]),
     onSuccess: invalidateBuiltIn,
     onError: (error) => {
-      setActionError(error instanceof Error ? error.message : "Failed to update bundle resource");
+      setActionError(error instanceof Error ? error.message : interfaceMessage("interface:errorFailedToUpdateBundleResource"));
     },
   });
   const runBuiltInRoutine = useMutation({
@@ -472,7 +504,7 @@ export function AgentDetail() {
       builtInAgentsApi.runRoutine(resolvedCompanyId!, builtInState!.definition.key, routineKey),
     onSuccess: invalidateBuiltIn,
     onError: (error) => {
-      setActionError(error instanceof Error ? error.message : "Failed to run built-in routine");
+      setActionError(error instanceof Error ? error.message : interfaceMessage("interface:errorFailedToRunBuiltInRoutine"));
     },
   });
   const enableBuiltInSchedule = useMutation({
@@ -480,7 +512,7 @@ export function AgentDetail() {
       builtInAgentsApi.enableRoutineSchedule(resolvedCompanyId!, builtInState!.definition.key, routineKey),
     onSuccess: invalidateBuiltIn,
     onError: (error) => {
-      setActionError(error instanceof Error ? error.message : "Failed to enable routine schedule");
+      setActionError(error instanceof Error ? error.message : interfaceMessage("interface:errorFailedToEnableRoutineSchedule"));
     },
   });
   const disableBuiltInSchedule = useMutation({
@@ -488,7 +520,7 @@ export function AgentDetail() {
       builtInAgentsApi.disableRoutineSchedule(resolvedCompanyId!, builtInState!.definition.key, routineKey),
     onSuccess: invalidateBuiltIn,
     onError: (error) => {
-      setActionError(error instanceof Error ? error.message : "Failed to disable routine schedule");
+      setActionError(error instanceof Error ? error.message : interfaceMessage("interface:errorFailedToDisableRoutineSchedule"));
     },
   });
   const builtInRoutineActionPending =
@@ -564,7 +596,7 @@ export function AgentDetail() {
     try {
       await headerUpdate.mutateAsync({ target: agent, patch });
     } catch (err) {
-      setActionError(err instanceof Error ? err.message : "Could not save that change");
+      setActionError(err instanceof Error ? err.message : interfaceNotice("interface:couldNotSaveThatChange_ec9b2d"));
     }
   };
   const directReports = (allAgents ?? []).filter((a) => a.reportsTo === agent?.id && a.status !== "terminated");
@@ -626,7 +658,7 @@ export function AgentDetail() {
       }
     },
     onError: (err) => {
-      setActionError(err instanceof Error ? err.message : "Action failed");
+      setActionError(err instanceof Error ? err.message : interfaceNotice("interface:actionFailed_57af94"));
     },
   });
 
@@ -653,13 +685,13 @@ export function AgentDetail() {
       }
     },
     onError: (err) => {
-      setActionError(err instanceof Error ? err.message : "Failed to update permissions");
+      setActionError(err instanceof Error ? err.message : interfaceMessage("interface:errorFailedToUpdatePermissions"));
     },
   });
 
   useEffect(() => {
     const crumbs: { label: string; href?: string }[] = [
-      { label: "Agents", href: "/agents" },
+      { label: controlText("Agents"), href: "/agents" },
     ];
     const agentName = agent?.name ?? routeAgentRef ?? "Agent";
     if (activeView === "overview" && !urlRunId) {
@@ -667,7 +699,7 @@ export function AgentDetail() {
     } else {
       crumbs.push({ label: agentName, href: agentDetailHref(canonicalAgentRef) });
       if (urlRunId) {
-        crumbs.push({ label: "Runs", href: agentDetailHref(canonicalAgentRef, "runs") });
+        crumbs.push({ label: controlText("Runs"), href: agentDetailHref(canonicalAgentRef, "runs") });
         crumbs.push({ label: `Run ${urlRunId.slice(0, 8)}` });
       } else {
         crumbs.push({ label: agentDetailViewLabel(activeView === "run-detail" ? "overview" : activeView) });
@@ -795,12 +827,10 @@ export function AgentDetail() {
   const agentJoinLeavePending = agentMembershipPending && membershipMutation.variables?.starred === undefined;
 
   return (
-    <div className={cn("agent-settings-content mx-auto max-w-5xl space-y-8", `agent-settings-${activeView}`, showConfigActionBar && "agent-settings-with-save-bar")}>
+    <div className={cn("agent-settings-content mx-auto max-w-5xl space-y-8", `agent-settings-${activeView}`)}>
       {showLeftAgentNotice ? (
         <div className="flex items-center gap-3 border border-yellow-300/35 bg-yellow-300/10 px-3 py-2 text-sm text-yellow-900 dark:text-yellow-100">
-          <p className="min-w-0 flex-1">
-            You left this agent. It no longer appears in your sidebar.
-          </p>
+          <p className="min-w-0 flex-1">{pageText("youLeftThisAgentItNoLongerAppears_1f21d1")}</p>
           <MembershipAction
             compact
             state="left"
@@ -823,7 +853,7 @@ export function AgentDetail() {
           <button
             type="button"
             className="h-6 w-6 shrink-0 text-yellow-900/70 hover:text-yellow-900 dark:text-yellow-100/70 dark:hover:text-yellow-100"
-            aria-label="Dismiss agent membership notice"
+            aria-label={pageText("dismissAgentMembershipNotice_0880d1")}
             onClick={() => setDismissedLeftAgentIds((current) => new Set(current).add(agent.id))}
           >
             ×
@@ -834,7 +864,7 @@ export function AgentDetail() {
         <div className="flex items-start gap-3 border border-amber-300/35 bg-amber-300/10 px-3 py-2 text-sm text-amber-900 dark:text-amber-100">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
           <div className="min-w-0 space-y-1">
-            <p className="font-medium">Escalation path is paused</p>
+            <p className="font-medium">{pageText("escalationPathIsPaused_19a6f6")}</p>
             <p className="text-amber-900/90 dark:text-amber-100/90">{pausedEscalationWarning}</p>
           </div>
         </div>
@@ -843,44 +873,42 @@ export function AgentDetail() {
         <div className="flex items-start gap-3 border border-amber-300/35 bg-amber-300/10 px-3 py-2 text-sm text-amber-900 dark:text-amber-100">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
           <div className="min-w-0 space-y-1">
-            <p className="font-medium">Invalid reporting chain</p>
+            <p className="font-medium">{pageText("invalidReportingChain_720f9d")}</p>
             <p className="text-amber-900/90 dark:text-amber-100/90">
-              {agent.name} cannot accept tasks or start runs until its reporting chain is repaired.
-            </p>
+              {agent.name}{" " + pageText("cannotAcceptTasksOrStartRunsUntilIts_9bae87")}</p>
             <p className="break-words font-mono text-xs text-amber-900/80 dark:text-amber-100/80">
               {formatOrgChainHealthPath(agent)}
             </p>
             {agent.orgChainHealth?.repairGuidance ? (
               <p className="text-amber-900/85 dark:text-amber-100/85">{agent.orgChainHealth.repairGuidance}</p>
             ) : (
-              <p className="text-amber-900/85 dark:text-amber-100/85">
-                Assign this agent to an active manager/root, or explicitly pause or terminate the affected agent/subtree.
-              </p>
+              <p className="text-amber-900/85 dark:text-amber-100/85">{pageText("assignThisAgentToAnActiveManagerRoot_ca5b52")}</p>
             )}
           </div>
         </div>
       ) : null}
       {/* Header */}
       <header className="agent-character-header flex items-center gap-2">
-        <div role="img" aria-label={`${agent.name} avatar`} className="shrink-0">
+        <div role="img" aria-label={translateDynamic("dynamic:avatar", { value1: agent.name })} className="shrink-0">
           <AgentCharacter agent={agent} state={characterStateForAgent(currentAgent.status) === "rest" ? "idle" : characterStateForAgent(currentAgent.status)} size={128} className="agent-header-character" trackingScope="page" followCursor />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 items-center gap-2">
             <InlineEditor
               as="h1"
-              value={agent.name}
+              value={agent.title ?? ""}
               fitContent
-              placeholder="Agent name"
+              nullable
+              placeholder={roleLabels[agent.role] ? optionLabel(roleLabels[agent.role]) : agent.role}
               className="min-w-0 truncate text-2xl font-semibold leading-8 text-foreground"
-              onSave={(name) => saveHeaderField({ name })}
+              onSave={(title) => saveHeaderField({ title: title || null })}
             />
             <PrimaryAgentCrownButton agent={agent} />
           </div>
           <div className="mt-1 flex min-w-0 items-center gap-2 text-sm leading-5 text-muted-foreground">
             <Link
               to={agentDetailHref(canonicalAgentRef, "runtime")}
-              aria-label={`Open ${getAdapterDisplay(agentDisplayAdapterType(agent)).label} harness settings`}
+              aria-label={translateDynamic("dynamic:openHarnessSettings", { value1: getAdapterDisplay(agentDisplayAdapterType(agent)).label })}
               className="flex shrink-0 items-center gap-1 rounded-sm no-underline transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
             >
               {agent.adapterType === "claude_local" || agent.adapterType === "codex_local"
@@ -891,11 +919,10 @@ export function AgentDetail() {
             <span aria-hidden="true">•</span>
             <InlineEditor
               fitContent
-              value={agent.title ?? ""}
-              nullable
-              placeholder={roleLabels[agent.role] ?? agent.role}
-              className="agent-header-custom-title min-w-0 truncate text-sm leading-5 text-muted-foreground"
-              onSave={(title) => saveHeaderField({ title: title || null })}
+              value={agent.name}
+              placeholder={translateUi("interfaceCopy.agentName")}
+              className="min-w-0 truncate text-sm leading-5 text-muted-foreground"
+              onSave={(name) => saveHeaderField({ name })}
             />
           </div>
           <AgentLifecycleStatus agent={currentAgent} refreshError={lifecycle.isError} onRetry={() => agentAction.mutate("retryLifecycle")} retryPending={agentAction.isPending} />
@@ -903,9 +930,9 @@ export function AgentDetail() {
         <AgentActionButtons
           agent={currentAgent}
           companyId={resolvedCompanyId}
-          assignLabel="New task"
+          assignLabel={translateUi("interfaceCopy.newTask")}
           size="default"
-          assignIcon={Paperclip}
+          showAssignIcon={false}
           showChat
           showStatus={false}
           workActionsInMenu
@@ -921,13 +948,12 @@ export function AgentDetail() {
           pauseConfirm={
             builtInState
               ? {
-                  title: `Pause the ${builtInState.definition.displayName}?`,
+                  title: translateDynamic("dynamic:pauseBuiltIn", { name: builtInState.definition.displayName }),
                   description: (
                     <>
-                      {builtInFeatureLabel} depends on this agent. While paused,{" "}
-                      {builtInFeatureLabel.toLowerCase()} generation is skipped and the{" "}
-                      {builtInFeatureLabel} page shows a warning.
-                    </>
+                      {builtInFeatureLabel}{" " + pageText("dependsOnThisAgentWhilePaused_443a3e")}{" "}
+                      {builtInFeatureLabel.toLowerCase()}{" " + pageText("generationIsSkippedAndThe_a05b38")}{" "}
+                      {builtInFeatureLabel}{" " + pageText("pageShowsAWarning_a589b2")}</>
                   ),
                 }
               : undefined
@@ -942,7 +968,7 @@ export function AgentDetail() {
                 <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
               </span>
-              <span className="text-(length:--text-micro) font-medium text-blue-600 dark:text-blue-400">Live</span>
+              <span className="text-(length:--text-micro) font-medium text-blue-600 dark:text-blue-400">{translateUi("interfaceCopy.live")}</span>
             </Link>
           )}
         </AgentActionButtons>
@@ -951,13 +977,11 @@ export function AgentDetail() {
       <AlertDialog open={pendingLeave !== null} onOpenChange={(open) => (open ? undefined : setPendingLeave(null))}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Discard unsaved changes?</AlertDialogTitle>
-            <AlertDialogDescription>
-              You have unsaved changes to {agent.name}&rsquo;s {activeView === "runtime" ? "harness settings" : activeView === "secrets" ? "secrets and variables" : activeView === "advanced" ? "configuration" : "instructions"}. If you continue, they&rsquo;ll be lost.
-            </AlertDialogDescription>
+            <AlertDialogTitle>{pageText("discardUnsavedChanges_e9f817")}</AlertDialogTitle>
+            <AlertDialogDescription>{pageText("youHaveUnsavedChangesTo_27477a") + " "}{agent.name}{pageText("s_e641c7") + " "}{activeView === "runtime" ? pageText("harnessSettings_cb4b7f") : activeView === "secrets" ? pageText("secretsAndVariables_03d7b1") : activeView === "advanced" ? pageText("configuration_0652e4") : pageText("instructions_31a808")}{pageText("ifYouContinueTheyLlBeLost_b4dca9")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="sm:justify-between">
-            <AlertDialogCancel>Keep editing</AlertDialogCancel>
+            <AlertDialogCancel>{pageText("keepEditing_d4d9e3")}</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-white hover:bg-destructive/90"
               onClick={() => {
@@ -972,9 +996,7 @@ export function AgentDetail() {
                   leaveBypassRef.current = false;
                 }
               }}
-            >
-              Discard changes
-            </AlertDialogAction>
+            >{pageText("discardChanges_fa8fc0")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
@@ -982,7 +1004,7 @@ export function AgentDetail() {
       {builtInState && (
         <InlineBanner
           tone="info"
-          title="Built-in agent"
+          title={pageText("builtInAgent_0941ba")}
           actions={
             <Button
               variant="outline"
@@ -990,13 +1012,10 @@ export function AgentDetail() {
               onClick={() => resetBuiltIn.mutate()}
               disabled={resetBuiltIn.isPending}
             >
-              {resetBuiltIn.isPending ? "Resetting…" : "Reset to defaults"}
+              {resetBuiltIn.isPending ? pageText("resetting_6d27dc") : pageText("resetToDefaults_ddefe4")}
             </Button>
           }
-        >
-          Ships with Paperclip and powers <strong>{builtInFeatureLabel}</strong>. Configure it like
-          any agent — model, instructions, budget. It can be paused but not deleted; pausing it
-          pauses {builtInFeatureLabel}.
+        >{pageText("shipsWithPaperclipAndPowers_ddc880") + " "}<strong>{builtInFeatureLabel}</strong>{pageText("configureItLikeAnyAgentModelInstructionsBudget_dcbc34") + " "}{builtInFeatureLabel}.
         </InlineBanner>
       )}
 
@@ -1030,7 +1049,7 @@ export function AgentDetail() {
       {actionError && <p className="text-sm text-destructive">{actionError}</p>}
       {isPendingApproval && (
         <div className="flex flex-wrap items-center gap-3 rounded-md border border-amber-300/60 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-400/40 dark:bg-amber-950/30 dark:text-amber-200">
-          <span>This agent is pending board approval and cannot be invoked yet.</span>
+          <span>{pageText("thisAgentIsPendingBoardApprovalAndCannot_4ef8b0")}</span>
           <Button
             variant="outline"
             size="sm"
@@ -1038,7 +1057,7 @@ export function AgentDetail() {
             disabled={agentAction.isPending}
           >
             <CheckCircle2 className="h-3.5 w-3.5 sm:mr-1" />
-            <span>Approve agent</span>
+            <span>{pageText("approveAgent_276f84")}</span>
           </Button>
         </div>
       )}
@@ -1076,7 +1095,7 @@ export function AgentDetail() {
           agent={agent}
           companyId={resolvedCompanyId ?? undefined}
           showSaveNotice={false}
-          onSaved={onConfigSaved}
+          onSaved={onIdentitySaved}
           onDirtyChange={setConfigDirty}
           onSaveActionChange={setSaveConfigAction}
           onCancelActionChange={setCancelConfigAction}
@@ -1095,7 +1114,6 @@ export function AgentDetail() {
             onSaveActionChange={setSaveConfigAction}
             onCancelActionChange={setCancelConfigAction}
             onSavingChange={setConfigSaving}
-            onSaved={onConfigSaved}
             updatePermissions={updatePermissions}
             canConfigureProviderTrace={canUseProviderTrace}
             content="runtime"
@@ -1114,7 +1132,6 @@ export function AgentDetail() {
             onSaveActionChange={setSaveConfigAction}
             onCancelActionChange={setCancelConfigAction}
             onSavingChange={setConfigSaving}
-            onSaved={onConfigSaved}
             updatePermissions={updatePermissions}
             content="secrets"
           />
@@ -1145,7 +1162,6 @@ export function AgentDetail() {
             onSaveActionChange={setSaveConfigAction}
             onCancelActionChange={setCancelConfigAction}
             onSavingChange={setConfigSaving}
-            onSaved={onConfigSaved}
             updatePermissions={updatePermissions}
             content="permissions"
           />
@@ -1163,7 +1179,7 @@ export function AgentDetail() {
       )}
 
       {activeView === "advanced" && (
-        <Suspense fallback={<p role="status" className="text-sm text-muted-foreground">Loading configuration…</p>}>
+        <Suspense fallback={<p role="status" className="text-sm text-muted-foreground">{pageText("loadingConfiguration_b0f132")}</p>}>
           <AgentAdvancedTab key={agent.id} agent={agent} onDirtyChange={setConfigDirty} onSavingChange={setConfigSaving}
             onSaved={updated => {
               const nextRef = agentRouteRef(updated);
@@ -1188,10 +1204,23 @@ export function AgentDetail() {
         />
       )}
 
-      {showConfigActionBar && <AgentConfigSaveBar key={`${agent.id}-${activeView}`} dirty={configDirty} saving={configSaving} savedVersion={configSaveVersion}
+      {showConfigActionBar && activeView === "instructions" && <AgentConfigSaveBar key={agent.id} dirty={configDirty} saving={configSaving} savedVersion={identitySaveVersion}
         onDiscard={() => cancelConfigActionRef.current?.()}
         onSave={() => { Promise.resolve(saveConfigActionRef.current?.()).catch(() => {}); }} />}
-
+      {showConfigActionBar && activeView !== "instructions" && <footer className="sticky bottom-0 z-10 flex flex-wrap items-center justify-between gap-3 border-t border-border bg-background py-4">
+        <p role="status" className="flex items-center gap-2 text-xs text-muted-foreground">
+          {configSaving ? null : configDirty ? (
+            <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-(--agent-detail-dot-unsaved)" />
+          ) : configJustSaved ? (
+            <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-(--agent-detail-dot-saved)" />
+          ) : null}
+          {configSaving ? pageText("savingChanges_804053") : configDirty ? pageText("unsavedChanges_292672") : configJustSaved ? pageText("changesSaved_0bbe9e") : pageText("noUnsavedChanges_505329")}
+        </p>
+        <div className="flex gap-2">
+          <Button variant="ghost" disabled={!configDirty || configSaving} onClick={() => cancelConfigActionRef.current?.()}>{pageText("discard_36fff6")}</Button>
+          <Button disabled={!configDirty || configSaving} onClick={() => {Promise.resolve(saveConfigActionRef.current?.()).catch(() => {});}}>{configSaving ? pageText("saving_56a228") : pageText("saveChanges_179359")}</Button>
+        </div>
+      </footer>}
 
     </div>
   );
@@ -1253,6 +1282,7 @@ function LatestRunCard({
   agentId: string;
   issuesById: Map<string, LatestRunIssue>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const sorted = useMemo(
     () =>
       [...runs].sort(
@@ -1334,7 +1364,7 @@ function LatestRunCard({
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
               </span>
             )}
-            <span>{isLive ? "Live Run" : "Latest Run"}</span>
+            <span>{isLive ? pageText("liveRun_eb981f") : pageText("latestRun_c1a81e")}</span>
             <span className="font-mono text-xs font-normal text-muted-foreground">
               &middot; {run.id.slice(0, 8)}
             </span>
@@ -1406,13 +1436,9 @@ export function AgentOverview({
   skillNames: string[];
   agentRouteId: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const agentRef = agentRouteRef(agent);
-  const { openNewIssue } = useDialogActions();
-  const taskSuggestions = [
-    "Research a topic and summarize the key findings",
-    "Create a step-by-step plan for a project",
-    "Review a document and suggest improvements",
-  ];
   const hasHumanCreator = Boolean(humanAgentCreatorUserId(agent.createdByUserId));
   const userDirectory = useQuery({
     queryKey: queryKeys.access.companyUserDirectory(agent.companyId),
@@ -1440,87 +1466,71 @@ export function AgentOverview({
         <AgentMetricTile
           icon={ActivityIcon}
           value={activity.isLoading ? "–" : formatWindowCount(activityThisWeek)}
-          label="Activity"
-          description="Events this week"
+          label={translateUi("interfaceCopy.activity")}
+          description={pageText("eventsThisWeek_44e975")}
           to={agentDetailHref(agentRef, "activity")}
         />
         <AgentMetricTile
           icon={PlayCircle}
           value={formatWindowCount(runsThisWeek)}
-          label="Runs"
-          description={`${formatWindowCount(recentFailures)} failed in the last 2 days`}
+          label={translateUi("interfaceCopy.runs")}
+          description={controlText("recentFailures", { total: formatWindowCount(recentFailures) })}
           to={agentDetailHref(agentRef, "runs")}
         />
         <AgentMetricTile
           icon={ReceiptText}
           value={formatCents(spent)}
-          label="Costs"
-          description="Month to date"
+          label={pageText("costs_799b3e")}
+          description={pageText("monthToDate_314175")}
           to={agentDetailHref(agentRef, "costs")}
         />
         <AgentMetricTile
           icon={Gauge}
           value={budgetPercent === null ? "–" : `${budgetPercent}%`}
-          label="Budget used"
-          description={budgetPercent === null ? "No monthly budget set" : `of ${formatCents(budget)} this month`}
+          label={pageText("budgetUsed_98c64c")}
+          description={budgetPercent === null ? pageText("noMonthlyBudgetSet_843a99") : controlText("monthlyBudget", { budget: formatCents(budget) })}
           to={agentDetailHref(agentRef, "budgets")}
         />
-        <AgentPanel title="Profile" className="min-h-(--agent-detail-tile-min-h) sm:col-span-2" aria-label="Profile"
+        <AgentPanel title={pageText("profile_ff4fc0")} className="min-h-(--agent-detail-tile-min-h) sm:col-span-2" aria-label={pageText("profile_ff4fc0")}
           meta={<span className={creatorFailed ? "text-destructive" : undefined}>
-            {creatorFailed ? "Could not load creator" : creatorLabel ? `Created by ${creatorLabel} · ${formatDate(agent.createdAt)}` : `Created ${formatDate(agent.createdAt)}`}
+            {creatorFailed ? pageText("couldNotLoadCreator_4af8e0") : creatorLabel ? controlText("creatorDate", { name: creatorLabel, date: formatDate(agent.createdAt) }) : controlText("createdDate", { date: formatDate(agent.createdAt) })}
           </span>}>
           <div className="flex flex-col pb-3">
             <AgentReportingManager key={agent.id} agent={agent} />
             {directReports.length > 0 && <div className="flex flex-col gap-1.5 px-(--agent-detail-module-inset) py-1.5 text-sm">
-              <span className="text-muted-foreground">Direct reports:</span>
+              <span className="text-muted-foreground">{pageText("directReports_eb4427")}</span>
               <AgentDirectReports reports={directReports} />
             </div>}
 
           </div>
         </AgentPanel>
         <AgentPanel
-          title="Skills"
-          meta={<span>{skillNames.length} enabled</span>}
+          title={pageText("skills_e09212")}
+          meta={<span>{skillNames.length}{" " + pageText("enabled_3ea3f9")}</span>}
           className="min-h-(--agent-detail-tile-min-h) sm:col-span-2"
-          aria-label="Skills"
+          aria-label={pageText("skills_e09212")}
         >
-          <div className="flex flex-wrap gap-1.5 px-(--agent-detail-module-inset) pt-1 pb-(--agent-detail-module-inset)">
-            {skillNames.map((name) => <AgentChip key={name} className="h-7 px-2">{name}</AgentChip>)}
-            <Link to={agentDetailHref(agentRef, "skills")} className="inline-flex h-7 items-center gap-1.5 rounded-md border border-dashed border-border px-2 py-1 text-sm text-muted-foreground no-underline transition-colors hover:bg-accent hover:text-foreground">
-              Explore skills <ArrowUpRight className="size-3.5" aria-hidden />
-            </Link>
-          </div>
+          {skillNames.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5 px-(--agent-detail-module-inset) pt-1 pb-(--agent-detail-module-inset)">
+              {skillNames.map((name) => (
+                <AgentChip key={name}>{name}</AgentChip>
+              ))}
+            </div>
+          ) : (
+            <p className="px-(--agent-detail-module-inset) pt-1 pb-(--agent-detail-module-inset) text-sm text-muted-foreground">{pageText("noSkillsEnabled_c42428")}</p>
+          )}
         </AgentPanel>
       </div>
 
-      <section className="flex flex-col gap-3" aria-label="Recent tasks">
+      <section className="flex flex-col gap-3" aria-label={pageText("recentTasks_21bcad")}>
         <AgentSectionHeading
-          title="Recent tasks"
+          title={pageText("recentTasks_21bcad")}
           action={
-            <Link to={`/issues?participantAgentId=${agent.id}`} className="text-xs text-muted-foreground no-underline transition-colors hover:text-foreground">
-              See all tasks
-            </Link>
+            <Link to={`/issues?participantAgentId=${agent.id}`} className="text-xs text-muted-foreground no-underline transition-colors hover:text-foreground">{pageText("seeAllTasks_23fe05")}</Link>
           }
         />
         {assignedIssues.length === 0 ? (
-          <div className="flex flex-col gap-3">
-            <p className="text-sm text-muted-foreground">Start with a suggested task</p>
-            <ul className="overflow-hidden rounded-lg border border-border bg-(--agent-detail-tile) divide-y divide-dashed divide-border" aria-label="Suggested tasks">
-              {taskSuggestions.map((title) => (
-                <li key={title}>
-                  <button
-                    type="button"
-                    className="flex w-full items-center gap-3 px-4 py-4 text-left text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:bg-muted focus-visible:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
-                    onClick={() => openNewIssue({ title, assigneeAgentId: agent.id })}
-                  >
-                    <Paperclip className="size-4 shrink-0" aria-hidden />
-                    <span className="min-w-0 flex-1">{title}</span>
-                    <ChevronRight className="size-4 shrink-0" aria-hidden />
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <p className="text-sm text-muted-foreground">{pageText("noRecentTasks_5cdb1b")}</p>
         ) : (
           <div className="overflow-hidden rounded-lg border border-border bg-(--agent-detail-tile)">
             <TaskSummaryList issues={assignedIssues.slice(0, 5)} />
@@ -1540,6 +1550,7 @@ export function AgentRevisionsTab({
   agent: AgentDetailRecord;
   companyId?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
@@ -1562,11 +1573,11 @@ export function AgentRevisionsTab({
   return (
     <div className="max-w-3xl space-y-3">
       <div className="flex items-baseline justify-between gap-3">
-        <h3 className="text-sm font-medium">Configuration Revisions</h3>
-        <span className="text-xs text-muted-foreground">{configRevisions?.length ?? 0} total</span>
+        <h3 className="text-sm font-medium">{pageText("configurationRevisions_40a6c2")}</h3>
+        <span className="text-xs text-muted-foreground">{configRevisions?.length ?? 0}{" " + pageText("total_5a537e")}</span>
       </div>
       {(configRevisions ?? []).length === 0 ? (
-        <p className="text-sm text-muted-foreground">No configuration revisions yet.</p>
+        <p className="text-sm text-muted-foreground">{pageText("noConfigurationRevisionsYet_8b8140")}</p>
       ) : (
         <div className="space-y-2">
           {(configRevisions ?? []).map((revision) => (
@@ -1584,12 +1595,9 @@ export function AgentRevisionsTab({
                   variant="outline"
                   onClick={() => rollbackConfig.mutate(revision.id)}
                   disabled={rollbackConfig.isPending}
-                >
-                  Restore
-                </Button>
+                >{pageText("restore_3cbe6d")}</Button>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Changed: {revision.changedKeys.length > 0 ? revision.changedKeys.join(", ") : "no tracked changes"}
+              <p className="text-xs text-muted-foreground">{pageText("changed_eda3bd") + " "}{revision.changedKeys.length > 0 ? revision.changedKeys.join(", ") : pageText("noTrackedChanges_317564")}
               </p>
             </div>
           ))}
@@ -1608,7 +1616,6 @@ export function ConfigurationTab({
   onSaveActionChange,
   onCancelActionChange,
   onSavingChange,
-  onSaved,
   updatePermissions,
   hidePromptTemplate,
   hideInstructionsFile,
@@ -1621,13 +1628,14 @@ export function ConfigurationTab({
   onSaveActionChange: (save: (() => void) | null) => void;
   onCancelActionChange: (cancel: (() => void) | null) => void;
   onSavingChange: (saving: boolean) => void;
-  onSaved?: () => void;
   updatePermissions: { mutate: (permissions: AgentPermissionUpdate) => void; isPending: boolean };
   hidePromptTemplate?: boolean;
   hideInstructionsFile?: boolean;
   content?: "runtime" | "permissions" | "secrets";
   canConfigureProviderTrace?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { tab: urlTab } = useParams<{ tab?: string }>();
@@ -1648,7 +1656,8 @@ export function ConfigurationTab({
   const lowTrustSelected = getTrustPreset(agent.permissions) === "low_trust_review";
 
   const { data: boundaryProjects, isLoading: boundaryProjectsLoading } = useQuery({
-    ...companyProjectsQuery(companyId ?? ""),
+    queryKey: companyId ? queryKeys.projects.list(companyId) : ["projects", "__low-trust-disabled"],
+    queryFn: () => projectsApi.list(companyId!),
     enabled: Boolean(companyId && lowTrustSelected) && content === "permissions",
   });
 
@@ -1667,7 +1676,6 @@ export function ConfigurationTab({
       setAwaitingRefreshAfterSave(true);
     },
     onSuccess: (updated, { target }) => {
-      if (lastAgentRef.current.id === target.id) onSaved?.();
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.detail(target.id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.configRevisions(target.id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(target.companyId) });
@@ -1675,7 +1683,7 @@ export function ConfigurationTab({
         || !syncAgentRouteAfterRename(queryClient, navigate, target, updated, urlTab ?? content)) {
         queryClient.invalidateQueries({ queryKey: queryKeys.agents.detail(target.urlKey) });
       }
-      pushToast({ title: "Agent saved", tone: updated.configurationWarnings?.length ? "warn" : "success",
+      pushToast({ title: interfaceNotice("interface:agentSaved_6f1f08"), tone: updated.configurationWarnings?.length ? "warn" : "success",
         body: updated.configurationWarnings?.map(warning => warning.message).join("\n") });
     },
     onError: (err) => {
@@ -1686,7 +1694,7 @@ export function ConfigurationTab({
           : err instanceof Error
             ? err.message
             : "Could not save agent";
-      pushToast({ title: "Save failed", body: message, tone: "error" });
+      pushToast({ title: interfaceNotice("interface:saveFailed_0a4444"), body: message, tone: "error" });
     },
   });
 
@@ -1775,14 +1783,12 @@ export function ConfigurationTab({
         }
       /> : null}
 
-      {content === "permissions" ? <AgentPanel title="Capabilities" aria-label="Capabilities">
+      {content === "permissions" ? <AgentPanel title={translateUi("interfaceCopy.capabilities")} aria-label={translateUi("interfaceCopy.capabilities")}>
         <div className="flex flex-col pb-3">
           <div className="flex min-h-11 items-center justify-between gap-4 px-(--agent-detail-module-inset) py-2 text-sm">
             <div className="space-y-1">
-              <div>Can create new agents</div>
-              <p className="text-xs text-muted-foreground">
-                Lets this agent create or hire agents. This also grants task assignment authority.
-              </p>
+              <div>{pageText("canCreateNewAgents_e20981")}</div>
+              <p className="text-xs text-muted-foreground">{pageText("letsThisAgentCreateOrHireAgentsThis_f2235b")}</p>
             </div>
             <ToggleSwitch
               checked={canCreateAgents}
@@ -1798,10 +1804,8 @@ export function ConfigurationTab({
           </div>
           <div className="flex min-h-11 items-center justify-between gap-4 px-(--agent-detail-module-inset) py-2 text-sm">
             <div className="space-y-1">
-              <div>Can create/import skills</div>
-              <p className="text-xs text-muted-foreground">
-                Lets this agent install, import, create, and scan organization skills without creating agents.
-              </p>
+              <div>{pageText("canCreateImportSkills_f2a50d")}</div>
+              <p className="text-xs text-muted-foreground">{pageText("letsThisAgentInstallImportCreateAndScan_7c81e9")}</p>
             </div>
             <ToggleSwitch
               checked={canCreateSkills}
@@ -1817,7 +1821,7 @@ export function ConfigurationTab({
           </div>
           <div className="flex min-h-11 items-center justify-between gap-4 px-(--agent-detail-module-inset) py-2 text-sm">
             <div className="space-y-1">
-              <div>Can assign tasks</div>
+              <div>{pageText("canAssignTasks_e35724")}</div>
               <p className="text-xs text-muted-foreground">
                 {taskAssignHint}
               </p>
@@ -1861,6 +1865,8 @@ export function PromptsTab({
   onCancelActionChange: (cancel: (() => void) | null) => void;
   onSavingChange: (saving: boolean) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { selectedCompanyId } = useCompany();
   const { isMobile } = useSidebar();
@@ -1879,17 +1885,13 @@ export function PromptsTab({
     rootPath: string;
     entryFile: string;
   } | null>(null);
-  const [fileNameDraft, setFileNameDraft] = useState<string | null>(null);
-  const [editingFileName, setEditingFileName] = useState(false);
-  const [fileNameError, setFileNameError] = useState<string | null>(null);
-  const fileNameInputRef = useRef<HTMLInputElement>(null);
-  const [fileSaveInProgress, setFileSaveInProgress] = useState(false);
-  const fileSaveLock = useRef(false);
+  const [newFilePath, setNewFilePath] = useState("");
   const [copyVisible, setCopyVisible] = useState(false);
   const [copyNotice, setCopyNotice] = useState<"copied" | "error" | null>(null);
   const copyTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => () => clearTimeout(copyTimer.current), []);
   useEffect(() => { clearTimeout(copyTimer.current); setCopyNotice(null); }, [agent.id, selectedFile]);
+  const [showNewFileInput, setShowNewFileInput] = useState(false);
   const [pendingFiles, setPendingFiles] = useState<string[]>([]);
   const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set());
   const [filePanelWidth, setFilePanelWidth] = useState(260);
@@ -1925,9 +1927,8 @@ export function PromptsTab({
     setDraft(null);
     setReadOnlyCandidateRunId(null);
     setBundleDraft(null);
-    setFileNameDraft(null);
-    setEditingFileName(false);
-    setFileNameError(null);
+    setNewFilePath("");
+    setShowNewFileInput(false);
     setPendingFiles([]);
     setExpandedDirs(new Set());
     setAwaitingRefresh(false);
@@ -1973,14 +1974,6 @@ export function PromptsTab({
     [visibleFilePaths],
   );
   const selectedOrEntryFile = selectedFile || currentEntryFile;
-  const displayedFilePath = fileNameDraft ?? selectedOrEntryFile;
-  const namingPrefix = displayedFilePath.replace(/\.md$/i, "");
-  const renamedFilePath = fileNameDraft === null ? selectedOrEntryFile : markdownFileName(fileNameDraft.replace(/\.md$/i, ""));
-  const nameConflict = renamedFilePath !== selectedOrEntryFile && visibleFilePaths.some(path => path.toLowerCase() === renamedFilePath?.toLowerCase());
-  const fileNameInvalid = !renamedFilePath || nameConflict;
-  useEffect(() => {
-    if (editingFileName) fileNameInputRef.current?.focus();
-  }, [editingFileName]);
   const selectedFileExists = bundleMatchesDraft && fileOptions.includes(selectedOrEntryFile);
   const selectedFileSummary = bundle?.files.find((file) => file.path === selectedOrEntryFile) ?? null;
 
@@ -2223,9 +2216,9 @@ export function PromptsTab({
         bundleDraft.entryFile !== (bundle?.entryFile ?? "AGENTS.md")
       ),
   );
-  const fileDirty = (fileNameDraft !== null && fileNameDraft !== selectedOrEntryFile) || (draft !== null && draft !== currentContent) || pendingFiles.includes(selectedOrEntryFile);
+  const fileDirty = (draft !== null && draft !== currentContent) || pendingFiles.includes(selectedOrEntryFile);
   const isDirty = bundleDirty || fileDirty || candidateRunId !== null;
-  const isSaving = fileSaveInProgress || updateBundle.isPending || saveFile.isPending || resolveCandidate.isPending || loadCandidate.isPending || refreshCandidateBase.isPending || deleteFile.isPending || awaitingRefresh;
+  const isSaving = updateBundle.isPending || saveFile.isPending || resolveCandidate.isPending || loadCandidate.isPending || refreshCandidateBase.isPending || deleteFile.isPending || awaitingRefresh;
 
   useEffect(() => { onSavingChange(isSaving); }, [onSavingChange, isSaving]);
   useEffect(() => { onDirtyChange(isDirty); }, [onDirtyChange, isDirty]);
@@ -2239,14 +2232,7 @@ export function PromptsTab({
 
   useEffect(() => {
     onSaveActionChange(isDirty ? () => {
-      if (fileSaveLock.current) return;
       const save = async () => {
-        if (fileNameInvalid) {
-          setFileNameError(nameConflict ? "A file with this name already exists." : "Use letters, numbers, hyphens or underscores.");
-          setEditingFileName(true);
-          return;
-        }
-        setFileNameError(null);
         const shouldClearLegacy =
           Boolean(bundle?.legacyPromptTemplateActive) || Boolean(bundle?.legacyBootstrapPromptTemplateActive);
         if (bundleDirty && bundleDraft) {
@@ -2259,30 +2245,6 @@ export function PromptsTab({
         if (candidateRunId) {
           await resolveCandidate.mutateAsync({ runId: candidateRunId, content: displayValue,
             baseRevisionId: draftBaseRevisionRef.current ?? null });
-        } else if (fileDirty && renamedFilePath && renamedFilePath !== selectedOrEntryFile) {
-          fileSaveLock.current = true;
-          setFileSaveInProgress(true);
-          const latest = await agentsApi.instructionsBundle(agent.id, companyId);
-          const sourceHash = draftBaseHashRef.current ?? selectedFileDetail?.contentHash;
-          if (selectedFileExists && !sourceHash) throw new Error("Reload this file before renaming; your draft is retained.");
-          const copied = selectedFileExists || selectedOrEntryFile === currentEntryFile
-            ? await agentsApi.renameInstructionsFile(agent.id, {
-                path: selectedOrEntryFile, renameTo: renamedFilePath, content: displayValue, baseHash: selectedFileExists ? sourceHash! : null,
-              }, companyId)
-            : await agentsApi.saveInstructionsFile(agent.id, { path: renamedFilePath, content: displayValue, baseHash: null }, companyId);
-          queryClient.setQueryData(queryKeys.agents.instructionsFile(agent.id, renamedFilePath), copied);
-          queryClient.setQueryData<AgentInstructionsBundle>(queryKeys.agents.instructionsBundle(agent.id), {
-            ...latest,
-            entryFile: selectedOrEntryFile === currentEntryFile ? renamedFilePath : latest.entryFile,
-            files: [...latest.files.filter(file => file.path !== selectedOrEntryFile), copied],
-          });
-          setBundleDraft(null);
-          setPendingFiles([]);
-          setDraft(null);
-          setFileNameDraft(null);
-          setSelectedFile(renamedFilePath);
-          queryClient.invalidateQueries({ queryKey: queryKeys.agents.instructionsBundle(agent.id) });
-          queryClient.invalidateQueries({ queryKey: queryKeys.agents.detail(agent.id) });
         } else if (fileDirty) {
           await saveFile.mutateAsync({
             path: selectedOrEntryFile,
@@ -2294,7 +2256,7 @@ export function PromptsTab({
         }
         onSaved?.();
       };
-      void save().catch((error) => setFileNameError(error instanceof Error ? error.message : "Could not save the file. Your unsaved edits are retained.")).finally(() => { fileSaveLock.current = false; setFileSaveInProgress(false); });
+      void save().catch(() => undefined);
     } : null);
   }, [
     bundle,
@@ -2312,15 +2274,6 @@ export function PromptsTab({
     currentMode,
     saveFile,
     selectedOrEntryFile,
-    renamedFilePath,
-    fileNameInvalid,
-    nameConflict,
-    selectedFileExists,
-    currentContent,
-    selectedFileDetail?.contentHash,
-    agent.id,
-    companyId,
-    queryClient,
     updateBundle,
   ]);
 
@@ -2332,9 +2285,6 @@ export function PromptsTab({
       resolveCandidate.reset();
       setDraft(null);
       setPendingFiles([]);
-      setFileNameDraft(null);
-      setEditingFileName(false);
-      setFileNameError(null);
       if (pendingFiles.includes(selectedOrEntryFile)) setSelectedFile(currentEntryFile);
       if (bundle) {
         setBundleDraft({
@@ -2373,9 +2323,7 @@ export function PromptsTab({
   if (!isLocal) {
     return (
       <div className="max-w-3xl">
-        <p className="text-sm text-muted-foreground">
-          Instructions bundles are only available for local adapters.
-        </p>
+        <p className="text-sm text-muted-foreground">{pageText("instructionsBundlesAreOnlyAvailableForLocalAdapters_2b7609")}</p>
       </div>
     );
   }
@@ -2395,9 +2343,7 @@ export function PromptsTab({
           ))}
         </div>
       )}
-      {showSaveNotice && <p className="text-xs text-muted-foreground">
-        Saved instructions affect the next run. Active runs keep the instructions they started with, and instruction changes may start a fresh adapter session.
-      </p>}
+      {showSaveNotice && <p className="text-xs text-muted-foreground">{pageText("savedInstructionsAffectTheNextRunActiveRuns_4e9e10")}</p>}
 
       <InstructionsBundleSettings
         agentId={agent.id}
@@ -2425,31 +2371,15 @@ export function PromptsTab({
           isMobile && !showFilePanel && "hidden",
         )}>
           <div className="flex items-center justify-between">
-            <h4 className="text-sm font-semibold text-foreground">Files</h4>
+            <h4 className="text-sm font-semibold text-foreground">{translateUi("interfaceCopy.files")}</h4>
             <div className="flex items-center gap-1">
-              {(
+              {!showNewFileInput && (
                 <Button
                   type="button"
                   size="icon-xs"
                   variant="ghost"
-                  aria-label="Add agent file"
-                  disabled={isSaving}
-                  onClick={() => {
-                    if (isDirty && !window.confirm(DISCARD_AGENT_CONFIG_CHANGES_MESSAGE)) return;
-                    let candidate = "Untitled.md";
-                    let suffix = 2;
-                    while (fileOptions.some(path => path.toLowerCase() === candidate.toLowerCase())) candidate = `Untitled-${suffix++}.md`;
-                    setPendingFiles([candidate]);
-                    setSelectedFile(candidate);
-                    draftBaseRevisionRef.current = null;
-                    draftBaseHashRef.current = null;
-                    setDraft("");
-                    setFileNameDraft(null);
-                    setFileNameError(null);
-                    setEditingFileName(true);
-                    setInstructionMode("edit");
-                    setShowFilePanel(false);
-                  }}
+                  aria-label={pageText("addAgentFile_328cab")}
+                  onClick={() => setShowNewFileInput(true)}
                 >
                   <Plus className="size-4" />
                 </Button>
@@ -2467,10 +2397,62 @@ export function PromptsTab({
               )}
             </div>
           </div>
+          {showNewFileInput && (
+            <div className="space-y-2">
+              <div className="agent-markdown-name-field flex items-center rounded-md border border-input focus-within:ring-2 focus-within:ring-ring">
+              <Input
+                aria-label={pageText("newMarkdownFileName_4dc06d")}
+                aria-describedby="markdown-file-name-hint"
+                aria-invalid={Boolean(newFilePath && !markdownFileName(newFilePath))}
+                value={newFilePath}
+                onChange={(event) => setNewFilePath(event.target.value)}
+                placeholder="TOOLS"
+                className="min-w-0 border-0 bg-transparent font-mono text-sm shadow-none focus-visible:ring-0"
+                autoFocus
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") {
+                    setShowNewFileInput(false);
+                    setNewFilePath("");
+                  }
+                }}
+              />
+              <span className="pr-3 font-mono text-sm text-muted-foreground/50" aria-hidden>.md</span>
+              </div>
+              <p id="markdown-file-name-hint" className="text-xs text-muted-foreground">{pageText("useLettersNumbersHyphensOrUnderscores_2cb98a")}</p>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="default"
+                  className="flex-1"
+                  disabled={!markdownFileName(newFilePath) || visibleFilePaths.includes(markdownFileName(newFilePath) ?? "")}
+                  onClick={() => {
+                    const candidate = markdownFileName(newFilePath);
+                    if (!candidate || visibleFilePaths.includes(candidate)) return;
+                    if (isDirty && !window.confirm(controlText(DISCARD_AGENT_CONFIG_CHANGES_MESSAGE))) return;
+                    setPendingFiles([candidate]);
+                    setSelectedFile(candidate);
+                    setDraft("");
+                    setInstructionMode("edit");
+                    setNewFilePath("");
+                    setShowNewFileInput(false);
+                  }}
+                >{translateUi("interfaceCopy.create")}</Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => {
+                    setShowNewFileInput(false);
+                    setNewFilePath("");
+                  }}
+                >{translateUi("interfaceCopy.cancel")}</Button>
+              </div>
+            </div>
+          )}
           <FileTree
-            nodes={fileTree.map(function labelDraft(node): typeof node {
-              return { ...node, name: node.path === selectedOrEntryFile ? displayedFilePath.split("/").pop()! : node.name, children: node.children.map(labelDraft) };
-            })}
+            nodes={fileTree}
             selectedFile={selectedOrEntryFile}
             expandedDirs={expandedDirs}
             checkedFiles={new Set()}
@@ -2482,12 +2464,9 @@ export function PromptsTab({
             })}
             onSelectFile={(filePath) => {
               if (filePath === selectedOrEntryFile) return;
-              if (isDirty && !window.confirm(DISCARD_AGENT_CONFIG_CHANGES_MESSAGE)) return;
+              if (isDirty && !window.confirm(controlText(DISCARD_AGENT_CONFIG_CHANGES_MESSAGE))) return;
               setDraft(null);
               setPendingFiles([]);
-              setFileNameDraft(null);
-              setEditingFileName(false);
-              setFileNameError(null);
               setSelectedFile(filePath);
               setInstructionMode("raw");
               if (!fileOptions.includes(filePath)) setDraft("");
@@ -2496,7 +2475,7 @@ export function PromptsTab({
             onToggleCheck={() => {}}
             showCheckboxes={false}
             wrapLabels={false}
-            fileRowClassName={(node) => cn("agent-instruction-file-row font-mono", pendingFiles.includes(node.path) && "agent-instruction-file-pending italic text-muted-foreground/60")}
+            fileRowClassName={() => "agent-instruction-file-row font-mono"}
             renderFileExtra={(node) => {
               const file = bundle?.files.find((entry) => entry.path === node.path);
               if (!file) return null;
@@ -2504,19 +2483,15 @@ export function PromptsTab({
                 return (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="ml-3 shrink-0 rounded border border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-200 px-1.5 py-0.5 text-(length:--text-nano) uppercase tracking-wide cursor-help">
-                        virtual file
-                      </span>
+                      <span className="ml-3 shrink-0 rounded border border-amber-500/40 bg-amber-500/10 text-amber-800 dark:text-amber-200 px-1.5 py-0.5 text-(length:--text-nano) uppercase tracking-wide cursor-help">{pageText("virtualFile_be4282")}</span>
                     </TooltipTrigger>
-                    <TooltipContent side="right" sideOffset={4}>
-                      Legacy inline prompt — this deprecated virtual file preserves the old promptTemplate content
-                    </TooltipContent>
+                    <TooltipContent side="right" sideOffset={4}>{pageText("legacyInlinePromptThisDeprecatedVirtualFilePreserves_db99d5")}</TooltipContent>
                   </Tooltip>
                 );
               }
               return (
                 <span className={cn("ml-3 shrink-0 rounded text-muted-foreground px-1.5 py-0.5 font-sans text-(length:--text-nano) uppercase tracking-wide", file.isEntryFile && "bg-(--agent-detail-tile-chip)")}>
-                  {file.isEntryFile ? "ROOT" : `${file.size}b`}
+                  {file.isEntryFile ? pageText("entryFileRootLabel") : `${file.size}b`}
                 </span>
               );
             }}
@@ -2532,7 +2507,7 @@ export function PromptsTab({
         )}
 
         <div data-agent-tile="" className={cn("min-w-0 w-full overflow-hidden rounded-lg bg-(--agent-detail-tile)", isMobile && showFilePanel && "hidden")}>
-          <div className="agent-identity-preview-header flex items-center justify-between gap-3 px-(--agent-identity-panel-gap) pt-(--agent-identity-panel-gap) pb-5">
+          <div className="flex items-center justify-between gap-3 px-(--agent-identity-panel-gap) pt-(--agent-identity-panel-gap) pb-5">
             <div className="flex items-center gap-2 min-w-0">
               {isMobile && (
                 <Button
@@ -2546,46 +2521,23 @@ export function PromptsTab({
                 </Button>
               )}
               <div className="flex min-w-0 flex-col gap-1.5">
-                <div className="agent-identity-file-heading flex min-w-0 items-center gap-2">
-                  {editingFileName ? (
-                    <div className="agent-identity-preview-title flex min-w-0 items-baseline font-mono text-(length:--agent-identity-preview-title-size)">
-                      <input ref={fileNameInputRef} aria-label="Markdown file name" autoFocus
-                        value={fileNameDraft === null && pendingFiles.includes(selectedOrEntryFile) ? "" : namingPrefix}
-                        placeholder={selectedOrEntryFile.replace(/\.md$/i, "")}
-                        aria-invalid={fileNameInvalid || undefined}
-                        disabled={isSaving}
-                        className="agent-identity-file-name-input min-w-0 bg-transparent text-foreground outline-none placeholder:italic placeholder:text-muted-foreground/50"
-                        onChange={(event) => { setFileNameDraft(`${event.target.value}.md`); setFileNameError(null); }}
-                        onBlur={() => { if (!fileNameInvalid) setEditingFileName(false); }}
-                        onKeyDown={(event) => {
-                          if (event.key === "Enter") { event.preventDefault(); if (!fileNameInvalid) setEditingFileName(false); }
-                          if (event.key === "Escape") { setFileNameDraft(null); setEditingFileName(false); setFileNameError(null); }
-                        }}
-                      />
-                      <span className="text-muted-foreground/50">.md</span>
-                    </div>
-                  ) : (
-                    <button type="button" disabled={isSaving || Boolean(candidateRunId) || selectedFileSummary?.deprecated || selectedFileDetail?.binary || !selectedOrEntryFile.endsWith(".md")}
-                      aria-label={`Rename ${displayedFilePath}`} onClick={() => setEditingFileName(true)}
-                      className={cn("agent-identity-preview-title min-w-0 truncate rounded font-mono text-(length:--agent-identity-preview-title-size) text-left hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", pendingFiles.includes(selectedOrEntryFile) ? "italic text-muted-foreground/60" : "text-foreground")}>
-                      {displayedFilePath}
-                    </button>
-                  )}
-                  <AgentChip>{currentMode === "external" ? "Managed externally" : "Managed by you"}</AgentChip>
+                <div className="flex min-w-0 items-center gap-2">
+                  <h4 className="agent-identity-preview-title min-w-0 truncate font-mono text-(length:--agent-identity-preview-title-size) text-foreground">{selectedOrEntryFile}</h4>
+                  <AgentChip>{currentMode === "external" ? pageText("managedExternally_c44f15") : pageText("managedByYou_631165")}</AgentChip>
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {selectedFileExists
                     ? selectedFileSummary?.deprecated
-                      ? "Deprecated virtual file"
+                      ? pageText("deprecatedVirtualFile_1e0f4e")
                       : instructionFileDateLabel(selectedFileDetail ?? selectedFileSummary)
-                    : "New file in this bundle"}
+                    : pageText("newFileInThisBundle_659fb8")}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <span role="status" aria-hidden={!copyVisible} className={cn("agent-file-copy-notice flex items-center gap-1.5 whitespace-nowrap text-xs text-muted-foreground", !copyVisible && "opacity-0", copyNotice === "error" && "text-destructive")}>
                 {copyNotice === "copied" && <CheckCircle2 className="size-3.5" aria-hidden />}
-                {copyNotice === "copied" ? "File copied" : copyNotice === "error" ? "Copy failed" : null}
+                {copyNotice === "copied" ? pageText("fileCopied_4a6bc2") : copyNotice === "error" ? pageText("copyFailed_bd5acb") : null}
               </span>
               <Button
                 type="button"
@@ -2594,7 +2546,7 @@ export function PromptsTab({
                 className={cn("size-8", instructionMode === "edit" && "bg-(--agent-detail-tile-chip) text-foreground")}
                 aria-pressed={instructionMode === "edit"}
                 aria-label={instructionMode === "edit" ? `Stop editing ${selectedOrEntryFile}` : `Edit ${selectedOrEntryFile}`}
-                title={instructionMode === "edit" ? "Stop editing" : "Edit"}
+                title={instructionMode === "edit" ? pageText("stopEditing_70a7cc") : pageText("edit_530164")}
                 disabled={Boolean(selectedFileDetail?.binary)}
                 onClick={() => setInstructionMode(instructionMode === "edit" ? "raw" : "edit")}
               >
@@ -2602,7 +2554,7 @@ export function PromptsTab({
               </Button>
               {!fileLoading && (
                 <Button type="button" variant="ghost" size="icon-xs" className="size-8"
-                  aria-label="Copy instructions file as markdown" title="Copy as markdown"
+                  aria-label={pageText("copyInstructionsFileAsMarkdown_86a1e9")} title={pageText("copyAsMarkdown_87358c")}
                   onClick={async () => {
                     clearTimeout(copyTimer.current);
                     setCopyVisible(true);
@@ -2613,26 +2565,16 @@ export function PromptsTab({
                   <Copy className="size-4" />
                 </Button>
               )}
-              {selectedOrEntryFile === currentEntryFile && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span tabIndex={0} aria-label="This file is required" className="inline-flex">
-                      <Button type="button" variant="ghost" size="icon-xs" className="size-8" aria-label={`Delete ${selectedOrEntryFile}`} disabled><Trash2 className="size-4" /></Button>
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>This file is required</TooltipContent>
-                </Tooltip>
-              )}
               {selectedFileExists && !selectedFileSummary?.deprecated && selectedOrEntryFile !== currentEntryFile && (
                 <Button
                   type="button"
                   size="icon-xs"
                   variant="ghost"
                   className="size-8"
-                  aria-label={`Delete ${selectedOrEntryFile}`}
-                  title="Delete file"
+                  aria-label={translateDynamic("dynamic:delete", { value1: selectedOrEntryFile })}
+                  title={pageText("deleteFile_b9ea4b")}
                   onClick={() => {
-                    if (confirm(`Delete ${selectedOrEntryFile}?`)) {
+                    if (confirm(controlText("Delete {{file}}?", { file: selectedOrEntryFile }))) {
                       deleteFile.mutate(selectedOrEntryFile, {
                         onSuccess: () => {
                           setSelectedFile(currentEntryFile);
@@ -2653,8 +2595,8 @@ export function PromptsTab({
           <div className="space-y-3 px-(--agent-identity-panel-gap) pt-4 empty:hidden">
           {currentMode === "managed" && preservedCandidates.length > 0 && (
             <div className="space-y-3">
-              <p className="text-sm font-medium">Preserved instruction edits</p>
-              <p className="text-sm text-muted-foreground">Older instruction-only sessions have edits to review.</p>
+              <p className="text-sm font-medium">{pageText("preservedInstructionEdits_7e1f60")}</p>
+              <p className="text-sm text-muted-foreground">{pageText("olderInstructionOnlySessionsHaveEditsToReview_5a3134")}</p>
               {preservedCandidates.map((candidate) => (
                 <div key={candidate.runId} className="flex flex-wrap items-center gap-3">
                   <span className="font-mono text-xs text-muted-foreground">{candidate.runId.slice(0, 8)}</span>
@@ -2668,17 +2610,16 @@ export function PromptsTab({
                       } else {
                         loadCandidate.mutate(candidate);
                       }
-                    }}>Review preserved edits</Button>
+                    }}>{pageText("reviewPreservedEdits_85fad4")}</Button>
                   {candidate.errorMessage && <p className="text-sm text-muted-foreground">{candidate.errorMessage}</p>}
-                  {candidate.entryFile !== currentEntryFile && <p className="text-sm text-muted-foreground">The instruction entry changed. These edits remain preserved for the original file.</p>}
+                  {candidate.entryFile !== currentEntryFile && <p className="text-sm text-muted-foreground">{pageText("theInstructionEntryChangedTheseEditsRemainPreserved_1460de")}</p>}
                   {candidate.entryFile !== currentEntryFile && candidate.content !== null && readOnlyCandidateRunId === candidate.runId && (
-                    <div role="region" aria-label={`Preserved edits for ${candidate.entryFile}`} className="w-full space-y-3">
-                      <p className="text-sm text-muted-foreground">Read only: {candidate.entryFile}. To keep any of these edits in {currentEntryFile}, copy them and edit the current entry explicitly.</p>
+                    <div role="region" aria-label={translateDynamic("dynamic:preservedEditsFor", { value1: candidate.entryFile })} className="w-full space-y-3">
+                      <p className="text-sm text-muted-foreground">{pageText("readOnly_c14fef") + " "}{candidate.entryFile}{pageText("toKeepAnyOfTheseEditsIn_3c1590") + " "}{currentEntryFile}{pageText("copyThemAndEditTheCurrentEntryExplicitly_e51511")}</p>
                       <CopyText text={candidate.content} ariaLabel={`Copy preserved edits for ${candidate.entryFile}`}
                         className="inline-flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-foreground">
-                        <Copy className="h-3.5 w-3.5" />Copy preserved edits
-                      </CopyText>
-                      <pre className={cn("overflow-x-auto whitespace-pre-wrap break-words rounded-md border border-border bg-muted p-3 font-mono text-sm", ANALYTICS_MASK_CLASS)}>{candidate.content}</pre>
+                        <Copy className="h-3.5 w-3.5" />{pageText("copyPreservedEdits_0e805a")}</CopyText>
+                      <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-md border border-border bg-muted p-3 font-mono text-sm">{candidate.content}</pre>
                     </div>
                   )}
                 </div>
@@ -2686,17 +2627,16 @@ export function PromptsTab({
             </div>
           )}
           {candidateRunId && <div role="status" className="space-y-3">
-            <p className="text-sm text-muted-foreground">Reviewing preserved edits. Save to apply your resolved draft and close this preserved edit.</p>
-            <details><summary className="cursor-pointer text-sm text-muted-foreground">Compare current instructions</summary>
-              <pre className={cn("whitespace-pre-wrap break-words rounded-md border border-border p-3 font-mono text-sm", ANALYTICS_MASK_CLASS)}>{currentContent}</pre>
+            <p className="text-sm text-muted-foreground">{pageText("reviewingPreservedEditsSaveToApplyYourResolved_e84eee")}</p>
+            <details><summary className="cursor-pointer text-sm text-muted-foreground">{pageText("compareCurrentInstructions_19a82a")}</summary>
+              <pre className="whitespace-pre-wrap break-words rounded-md border border-border p-3 font-mono text-sm">{currentContent}</pre>
             </details>
-            {draftBaseRevisionRef.current !== (selectedFileDetail?.revision?.id ?? null) && <p className="text-sm text-destructive">The current instructions changed after this draft was loaded. Refresh the current revision, compare the instructions, and save your resolved draft again.</p>}
-            {(resolveCandidate.error || draftBaseRevisionRef.current !== (selectedFileDetail?.revision?.id ?? null)) && <Button type="button" variant="outline" size="sm" disabled={isSaving} onClick={() => refreshCandidateBase.mutate()}>Refresh current revision</Button>}
+            {draftBaseRevisionRef.current !== (selectedFileDetail?.revision?.id ?? null) && <p className="text-sm text-destructive">{pageText("theCurrentInstructionsChangedAfterThisDraftWas_7cc6aa")}</p>}
+            {(resolveCandidate.error || draftBaseRevisionRef.current !== (selectedFileDetail?.revision?.id ?? null)) && <Button type="button" variant="outline" size="sm" disabled={isSaving} onClick={() => refreshCandidateBase.mutate()}>{pageText("refreshCurrentRevision_cce8ac")}</Button>}
           </div>}
-          {(candidates.error || loadCandidate.error || resolveCandidate.error || refreshCandidateBase.error) && <p role="alert" className="text-sm text-destructive">{(candidates.error ?? loadCandidate.error ?? resolveCandidate.error ?? refreshCandidateBase.error)?.message} Your preserved edits remain available.</p>}
-          {(fileNameError || (editingFileName && fileNameInvalid)) && <p role="alert" className="text-sm text-destructive">{fileNameError ?? (nameConflict ? "A file with this name already exists." : "Use letters, numbers, hyphens or underscores.")}</p>}
-          {(saveFile.error || fileError || updateBundle.error) && <p role="alert" className="text-sm text-destructive">{(saveFile.error ?? fileError ?? updateBundle.error)?.message} Your unsaved edits are retained.</p>}
-          {selectedFileDetail?.receipt?.materialization === "pending" && <p role="status" className="text-sm text-muted-foreground">Revision saved. The instruction file still needs to be rebuilt from the saved revision.</p>}
+          {(candidates.error || loadCandidate.error || resolveCandidate.error || refreshCandidateBase.error) && <p role="alert" className="text-sm text-destructive">{(candidates.error ?? loadCandidate.error ?? resolveCandidate.error ?? refreshCandidateBase.error)?.message}{" " + pageText("yourPreservedEditsRemainAvailable_409b2a")}</p>}
+          {(saveFile.error || fileError || updateBundle.error) && <p role="alert" className="text-sm text-destructive">{(saveFile.error ?? fileError ?? updateBundle.error)?.message}{" " + pageText("yourUnsavedEditsAreRetained_28ed3c")}</p>}
+          {selectedFileDetail?.receipt?.materialization === "pending" && <p role="status" className="text-sm text-muted-foreground">{pageText("revisionSavedTheInstructionFileStillNeedsTo_03db0a")}</p>}
           {selectedFileDetail?.revision && currentMode === "managed" && bundle?.persistence !== "agent_files" && <InstructionHistory
             key={selectedOrEntryFile} agentId={agent.id} companyId={companyId} path={selectedOrEntryFile}
             currentRevisionId={selectedFileDetail.revision.id} disabled={isDirty || isSaving}
@@ -2711,8 +2651,8 @@ export function PromptsTab({
           </div>
           {selectedFileDetail?.binary ? (
             <div className="space-y-3 px-(--agent-identity-panel-gap) py-5">
-              <p className="text-sm text-muted-foreground">This file is preserved with the agent directory. Download it to view its contents.</p>
-              <a className="text-sm text-primary underline" href={agentsApi.downloadInstructionsFile(agent.id, selectedOrEntryFile, companyId)} download>Download {selectedOrEntryFile}</a>
+              <p className="text-sm text-muted-foreground">{pageText("thisFileIsPreservedWithTheAgentDirectory_a902ee")}</p>
+              <a className="text-sm text-primary underline" href={agentsApi.downloadInstructionsFile(agent.id, selectedOrEntryFile, companyId)} download>{pageText("download_a479c9") + " "}{selectedOrEntryFile}</a>
             </div>
           ) : selectedFileExists && fileLoading && !selectedFileDetail ? (
             <div className="px-(--agent-identity-panel-gap) py-5">
@@ -2720,8 +2660,8 @@ export function PromptsTab({
             </div>
           ) : instructionMode === "edit" ? (
             <textarea
-              aria-label="Instruction file editor"
-              autoFocus={!editingFileName}
+              aria-label={pageText("instructionFileEditor_ee3daf")}
+              autoFocus
               value={displayValue}
               spellCheck={false}
               onChange={(event) => {
@@ -2730,19 +2670,19 @@ export function PromptsTab({
                 setDraft(event.target.value);
               }}
               className="block min-h-(--sz-420px) w-full field-sizing-content resize-none bg-transparent p-(--agent-identity-panel-gap) font-mono text-xs leading-5 whitespace-pre-wrap text-foreground outline-none"
-              placeholder="File contents"
+              placeholder={pageText("fileContents_3b4cbf")}
             />
           ) : (
-            <div role="button" tabIndex={0} aria-label={`Edit ${selectedOrEntryFile} contents`}
+            <div role="button" tabIndex={0} aria-label={translateDynamic("dynamic:editContents", { value1: selectedOrEntryFile })}
               className="cursor-text outline-none focus-visible:ring-2 focus-visible:ring-ring"
               onClick={() => setInstructionMode("edit")}
               onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setInstructionMode("edit"); } }}>
             {displayValue.trim() ? <pre
               data-testid="instructions-raw-source"
-              className={cn("block min-h-(--sz-420px) w-full overflow-x-auto p-(--agent-identity-panel-gap) font-mono text-xs leading-5 whitespace-pre-wrap break-words text-muted-foreground", ANALYTICS_MASK_CLASS)}
+              className="block min-h-(--sz-420px) w-full overflow-x-auto p-(--agent-identity-panel-gap) font-mono text-xs leading-5 whitespace-pre-wrap break-words text-muted-foreground"
             >
               {displayValue}
-            </pre> : <p className="min-h-(--sz-420px) p-(--agent-identity-panel-gap) text-sm text-muted-foreground">This instruction file is empty.</p>}
+            </pre> : <p className="min-h-(--sz-420px) p-(--agent-identity-panel-gap) text-sm text-muted-foreground">{pageText("thisInstructionFileIsEmpty_8ae7d6")}</p>}
             </div>
           )}
         </div>
@@ -2809,6 +2749,7 @@ function PromptEditorSkeleton() {
 /* ---- Runs Tab ---- */
 
 function RunListItem({ run, isSelected, agentId }: { run: HeartbeatRun; isSelected: boolean; agentId: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const statusInfo = runStatusIcons[run.status] ?? { icon: Clock, color: "text-neutral-400" };
   const StatusIcon = statusInfo.icon;
   const metrics = runMetrics(run);
@@ -2851,8 +2792,8 @@ function RunListItem({ run, isSelected, agentId }: { run: HeartbeatRun; isSelect
       )}
       {(metrics.usageUnavailable || (metrics.totalTokens ?? 0) > 0 || (metrics.cost ?? 0) > 0) && (
         <div className="flex items-center gap-2 pl-5.5 text-(length:--text-micro) text-muted-foreground tabular-nums">
-          {metrics.usageUnavailable && <span>Usage and cost unavailable</span>}
-          {metrics.totalTokens !== null && metrics.totalTokens > 0 && <span>{formatTokens(metrics.totalTokens)} tok</span>}
+          {metrics.usageUnavailable && <span>{pageText("usageAndCostUnavailable_9c7bda")}</span>}
+          {metrics.totalTokens !== null && metrics.totalTokens > 0 && <span>{formatTokens(metrics.totalTokens)}{" " + pageText("tok_79bead")}</span>}
           {metrics.cost !== null && metrics.cost > 0 && <span>${metrics.cost.toFixed(3)}</span>}
         </div>
       )}
@@ -2877,6 +2818,8 @@ export function RunsTab({
   adapterType: string;
   adapterConfig: Record<string, unknown>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const { isMobile } = useSidebar();
 
   // Sort by created descending
@@ -2889,13 +2832,13 @@ export function RunsTab({
   const selection = useSelectedHeartbeatRun(sorted, effectiveRunId, companyId, agentId);
   const selectedRun = selection.run;
   if (selectedRunId && !selectedRun) {
-    if (selection.loading) return <p className="text-sm text-muted-foreground">Loading run…</p>;
+    if (selection.loading) return <p className="text-sm text-muted-foreground">{pageText("loadingRun_f91e59")}</p>;
     return <div role="alert">
-      <p className="text-sm text-destructive">{selection.error instanceof Error ? selection.error.message : "This run is unavailable for this agent."}</p>
-      {selection.error && <Button variant="outline" onClick={() => { void selection.retry(); }}>Try again</Button>}
+      <p className="text-sm text-destructive">{selection.error instanceof Error ? selection.error.message : pageText("thisRunIsUnavailableForThisAgent_8a6e75")}</p>
+      {selection.error && <Button variant="outline" onClick={() => { void selection.retry(); }}>{translateUi("interfaceCopy.tryAgain")}</Button>}
     </div>;
   }
-  if (runs.length === 0 && !selectedRun) return <p className="text-sm text-muted-foreground">No runs yet.</p>;
+  if (runs.length === 0 && !selectedRun) return <p className="text-sm text-muted-foreground">{pageText("noRunsYet_7a8b1c")}</p>;
 
   // Mobile: show either run list OR run detail with back button
   if (isMobile) {
@@ -2906,9 +2849,7 @@ export function RunsTab({
             to={`/agents/${agentRouteId}/runs`}
             className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors no-underline"
           >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Back to runs
-          </Link>
+            <ArrowLeft className="h-3.5 w-3.5" />{pageText("backToRuns_f49d11")}</Link>
           <RunDetail key={selectedRun.id} run={selectedRun} agentRouteId={agentRouteId} adapterType={adapterType} adapterConfig={adapterConfig} />
         </div>
       );
@@ -2950,6 +2891,7 @@ export function RunsTab({
 /* ---- Run Detail (expanded) ---- */
 
 export function AgentFileRunNotice({ resultJson }: { resultJson: HeartbeatRun["resultJson"] }) {
+  const { t: pageText } = usePageTranslation("interface");
   const save = asRecord(resultJson?.instructionSave);
   const storageWarning = asNonEmptyString(save?.storageWarning);
   const error = asNonEmptyString(save?.errorMessage);
@@ -2958,8 +2900,8 @@ export function AgentFileRunNotice({ resultJson }: { resultJson: HeartbeatRun["r
   // I/O failure must stay visible even when storage was full at run start.
   const showSyncFailure = syncFailure && (!storageWarning || save?.errorCode !== "AGENT_FILES_LIMIT_EXCEEDED");
   return <>
-    {storageWarning && <InlineBanner tone="warning" title="Agent storage warning" compact>{storageWarning}</InlineBanner>}
-    {showSyncFailure && <InlineBanner tone="warning" title="Agent file sync failed for this run" compact>{error}</InlineBanner>}
+    {storageWarning && <InlineBanner tone="warning" title={pageText("agentStorageWarning_8d05c9")} compact>{storageWarning}</InlineBanner>}
+    {showSyncFailure && <InlineBanner tone="warning" title={pageText("agentFileSyncFailedForThisRun_8974bd")} compact>{error}</InlineBanner>}
   </>;
 }
 
@@ -2985,6 +2927,7 @@ export function RunAccountingMetrics({ run }: { run: HeartbeatRun }) {
 }
 
 function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }: { run: HeartbeatRun; agentRouteId: string; adapterType: string; adapterConfig: Record<string, unknown> }) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { data: hydratedRun } = useQuery({
@@ -3199,7 +3142,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
           break-glass handlers as the task detail page. */}
       <RunWorkspaceRecoverySurface run={run} />
       <AiConnectionPoolRunDetails context={run.contextSnapshot} />
-      {grokWork && <p className="text-sm text-muted-foreground">Runs in Grok Bot. Usage not reported. Stopping this session revokes Paperclip authority; remote execution may continue. Open the Grok Bot desktop app to inspect it. This view contains Paperclip-reported activity.</p>}
+      {grokWork && <p className="text-sm text-muted-foreground">{pageText("runsInGrokBotUsageNotReportedStopping_6eb81e")}</p>}
       {/* Run summary card */}
       <div className="border border-border rounded-lg overflow-hidden">
         <div className="flex flex-col sm:flex-row">
@@ -3232,7 +3175,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                   disabled={resumeRun.isPending}
                 >
                   <RotateCcw className="h-3.5 w-3.5 mr-1" />
-                  {resumeRun.isPending ? "Resuming…" : "Resume"}
+                  {resumeRun.isPending ? pageText("resuming_ab0bec") : pageText("resume_b3bd0b")}
                 </Button>
               )}
               {canRetryRun && !canResumeLostRun && (
@@ -3244,7 +3187,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                   disabled={retryRun.isPending}
                 >
                   <RotateCcw className="h-3.5 w-3.5 mr-1" />
-                  {retryRun.isPending ? "Retrying…" : "Retry"}
+                  {retryRun.isPending ? pageText("retrying_231013") : pageText("retry_9f5cd8")}
                 </Button>
               )}
               <Button
@@ -3253,9 +3196,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                 className="text-xs h-6 px-2"
                 onClick={() => setInspectorOpen(true)}
               >
-                <Eye className="h-3.5 w-3.5 mr-1" />
-                Inspect run
-              </Button>
+                <Eye className="h-3.5 w-3.5 mr-1" />{pageText("inspectRun_24265c")}</Button>
               <HoneycombRunLink
                 runId={run.id}
                 enabled={paperclipDeveloperMode && canUseProviderTrace}
@@ -3269,7 +3210,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                   disabled={rerunWithTrace.isPending}
                 >
                   <RotateCcw className="h-3.5 w-3.5 mr-1" />
-                  {rerunWithTrace.isPending ? "Starting…" : "Re-run with provider trace"}
+                  {rerunWithTrace.isPending ? pageText("starting_e5f580") : pageText("reRunWithProviderTrace_06a847")}
                 </Button>
               ) : null}
             </div>
@@ -3298,22 +3239,21 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
               <div
                 data-testid="run-detail-on-behalf-of"
                 className="text-xs text-muted-foreground"
-              >
-                On behalf of{" "}
-                <span className={cn("text-foreground", ANALYTICS_MASK_CLASS)}>
+              >{pageText("onBehalfOf_903002")}{" "}
+                <span className="text-foreground">
                   {responsibleUserName ?? responsibleUserLabel(null)}
                 </span>
               </div>
             )}
             {Boolean(run.identityHistory?.length) && (
               <details className="text-xs text-muted-foreground" data-testid="run-identity-history">
-                <summary className="cursor-pointer">GitHub identity history</summary>
-                <ol className={cn("mt-2 space-y-2", ANALYTICS_MASK_CLASS)}>
+                <summary className="cursor-pointer">{pageText("githubIdentityHistory_5b5bca")}</summary>
+                <ol className="mt-2 space-y-2">
                   {run.identityHistory!.map((identity) => {
                     const person = userDirectory?.users.find((entry) => entry.principalId === identity.responsibleUserId);
                     return (
                       <li key={identity.id}>
-                        <span className="text-foreground">{person?.user?.name ?? person?.user?.email ?? identity.responsibleUserId ?? "No responsible person"}</span>
+                        <span className="text-foreground">{person?.user?.name ?? person?.user?.email ?? identity.responsibleUserId ?? pageText("noResponsiblePerson_f60f30")}</span>
                         {" · "}{identity.cause}{" · "}{identity.status}
                         {identity.github ? (
                           <span className="block">
@@ -3321,7 +3261,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                             {identity.github.source ? `${identity.github.source} · ` : ""}
                             {identity.github.status}{identity.github.reason ? `: ${identity.github.reason}` : ""}
                           </span>
-                        ) : <span className="block">No GitHub operation recorded</span>}
+                        ) : <span className="block">{pageText("noGitHubOperationRecorded_aa6bfe")}</span>}
                       </li>
                     );
                   })}
@@ -3330,17 +3270,17 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
             )}
             {cancelRun.error && (
               <div className="text-xs text-destructive" role="alert">
-                {cancelRun.error instanceof Error ? cancelRun.error.message : "Failed to stop run"}
+                {cancelRun.error instanceof Error ? cancelRun.error.message : interfaceMessage("interface:errorFailedToStopRun")}
               </div>
             )}
             {resumeRun.isError && ( // query-error-ok: mutation result, not a query
               <div className="text-xs text-destructive">
-                {resumeRun.error instanceof Error ? resumeRun.error.message : "Failed to resume run"}
+                {resumeRun.error instanceof Error ? resumeRun.error.message : interfaceMessage("interface:errorFailedToResumeRun")}
               </div>
             )}
             {retryRun.isError && ( // query-error-ok: mutation result, not a query
               <div className="text-xs text-destructive">
-                {retryRun.error instanceof Error ? retryRun.error.message : "Failed to retry run"}
+                {retryRun.error instanceof Error ? retryRun.error.message : interfaceMessage("interface:errorFailedToRetryRun")}
               </div>
             )}
             {startTime && (
@@ -3355,18 +3295,17 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                   {run.finishedAt && <> &rarr; {relativeTime(run.finishedAt)}</>}
                 </div>
                 {displayDurationSec !== null && (
-                  <div className="text-xs text-muted-foreground">
-                    Duration: {displayDurationSec >= 60 ? `${Math.floor(displayDurationSec / 60)}m ${displayDurationSec % 60}s` : `${displayDurationSec}s`}
+                  <div className="text-xs text-muted-foreground">{pageText("duration_9693ae") + " "}{displayDurationSec >= 60 ? `${Math.floor(displayDurationSec / 60)}m ${displayDurationSec % 60}s` : `${displayDurationSec}s`}
                   </div>
                 )}
               </div>
             )}
             <AgentFileRunNotice resultJson={run.resultJson} />
-            {run.errorCode !== "sandbox_disk_full" && readProviderFailure(run.resultJson?.providerFailure) ? (
+            {readProviderFailure(run.resultJson?.providerFailure) ? (
               <ProviderFailureNotice failure={readProviderFailure(run.resultJson?.providerFailure)!} />
-            ) : runFailureMessage(run) && (
+            ) : run.error && (
               <div className="text-xs">
-                <span className="text-destructive"><ProviderLimitMessage>{runFailureMessage(run)!}</ProviderLimitMessage></span>
+                <span className="text-red-600 dark:text-red-400">{run.error}</span>
                 {run.errorCode && <span className="text-muted-foreground ml-1">({run.errorCode})</span>}
               </div>
             )}
@@ -3379,19 +3318,17 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                   onClick={() => runClaudeLogin.mutate()}
                   disabled={runClaudeLogin.isPending}
                 >
-                  {runClaudeLogin.isPending ? "Running claude login..." : "Login to Claude Code"}
+                  {runClaudeLogin.isPending ? pageText("runningClaudeLogin_cb3e21") : pageText("loginToClaudeCode_e16271")}
                 </Button>
                 {runClaudeLogin.isError && ( // query-error-ok: mutation result, not a query
                   <p className="text-xs text-destructive">
                     {runClaudeLogin.error instanceof Error
                       ? runClaudeLogin.error.message
-                      : "Failed to run Claude login"}
+                      : interfaceMessage("interface:errorFailedToRunClaudeLogin")}
                   </p>
                 )}
                 {claudeLoginResult?.loginUrl && (
-                  <p className="text-xs">
-                    Login URL:
-                    <a
+                  <p className="text-xs">{pageText("loginURL_32363c")}<a
                       href={claudeLoginResult.loginUrl}
                       className="text-blue-600 underline underline-offset-2 ml-1 break-all dark:text-blue-400"
                       target="_blank"
@@ -3404,12 +3341,12 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                 {claudeLoginResult && (
                   <>
                     {!!claudeLoginResult.stdout && (
-                      <pre className={cn("bg-neutral-100 dark:bg-neutral-950 rounded-md p-3 text-xs font-mono text-foreground overflow-x-auto whitespace-pre-wrap", ANALYTICS_MASK_CLASS)}>
+                      <pre className="bg-neutral-100 dark:bg-neutral-950 rounded-md p-3 text-xs font-mono text-foreground overflow-x-auto whitespace-pre-wrap">
                         {claudeLoginResult.stdout}
                       </pre>
                     )}
                     {!!claudeLoginResult.stderr && (
-                      <pre className={cn("bg-neutral-100 dark:bg-neutral-950 rounded-md p-3 text-xs font-mono text-red-700 dark:text-red-300 overflow-x-auto whitespace-pre-wrap", ANALYTICS_MASK_CLASS)}>
+                      <pre className="bg-neutral-100 dark:bg-neutral-950 rounded-md p-3 text-xs font-mono text-red-700 dark:text-red-300 overflow-x-auto whitespace-pre-wrap">
                         {claudeLoginResult.stderr}
                       </pre>
                     )}
@@ -3424,9 +3361,8 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
               />
             )}
             {hasNonZeroExit && (
-              <div className="text-xs text-red-600 dark:text-red-400">
-                Exit code {run.exitCode}
-                {run.signal && <span className="text-muted-foreground ml-1">(signal: {run.signal})</span>}
+              <div className="text-xs text-red-600 dark:text-red-400">{pageText("exitCode_5df6a0") + " "}{run.exitCode}
+                {run.signal && <span className="text-muted-foreground ml-1">{pageText("signal_e6a83f") + " "}{run.signal})</span>}
               </div>
             )}
             <RunRetryDetails run={run} agentRouteId={agentRouteId} />
@@ -3442,21 +3378,19 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
               className="flex items-center gap-1.5 w-full px-4 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
               onClick={() => setSessionOpen((v) => !v)}
             >
-              <ChevronRight className={cn("h-3 w-3 transition-transform", sessionOpen && "rotate-90")} />
-              Session
-              {sessionChanged && <span className="text-yellow-400 ml-1">(changed)</span>}
+              <ChevronRight className={cn("h-3 w-3 transition-transform", sessionOpen && "rotate-90")} />{pageText("session_f7f199")}{sessionChanged && <span className="text-yellow-400 ml-1">{pageText("changed_1588c0")}</span>}
             </button>
             {sessionOpen && (
               <div className="px-4 pb-3 space-y-1 text-xs">
                 {run.sessionIdBefore && (
                   <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground w-12">{sessionChanged ? "Before" : "ID"}</span>
+                    <span className="text-muted-foreground w-12">{sessionChanged ? pageText("before_74f396") : "ID"}</span>
                     <CopyText text={run.sessionIdBefore} className="font-mono" />
                   </div>
                 )}
                 {sessionChanged && run.sessionIdAfter && (
                   <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground w-12">After</span>
+                    <span className="text-muted-foreground w-12">{pageText("after_79ba5e")}</span>
                     <CopyText text={run.sessionIdAfter} className="font-mono" />
                   </div>
                 )}
@@ -3476,14 +3410,14 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                       }}
                     >
                       {clearSessionsForTouchedIssues.isPending
-                        ? "clearing session..."
-                        : "clear session for these tasks"}
+                        ? pageText("clearingSession_9c3ea2")
+                        : pageText("clearSessionForTheseTasks_f65b1a")}
                     </button>
                     {clearSessionsForTouchedIssues.isError && ( // query-error-ok: mutation result, not a query
                       <p className="text-(length:--text-micro) text-destructive mt-1">
                         {clearSessionsForTouchedIssues.error instanceof Error
                           ? clearSessionsForTouchedIssues.error.message
-                          : "Failed to clear sessions"}
+                          : interfaceMessage("interface:errorFailedToClearSessions")}
                       </p>
                     )}
                   </div>
@@ -3497,7 +3431,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
       {/* Issues touched by this run */}
       {touchedIssues && touchedIssues.length > 0 && (
         <div className="space-y-2">
-          <span className="text-xs font-medium text-muted-foreground">Tasks Touched ({touchedIssues.length})</span>
+          <span className="text-xs font-medium text-muted-foreground">{pageText("tasksTouched_f6742b")}{touchedIssues.length})</span>
           <div className="border border-border rounded-lg divide-y divide-border">
             {touchedIssues.map((issue) => (
               <Link
@@ -3520,7 +3454,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
       {run.stderrExcerpt && (
         <div className="space-y-1">
           <span className="text-xs font-medium text-red-600 dark:text-red-400">stderr</span>
-          <pre className={cn("bg-neutral-100 dark:bg-neutral-950 rounded-md p-3 text-xs font-mono text-red-700 dark:text-red-300 overflow-x-auto whitespace-pre-wrap", ANALYTICS_MASK_CLASS)}>{run.stderrExcerpt}</pre>
+          <pre className="bg-neutral-100 dark:bg-neutral-950 rounded-md p-3 text-xs font-mono text-red-700 dark:text-red-300 overflow-x-auto whitespace-pre-wrap">{run.stderrExcerpt}</pre>
         </div>
       )}
 
@@ -3528,7 +3462,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
       {run.stdoutExcerpt && !run.logRef && (
         <div className="space-y-1">
           <span className="text-xs font-medium text-muted-foreground">stdout</span>
-          <pre className={cn("bg-neutral-100 dark:bg-neutral-950 rounded-md p-3 text-xs font-mono text-foreground overflow-x-auto whitespace-pre-wrap", ANALYTICS_MASK_CLASS)}>{run.stdoutExcerpt}</pre>
+          <pre className="bg-neutral-100 dark:bg-neutral-950 rounded-md p-3 text-xs font-mono text-foreground overflow-x-auto whitespace-pre-wrap">{run.stdoutExcerpt}</pre>
         </div>
       )}
 
@@ -3560,6 +3494,8 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
 /* ---- Keys Tab ---- */
 
 export function KeysTab({ agentId, companyId }: { agentId: string; companyId?: string }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const [newKeyName, setNewKeyName] = useState("");
@@ -3597,7 +3533,7 @@ export function KeysTab({ agentId, companyId }: { agentId: string; companyId?: s
         setTimeout(() => setCopied(false), 2000);
       })
       .catch(() => {
-        pushToast({ title: "Copy failed", body: "Clipboard access is unavailable.", tone: "error" });
+        pushToast({ title: interfaceNotice("interface:copyFailed_bd5acb"), body: interfaceNotice("interface:clipboardAccessIsUnavailable_0d01be"), tone: "error" });
       });
   }
 
@@ -3609,18 +3545,16 @@ export function KeysTab({ agentId, companyId }: { agentId: string; companyId?: s
       {/* New token banner */}
       {newToken && (
         <div className="border border-yellow-300 dark:border-yellow-600/40 bg-yellow-50 dark:bg-yellow-500/5 rounded-lg p-4 space-y-2">
-          <p className="text-sm font-medium text-yellow-700 dark:text-yellow-400">
-            API key created — copy it now, it will not be shown again.
-          </p>
+          <p className="text-sm font-medium text-yellow-700 dark:text-yellow-400">{pageText("apiKeyCreatedCopyItNowItWill_62f343")}</p>
           <div className="flex items-center gap-2">
-            <code className={cn("flex-1 bg-neutral-100 dark:bg-neutral-950 rounded px-3 py-1.5 text-xs font-mono text-green-700 dark:text-green-300 truncate", ANALYTICS_NO_CAPTURE_CLASS)}>
+            <code className="flex-1 bg-neutral-100 dark:bg-neutral-950 rounded px-3 py-1.5 text-xs font-mono text-green-700 dark:text-green-300 truncate">
               {tokenVisible ? newToken : newToken.replace(/./g, "•")}
             </code>
             <Button
               variant="ghost"
               size="icon-sm"
               onClick={() => setTokenVisible((v) => !v)}
-              title={tokenVisible ? "Hide" : "Show"}
+              title={tokenVisible ? pageText("hide_34d8b6") : pageText("show_d97d1e")}
             >
               {tokenVisible ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
             </Button>
@@ -3628,35 +3562,29 @@ export function KeysTab({ agentId, companyId }: { agentId: string; companyId?: s
               variant="ghost"
               size="icon-sm"
               onClick={copyToken}
-              title="Copy"
+              title={pageText("copy_af74f7")}
             >
               <Copy className="h-3.5 w-3.5" />
             </Button>
-            {copied && <span className="text-xs text-green-400">Copied!</span>}
+            {copied && <span className="text-xs text-green-400">{translateUi("interfaceCopy.copied")}</span>}
           </div>
           <Button
             variant="ghost"
             size="sm"
             className="text-muted-foreground text-xs"
             onClick={() => setNewToken(null)}
-          >
-            Dismiss
-          </Button>
+          >{pageText("dismiss_70afe9")}</Button>
         </div>
       )}
 
       {/* Create new key */}
       <div className="border border-border rounded-lg p-4 space-y-3">
         <h3 className="text-xs font-medium text-muted-foreground flex items-center gap-2">
-          <Key className="h-3.5 w-3.5" />
-          Create API Key
-        </h3>
-        <p className="text-xs text-muted-foreground">
-          API keys allow this agent to authenticate calls to the Paperclip server.
-        </p>
+          <Key className="h-3.5 w-3.5" />{pageText("createAPIKey_b68d55")}</h3>
+        <p className="text-xs text-muted-foreground">{pageText("apiKeysAllowThisAgentToAuthenticateCalls_3092bd")}</p>
         <div className="flex items-center gap-2">
           <Input
-            placeholder="Key name (e.g. production)"
+            placeholder={pageText("keyNameEGProduction_235f39")}
             value={newKeyName}
             onChange={(e) => setNewKeyName(e.target.value)}
             className="h-8 text-sm"
@@ -3669,31 +3597,26 @@ export function KeysTab({ agentId, companyId }: { agentId: string; companyId?: s
             onClick={() => createKey.mutate()}
             disabled={createKey.isPending}
           >
-            <Plus className="h-3.5 w-3.5 mr-1" />
-            Create
-          </Button>
+            <Plus className="h-3.5 w-3.5 mr-1" />{pageText("create_6e157c")}</Button>
         </div>
       </div>
 
       {/* Active keys */}
-      {isLoading && <p className="text-sm text-muted-foreground">Loading keys...</p>}
+      {isLoading && <p className="text-sm text-muted-foreground">{pageText("loadingKeys_1dae6c")}</p>}
 
       {!isLoading && activeKeys.length === 0 && !newToken && (
-        <p className="text-sm text-muted-foreground">No active API keys.</p>
+        <p className="text-sm text-muted-foreground">{pageText("noActiveAPIKeys_c04df7")}</p>
       )}
 
       {activeKeys.length > 0 && (
         <div>
-          <h3 className="text-xs font-medium text-muted-foreground mb-2">
-            Active Keys
-          </h3>
+          <h3 className="text-xs font-medium text-muted-foreground mb-2">{pageText("activeKeys_ddf919")}</h3>
           <div className="border border-border rounded-lg divide-y divide-border">
             {activeKeys.map((key: AgentKey) => (
               <div key={key.id} className="flex items-center justify-between px-4 py-2.5">
                 <div>
                   <span className="text-sm font-medium">{key.name}</span>
-                  <span className="text-xs text-muted-foreground ml-3">
-                    Created {formatDate(key.createdAt)}
+                  <span className="text-xs text-muted-foreground ml-3">{pageText("created_accf40") + " "}{formatDate(key.createdAt)}
                   </span>
                 </div>
                 <Button
@@ -3702,9 +3625,7 @@ export function KeysTab({ agentId, companyId }: { agentId: string; companyId?: s
                   className="text-destructive hover:text-destructive text-xs"
                   onClick={() => revokeKey.mutate(key.id)}
                   disabled={revokeKey.isPending}
-                >
-                  Revoke
-                </Button>
+                >{pageText("revoke_0be720")}</Button>
               </div>
             ))}
           </div>
@@ -3714,16 +3635,13 @@ export function KeysTab({ agentId, companyId }: { agentId: string; companyId?: s
       {/* Revoked keys */}
       {revokedKeys.length > 0 && (
         <div>
-          <h3 className="text-xs font-medium text-muted-foreground mb-2">
-            Revoked Keys
-          </h3>
+          <h3 className="text-xs font-medium text-muted-foreground mb-2">{pageText("revokedKeys_8f9174")}</h3>
           <div className="border border-border rounded-lg divide-y divide-border opacity-50">
             {revokedKeys.map((key: AgentKey) => (
               <div key={key.id} className="flex items-center justify-between px-4 py-2.5">
                 <div>
                   <span className="text-sm line-through">{key.name}</span>
-                  <span className="text-xs text-muted-foreground ml-3">
-                    Revoked {key.revokedAt ? formatDate(key.revokedAt) : ""}
+                  <span className="text-xs text-muted-foreground ml-3">{pageText("revoked_85f17a") + " "}{key.revokedAt ? formatDate(key.revokedAt) : ""}
                   </span>
                 </div>
               </div>

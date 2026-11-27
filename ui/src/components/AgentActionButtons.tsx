@@ -1,3 +1,9 @@
+import { controlText } from "@/i18n/controls";
+import { t as interfaceNotice } from "@/i18n";
+import { t as translateDynamic } from "../i18n";
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "@/lib/router";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -54,7 +60,7 @@ import type {
 export function RunButton({
   onClick,
   disabled,
-  label = "Run now",
+  label,
   size = "sm",
 }: {
   onClick: () => void;
@@ -65,7 +71,7 @@ export function RunButton({
   return (
     <Button variant="outline" size={size} onClick={onClick} disabled={disabled}>
       <Play className="h-3.5 w-3.5 sm:mr-1" />
-      <span className="hidden sm:inline">{label}</span>
+      <span className="hidden sm:inline">{label ?? controlText("Run now")}</span>
     </Button>
   );
 }
@@ -83,11 +89,12 @@ export function PauseResumeButton({
   disabled?: boolean;
   size?: "sm" | "default";
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (isPaused) {
     return (
       <Button variant="outline" size={size} onClick={onResume} disabled={disabled}>
         <Play className="h-3.5 w-3.5 sm:mr-1" />
-        <span className="hidden sm:inline">Resume</span>
+        <span className="hidden sm:inline">{pageText("resume_b3bd0b")}</span>
       </Button>
     );
   }
@@ -95,7 +102,7 @@ export function PauseResumeButton({
   return (
     <Button variant="outline" size={size} onClick={onPause} disabled={disabled}>
       <Pause className="h-3.5 w-3.5 sm:mr-1" />
-      <span className="hidden sm:inline">Pause</span>
+      <span className="hidden sm:inline">{pageText("pause_781961")}</span>
     </Button>
   );
 }
@@ -109,6 +116,7 @@ export function ClearErrorButton({
   disabled?: boolean;
   size?: "sm" | "default";
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <Button
       variant="outline"
@@ -116,10 +124,10 @@ export function ClearErrorButton({
       onClick={onClick}
       disabled={disabled}
       className="border-destructive/60 text-destructive hover:bg-destructive/10 hover:text-destructive dark:border-destructive/50"
-      aria-label="Clear error and return agent to idle"
+      aria-label={pageText("clearErrorAndReturnAgentToIdle_4f8345")}
     >
       <CheckCircle2 className="h-3.5 w-3.5 sm:mr-1" />
-      <span className="hidden sm:inline">Clear error</span>
+      <span className="hidden sm:inline">{pageText("clearError_ce945f")}</span>
     </Button>
   );
 }
@@ -163,7 +171,6 @@ export function AgentActionButtons({
   size = "sm",
   assignLabel = "Assign Task",
   showAssignIcon = true,
-  assignIcon: AssignIcon = Plus,
   showChat = false,
   runLabel = "Run now",
   showStatus = true,
@@ -188,7 +195,6 @@ export function AgentActionButtons({
   size?: "sm" | "default";
   assignLabel?: string;
   showAssignIcon?: boolean;
-  assignIcon?: typeof Plus;
   showChat?: boolean;
   runLabel?: string;
   showStatus?: boolean;
@@ -218,11 +224,14 @@ export function AgentActionButtons({
    * omitted, failures surface as toasts (used by the list view).
    */
   onActionError?: (message: string | null) => void;
+  /** Called after termination succeeds so callers can leave now-hidden detail routes. */
   onTerminateSuccess?: (agent: Agent) => void;
   /** Extra content rendered just before the overflow menu (e.g. live-run link). */
   children?: React.ReactNode;
   className?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { openNewIssue } = useDialogActions();
@@ -261,7 +270,7 @@ export function AgentActionButtons({
       if (onActionError) {
         onActionError(message);
       } else {
-        pushToast({ title: "Action failed", body: message, tone: "error" });
+        pushToast({ title: interfaceNotice("interface:actionFailed_57af94"), body: message, tone: "error" });
       }
     },
     [onActionError, pushToast],
@@ -294,6 +303,8 @@ export function AgentActionButtons({
       onActionError?.(null);
       invalidateAgent();
       if (action === "terminate") {
+        const state = (data as Agent).lifecycleState;
+        if (state === "terminating" || state === "cleaning_up") return;
         if (!confirmLateNavigationChanges(agentActionStartedDirtyRef)) return;
         onTerminateSuccess?.(data as Agent);
       }
@@ -329,21 +340,21 @@ export function AgentActionButtons({
       if (resolvedCompanyId) {
         await queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(resolvedCompanyId) });
       }
-      pushToast({ title: "Agent duplicated", body: createdAgent.name, tone: "success" });
+      pushToast({ title: interfaceNotice("interface:agentDuplicated_644377"), body: createdAgent.name, tone: "success" });
       if (!confirmLateNavigationChanges(duplicateStartedDirtyRef)) return;
       navigate(`/agents/${agentRouteRef(createdAgent)}/dashboard`);
     },
     onError: (err) => {
-      const message = err instanceof Error ? err.message : "Failed to duplicate agent";
+      const message = err instanceof Error ? err.message : interfaceMessage("interface:errorFailedToDuplicateAgent");
       onActionError?.(message);
-      pushToast({ title: "Could not duplicate agent", body: message, tone: "error" });
+      pushToast({ title: interfaceNotice("interface:couldNotDuplicateAgent_808e75"), body: message, tone: "error" });
     },
   });
 
   const handleDuplicateAgent = useCallback(() => {
     if (duplicateAgent.isPending) return;
     const nextName = duplicateAgentName(agent.name);
-    const confirmed = window.confirm(`Duplicate ${agent.name} as ${nextName}?`);
+    const confirmed = window.confirm(controlText("Duplicate {{name}} as {{next}}?", { name: agent.name, next: nextName }));
     setMoreOpen(false);
     if (!confirmed || !confirmNavigationStart(duplicateStartedDirtyRef)) return;
     duplicateAgent.mutate();
@@ -357,7 +368,7 @@ export function AgentActionButtons({
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.taskSessions(agent.id) });
     },
     onError: (err) => {
-      reportError(err instanceof Error ? err.message : "Failed to reset session");
+      reportError(err instanceof Error ? err.message : interfaceMessage("interface:errorFailedToResetSession"));
     },
   });
 
@@ -393,10 +404,8 @@ export function AgentActionButtons({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={() => agentAction.mutate("pause")}>
-            Pause anyway
-          </AlertDialogAction>
+          <AlertDialogCancel>{translateUi("interfaceCopy.cancel")}</AlertDialogCancel>
+          <AlertDialogAction onClick={() => agentAction.mutate("pause")}>{pageText("pauseAnyway_5cd20c")}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
@@ -414,16 +423,14 @@ export function AgentActionButtons({
         {persistentProviderTrace ? (
           <span
             className="hidden items-center gap-1 rounded-md border border-primary/30 bg-primary/10 px-2 py-1 text-xs font-medium text-primary lg:inline-flex"
-            title="Exact provider traffic will be captured for future runs and retained for up to 24 hours."
+            title={pageText("exactProviderTrafficWillBeCapturedForFuture_7e5e64")}
           >
-            <Bug className="h-3.5 w-3.5" />
-            Raw tracing on
-          </span>
+            <Bug className="h-3.5 w-3.5" />{pageText("rawTracingOn_538c85")}</span>
         ) : null}
         {children}
         <Popover open={moreOpen} onOpenChange={setMoreOpen}>
           <PopoverTrigger asChild>
-            <Button variant="ghost" size="icon" aria-label={`Open actions for ${agent.name}`}>
+            <Button variant="ghost" size="icon" aria-label={translateDynamic("dynamic:openActionsFor", { value1: agent.name })}>
               <MoreHorizontal className="size-4" />
             </Button>
           </PopoverTrigger>
@@ -459,17 +466,13 @@ export function AgentActionButtons({
                 type="button"
                 className={cn(item, "text-destructive")}
                 disabled={clearErrorDisabled}
-                aria-label="Clear error and return agent to idle"
+                aria-label={pageText("clearErrorAndReturnAgentToIdle_4f8345")}
                 onClick={select(() => agentAction.mutate("clear_error"))}
               >
-                <CheckCircle2 className={cn(icon, "text-destructive")} />
-                Clear error
-              </button>
+                <CheckCircle2 className={cn(icon, "text-destructive")} />{pageText("clearError_ce945f")}</button>
             ) : isPaused ? (
               <button type="button" className={item} disabled={pauseResumeDisabled} onClick={select(() => agentAction.mutate("resume"))}>
-                <Play className={icon} />
-                Resume
-              </button>
+                <Play className={icon} />{pageText("resume_b3bd0b")}</button>
             ) : (
               <button
                 type="button"
@@ -477,9 +480,7 @@ export function AgentActionButtons({
                 disabled={pauseResumeDisabled}
                 onClick={select(() => (pauseConfirm ? setPauseConfirmOpen(true) : agentAction.mutate("pause")))}
               >
-                <Pause className={icon} />
-                Pause
-              </button>
+                <Pause className={icon} />{pageText("pause_781961")}</button>
             )}
             <div role="separator" className="-mx-1 my-1 h-px bg-border" />
             {menuItems.map(({ label, icon: Icon, onSelect, disabled: itemDisabled }) => (
@@ -489,25 +490,19 @@ export function AgentActionButtons({
               </button>
             ))}
             <button type="button" className={item} disabled={duplicateAgent.isPending} onClick={handleDuplicateAgent}>
-              {duplicateAgent.isPending ? <Loader2 className={cn(icon, "animate-spin")} /> : <Copy className={icon} />}
-              Duplicate agent
-            </button>
+              {duplicateAgent.isPending ? <Loader2 className={cn(icon, "animate-spin")} /> : <Copy className={icon} />}{pageText("duplicateAgent_a62aaa")}</button>
             <button
               type="button"
               className={item}
               onClick={select(() => {
                 void copyTextToClipboard(agent.id).catch(() => {
-                  pushToast({ title: "Copy failed", body: "Clipboard access is unavailable.", tone: "error" });
+                  pushToast({ title: interfaceNotice("interface:copyFailed_bd5acb"), body: interfaceNotice("interface:clipboardAccessIsUnavailable_0d01be"), tone: "error" });
                 });
               })}
             >
-              <Copy className={icon} />
-              Copy agent ID
-            </button>
+              <Copy className={icon} />{pageText("copyAgentID_e1704f")}</button>
             <button type="button" className={item} onClick={select(() => resetTaskSession.mutate())}>
-              <RotateCcw className={icon} />
-              Reset sessions
-            </button>
+              <RotateCcw className={icon} />{pageText("resetSessions_7236f6")}</button>
             {hideTerminate ? null : (
               <>
                 <div role="separator" className="-mx-1 my-1 h-px bg-border" />
@@ -519,23 +514,18 @@ export function AgentActionButtons({
                     agentAction.mutate("terminate");
                   })}
                 >
-                  <Trash2 className={cn(icon, "text-destructive")} />
-                  Terminate
-                </button>
+                  <Trash2 className={cn(icon, "text-destructive")} />{pageText("terminate_77517b")}</button>
               </>
             )}
           </PopoverContent>
         </Popover>
-        {showChat && <Button variant="outline" size={size} aria-label={`Chat with ${agent.name}`} title="Chat with this agent"
+        {showChat && <Button variant="outline" size="icon" aria-label={translateDynamic("dynamic:chatWith", { value1: agent.name })} title={pageText("chatWithThisAgent_a124f2")}
           disabled={disabled} onClick={() => { if (!onBeforeNavigate || onBeforeNavigate()) navigate(`/chats/${canonicalAgentRef}`); }}>
           <MessagesSquare className="size-4" />
-          Chat
         </Button>}
         {needsSetup ? (
           <Button size={size} disabled={disabled} onClick={finishSetup}>
-            <Play className="size-4" />
-            Finish setup
-          </Button>
+            <Play className="size-4" />{pageText("finishSetup_c516d2")}</Button>
         ) : (
           <Button
             size={size}
@@ -543,7 +533,7 @@ export function AgentActionButtons({
             disabled={assignAndRunDisabled}
             title={workActionsDisabled ? workActionsDisabledReason : undefined}
           >
-            {showAssignIcon && <AssignIcon className="size-4" />}
+            {showAssignIcon && <Plus className="size-4" />}
             {assignLabel}
           </Button>
         )}
@@ -557,11 +547,9 @@ export function AgentActionButtons({
       {persistentProviderTrace ? (
         <span
           className="hidden items-center gap-1 rounded-md border border-primary/30 bg-primary/10 px-2 py-1 text-xs font-medium text-primary lg:inline-flex"
-          title="Exact provider traffic will be captured for future runs and retained for up to 24 hours."
+          title={pageText("exactProviderTrafficWillBeCapturedForFuture_7e5e64")}
         >
-          <Bug className="h-3.5 w-3.5" />
-          Raw tracing on
-        </span>
+          <Bug className="h-3.5 w-3.5" />{pageText("rawTracingOn_538c85")}</span>
       ) : null}
       <Button
         variant="outline"
@@ -582,7 +570,7 @@ export function AgentActionButtons({
             ...(agent.adapterType === "paperclip_runner" ? { runner: "paperclip" } : ["codex_local", "claude_local", "opencode_local", "pi_local"].includes(agent.adapterType) ? { runner: "legacy" } : {}),
             ...pendingAgentSetupChoice(agent),
           })}`);
-        }}>Finish setup</Button>
+        }}>{pageText("finishSetup_c516d2")}</Button>
       ) : showRun && <RunButton
         onClick={() => {
           if (navigateToRunOnInvoke && !confirmNavigationStart(agentActionStartedDirtyRef)) return;
@@ -617,10 +605,8 @@ export function AgentActionButtons({
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => agentAction.mutate("pause")}>
-                Pause anyway
-              </AlertDialogAction>
+              <AlertDialogCancel>{translateUi("interfaceCopy.cancel")}</AlertDialogCancel>
+              <AlertDialogAction onClick={() => agentAction.mutate("pause")}>{pageText("pauseAnyway_5cd20c")}</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
@@ -633,7 +619,7 @@ export function AgentActionButtons({
       {children}
       <Popover open={moreOpen} onOpenChange={setMoreOpen}>
         <PopoverTrigger asChild>
-          <Button variant="ghost" size="icon-xs" aria-label={`Open actions for ${agent.name}`}>
+          <Button variant="ghost" size="icon-xs" aria-label={translateDynamic("dynamic:openActionsFor", { value1: agent.name })}>
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </PopoverTrigger>
@@ -647,21 +633,17 @@ export function AgentActionButtons({
               <Loader2 className="h-3 w-3 animate-spin" />
             ) : (
               <Copy className="h-3 w-3" />
-            )}
-            Duplicate Agent
-          </button>
+            )}{pageText("duplicateAgent_f9e234")}</button>
           <button
             className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50"
             onClick={() => {
               void copyTextToClipboard(agent.id).catch(() => {
-                pushToast({ title: "Copy failed", body: "Clipboard access is unavailable.", tone: "error" });
+                pushToast({ title: interfaceNotice("interface:copyFailed_bd5acb"), body: interfaceNotice("interface:clipboardAccessIsUnavailable_0d01be"), tone: "error" });
               });
               setMoreOpen(false);
             }}
           >
-            <Copy className="h-3 w-3" />
-            Copy Agent ID
-          </button>
+            <Copy className="h-3 w-3" />{pageText("copyAgentID_ed9257")}</button>
           <button
             className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50"
             onClick={() => {
@@ -669,9 +651,7 @@ export function AgentActionButtons({
               setMoreOpen(false);
             }}
           >
-            <RotateCcw className="h-3 w-3" />
-            Reset Sessions
-          </button>
+            <RotateCcw className="h-3 w-3" />{pageText("resetSessions_4a8e88")}</button>
           {!hideTerminate && (
             <button
               className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50 text-destructive"
@@ -681,9 +661,7 @@ export function AgentActionButtons({
                 agentAction.mutate("terminate");
               }}
             >
-              <Trash2 className="h-3 w-3" />
-              Terminate
-            </button>
+              <Trash2 className="h-3 w-3" />{pageText("terminate_77517b")}</button>
           )}
         </PopoverContent>
       </Popover>

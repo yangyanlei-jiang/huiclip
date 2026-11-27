@@ -1,3 +1,6 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { describeError } from "@/api/errors";
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -10,12 +13,13 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { RadioCardGroup } from '@/components/ui/radio-card';
 import { SkillSourceBranchRepair } from './SkillSourceBranchRepair';
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 export function SkillSourceConnectionRepair({ companyId, source, onClose, onSaved, onReturnFocus }: {
   companyId: string; source: SkillSource; onClose: () => void; onSaved: () => Promise<void>;
   onReturnFocus?: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [connectionId, setConnectionId] = useState(source.connectionId ?? '');
   const [chooseBranch, setChooseBranch] = useState(false);
   const client = useQueryClient();
@@ -36,23 +40,23 @@ export function SkillSourceConnectionRepair({ companyId, source, onClose, onSave
     <DialogContent className="flex max-h-(--sz-calc-18) flex-col overflow-hidden sm:max-w-md"
       onCloseAutoFocus={event => { if (onReturnFocus) { event.preventDefault(); onReturnFocus(); } }}>
       <DialogHeader className="shrink-0">
-        <DialogTitle>Choose GitHub connection</DialogTitle>
-        <DialogDescription>Automatic updates will use your access to this connection. Installed skills and selections stay in place.</DialogDescription>
+        <DialogTitle>{pageText("chooseGitHubConnection_4ad6c8")}</DialogTitle>
+        <DialogDescription>{pageText("automaticUpdatesWillUseYourAccessToThis_d0abe5")}</DialogDescription>
       </DialogHeader>
       <div className="min-h-0 overflow-y-auto space-y-4">
-      {query.isPending && <p role="status" className="text-sm text-muted-foreground">Loading connections…</p>}
-      {query.error && <p role="alert" className="text-sm text-destructive">{describeError(query.error).body} <Button variant="ghost" size="sm" onClick={() => void query.refetch()}>Try again</Button></p>}
-      <RadioCardGroup ariaLabel="GitHub connection" className={ANALYTICS_MASK_CLASS} value={connectionId} onValueChange={setConnectionId} disabled={save.isPending}
+      {query.isPending && <p role="status" className="text-sm text-muted-foreground">{pageText("loadingConnections_e2e03e")}</p>}
+      {query.error && <p role="alert" className="text-sm text-destructive">{describeError(query.error).body} <Button variant="ghost" size="sm" onClick={() => void query.refetch()}>{translateUi("interfaceCopy.tryAgain")}</Button></p>}
+      <RadioCardGroup ariaLabel={interfaceNotice("interface:githubConnection_64a84b")} value={connectionId} onValueChange={setConnectionId} disabled={save.isPending}
         options={connections.map(connection => ({ value: connection.id, title: connection.name }))} />
-      {query.isSuccess && connections.length === 0 && <p className="text-sm text-muted-foreground">Connect GitHub to continue.</p>}
-      <Button asChild variant="link" className="justify-start p-0"><Link to="/apps">Manage GitHub connections</Link></Button>
+      {query.isSuccess && connections.length === 0 && <p className="text-sm text-muted-foreground">{pageText("connectGitHubToContinue_74e6df")}</p>}
+      <Button asChild variant="link" className="justify-start p-0"><Link to="/apps">{pageText("manageGitHubConnections_60b9c6")}</Link></Button>
       {save.error && <p role="alert" className="text-sm text-destructive">{save.error instanceof ApiError && save.error.status === 409 && (save.error.body as { code?: string } | null)?.code === 'skill_source_settings_changed'
-        ? 'This source was updated. Your connection is still selected. Save again to apply it.' : save.error.message}</p>}
-      {branchMissing && source.accessScope !== 'projects' && !source.projects?.some(project => project.active) && <Button variant="outline" disabled={!canSave || save.isPending} onClick={() => setChooseBranch(true)}>Choose a new branch</Button>}
+        ? pageText("thisSourceWasUpdatedYourConnectionIsStill_6b9c23") : save.error.message}</p>}
+      {branchMissing && source.accessScope !== 'projects' && !source.projects?.some(project => project.active) && <Button variant="outline" disabled={!canSave || save.isPending} onClick={() => setChooseBranch(true)}>{translateUi("interfaceCopy.chooseANewBranch")}</Button>}
       </div>
       <footer className="flex shrink-0 items-center justify-between gap-3 border-t border-border pt-4">
-        <Button variant="ghost" disabled={save.isPending} onClick={onClose}>Cancel</Button>
-        <Button disabled={!canSave || save.isPending} onClick={() => save.mutate()}>{save.isPending ? 'Saving…' : 'Save connection'}</Button>
+        <Button variant="ghost" disabled={save.isPending} onClick={onClose}>{translateUi("interfaceCopy.cancel")}</Button>
+        <Button disabled={!canSave || save.isPending} onClick={() => save.mutate()}>{save.isPending ? pageText("saving_56a228") : pageText("saveConnection_07796d")}</Button>
       </footer>
     </DialogContent>
   </Dialog>;

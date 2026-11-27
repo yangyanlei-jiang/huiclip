@@ -79,7 +79,6 @@ export async function loadGitHubGrantMetadata(
   repositorySelection: "all" | "selected" | "mixed" | "none";
   installationIds: string[];
   installationOwnerLogins: string[];
-  suspendedInstallationOwnerLogins?: string[];
   repositories: Array<{
     id: string;
     fullName: string;
@@ -166,7 +165,6 @@ export async function loadGitHubGrantMetadata(
   const installations = await list("/user/installations", "installations");
   const installationIds: string[] = [];
   const owners = new Set<string>();
-  const suspendedOwners = new Set<string>();
   const selections = new Set<"all" | "selected">();
   const managementUrls = new Set<string>();
   const suspendedManagementUrls = new Set<string>();
@@ -193,12 +191,6 @@ export async function loadGitHubGrantMetadata(
     if (installation.suspended_at) {
       const suspendedUrl = githubInstallationManagementUrl(installation.html_url);
       if (suspendedUrl) suspendedManagementUrls.add(suspendedUrl);
-      const suspendedAccount = recordValue(installation.account)
-        ? installation.account
-        : null;
-      if (typeof suspendedAccount?.login === "string") {
-        suspendedOwners.add(suspendedAccount.login);
-      }
       suspendedCount += 1;
       continue;
     }
@@ -289,9 +281,6 @@ export async function loadGitHubGrantMetadata(
         : (selections.values().next().value ?? "none"),
     installationIds,
     installationOwnerLogins: [...owners],
-    ...(suspendedOwners.size > 0
-      ? { suspendedInstallationOwnerLogins: [...suspendedOwners] }
-      : {}),
     repositories: [...repositories.values()].sort((a, b) =>
       a.fullName.localeCompare(b.fullName),
     ),

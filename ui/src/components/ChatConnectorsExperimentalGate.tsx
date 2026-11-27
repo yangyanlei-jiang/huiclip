@@ -21,7 +21,7 @@ function ProviderEndpointGate({
     queryFn: () => chatEndpointsApi.get(endpointId),
   });
   const endpointView = useQueryView(endpoint);
-  const { enabled } = useChatConnectorsEnabled();
+  const { enabled, githubEnabled } = useChatConnectorsEnabled();
   // A cached endpoint keeps gating the page through an outage; only a real
   // failure with nothing loaded shows the error.
   if (endpointView.kind === "error")
@@ -36,7 +36,7 @@ function ProviderEndpointGate({
       />
     );
   if (!endpoint.data) return null;
-  return chatProviderVisible(endpoint.data.provider, enabled) ? (
+  return chatProviderVisible(endpoint.data.provider, enabled, githubEnabled) ? (
     <>{children}</>
   ) : (
     <Navigate to="/apps" replace />
@@ -48,10 +48,10 @@ export function ChatConnectorsExperimentalGate({
 }: {
   children: ReactNode;
 }) {
-  const { enabled, loaded } = useChatConnectorsEnabled();
+  const { enabled, githubEnabled, loaded } = useChatConnectorsEnabled();
   const [params] = useSearchParams();
   const { endpointId } = useParams<{ endpointId: string }>();
-  if (!endpointId && (params.get("provider") === "agentmail" || params.get("provider") === "github"))
+  if (!endpointId && params.get("provider") === "agentmail")
     return <>{children}</>;
   if (!loaded) return null;
   if (endpointId)
@@ -60,7 +60,7 @@ export function ChatConnectorsExperimentalGate({
         {children}
       </ProviderEndpointGate>
     );
-  return chatProviderVisible(params.get("provider"), enabled) ? (
+  return chatProviderVisible(params.get("provider"), enabled, githubEnabled) ? (
     <>{children}</>
   ) : (
     <Navigate to="/apps" replace />

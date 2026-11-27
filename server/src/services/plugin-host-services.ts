@@ -1,5 +1,3 @@
-import { assertAgentInteraction } from "./agent-interaction-policy.js";
-import { currentPluginInteractionOrigin } from "./plugin-interaction-context.js";
 import { projectGitAuthorizationService } from "./project-git-authorization.js";
 import { createLiveEventDelivery } from "../realtime/live-event-delivery.js";
 import { createLiveRunEventRedactor } from "./live-run-event-redaction.js";
@@ -541,7 +539,7 @@ const KNOWN_PROVIDER_SPAN_NAMES: ReadonlySet<string> = new Set([
   "session.open",
   "session.close",
   "lease.wait_for_teardown", "lease.lookup", "lease.refresh", "lease.channel_cleanup",
-  "lease.start", "lease.recover", "lease.wait_transition", "lease.force_stop", "lease.verify", "lease.workspace", "lease.sentinel",
+  "lease.start", "lease.recover", "lease.verify", "lease.workspace", "lease.sentinel",
   "lease.shell", "lease.create", "lease.expiry", "lease.cleanup",
   "plugin.worker", "plugin.host.identity.read", "plugin.host.config.read", "plugin.host.progress.read", "plugin.host.progress.write",
   "plugin.workspace.prepare", "plugin.workspace.failure", "plugin.storage.queue", "plugin.storage.execute",
@@ -591,12 +589,6 @@ const KNOWN_SPAN_OUTCOMES: ReadonlySet<string> = new Set(["ok", "skipped", "fail
 /** The closed value set for the `transfer.direction` attribute. */
 const KNOWN_TRANSFER_DIRECTIONS: ReadonlySet<string> = new Set(["inbound", "outbound"]);
 
-// Settled states plus the transitions a start waits out; anything else is dropped.
-const PROVIDER_STARTUP_STATES: ReadonlySet<string> = new Set([
-  "started", "stopped", "archived", "error", "other",
-  "starting", "stopping", "restoring", "archiving", "resizing",
-]);
-
 /**
  * Re-clamp the worker-sent attributes at the trust boundary. Drop every key that
  * is not on the allowlist. Re-map `provider` through `normalizeProviderFamily`,
@@ -612,7 +604,7 @@ export function clampProviderSpanAttributes(
   for (const [key, value] of Object.entries(raw)) {
     if (!PROVIDER_SPAN_ATTR_ALLOWLIST.has(key)) continue;
     if (key === SPAN_ATTRS.state) {
-      if (typeof value === "string" && PROVIDER_STARTUP_STATES.has(value)) clamped[key] = value;
+      if (typeof value === "string" && ["started", "stopped", "archived", "error", "other"].includes(value)) clamped[key] = value;
       continue;
     }
     if (key === "plugin.operation") {
@@ -1754,7 +1746,7 @@ export function buildHostServices(
         return registry.upsertEntity(pluginId, params as any) as any;
       },
       async list(params) {
-        return registry.listEntities(pluginId, params) as any;
+        return registry.listEntities(pluginId, params as any) as any;
       },
     },
 
@@ -2125,14 +2117,10 @@ export function buildHostServices(
         // Push the non-member visibility predicate into the list query so private
         // issues are filtered at the SQL layer before they can reach a plugin.
         const readCondition = await issueReadSqlCondition(db, pluginIssuePrivacyActor);
-        const limit = parseWindowValue(params.limit);
-        const queried = (await issues.list(companyId, {
-          ...(params as any),
-          readCondition,
-          limit: limit === 0 ? 1 : limit ?? undefined,
-          offset: parseWindowValue(params.offset) ?? 0,
-        })) as Issue[];
-        return limit === 0 ? [] : queried;
+        return applyWindow(
+          (await issues.list(companyId, { ...(params as any), readCondition })) as Issue[],
+          params,
+        );
       },
       async get(params) {
         const companyId = ensureCompanyId(params.companyId);
@@ -3115,9 +3103,6 @@ export function buildHostServices(
         await ensurePluginAvailableForCompany(companyId);
         const agent = await agents.getById(params.agentId);
         requireInCompany("Agent", agent, companyId);
-        const origin = currentPluginInteractionOrigin();
-        await assertAgentInteraction(db, { companyId, actorAgentId: origin?.agentId,
-          operation: "assign", targetAgentId: params.agentId, texts: params.prompt ? [params.prompt] : [] });
         const run = await heartbeat.wakeup(params.agentId, {
           source: "automation",
           triggerDetail: "system",
@@ -3131,8 +3116,8 @@ export function buildHostServices(
               pluginKey,
             },
           },
-          requestedByActorType: origin ? "agent" : "system",
-          requestedByActorId: origin?.agentId ?? pluginId,
+          requestedByActorType: "system",
+          requestedByActorId: pluginId,
         });
         if (!run) throw new Error("Agent wakeup was skipped by heartbeat policy");
         return { runId: run.id };
@@ -3412,14 +3397,15 @@ export function buildHostServices(
         const policy = params.policy ? sanitizeRecord(params.policy) : null;
         if (params.resourceType === "agent") {
           const agent = requireInCompany("Agent", await agents.getById(params.resourceId), companyId);
-          await db.transaction(async tx => {
-            await assertAgentInteraction(tx, { companyId, operation: "configure", targetAgentId: agent.id, lock: "update" });
-            await tx.update(agentsTable)
-              .set({ permissions: policy
-                ? sql`jsonb_set(${agentsTable.permissions}, '{authorizationPolicy}', ${JSON.stringify(policy)}::jsonb)`
-                : sql`${agentsTable.permissions} - 'authorizationPolicy'`, updatedAt: new Date() })
-              .where(eq(agentsTable.id, agent.id));
-          });
+          const permissions = agent.permissions && typeof agent.permissions === "object"
+            ? { ...(agent.permissions as Record<string, unknown>) }
+            : {};
+          if (policy) permissions.authorizationPolicy = policy;
+          else delete permissions.authorizationPolicy;
+          await db
+            .update(agentsTable)
+            .set({ permissions, updatedAt: new Date() })
+            .where(eq(agentsTable.id, agent.id));
         } else if (params.resourceType === "project") {
           const project = requireInCompany("Project", await projects.getById(params.resourceId), companyId);
           const executionWorkspacePolicy = project.executionWorkspacePolicy && typeof project.executionWorkspacePolicy === "object"
@@ -3432,18 +3418,16 @@ export function buildHostServices(
             .set({ executionWorkspacePolicy, updatedAt: new Date() })
             .where(eq(projectsTable.id, project.id));
         } else if (params.resourceType === "issue") {
-          await db.transaction(async tx => {
-            const [locked] = await tx.select().from(issuesTable).where(and(
-              eq(issuesTable.id, params.resourceId), eq(issuesTable.companyId, companyId))).for("update");
-            const issue = requireInCompany("Issue", locked ?? null, companyId);
-            await assertAgentInteraction(tx, { companyId, operation: "edit", issueId: issue.id, lock: true });
-            const executionPolicy = issue.executionPolicy && typeof issue.executionPolicy === "object"
-              ? { ...(issue.executionPolicy as Record<string, unknown>) } : {};
-            if (policy) executionPolicy.authorizationPolicy = policy;
-            else delete executionPolicy.authorizationPolicy;
-            await tx.update(issuesTable).set({ executionPolicy, updatedAt: new Date() })
-              .where(and(eq(issuesTable.id, issue.id), eq(issuesTable.companyId, companyId)));
-          });
+          const issue = requireInCompany("Issue", await issues.getById(params.resourceId), companyId);
+          const executionPolicy = issue.executionPolicy && typeof issue.executionPolicy === "object"
+            ? { ...(issue.executionPolicy as Record<string, unknown>) }
+            : {};
+          if (policy) executionPolicy.authorizationPolicy = policy;
+          else delete executionPolicy.authorizationPolicy;
+          await db
+            .update(issuesTable)
+            .set({ executionPolicy, updatedAt: new Date() })
+            .where(eq(issuesTable.id, issue.id));
         } else {
           const company = await companies.getById(params.resourceId);
           if (!company || company.id !== companyId) throw new Error("Company not found");

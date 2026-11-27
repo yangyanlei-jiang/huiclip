@@ -23,9 +23,6 @@ function createSelectChain(rows: SelectRow[] | ((table: unknown) => SelectRow[])
         where() {
           return query;
         },
-        orderBy() {
-          return query;
-        },
         for() {
           return query;
         },
@@ -67,17 +64,7 @@ function createFakeDb(args: {
     select: vi.fn(() => {
       selectCallCount += 1;
       const rows = selectCallCount === 1 ? [interactionRow] : (args.parentRows ?? []);
-      return createSelectChain(table => {
-        if (getTableName(table as never) === "agent_wakeup_requests") return [];
-        if (getTableName(table as never) === "issues") return [{
-          id: interactionRow.issueId, companyId: interactionRow.companyId, status: "in_progress",
-          assigneeAgentId: interactionRow.createdByAgentId, conversationAgentId: null,
-        }];
-        if (getTableName(table as never) === "agents") return [{
-          id: interactionRow.createdByAgentId, companyId: interactionRow.companyId, permissions: {},
-        }];
-        return rows;
-      });
+      return createSelectChain(table => getTableName(table as never) === "issues" ? [{ status: "in_progress" }] : rows);
     }),
     update: vi.fn((table: unknown) => ({
       set(values: Record<string, unknown>) {

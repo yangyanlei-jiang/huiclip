@@ -1,3 +1,5 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState, useRef, useEffect, useCallback, useId } from "react";
 import { cn } from "../lib/utils";
 import { MarkdownBody, type MarkdownExternalReferenceMap } from "./MarkdownBody";
@@ -97,6 +99,8 @@ function OwnedInlineEditor({
   readCurrentValue,
   draftOwner,
 }: InlineEditorProps & { draftOwner: string | undefined }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [editing, setEditing] = useState(false);
   const editingChangeCallback = useRef(onEditingChange);
   editingChangeCallback.current = onEditingChange;
@@ -498,9 +502,9 @@ function OwnedInlineEditor({
             )}
             role={autosaveState === "error" ? "alert" : "status"}
           >
-            {autosave.label ?? "Idle"}
+            {autosave.label ?? pageText("idle_cc1ebd")}
           </span>
-          {autosaveState === "stalled" ? <button type="button" className="ml-2 text-xs text-foreground underline" onClick={autosave.resendNow}>Retry saving</button> : null}
+          {autosaveState === "stalled" ? <button type="button" className="ml-2 text-xs text-foreground underline" onClick={autosave.resendNow}>{translateUi("interfaceCopy.retrySaving")}</button> : null}
         </div>
       </div>
     );
@@ -555,7 +559,7 @@ function OwnedInlineEditor({
     >
       {value || placeholder}
     </DisplayTag>
-    {autosaveState === "stalled" ? <button type="button" className="text-xs text-foreground underline" onClick={autosave.resendNow}>Retry saving</button> : null}
+    {autosaveState === "stalled" ? <button type="button" className="text-xs text-foreground underline" onClick={autosave.resendNow}>{translateUi("interfaceCopy.retrySaving")}</button> : null}
     </>
   );
 }

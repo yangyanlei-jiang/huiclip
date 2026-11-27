@@ -1,7 +1,8 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 /** Shared by the saved connection and its interactive review stories. */
 export function RemoteMcpManagement({ providerName, connected = true, canReconnect = true, canDisconnect = true, busy = false, onReconnect, onManage, onDisconnect }: {
@@ -14,25 +15,27 @@ export function RemoteMcpManagement({ providerName, connected = true, canReconne
   onManage: () => void;
   onDisconnect: () => void | Promise<unknown>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [confirming, setConfirming] = useState(false);
   return <section className="space-y-4">
-    <h2 className="text-sm font-semibold">Connection settings</h2>
+    <h2 className="text-sm font-semibold">{pageText("connectionSettings_618aac")}</h2>
     <div className="flex flex-wrap items-center gap-3">
-      <Button variant="outline" disabled={!canReconnect || busy} onClick={onReconnect}>Reconnect</Button>
-      <Button variant="outline" onClick={onManage}>Manage in {providerName}</Button>
+      <Button variant="outline" disabled={!canReconnect || busy} onClick={onReconnect}>{translateUi("interfaceCopy.reconnect")}</Button>
+      <Button variant="outline" onClick={onManage}>{pageText("manageIn_e0e276") + " "}{providerName}</Button>
       {connected && canDisconnect && <AlertDialog open={confirming} onOpenChange={(open) => { if (!busy) setConfirming(open); }}>
-        <AlertDialogTrigger asChild><Button variant="ghost" className="text-destructive">Disconnect</Button></AlertDialogTrigger>
-        <AlertDialogContent className={ANALYTICS_MASK_CLASS}>
+        <AlertDialogTrigger asChild><Button variant="ghost" className="text-destructive">{pageText("disconnect_ed28e0")}</Button></AlertDialogTrigger>
+        <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Disconnect {providerName}?</AlertDialogTitle>
-            <AlertDialogDescription>Delete this connection’s saved credentials and stop further calls through Paperclip. Other connections are unaffected. Actions already sent to the provider may still complete. Connecting again requires a new sign-in or key.</AlertDialogDescription>
+            <AlertDialogTitle>{pageText("disconnect_ed28e0") + " "}{providerName}?</AlertDialogTitle>
+            <AlertDialogDescription>{pageText("deleteThisConnectionSSavedCredentialsAndStop_30504d")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={busy}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel disabled={busy}>{translateUi("interfaceCopy.cancel")}</AlertDialogCancel>
             <AlertDialogAction disabled={busy} onClick={async (event) => {
               event.preventDefault();
               try { await onDisconnect(); setConfirming(false); } catch { /* The controller displays the failure. */ }
-            }}>{busy ? "Disconnecting…" : "Disconnect connection"}</AlertDialogAction>
+            }}>{busy ? pageText("disconnecting_801e5a") : pageText("disconnectConnection_281a38")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>}

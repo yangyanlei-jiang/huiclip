@@ -2,10 +2,6 @@ use std::collections::{BTreeMap, HashSet};
 use std::fs::{self, File, OpenOptions};
 use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
-#[cfg(test)]
-use std::sync::atomic::{AtomicUsize, Ordering};
-#[cfg(test)]
-use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 #[cfg(unix)]
@@ -16,7 +12,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 
-use crate::attachment_download::{DOWNLOAD_COMMAND, DOWNLOAD_RESULT_EVENT};
 use crate::provider_bridge::{semantic_value_digest, MAX_COMPLETION_SUMMARY_CHARS};
 
 use super::{DurableRunnerConfig, DurableRunnerError, PROTOCOL, PROTOCOL_VERSION};
@@ -95,11 +90,6 @@ impl Command {
                 "external provider operations require PRP v3",
             ));
         }
-        if self.command_type == DOWNLOAD_COMMAND && schema_version < 3 {
-            return Err(DurableRunnerError::invalid(
-                "attachment downloads require PRP v3",
-            ));
-        }
         if schema_version == 1 && self.command_type.starts_with("session.goal.") {
             return Err(DurableRunnerError::invalid(
                 "session goal commands require the paperclip.prp.command.v2 schema",
@@ -167,7 +157,6 @@ impl Command {
                 | "session.goal.set"
                 | "session.goal.clear"
                 | "external_provider.operation"
-                | DOWNLOAD_COMMAND
         ) {
             return Err(DurableRunnerError::invalid(format!(
                 "command type is not supported by PRP v{schema_version}"
@@ -635,9 +624,7 @@ impl DurableState {
 
         let source_seq = self.next_source_seq;
         let emitted_at = current_timestamp()?;
-        let schema_version = if event_type.starts_with("external_provider.")
-            || event_type == DOWNLOAD_RESULT_EVENT
-        {
+        let schema_version = if event_type.starts_with("external_provider.") {
             3
         } else if matches!(
             event_type.as_str(),
@@ -835,18 +822,9 @@ impl DurableState {
             .checked_add(1)
             .ok_or_else(|| DurableRunnerError::invalid("controller sequence exhausted"))?;
         if command.controller_seq != expected {
-            return Ok(CommandDisposition::Reject(command_result(
-                command,
-                "rejected",
-                json!({
-                    "code": "controller_sequence_mismatch",
-                    "message": format!(
-                        "controller sequence must be contiguous: expected {expected}, received {}",
-                        command.controller_seq
-                    ),
-                    "expectedControllerSeq": expected,
-                    "receivedControllerSeq": command.controller_seq,
-                }),
+            return Err(DurableRunnerError::invalid(format!(
+                "controller sequence must be contiguous: expected {expected}, received {}",
+                command.controller_seq
             )));
         }
 
@@ -1114,15 +1092,9 @@ fn canonical_json(value: &Value) -> String {
 #[derive(Clone, Debug)]
 pub struct DurableStateStore {
     path: PathBuf,
-    #[cfg(test)]
-    saves: Arc<AtomicUsize>,
 }
 
 impl DurableStateStore {
-    pub fn exists(&self) -> bool {
-        fs::symlink_metadata(&self.path).is_ok()
-    }
-
     pub fn new(state_dir: &Path) -> Result<Self, DurableRunnerError> {
         if let Ok(metadata) = fs::symlink_metadata(state_dir) {
             if metadata.file_type().is_symlink() || !metadata.is_dir() {
@@ -1148,14 +1120,7 @@ impl DurableStateStore {
         verify_private_directory(state_dir)?;
         Ok(Self {
             path: state_dir.join(STATE_FILE),
-            #[cfg(test)]
-            saves: Arc::default(),
         })
-    }
-
-    #[cfg(test)]
-    pub(crate) fn save_count(&self) -> usize {
-        self.saves.load(Ordering::Acquire)
     }
 
     pub fn path(&self) -> &Path {
@@ -1259,9 +1224,6 @@ impl DurableStateStore {
         })();
         if result.is_err() {
             let _ = fs::remove_file(&temporary);
-        } else {
-            #[cfg(test)]
-            self.saves.fetch_add(1, Ordering::AcqRel);
         }
         result
     }
@@ -1985,17 +1947,13 @@ fn preserve_bounded_display_content(
     original: &Value,
     mut sanitized: Value,
 ) -> Result<Value, DurableRunnerError> {
-    use crate::acpx_event_payload::{
-        fit_redacted_display_to_length_bounds, has_bounded_rich_display_shape,
-        validate_question_set,
-    };
+    use crate::acpx_event_payload::{has_bounded_rich_display_shape, validate_question_set};
 
     // Rich display payloads are already closed and byte-bounded by their exact
     // protocol schemas. Applying a diagnostic preview cap again would silently
     // change complete output into a truncated artifact without its metadata.
     if has_bounded_rich_display_shape(event_type, original) {
-        let mut preserved = sanitize_bounded_display_value(original);
-        fit_redacted_display_to_length_bounds(event_type, &mut preserved);
+        let preserved = sanitize_bounded_display_value(original);
         if !has_bounded_rich_display_shape(event_type, &preserved) {
             return Err(DurableRunnerError::invalid(
                 "redacted display activity exceeds its schema bounds",
@@ -2901,8 +2859,6 @@ mod tests {
             reconnect_delay: Duration::from_millis(1),
             reconnect_grace: None,
             max_runtime: Duration::from_secs(1),
-            turn_scoped: false,
-            controller_silence: crate::durable::DEFAULT_CONTROLLER_SILENCE,
         }
     }
 
@@ -3326,11 +3282,7 @@ mod tests {
         let mut unknown = command("command_unknown", 1);
         unknown.command_type = "future.required.command".to_owned();
         assert!(state.begin_command(&unknown).is_err());
-        assert!(matches!(
-            state.begin_command(&command("command_2", 2)).unwrap(),
-            CommandDisposition::Reject(result) if result.result["code"] == "controller_sequence_mismatch"
-        ));
-        assert_eq!(state.last_controller_command_seq, 0);
+        assert!(state.begin_command(&command("command_2", 2)).is_err());
         let first = command("command_1", 1);
         state.begin_command(&first).unwrap();
         state.complete_command(&first, json!({})).unwrap();
@@ -4724,6 +4676,4 @@ mod tests {
             .is_err());
         assert!(state.outbox.is_empty());
     }
-
-    include!("tests/redaction_display_bounds.rs");
 }

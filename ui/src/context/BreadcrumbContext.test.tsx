@@ -103,7 +103,7 @@ describe("BreadcrumbContext", () => {
     expect(renderCounts).toHaveLength(3);
   });
 
-  it("builds page titles with the selected company name before Paperclip", () => {
+  it("builds page titles with the selected company name before the Paperclip name", () => {
     expect(buildDocumentTitle([{ label: "Inbox" }], "Anachronist Wiki")).toBe(
       "Inbox • Anachronist Wiki • Paperclip",
     );

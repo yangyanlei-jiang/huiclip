@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SidePanelFrame, SidePanelWindowControls } from "@/components/side-panel/SidePanelFrame";
@@ -28,6 +29,7 @@ const TABS: SidePanelTabItem[] = [
 const noop = () => {};
 
 export function PanelFrame({ kit, artifacts, width = TASK_DETAIL_PANE_WIDTH }: { kit: DirectionKit; artifacts: LabArtifact[]; width?: number }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <aside className="flex bg-card flex-col border-l border-border relative shrink-0" style={{ width }}>
       <SidePanelFrame
@@ -49,7 +51,7 @@ export function PanelFrame({ kit, artifacts, width = TASK_DETAIL_PANE_WIDTH }: {
                   variant="ghost"
                   size="icon-sm"
                   className="shrink-0 text-muted-foreground hover:text-foreground focus-visible:text-foreground h-(--side-panel-tab-height) w-(--side-panel-tab-height) rounded-md"
-                  aria-label="Open a new tab"
+                  aria-label={pageText("openANewTab_bc7e24")}
                 >
                   <Plus aria-hidden />
                 </Button>

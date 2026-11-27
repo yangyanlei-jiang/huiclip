@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 // token-extraction: allowlisted — intentional one-off decoration (DECISION-SHEET.md B1
 // user ruling). The bg-[...gradient...] / shadow-[...] literals in this demo/UX-lab page
 // are deliberate one-off decoration, reverted from --gradient-extract-*/--shadow-extract-*
@@ -194,6 +195,7 @@ function InviteSummaryPanel({
   requestedAccess: string;
   signedInLabel?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <>
       <div className="flex items-start gap-4">
@@ -203,29 +205,28 @@ function InviteSummaryPanel({
           className="h-16 w-16 rounded-none border border-zinc-800"
         />
         <div className="min-w-0">
-          <p className="text-xs uppercase tracking-(--tracking-caps) text-zinc-500">You&apos;ve been invited to join Paperclip</p>
+          <p className="text-xs uppercase tracking-(--tracking-caps) text-zinc-500">{pageText("youVeBeenInvitedToJoinPaperclip_3b82fd")}</p>
           <h3 className="mt-2 text-2xl font-semibold text-zinc-100">{title}</h3>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-300">{description}</p>
         </div>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        <MetaCard label="Organization" value="Acme Robotics" />
-        <MetaCard label="Invited by" value="Board User" />
-        <MetaCard label="Requested access" value={requestedAccess} />
-        <MetaCard label="Invite expires" value="Mar 7, 2027" />
+        <MetaCard label={pageText("organization_519255")} value="Acme Robotics" />
+        <MetaCard label={pageText("invitedBy_2902cf")} value="Board User" />
+        <MetaCard label={pageText("requestedAccess_7fd9c3")} value={requestedAccess} />
+        <MetaCard label={pageText("inviteExpires_5b3e87")} value="Mar 7, 2027" />
       </div>
 
       {inviteMessage ? (
         <div className="border border-amber-500/40 bg-amber-500/10 p-4">
-          <div className="text-xs uppercase tracking-(--tracking-caps) text-amber-200/80">Message from inviter</div>
+          <div className="text-xs uppercase tracking-(--tracking-caps) text-amber-200/80">{pageText("messageFromInviter_e8934f")}</div>
           <p className="mt-2 text-sm leading-6 text-amber-50">{inviteMessage}</p>
         </div>
       ) : null}
 
       {signedInLabel ? (
-        <div className="border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-50">
-          Signed in as <span className="font-medium">{signedInLabel}</span>.
+        <div className="border border-emerald-500/40 bg-emerald-500/10 p-4 text-sm text-emerald-50">{pageText("signedInAs_a02107") + " "}<span className="font-medium">{signedInLabel}</span>.
         </div>
       ) : null}
     </>
@@ -250,16 +251,17 @@ function InlineAuthPreview({
   feedback?: { tone: "info" | "error"; text: string };
   working?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="space-y-5">
       <div>
         <h3 className="text-lg font-semibold text-zinc-100">
-          {mode === "sign_up" ? "Create your account" : "Sign in to continue"}
+          {mode === "sign_up" ? pageText("createYourAccount_4046b5") : pageText("signInToContinue_9a7843")}
         </h3>
         <p className="mt-1 text-sm text-zinc-400">
           {mode === "sign_up"
-            ? "Start with a Paperclip account. After that, you'll come right back here to accept the invite for Acme Robotics."
-            : "Use the Paperclip account that already matches this invite. If you do not have one yet, switch back to create account."}
+            ? pageText("startWithAPaperclipAccountAfterThatYou_64aaec")
+            : pageText("useThePaperclipAccountThatAlreadyMatchesThis_c14220")}
         </p>
       </div>
 
@@ -272,9 +274,7 @@ function InlineAuthPreview({
               ? "border-zinc-100 bg-zinc-100 text-zinc-950"
               : "border-zinc-800 text-zinc-300 hover:border-zinc-600",
           )}
-        >
-          Create account
-        </button>
+        >{pageText("createAccount_aaf374")}</button>
         <button
           type="button"
           className={cn(
@@ -283,24 +283,22 @@ function InlineAuthPreview({
               ? "border-zinc-100 bg-zinc-100 text-zinc-950"
               : "border-zinc-800 text-zinc-300 hover:border-zinc-600",
           )}
-        >
-          I already have an account
-        </button>
+        >{pageText("iAlreadyHaveAnAccount_4377f5")}</button>
       </div>
 
       <form className="space-y-4">
         {mode === "sign_up" ? (
           <label className="block text-sm">
-            <span className="mb-1 block text-zinc-400">Name</span>
+            <span className="mb-1 block text-zinc-400">{pageText("name_709a23")}</span>
             <input name="name" className={fieldClassName} defaultValue="Jane Example" readOnly />
           </label>
         ) : null}
         <label className="block text-sm">
-          <span className="mb-1 block text-zinc-400">Email</span>
+          <span className="mb-1 block text-zinc-400">{pageText("email_84add5")}</span>
           <input name="email" type="email" className={fieldClassName} defaultValue="jane@example.com" readOnly />
         </label>
         <label className="block text-sm">
-          <span className="mb-1 block text-zinc-400">Password</span>
+          <span className="mb-1 block text-zinc-400">{pageText("password_8be3c9")}</span>
           <input name="password" type="password" className={fieldClassName} defaultValue="supersecret" readOnly />
         </label>
         {feedback ? (
@@ -309,34 +307,33 @@ function InlineAuthPreview({
           </p>
         ) : null}
         <Button type="button" className="w-full rounded-none" disabled={working}>
-          {working ? "Working..." : mode === "sign_in" ? "Sign in and continue" : "Create account and continue"}
+          {working ? pageText("working_049ac8") : mode === "sign_in" ? pageText("signInAndContinue_e3de1e") : pageText("createAccountAndContinue_16dde2")}
         </Button>
       </form>
 
       <p className="text-xs leading-5 text-zinc-500">
         {mode === "sign_up"
-          ? "Already signed up before? Use the existing-account option instead so the invite lands on the right Paperclip user."
-          : "No account yet? Switch back to create account so you can accept the invite with a new login."}
+          ? pageText("alreadySignedUpBeforeUseTheExistingAccount_7c06cb")
+          : pageText("noAccountYetSwitchBackToCreateAccount_ace588")}
       </p>
     </div>
   );
 }
 
 function AgentRequestPreview() {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold text-zinc-100">Submit agent details</h3>
-        <p className="mt-1 text-sm text-zinc-400">
-          This invite will create an approval request for a new agent in Acme Robotics.
-        </p>
+        <h3 className="text-lg font-semibold text-zinc-100">{pageText("submitAgentDetails_853221")}</h3>
+        <p className="mt-1 text-sm text-zinc-400">{pageText("thisInviteWillCreateAnApprovalRequestFor_1bda4b")}</p>
       </div>
       <label className="block text-sm">
-        <span className="mb-1 block text-zinc-400">Agent name</span>
+        <span className="mb-1 block text-zinc-400">{pageText("agentName_fc9242")}</span>
         <input className={fieldClassName} defaultValue="Acme Ops Agent" readOnly />
       </label>
       <label className="block text-sm">
-        <span className="mb-1 block text-zinc-400">Adapter type</span>
+        <span className="mb-1 block text-zinc-400">{pageText("adapterType_21f1ba")}</span>
         <select className={fieldClassName} defaultValue="codex_local" disabled>
           <option value="codex_local">Codex</option>
           <option value="claude_local">Claude Code</option>
@@ -344,7 +341,7 @@ function AgentRequestPreview() {
         </select>
       </label>
       <label className="block text-sm">
-        <span className="mb-1 block text-zinc-400">Capabilities</span>
+        <span className="mb-1 block text-zinc-400">{pageText("capabilities_ca09c5")}</span>
         <textarea
           className={fieldClassName}
           rows={4}
@@ -352,9 +349,7 @@ function AgentRequestPreview() {
           readOnly
         />
       </label>
-      <Button type="button" className="w-full rounded-none">
-        Submit request
-      </Button>
+      <Button type="button" className="w-full rounded-none">{pageText("submitRequest_8a9051")}</Button>
     </div>
   );
 }
@@ -368,25 +363,24 @@ function AcceptInvitePreview({
   isCurrentMember?: boolean;
   error?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="text-lg font-semibold text-zinc-100">Accept organization invite</h3>
+        <h3 className="text-lg font-semibold text-zinc-100">{pageText("acceptOrganizationInvite_eb5601")}</h3>
         <p className="mt-1 text-sm text-zinc-400">
           {autoAccept
-            ? "Granting your access to Acme Robotics."
+            ? pageText("grantingYourAccessToAcmeRobotics_f0a4fa")
             : isCurrentMember
-              ? "This account already belongs to Acme Robotics."
-              : "This will grant or complete your access to Acme Robotics."}
+              ? pageText("thisAccountAlreadyBelongsToAcmeRobotics_4fbee5")
+              : pageText("thisWillGrantOrCompleteYourAccessTo_e829a2")}
         </p>
       </div>
       {error ? <p className="text-xs text-red-400">{error}</p> : null}
       {autoAccept ? (
-        <div className="text-sm text-zinc-400">Submitting request...</div>
+        <div className="text-sm text-zinc-400">{pageText("submittingRequest_a54b6e")}</div>
       ) : (
-        <Button type="button" className="w-full rounded-none" disabled={isCurrentMember}>
-          Accept invite
-        </Button>
+        <Button type="button" className="w-full rounded-none" disabled={isCurrentMember}>{pageText("acceptInvite_8d10a2")}</Button>
       )}
     </div>
   );
@@ -405,6 +399,7 @@ function InviteResultPreview({
   onboardingTextUrl?: string;
   joinedNow?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="mx-auto max-w-md border border-zinc-800 bg-zinc-950 p-6 text-zinc-100">
       <div className="flex items-center gap-3">
@@ -418,32 +413,25 @@ function InviteResultPreview({
       <div className="mt-4 space-y-3">
         <p className="text-sm text-zinc-400">{description}</p>
         {joinedNow ? (
-          <Button type="button" className="w-full rounded-none">
-            Open board
-          </Button>
+          <Button type="button" className="w-full rounded-none">{pageText("openBoard_34ad5e")}</Button>
         ) : (
           <>
             <div className="border border-zinc-800 p-3">
-              <p className="mb-1 text-xs text-zinc-500">Approval page</p>
-              <a className="text-sm text-zinc-200 underline underline-offset-2" href="/company/settings/members">
-                Settings → Members
-              </a>
+              <p className="mb-1 text-xs text-zinc-500">{pageText("approvalPage_a27bf4")}</p>
+              <a className="text-sm text-zinc-200 underline underline-offset-2" href="/company/settings/members">{pageText("settingsMembers_da0161")}</a>
             </div>
-            <p className="text-xs text-zinc-500">
-              Refresh this page after you&apos;ve been approved — you&apos;ll be redirected automatically.
-            </p>
+            <p className="text-xs text-zinc-500">{pageText("refreshThisPageAfterYouVeBeenApproved_d8a699")}</p>
           </>
         )}
         {claimSecret ? (
           <div className="space-y-1 border border-zinc-800 p-3 text-xs text-zinc-400">
-            <div className="text-zinc-200">Claim secret</div>
+            <div className="text-zinc-200">{pageText("claimSecret_db105d")}</div>
             <div className="font-mono break-all">{claimSecret}</div>
             <div className="font-mono break-all">POST /api/agents/claim-api-key</div>
           </div>
         ) : null}
         {onboardingTextUrl ? (
-          <div className="text-xs text-zinc-400">
-            Onboarding: <span className="font-mono break-all">{onboardingTextUrl}</span>
+          <div className="text-xs text-zinc-400">{pageText("onboarding_f41229") + " "}<span className="font-mono break-all">{onboardingTextUrl}</span>
           </div>
         ) : null}
       </div>
@@ -452,6 +440,7 @@ function InviteResultPreview({
 }
 
 function AuthScreenPreview({ mode, error }: { mode: "sign_in" | "sign_up"; error?: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="overflow-hidden rounded-(--rad-28) border border-border/70 bg-background shadow-[0_24px_60px_rgba(15,23,42,0.08)]">
       <div className="grid gap-px bg-border/60 md:grid-cols-2">
@@ -459,20 +448,20 @@ function AuthScreenPreview({ mode, error }: { mode: "sign_in" | "sign_up"; error
           <div className="mx-auto w-full max-w-md">
             <div className="mb-8 flex items-center gap-2">
               <FlaskConical className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">Paperclip</span>
+              <span className="text-sm font-medium">{pageText("paperclip_f504c7")}</span>
             </div>
             <h3 className="text-xl font-semibold">
-              {mode === "sign_in" ? "Sign in to Paperclip" : "Create your Paperclip account"}
+              {mode === "sign_in" ? pageText("signInToPaperclip_863001") : pageText("createYourPaperclipAccount_df2e7b")}
             </h3>
             <p className="mt-1 text-sm text-muted-foreground">
               {mode === "sign_in"
-                ? "Use your email and password to access this instance."
-                : "Create an account for this instance. Email confirmation is not required in v1."}
+                ? pageText("useYourEmailAndPasswordToAccessThis_c5cdb6")
+                : pageText("createAnAccountForThisInstanceEmailConfirmation_419625")}
             </p>
             <div className="mt-6 space-y-4">
               {mode === "sign_up" ? (
                 <label className="block">
-                  <span className="mb-1 block text-xs text-muted-foreground">Name</span>
+                  <span className="mb-1 block text-xs text-muted-foreground">{pageText("name_709a23")}</span>
                   <input
                     className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm"
                     defaultValue="Jane Example"
@@ -481,7 +470,7 @@ function AuthScreenPreview({ mode, error }: { mode: "sign_in" | "sign_up"; error
                 </label>
               ) : null}
               <label className="block">
-                <span className="mb-1 block text-xs text-muted-foreground">Email</span>
+                <span className="mb-1 block text-xs text-muted-foreground">{pageText("email_84add5")}</span>
                 <input
                   className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm"
                   defaultValue="jane@example.com"
@@ -489,7 +478,7 @@ function AuthScreenPreview({ mode, error }: { mode: "sign_in" | "sign_up"; error
                 />
               </label>
               <label className="block">
-                <span className="mb-1 block text-xs text-muted-foreground">Password</span>
+                <span className="mb-1 block text-xs text-muted-foreground">{pageText("password_8be3c9")}</span>
                 <input
                   className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm"
                   defaultValue="supersecret"
@@ -498,26 +487,22 @@ function AuthScreenPreview({ mode, error }: { mode: "sign_in" | "sign_up"; error
               </label>
               {error ? <p className="text-xs text-destructive">{error}</p> : null}
               <Button type="button" className="w-full">
-                {mode === "sign_in" ? "Sign In" : "Create Account"}
+                {mode === "sign_in" ? pageText("signIn_f8492c") : pageText("createAccount_eff4fd")}
               </Button>
             </div>
             <div className="mt-5 text-sm text-muted-foreground">
-              {mode === "sign_in" ? "Need an account?" : "Already have an account?"}{" "}
+              {mode === "sign_in" ? pageText("needAnAccount_111976") : pageText("alreadyHaveAnAccount_855903")}{" "}
               <span className="font-medium text-foreground underline underline-offset-2">
-                {mode === "sign_in" ? "Create one" : "Sign in"}
+                {mode === "sign_in" ? pageText("createOne_7dbf3d") : pageText("signIn_ada2e9")}
               </span>
             </div>
           </div>
         </div>
         <div className="hidden min-h-(--sz-420px) items-center justify-center bg-[radial-gradient(circle_at_top,rgba(8,145,178,0.18),transparent_48%),linear-gradient(180deg,rgba(15,23,42,0.96),rgba(2,6,23,1))] px-8 py-10 md:flex">
           <div className="max-w-sm space-y-4 text-zinc-200">
-            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-500/[0.08] px-3 py-1 text-(length:--text-nano) uppercase tracking-(--tracking-caps) text-cyan-200">
-              Auth preview
-            </div>
-            <div className="text-2xl font-semibold">Side-by-side signup styling review</div>
-            <p className="text-sm leading-6 text-zinc-400">
-              This frame mirrors the production auth surface so spacing, label density, button treatments, and desktop composition are easy to compare.
-            </p>
+            <div className="inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-cyan-500/[0.08] px-3 py-1 text-(length:--text-nano) uppercase tracking-(--tracking-caps) text-cyan-200">{pageText("authPreview_db09bd")}</div>
+            <div className="text-2xl font-semibold">{pageText("sideBySideSignupStylingReview_270601")}</div>
+            <p className="text-sm leading-6 text-zinc-400">{pageText("thisFrameMirrorsTheProductionAuthSurfaceSo_89447f")}</p>
           </div>
         </div>
       </div>
@@ -526,24 +511,21 @@ function AuthScreenPreview({ mode, error }: { mode: "sign_in" | "sign_up"; error
 }
 
 function CompanyInvitesPreview() {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="grid gap-5 xl:grid-cols-(--gtc-38)">
       <Card className="rounded-(--rad-28) shadow-none">
         <CardHeader className="space-y-3">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <MailPlus className="h-4 w-4" />
-            Organization Invites
-          </div>
+            <MailPlus className="h-4 w-4" />{pageText("organizationInvites_7245f9")}</div>
           <div>
-            <CardTitle>Create invite</CardTitle>
-            <CardDescription className="mt-2">
-              Generate a human invite link and choose the default access it should request.
-            </CardDescription>
+            <CardTitle>{pageText("createInvite_a84046")}</CardTitle>
+            <CardDescription className="mt-2">{pageText("generateAHumanInviteLinkAndChooseThe_9b3ad4")}</CardDescription>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <fieldset className="space-y-3">
-            <legend className="text-sm font-medium">Choose a role</legend>
+            <legend className="text-sm font-medium">{pageText("chooseARole_215ccf")}</legend>
             <div className="rounded-2xl border border-border">
               {inviteRoleOptions.map((option, index) => (
                 <label
@@ -560,9 +542,7 @@ function CompanyInvitesPreview() {
                     <span className="flex flex-wrap items-center gap-2">
                       <span className="text-sm font-medium">{option.label}</span>
                       {option.value === "operator" ? (
-                        <Badge variant="outline" className="border-border text-muted-foreground">
-                          Default
-                        </Badge>
+                        <Badge variant="outline" className="border-border text-muted-foreground">{pageText("default_808d7d")}</Badge>
                       ) : null}
                     </span>
                     <span className="block max-w-2xl text-sm text-muted-foreground">{option.description}</span>
@@ -573,27 +553,21 @@ function CompanyInvitesPreview() {
             </div>
           </fieldset>
 
-          <div className="rounded-xl border border-border px-4 py-3 text-sm text-muted-foreground">
-            Each invite link is single-use. Human invitees get the selected role immediately after sign-in; agent invites still create a join request for approval.
-          </div>
+          <div className="rounded-xl border border-border px-4 py-3 text-sm text-muted-foreground">{pageText("eachInviteLinkIsSingleUseHumanInvitees_ab5c70")}</div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <Button type="button">Create invite</Button>
-            <span className="text-sm text-muted-foreground">Invite history below keeps the audit trail.</span>
+            <Button type="button">{pageText("createInvite_a84046")}</Button>
+            <span className="text-sm text-muted-foreground">{pageText("inviteHistoryBelowKeepsTheAuditTrail_aaf0a3")}</span>
           </div>
 
           <div className="space-y-3 rounded-2xl border border-border px-4 py-4">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <div className="text-sm font-medium">Latest invite link</div>
-                <div className="text-sm text-muted-foreground">
-                  This URL includes the current Paperclip domain returned by the server.
-                </div>
+                <div className="text-sm font-medium">{pageText("latestInviteLink_ee61f2")}</div>
+                <div className="text-sm text-muted-foreground">{pageText("thisURLIncludesTheCurrentPaperclipDomainReturned_1639d6")}</div>
               </div>
               <div className="inline-flex items-center gap-1 text-xs font-medium text-foreground">
-                <Check className="h-3.5 w-3.5" />
-                Copied
-              </div>
+                <Check className="h-3.5 w-3.5" />{pageText("copied_8e3df4")}</div>
             </div>
             <button
               type="button"
@@ -603,9 +577,7 @@ function CompanyInvitesPreview() {
             </button>
             <div className="flex flex-wrap gap-2">
               <Button type="button" size="sm" variant="outline">
-                <ExternalLink className="h-4 w-4" />
-                Open invite
-              </Button>
+                <ExternalLink className="h-4 w-4" />{pageText("openInvite_8db4e3")}</Button>
             </div>
           </div>
         </CardContent>
@@ -615,14 +587,10 @@ function CompanyInvitesPreview() {
         <CardHeader className="space-y-3">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <CardTitle>Invite history</CardTitle>
-              <CardDescription className="mt-2">
-                Review invite status, role, inviter, and any linked join request.
-              </CardDescription>
+              <CardTitle>{pageText("inviteHistory_cbc505")}</CardTitle>
+              <CardDescription className="mt-2">{pageText("reviewInviteStatusRoleInviterAndAnyLinked_88b8f4")}</CardDescription>
             </div>
-            <a href="/inbox/requests" className="text-sm underline underline-offset-4">
-              Open join request queue
-            </a>
+            <a href="/inbox/requests" className="text-sm underline underline-offset-4">{pageText("openJoinRequestQueue_33d927")}</a>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -630,12 +598,12 @@ function CompanyInvitesPreview() {
             <table className="min-w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-border">
-                  <th className="px-5 py-3 font-medium text-muted-foreground">State</th>
-                  <th className="px-5 py-3 font-medium text-muted-foreground">Role</th>
-                  <th className="px-5 py-3 font-medium text-muted-foreground">Invited by</th>
-                  <th className="px-5 py-3 font-medium text-muted-foreground">Created</th>
-                  <th className="px-5 py-3 font-medium text-muted-foreground">Join request</th>
-                  <th className="px-5 py-3 text-right font-medium text-muted-foreground">Action</th>
+                  <th className="px-5 py-3 font-medium text-muted-foreground">{pageText("state_a72502")}</th>
+                  <th className="px-5 py-3 font-medium text-muted-foreground">{pageText("role_c3f104")}</th>
+                  <th className="px-5 py-3 font-medium text-muted-foreground">{pageText("invitedBy_2902cf")}</th>
+                  <th className="px-5 py-3 font-medium text-muted-foreground">{pageText("created_accf40")}</th>
+                  <th className="px-5 py-3 font-medium text-muted-foreground">{pageText("joinRequest_83934b")}</th>
+                  <th className="px-5 py-3 text-right font-medium text-muted-foreground">{pageText("action_97c89a")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -663,11 +631,9 @@ function CompanyInvitesPreview() {
                     </td>
                     <td className="px-5 py-3 text-right align-top">
                       {invite.action === "Revoke" ? (
-                        <Button type="button" size="sm" variant="outline">
-                          Revoke
-                        </Button>
+                        <Button type="button" size="sm" variant="outline">{pageText("revoke_0be720")}</Button>
                       ) : (
-                        <span className="text-xs text-muted-foreground">Inactive</span>
+                        <span className="text-xs text-muted-foreground">{pageText("inactive_09af57")}</span>
                       )}
                     </td>
                   </tr>
@@ -678,16 +644,12 @@ function CompanyInvitesPreview() {
 
           <div className="grid gap-3 md:grid-cols-2">
             <div className="rounded-2xl border border-border p-4">
-              <div className="text-sm font-medium">Empty history state</div>
-              <div className="mt-2 text-sm text-muted-foreground">
-                No invites have been created for this organization yet.
-              </div>
+              <div className="text-sm font-medium">{pageText("emptyHistoryState_728c5f")}</div>
+              <div className="mt-2 text-sm text-muted-foreground">{pageText("noInvitesHaveBeenCreatedForThisOrganization_5f60f3")}</div>
             </div>
             <div className="rounded-2xl border border-rose-400/40 bg-rose-500/[0.07] p-4">
-              <div className="text-sm font-medium text-foreground">Permission error</div>
-              <div className="mt-2 text-sm text-muted-foreground">
-                You do not have permission to manage organization invites.
-              </div>
+              <div className="text-sm font-medium text-foreground">{pageText("permissionError_905946")}</div>
+              <div className="mt-2 text-sm text-muted-foreground">{pageText("youDoNotHavePermissionToManageOrganization_ca4d8d")}</div>
             </div>
           </div>
         </CardContent>
@@ -697,37 +659,28 @@ function CompanyInvitesPreview() {
 }
 
 export function InviteUxLab() {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="space-y-6">
       <div className="overflow-hidden rounded-(--rad-32) border border-border/70 bg-[linear-gradient(135deg,rgba(8,145,178,0.10),transparent_28%),linear-gradient(180deg,rgba(245,158,11,0.10),transparent_44%),var(--background)] shadow-[0_30px_80px_rgba(15,23,42,0.10)]">
         <div className="grid gap-6 lg:grid-cols-(--gtc-39)">
           <div className="p-6 sm:p-7">
             <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/25 bg-cyan-500/[0.08] px-3 py-1 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-caps) text-cyan-700 dark:text-cyan-300">
-              <FlaskConical className="h-3.5 w-3.5" />
-              Invite UX Lab
-            </div>
-            <h1 className="mt-4 text-3xl font-semibold tracking-tight">Invite and signup UX review surface</h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-              This page collects the current invite landing, signup, approval-result, and organization invite-management states in one place so styling changes can be reviewed without recreating each backend condition by hand.
-            </p>
+              <FlaskConical className="h-3.5 w-3.5" />{pageText("inviteUXLab_8aacc4")}</div>
+            <h1 className="mt-4 text-3xl font-semibold tracking-tight">{pageText("inviteAndSignupUXReviewSurface_0c7e7b")}</h1>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">{pageText("thisPageCollectsTheCurrentInviteLandingSignup_741629")}</p>
 
             <div className="mt-5 flex flex-wrap items-center gap-2">
               <Badge variant="outline" className="rounded-full px-3 py-1 text-(length:--text-nano) uppercase tracking-(--tracking-caps)">
                 /tests/ux/invites
               </Badge>
-              <Badge variant="outline" className="rounded-full px-3 py-1 text-(length:--text-nano) uppercase tracking-(--tracking-caps)">
-                signup + invite states
-              </Badge>
-              <Badge variant="outline" className="rounded-full px-3 py-1 text-(length:--text-nano) uppercase tracking-(--tracking-caps)">
-                fixture-backed preview
-              </Badge>
+              <Badge variant="outline" className="rounded-full px-3 py-1 text-(length:--text-nano) uppercase tracking-(--tracking-caps)">{pageText("signupInviteStates_ba7a95")}</Badge>
+              <Badge variant="outline" className="rounded-full px-3 py-1 text-(length:--text-nano) uppercase tracking-(--tracking-caps)">{pageText("fixtureBackedPreview_5f498b")}</Badge>
             </div>
           </div>
 
           <aside className="border-t border-border/60 bg-background/70 p-6 lg:border-l lg:border-t-0">
-            <div className="mb-4 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
-              Covered states
-            </div>
+            <div className="mb-4 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">{pageText("coveredStates_fe6009")}</div>
             <div className="space-y-3">
               {[
                 "Invite loading, access-check, missing-token, and unavailable states",
@@ -750,52 +703,52 @@ export function InviteUxLab() {
 
       <LabSection
         eyebrow="Top-level states"
-        title="Landing state coverage"
-        description="Small cards for the fast-return invite states that do not render the full split-screen layout."
+        title={pageText("landingStateCoverage_1aa85e")}
+        description={pageText("smallCardsForTheFastReturnInviteStates_62f3fc")}
         accentClassName="bg-[linear-gradient(180deg,rgba(59,130,246,0.05),transparent_30%),var(--background)]"
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <StatusCard
             icon={<Loader2 className="h-4 w-4 animate-spin" />}
-            title="Loading invite"
+            title={pageText("loadingInvite_392edb")}
             body="Shown while invite summary, deployment mode, or auth session data is still loading."
           />
           <StatusCard
             icon={<Clock3 className="h-4 w-4" />}
-            title="Checking your access"
+            title={pageText("checkingYourAccess_87bd70")}
             body="Shown after sign-in while the app verifies whether the current user already belongs to the invited organization."
           />
           <StatusCard
             icon={<KeyRound className="h-4 w-4" />}
-            title="Invalid invite token"
+            title={pageText("invalidInviteToken_ecd61c")}
             body="The token is missing entirely, so the page short-circuits before any invite lookup."
             tone="error"
           />
           <StatusCard
             icon={<Link2 className="h-4 w-4" />}
-            title="Invite not available"
+            title={pageText("inviteNotAvailable_94984c")}
             body="Used for expired, revoked, already-consumed, or otherwise missing invites."
             tone="warn"
           />
           <StatusCard
             icon={<ShieldCheck className="h-4 w-4" />}
-            title="Bootstrap complete"
+            title={pageText("bootstrapComplete_e439b1")}
             body="Result screen for bootstrap CEO invites after setup has been accepted successfully."
             tone="success"
           />
           <StatusCard
             icon={<ArrowRight className="h-4 w-4" />}
-            title="Auto-accept in progress"
+            title={pageText("autoAcceptInProgress_18b2d9")}
             body="Signed-in human users skip the extra button click and move straight into join submission."
           />
           <StatusCard
             icon={<Users className="h-4 w-4" />}
-            title="Already a member"
+            title={pageText("alreadyAMember_71a3f2")}
             body="Acceptance stays disabled and the page redirects into the organization once membership is confirmed."
           />
           <StatusCard
             icon={<UserPlus className="h-4 w-4" />}
-            title="Invite result surfaces"
+            title={pageText("inviteResultSurfaces_0dfe96")}
             body="Both pending-approval and joined-now confirmations are included below with claim and onboarding extras."
             tone="success"
           />
@@ -804,16 +757,16 @@ export function InviteUxLab() {
 
       <LabSection
         eyebrow="Invite landing"
-        title="Split-screen invite flows"
-        description="These frames mirror the production invite surface closely enough to review spacing, hierarchy, and control states while keeping data fixture-driven."
+        title={pageText("splitScreenInviteFlows_e9f7ea")}
+        description={pageText("theseFramesMirrorTheProductionInviteSurfaceClosely_f96a44")}
         accentClassName="bg-[linear-gradient(180deg,rgba(234,179,8,0.06),transparent_28%),var(--background)]"
       >
         <div className="space-y-5">
           <InviteLandingShell
             left={
               <InviteSummaryPanel
-                title="Join Acme Robotics"
-                description="Create your Paperclip account first. If you already have one, switch to sign in and continue the invite with the same email."
+                title={pageText("joinAcmeRobotics_fcdf81")}
+                description={pageText("createYourPaperclipAccountFirstIfYouAlready_85d7e5")}
                 inviteMessage="Welcome aboard."
                 requestedAccess="Operator"
               />
@@ -824,8 +777,8 @@ export function InviteUxLab() {
           <InviteLandingShell
             left={
               <InviteSummaryPanel
-                title="Join Acme Robotics"
-                description="Create your Paperclip account first. If you already have one, switch to sign in and continue the invite with the same email."
+                title={pageText("joinAcmeRobotics_fcdf81")}
+                description={pageText("createYourPaperclipAccountFirstIfYouAlready_85d7e5")}
                 inviteMessage="Welcome aboard."
                 requestedAccess="Operator"
               />
@@ -844,8 +797,8 @@ export function InviteUxLab() {
           <InviteLandingShell
             left={
               <InviteSummaryPanel
-                title="Join Acme Robotics"
-                description="Your account is ready. Review the invite details, then accept it to continue."
+                title={pageText("joinAcmeRobotics_fcdf81")}
+                description={pageText("yourAccountIsReadyReviewTheInviteDetails_1ccf08")}
                 inviteMessage="Welcome aboard."
                 requestedAccess="Operator"
                 signedInLabel="Jane Example"
@@ -857,8 +810,8 @@ export function InviteUxLab() {
           <InviteLandingShell
             left={
               <InviteSummaryPanel
-                title="Join Acme Robotics"
-                description="Review the invite details, then submit the agent information below to start the join request."
+                title={pageText("joinAcmeRobotics_fcdf81")}
+                description={pageText("reviewTheInviteDetailsThenSubmitTheAgent_3147a7")}
                 requestedAccess="Agent join request"
               />
             }
@@ -868,8 +821,8 @@ export function InviteUxLab() {
           <InviteLandingShell
             left={
               <InviteSummaryPanel
-                title="Join Acme Robotics"
-                description="Your account is ready. Review the invite details, then accept it to continue."
+                title={pageText("joinAcmeRobotics_fcdf81")}
+                description={pageText("yourAccountIsReadyReviewTheInviteDetails_1ccf08")}
                 requestedAccess="Operator"
                 signedInLabel="Jane Example"
               />
@@ -881,33 +834,33 @@ export function InviteUxLab() {
 
       <LabSection
         eyebrow="Result states"
-        title="Approval and completion screens"
-        description="These are the post-submit states returned from invite acceptance, including optional claim and onboarding metadata."
+        title={pageText("approvalAndCompletionScreens_c5ddcf")}
+        description={pageText("theseAreThePostSubmitStatesReturnedFrom_d58f9e")}
         accentClassName="bg-[linear-gradient(180deg,rgba(16,185,129,0.06),transparent_30%),var(--background)]"
       >
         <div className="grid gap-5 xl:grid-cols-3">
           <InviteResultPreview
-            title="Request to join Acme Robotics"
-            description="Board User must approve your request to join."
+            title={pageText("requestToJoinAcmeRobotics_34ca73")}
+            description={pageText("boardUserMustApproveYourRequestToJoin_d32658")}
             claimSecret="pcp_claim_secret_demo"
             onboardingTextUrl="/api/invites/pcp_invite_test/onboarding.txt"
           />
           <InviteResultPreview
-            title="You joined the organization"
-            description="Your account already matched the approved invite, so the board can be opened immediately."
+            title={pageText("youJoinedTheOrganization_d713bf")}
+            description={pageText("yourAccountAlreadyMatchedTheApprovedInviteSo_6bf007")}
             joinedNow
           />
           <InviteResultPreview
-            title="Request to join Acme Robotics"
-            description="Ask them to visit Settings → Members to approve your request."
+            title={pageText("requestToJoinAcmeRobotics_34ca73")}
+            description={pageText("askThemToVisitSettingsMembersToApprove_c7cc05")}
           />
         </div>
       </LabSection>
 
       <LabSection
         eyebrow="Standalone auth"
-        title="Auth page states"
-        description="The general `/auth` page uses a different composition from invite landing. These previews keep both sign-in and sign-up variants visible."
+        title={pageText("authPageStates_519524")}
+        description={pageText("theGeneralAuthPageUsesADifferentComposition_eb396a")}
         accentClassName="bg-[linear-gradient(180deg,rgba(168,85,247,0.06),transparent_28%),var(--background)]"
       >
         <div className="space-y-5">
@@ -918,8 +871,8 @@ export function InviteUxLab() {
 
       <LabSection
         eyebrow="Settings"
-        title="Organization invite management"
-        description="This section captures the board-side invite creation flow, copied-link state, audit table, and the edge states that are otherwise tedious to stage."
+        title={pageText("organizationInviteManagement_9707ad")}
+        description={pageText("thisSectionCapturesTheBoardSideInviteCreation_a3d5d0")}
         accentClassName="bg-[linear-gradient(180deg,rgba(244,114,182,0.06),transparent_28%),var(--background)]"
       >
         <CompanyInvitesPreview />

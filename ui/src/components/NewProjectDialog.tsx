@@ -1,6 +1,8 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useRef, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { PROJECT_COLORS, type Project, type ProjectRepository } from "@paperclipai/shared";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { PROJECT_COLORS, type ProjectRepository } from "@paperclipai/shared";
 import { X } from "lucide-react";
 import { useDialog } from "../context/DialogContext";
 import { useCompany } from "../context/CompanyContext";
@@ -10,8 +12,6 @@ import { queryKeys } from "../lib/queryKeys";
 import { trackRecentProject } from "../lib/recent-projects";
 import { ProjectTile } from "./ProjectTile";
 import { Dialog, DialogContent, DialogTitle } from "./ui/dialog";
-import { QueryErrorState, useQueryView } from "./QueryView";
-import { NativeSelect } from "./ui/select";
 import { Button } from "./ui/button";
 import { ProjectRepositoryInput, repositoryOptionsKey } from "./ProjectRepositoryInput";
 import { ConnectionSetupFlow } from "@/features/connections/ConnectionSetupFlow";
@@ -23,30 +23,20 @@ export function NewProjectDialog() {
     ? <NewProjectForm key={selectedCompanyId} companyId={selectedCompanyId} onClose={closeNewProject} /> : null;
 }
 
-/** `onCreated` runs with the new project before the form closes (a caller filing it somewhere, say). */
-export function NewProjectForm({ companyId, onClose, onCreated }: { companyId: string; onClose: () => void; onCreated?: (project: Project) => Promise<unknown> | void }) {
+export function NewProjectForm({ companyId, onClose }: { companyId: string; onClose: () => void }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const client = useQueryClient();
   const [name, setName] = useState("");
   const [color] = useState(() => PROJECT_COLORS[Math.floor(Math.random() * PROJECT_COLORS.length)]!);
   const [repos, setRepos] = useState<ProjectRepository[]>([]);
   const [connecting, setConnecting] = useState(false);
   const input = useRef<HTMLInputElement>(null);
-  const [selectedEnvironmentId, setSelectedEnvironmentId] = useState<string | null>(null);
-  const environments = useQuery({ queryKey: queryKeys.projects.environments(companyId), queryFn: () => projectsApi.environmentOptions(companyId), gcTime: 0 });
-  const environmentView = useQueryView(environments);
-  const options = environmentView.data;
-  const groupOf = (id: string | null | undefined) => options?.groups.find(group => group.environments.some(environment => environment.id === id));
-  const onlyGroupRemains = options?.groups.length === 1 && Boolean(selectedEnvironmentId) && !groupOf(selectedEnvironmentId);
-  const environmentId = onlyGroupRemains ? options?.defaultEnvironmentId : selectedEnvironmentId ?? options?.defaultEnvironmentId;
-  const selectedGroup = groupOf(environmentId);
-  const environmentReady = Boolean(environmentView.kind !== "error" && options && (!options.error || selectedGroup) && (!options.groups.length || selectedGroup));
-
   const create = useMutation({
-    mutationFn: () => projectsApi.create(companyId, { name: name.trim(), color, status: "planned", repositoryIds: repos.map((repo) => repo.id), ...(selectedGroup ? { environmentId, expectedStorageProviderPluginId: selectedGroup.storageProviderPluginId } : {}) }),
-    onSuccess: async (project) => {
+    mutationFn: () => projectsApi.create(companyId, { name: name.trim(), color, status: "planned", repositoryIds: repos.map((repo) => repo.id) }),
+    onSuccess: (project) => {
       trackRecentProject(project.id, companyId);
       void client.invalidateQueries({ queryKey: queryKeys.projects.all(companyId) });
-      await onCreated?.(project);
       onClose();
     },
   });
@@ -55,45 +45,30 @@ export function NewProjectForm({ companyId, onClose, onCreated }: { companyId: s
       className="flex max-h-(--sz-calc-18) flex-col gap-0 overflow-hidden p-0 shadow-sm sm:max-w-lg"
       onOpenAutoFocus={(event) => { event.preventDefault(); input.current?.focus(); }}>
       {connecting ? <div className="min-h-0 overflow-y-auto p-5">
-        <DialogTitle className="sr-only">Connect GitHub</DialogTitle>
+        <DialogTitle className="sr-only">{translateUi("interfaceCopy.connectGitHub")}</DialogTitle>
         <ConnectionSetupFlow host="dialog" serviceSlug="github" forceNewConnection onCancel={() => setConnecting(false)} onComplete={() => {
           void client.invalidateQueries({ queryKey: repositoryOptionsKey(companyId) });
           setConnecting(false);
         }} />
-      </div> : <form className="flex min-h-0 flex-col overflow-hidden" onSubmit={(event) => { event.preventDefault(); if (name.trim() && environmentReady && !create.isPending) create.mutate(); }}>
+      </div> : <form className="flex min-h-0 flex-col overflow-hidden" onSubmit={(event) => { event.preventDefault(); if (name.trim() && !create.isPending) create.mutate(); }}>
         <div className="flex shrink-0 flex-col gap-4 px-5 pb-4 pt-5">
           <div className="flex items-center justify-between gap-3">
-            <DialogTitle className="text-lg font-semibold">Create project</DialogTitle>
-            <Button type="button" variant="ghost" size="icon-sm" disabled={create.isPending} aria-label="Close new project" onClick={onClose}><X className="size-4" /></Button>
+            <DialogTitle className="text-lg font-semibold">{pageText("createProject_a8d8ff")}</DialogTitle>
+            <Button type="button" variant="ghost" size="icon-sm" disabled={create.isPending} aria-label={pageText("closeNewProject_937d6d")} onClick={onClose}><X className="size-4" /></Button>
           </div>
           <div className="flex items-center gap-3 rounded-lg border border-input px-3 focus-within:border-ring focus-within:ring-1 focus-within:ring-ring">
             <ProjectTile color={color} size="sm" />
-            <input ref={input} aria-label="Project name" value={name} disabled={create.isPending} onChange={(event) => setName(event.target.value)} placeholder="Project name" required
+            <input ref={input} aria-label={pageText("projectName_ab9773")} value={name} disabled={create.isPending} onChange={(event) => setName(event.target.value)} placeholder={pageText("projectName_ab9773")} required
               className="h-10 w-full min-w-0 border-0 bg-transparent text-base outline-none placeholder:text-muted-foreground md:text-sm" />
           </div>
         </div>
-        <div role="region" aria-label="Source repositories" tabIndex={0} className="min-h-0 overflow-y-auto overscroll-contain px-5 pb-1 outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-ring">
-          {options && options.groups.length > 1 && <div className="mb-4 space-y-2">
-            <label htmlFor="project-environment" className="text-sm font-medium">Available in</label>
-            <NativeSelect id="project-environment" value={selectedGroup?.environments[0].id ?? ""} disabled={create.isPending}
-              onChange={event => setSelectedEnvironmentId(event.target.value)}>
-              {!selectedGroup && <option value="" disabled>Select environments</option>}
-              {options.groups.map(group => <option key={group.environments[0].id} value={group.environments[0].id}>
-                {group.environments.map(environment => environment.name).join(", ")}
-              </option>)}
-            </NativeSelect>
-            <p className="text-xs text-muted-foreground">These environments can share this project's working files. The storage choice stays with the project.</p>
-          </div>}
-          {(environmentView.kind === "loading" || environmentView.kind === "reconnecting") && <p role="status" className="mb-3 text-sm text-muted-foreground">Loading environments…</p>}
-          {environmentView.kind === "error" && <QueryErrorState error={environmentView.error} size="inline" action="load project environments"
-            className="mb-3" onRetry={environmentView.retry} retrying={environmentView.isFetching} />}
-          {options?.error && !selectedGroup && <p role="alert" className="mb-3 text-sm text-destructive">{options.error}</p>}
+        <div role="region" aria-label={pageText("sourceRepositories_420549")} tabIndex={0} className="min-h-0 overflow-y-auto overscroll-contain px-5 pb-1 outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-ring">
           <ProjectRepositoryInput companyId={companyId} selected={repos} onChange={setRepos} onConnect={() => setConnecting(true)} disabled={create.isPending} />
         </div>
         {create.status === "error" && <p role="alert" className="px-5 pt-3 text-sm text-destructive">{describeError(create.error).body}</p>}
-        <div className="flex shrink-0 justify-between gap-2 px-5 py-5">
-          <Button type="button" variant="ghost" disabled={create.isPending} onClick={onClose}>Cancel</Button>
-          <Button type="submit" disabled={!name.trim() || !environmentReady || create.isPending}>{create.isPending ? "Creating…" : "Create project"}</Button>
+        <div className="flex shrink-0 justify-end gap-2 px-5 py-5">
+          <Button type="button" variant="ghost" disabled={create.isPending} onClick={onClose}>{translateUi("interfaceCopy.cancel")}</Button>
+          <Button type="submit" disabled={!name.trim() || create.isPending}>{create.isPending ? pageText("creating_94d7d8") : pageText("createProject_a8d8ff")}</Button>
         </div>
       </form>}
     </DialogContent>

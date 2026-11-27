@@ -1,3 +1,5 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useState, type ReactNode } from "react";
 import type { IssueExternalObjectGroup } from "../../hooks/useIssueExternalObjects";
 import {
@@ -16,7 +18,6 @@ import { cn } from "../../lib/utils";
 import { ExternalObjectStatusIcon } from "../ExternalObjectStatusIcon";
 import { PropertyRow } from "./primitives";
 import { ExpandRelationListButton } from "./relation-controls";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 const EXTERNAL_OBJECT_PROPERTY_PREVIEW_COUNT = 5;
 
@@ -46,7 +47,7 @@ function externalObjectRowLabel(group: IssueExternalObjectGroup): ReactNode {
   return (
     <span className="inline-flex min-w-0 items-start gap-1" title={displayKey}>
       {Icon ? <Icon aria-hidden="true" className="h-3.5 w-3.5 shrink-0 mt-0.5" /> : null}
-      <span className={cn("truncate", ANALYTICS_MASK_CLASS)}>{displayKey}</span>
+      <span className="truncate">{displayKey}</span>
     </span>
   );
 }
@@ -116,7 +117,7 @@ function ExternalObjectPropertyValue({ group }: { group: IssueExternalObjectGrou
         sizeClassName="h-3.5 w-3.5"
         label={`${providerLabel}: ${statusLabel}`}
       />
-      <span className={cn("min-w-0 truncate", ANALYTICS_MASK_CLASS)}>{value}</span>
+      <span className="min-w-0 truncate">{value}</span>
     </>
   );
   const className = cn(
@@ -168,6 +169,8 @@ export function ExternalObjectRows({
   externalObjectsError?: boolean;
   onRetryExternalObjects?: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
@@ -176,19 +179,15 @@ export function ExternalObjectRows({
 
   if (externalObjectsError) {
     return (
-      <PropertyRow label="External objects">
-        <span className="text-xs text-muted-foreground">
-          Couldn't load external objects.
-          {onRetryExternalObjects ? (
+      <PropertyRow label={pageText("externalObjects_d84952")}>
+        <span className="text-xs text-muted-foreground">{pageText("couldnTLoadExternalObjects_4728cc")}{onRetryExternalObjects ? (
             <>
               {" "}
               <button
                 type="button"
                 className="text-primary underline-offset-2 hover:underline"
                 onClick={onRetryExternalObjects}
-              >
-                Retry
-              </button>
+              >{translateUi("interfaceCopy.retry")}</button>
             </>
           ) : null}
         </span>
@@ -198,7 +197,7 @@ export function ExternalObjectRows({
 
   if (externalObjectsLoading) {
     return (
-      <PropertyRow label="External objects">
+      <PropertyRow label={pageText("externalObjects_d84952")}>
         <span className="h-4 w-24 animate-pulse rounded bg-muted/40" />
       </PropertyRow>
     );
@@ -227,7 +226,7 @@ export function ExternalObjectRows({
           );
         })}
       {expanded || hiddenExternalObjectCount > 0 ? (
-        <PropertyRow label="References">
+        <PropertyRow label={pageText("references_5d20d0")}>
           <ExpandRelationListButton
             hiddenCount={hiddenExternalObjectCount}
             expanded={expanded}

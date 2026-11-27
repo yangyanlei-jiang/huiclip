@@ -1,3 +1,6 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useEffect, useState } from "react";
 import { Link2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,6 +25,8 @@ export function ManagedOAuthHandoffState({
   onRetry: () => void;
   onCancel: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const failed = phase === "error";
   return (
     <main className="flex min-h-screen items-center justify-center bg-background p-6">
@@ -35,19 +40,19 @@ export function ManagedOAuthHandoffState({
         </span>
         <div className="min-w-0">
           <h1 className="text-xl font-bold tracking-tight">
-            {failed ? "Sign-in couldn’t continue" : "Preparing secure sign-in"}
+            {failed ? pageText("signInCouldnTContinue_e98616") : pageText("preparingSecureSignIn_fc861f")}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {failed
-              ? error ?? "Paperclip couldn’t prepare the provider sign-in. Try again."
+              ? error ?? pageText("paperclipCouldnTPrepareTheProviderSignIn_53b750")
               : phase === "reauthenticating"
-                ? "Your Paperclip sign-in is being refreshed."
-                : "Paperclip is opening the provider securely."}
+                ? pageText("yourPaperclipSignInIsBeingRefreshed_7fcdb2")
+                : pageText("paperclipIsOpeningTheProviderSecurely_a44d5c")}
           </p>
           {failed ? (
             <div className="mt-6 flex items-center gap-2">
-              <Button type="button" onClick={onRetry}>Try again</Button>
-              <Button type="button" variant="ghost" onClick={onCancel}>Return to Paperclip</Button>
+              <Button type="button" onClick={onRetry}>{translateUi("interfaceCopy.tryAgain")}</Button>
+              <Button type="button" variant="ghost" onClick={onCancel}>{pageText("returnToPaperclip_39189c")}</Button>
             </div>
           ) : null}
         </div>
@@ -65,7 +70,7 @@ export function PaperclipCloudOAuthHandoffPage() {
     const handoff = readPendingCloudHandoff();
     if (!handoff) {
       setPhase("error");
-      setError("This sign-in expired. Return to Paperclip and start the connection again.");
+      setError(interfaceNotice("interface:thisSignInExpiredReturnToPaperclipAnd_c22278"));
       return;
     }
     setPhase("loading");
@@ -74,7 +79,7 @@ export function PaperclipCloudOAuthHandoffPage() {
       const target = await prepareOAuthNavigation({ authorizationUrl: "", handoff });
       if (target.kind === "reauthentication") {
         setPhase("error");
-        setError("Paperclip couldn’t refresh this sign-in. Try again to continue.");
+        setError(interfaceNotice("interface:paperclipCouldnTRefreshThisSignInTry_2c2a8a"));
         return;
       }
       clearPendingCloudHandoff();

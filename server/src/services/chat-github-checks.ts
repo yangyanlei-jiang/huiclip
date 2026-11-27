@@ -17,13 +17,9 @@ import {
 import type { GitHubReviewEventContext } from "@paperclipai/shared";
 import { runtimePublicOrigin } from "./cloud-runtime-identity.js";
 import {
-  githubBotRepositoryClient,
+  githubBotRepositoryToken,
   githubBotRequest,
 } from "./chat-github-client.js";
-
-export const GITHUB_REVIEW_CHECK_HEAD_POLL_MS = 5_000;
-export const GITHUB_REVIEW_CHECK_MAX_HEAD_POLL_MS = 300_000;
-const UNCHANGED_HEAD_POLL_LIMIT = Math.ceil(Math.log2(GITHUB_REVIEW_CHECK_MAX_HEAD_POLL_MS / GITHUB_REVIEW_CHECK_HEAD_POLL_MS));
 
 /** Check status follows the ordinary chat delivery/task/run. This outbox never
  * schedules an agent. Assessments are published by the governed review tool. */
@@ -132,7 +128,7 @@ export function githubReviewCheckService(db: Db, fetchImpl = fetch) {
                   : state === "running"
                     ? "Agent is reviewing this commit"
                     : "Waiting for the assigned agent";
-          const github = await githubBotRepositoryClient(
+          const token = await githubBotRepositoryToken(
             db,
             action.companyId,
             action.endpointId,
@@ -143,7 +139,13 @@ export function githubReviewCheckService(db: Db, fetchImpl = fetch) {
           const request = <T>(
             path: string,
             options?: Parameters<typeof githubBotRequest>[3],
-          ) => github<T>(`${prefix}${path}`, options);
+          ) =>
+            githubBotRequest<T>(
+              lease.fetch,
+              token,
+              `${prefix}${path}`,
+              options,
+            );
           const current = await request<{ head: { sha: string } }>(
             `/pulls/${event.pullNumber}`,
           );
@@ -246,10 +248,6 @@ export function githubReviewCheckService(db: Db, fetchImpl = fetch) {
                   );
               });
           }
-          const savedPolls = Number(fresh.result?.unchangedPolls);
-          const unchangedPolls = fresh.status === "received" && fresh.result?.state === state
-            ? Math.min(UNCHANGED_HEAD_POLL_LIMIT, (Number.isSafeInteger(savedPolls) && savedPolls > 0 ? savedPolls : 0) + 1)
-            : 0;
           await lease.commit(async (tx) => {
             await tx
               .update(chatActions)
@@ -259,8 +257,7 @@ export function githubReviewCheckService(db: Db, fetchImpl = fetch) {
                   state,
                   attempts: 0,
                   retryable: true,
-                  unchangedPolls,
-                  retryAt: new Date(Date.now() + Math.min(GITHUB_REVIEW_CHECK_MAX_HEAD_POLL_MS, GITHUB_REVIEW_CHECK_HEAD_POLL_MS * 2 ** unchangedPolls)).toISOString(),
+                  retryAt: new Date(Date.now() + 5000).toISOString(),
                 },
                 updatedAt: new Date(),
               })

@@ -38,7 +38,6 @@ const schemaNames = [
   "event-v2",
   "event-v3",
   "session-goal",
-  "provider-turn",
   "fixture",
 ];
 

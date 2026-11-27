@@ -148,21 +148,14 @@ export async function createTaskThroughUi(input: {
 export async function submitTaskReply(
   page: Page,
   body: string,
-  remainingBudget?: () => number,
 ): Promise<number> {
   const composer = page.getByTestId("task-chat-composer-input").last();
-  const options = () => {
-    const remaining = remainingBudget!();
-    if (!Number.isFinite(remaining) || remaining <= 0) throw new Error("Task reply original observation budget exhausted");
-    return { timeout: Math.min(30_000, remaining) };
-  };
-  await expect(composer).toBeVisible(remainingBudget ? options() : { timeout: 30_000 });
-  const editor = composer.locator('[contenteditable="true"], textarea').first();
-  if (remainingBudget) await editor.fill(body, options());
-  else await editor.fill(body);
+  await expect(composer).toBeVisible({ timeout: 30_000 });
+  await composer
+    .locator('[contenteditable="true"], textarea')
+    .first()
+    .fill(body);
   const submittedAtMs = Date.now();
-  const send = page.getByTestId("task-chat-composer-send").last();
-  if (remainingBudget) await send.click(options());
-  else await send.click();
+  await page.getByTestId("task-chat-composer-send").last().click();
   return submittedAtMs;
 }

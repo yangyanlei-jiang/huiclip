@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { EmailMessageCard } from "./EmailMessageCard";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -8,8 +9,6 @@ import { Input } from "@/components/ui/input";
 import { describeError } from "@/api/errors";
 import { QueryErrorState, useQueryView } from "./QueryView";
 import type { EmailPublicationSummary } from "@paperclipai/shared";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
-import { cn } from "@/lib/utils";
 
 // Email actions belong to the agent's task conversation. Only surface mail
 // without a task comment yet and delivery outcomes that need attention here.
@@ -84,6 +83,7 @@ function EmailDelivery({
   publication: EmailPublicationSummary;
   onResolved: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [messageId, setMessageId] = useState("");
   const resolve = useMutation({
     mutationFn: (outcome: "sent" | "failed") =>
@@ -94,35 +94,29 @@ function EmailDelivery({
     <div className="space-y-2 text-xs text-muted-foreground">
       {p.request && !p.providerMessageId && (
         <article
-          aria-label="Email send intent"
-          className={cn("task-context-notice space-y-3", ANALYTICS_MASK_CLASS)}
+          aria-label={pageText("emailSendIntent_4a00f4")}
+          className="task-context-notice space-y-3"
         >
-          <p className="font-semibold">{p.request.subject ?? "Email reply"}</p>
-          {p.request.to && <p>To: {p.request.to.join(", ")}</p>}
+          <p className="font-semibold">{p.request.subject ?? pageText("emailReply_60d3b1")}</p>
+          {p.request.to && <p>{pageText("to_7e7fbc") + " "}{p.request.to.join(", ")}</p>}
           <div className="whitespace-pre-wrap break-words text-sm text-foreground">
             {p.request.text}
           </div>
         </article>
       )}
-      <p>
-        Email {p.outcome}
+      <p>{pageText("email_84add5") + " "}{p.outcome}
         {p.error ? ` — ${p.error}` : ""}
       </p>
       {p.outcome === "uncertain" && (
         <details>
-          <summary className="cursor-pointer">
-            Resolve delivery after checking AgentMail
-          </summary>
+          <summary className="cursor-pointer">{pageText("resolveDeliveryAfterCheckingAgentMail_ebbab4")}</summary>
           <div className="space-y-2 py-2">
-            <p>
-              Confirm the outcome in AgentMail before resolving. This action
-              does not resend.
-            </p>
+            <p>{pageText("confirmTheOutcomeInAgentMailBeforeResolvingThis_bf3415")}</p>
             <Input
-              aria-label="Provider message ID"
+              aria-label={pageText("providerMessageID_89b99d")}
               value={messageId}
               onChange={(e) => setMessageId(e.target.value)}
-              placeholder="Provider message ID"
+              placeholder={pageText("providerMessageID_89b99d")}
             />
             <div className="flex gap-2">
               <Button
@@ -130,17 +124,13 @@ function EmailDelivery({
                 variant="outline"
                 disabled={!messageId || resolve.isPending}
                 onClick={() => resolve.mutate("sent")}
-              >
-                Confirm sent
-              </Button>
+              >{pageText("confirmSent_d36cf4")}</Button>
               <Button
                 size="sm"
                 variant="outline"
                 disabled={resolve.isPending}
                 onClick={() => resolve.mutate("failed")}
-              >
-                Confirm not sent
-              </Button>
+              >{pageText("confirmNotSent_b48cca")}</Button>
             </div>
             {resolve.isError && ( // query-error-ok: mutation result
               <p role="alert" className="text-destructive">

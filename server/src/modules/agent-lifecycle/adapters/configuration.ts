@@ -12,7 +12,6 @@ import type { LifecycleEffects } from "./effects.js";
 export async function updateAgentConfiguration(tx: Db, effects: LifecycleEffects, id: string, data: AgentConfigurationPatch, options?: UpdateAgentOptions, publications: ActivityPublication[] = []) {
   if (!("nestedIndex" in tx)) throw new AgentLifecycleConflict("Configuration integration requires a database transaction");
   assertConfigurationFields(data);
-  options = await effects.lockConfigurationInteractions(tx, id, data, options);
   const [current] = await tx.select().from(agents).where(eq(agents.id, id)).for("no key update");
   if (!current) return null;
   if (options?.expectedConfigurationRevision && options.expectedConfigurationRevision !== agentConfigurationRevision(current)) {
@@ -30,7 +29,9 @@ export async function updateAgentConfiguration(tx: Db, effects: LifecycleEffects
     && Object.prototype.hasOwnProperty.call(patch, "defaultEnvironmentId")
     && patch.defaultEnvironmentId !== current.defaultEnvironmentId
     && await effects.environmentRequiresNewPlugin(tx, patch.defaultEnvironmentId, current.lifecycleRequiredPluginIds);
-  const pauseForEnvironment = needsNewPlugin && current.lifecycleState === "ready";
+  if (needsNewPlugin && current.lifecycleState === "ready") {
+    throw new AgentLifecycleConflict("This environment needs setup for the agent. Pause the agent, change its environment, and then resume it.");
+  }
   const prepareEnvironment = needsNewPlugin && !current.lifecycleHolds.includes("setup");
   const prepareSetup = changed && current.lifecycleHolds.length === 1 && current.lifecycleHolds[0] === "setup"
     && ["paused", "preparing", "verifying"].includes(current.lifecycleState)
@@ -38,25 +39,19 @@ export async function updateAgentConfiguration(tx: Db, effects: LifecycleEffects
       Object.prototype.hasOwnProperty.call(patch, "defaultEnvironmentId") ? patch.defaultEnvironmentId : current.defaultEnvironmentId,
       { adapterType: patch.adapterType ?? current.adapterType,
         adapterConfig: Object.prototype.hasOwnProperty.call(patch, "adapterConfig") ? patch.adapterConfig : current.adapterConfig });
-  const invalidate = changed && (["preparing", "verifying", "resuming"].includes(current.lifecycleState) || prepareSetup || pauseForEnvironment);
+  const invalidate = changed && (["preparing", "verifying", "resuming"].includes(current.lifecycleState) || prepareSetup);
   if(prepareSetup&&!canConfigureAgentConnection(current))await effects.beforeConnectionEligibilityRestore?.(tx,current.companyId,current.id);
-  if (pauseForEnvironment) await effects.beforeStatusChange(tx, current.companyId, id, current.status, "paused");
   if (invalidate) await effects.notifyWork(tx);
   const [updated] = await tx.update(agents).set({ ...patch, updatedAt: new Date(), ...(invalidate ? {
     lifecycleVersion: current.lifecycleVersion + 1, lifecycleError: null,
     ...(prepareSetup || prepareEnvironment ? { lifecycleState: "preparing" as const } : {}),
-    ...(pauseForEnvironment ? { lifecycleState: "pausing" as const, status: "paused", pausedAt: new Date() } : {}),
     ...(!prepareSetup && current.lifecycleHolds.includes("setup") && ["preparing", "verifying"].includes(current.lifecycleState)
       ? { lifecycleState: "pausing" as const } : {}),
     lifecycleOperation: { ...current.lifecycleOperation!, id: randomUUID(), hostComplete: false,
       completedPluginIds: [], attempts: 0, leaseOwner: undefined, leaseUntil: undefined, leaseHolder: undefined,
       retryAt: undefined, retryRequired: undefined, verificationFailures: undefined,
-      waitingForSignal: undefined, recheckRequested: undefined,
-      // With no new hold, completed pause work resumes automatically, then verifies the new environment.
-      ...(pauseForEnvironment ? { resumeState: "verifying" as const,
-        pauseCause: { holds: current.lifecycleHolds, companyPauseReason: null } } : {}) },
+      waitingForSignal: undefined, recheckRequested: undefined },
   } : {}) }).where(eq(agents.id, id)).returning();
-  if (pauseForEnvironment) await effects.recordStatus(tx, current.companyId, id, "idle", "paused");
   await effects.completeConfiguration(tx, current, updated, patch, options, publications);
   return agentRecordQueries(tx).getById(id);
 }

@@ -1,4 +1,3 @@
-import { getTaskHistoryAction } from "../protocol-actions/get-task-history.js";
 import { taskDocumentKeySchema } from "../protocol-actions/task-document-key-schema.js";
 import { getWorkspaceAction } from "../protocol-actions/get-workspace.js";
 import { handoffCaseAction } from "../protocol-actions/handoff-case.js";
@@ -12,14 +11,6 @@ import { listProjectsDescription, listProjectsInputSchema } from "../protocol-ac
 import { setTaskTitleAction } from "../protocol-actions/set-task-title.js";
 import { sendChatMessageAction } from "../protocol-actions/send-chat-message.js";
 import { reassignTaskAction } from "../protocol-actions/reassign-task.js";
-import { listRoutinesAction } from "../protocol-actions/list-routines.js";
-import { updateRoutineAction } from "../protocol-actions/update-routine.js";
-import { updateSkillDetailsAction } from "../protocol-actions/update-skill-details.js";
-import {
-  createAreaAction, createResponsibilityAction, deleteAreaAction, deleteResponsibilityAction, fileUnderResponsibilityAction,
-  findResponsibilitiesForAction, getResponsibilityAction, listResponsibilitiesAction, removeFromResponsibilityAction,
-  updateAreaAction, updateResponsibilityAction,
-} from "../protocol-actions/responsibilities.js";
 import type {
   PaperclipJsonSchema,
   PaperclipSemanticActionDescriptor,
@@ -30,10 +21,6 @@ import { createSkillAction } from "../protocol-actions/create-skill.js";
 import { searchApiAction } from "../protocol-actions/search-api.js";
 import { callApiAction } from "../protocol-actions/call-api.js";
 import { projectIconSchema, projectRepositoryUrlSchema } from "../protocol-actions/create-project.js";
-import {
-  REQUEST_HUMAN_INPUT_PROMPT_MAX_LENGTH,
-  REQUEST_HUMAN_INPUT_TITLE_MAX_LENGTH,
-} from "../protocol-actions/request-human-input.js";
 
 const ALL_MODES = ["standard", "ask", "planning", "skill_test"] as const;
 const WORK_MODES = ["standard", "planning", "skill_test"] as const;
@@ -156,7 +143,7 @@ const descriptors: readonly PaperclipSemanticActionDescriptor[] = [
   descriptor({
     operationId: "get_task_history",
     title: "Get active task history",
-    description: getTaskHistoryAction.live.descriptor.description,
+    description: "Read bounded comments on the active task.",
     inputSchema: object({
       limit: { type: "integer", minimum: 1, maximum: 200, default: 50 },
     }),
@@ -265,8 +252,8 @@ const descriptors: readonly PaperclipSemanticActionDescriptor[] = [
             "item_verdicts",
           ],
         },
-        title: text("Interaction card title.", REQUEST_HUMAN_INPUT_TITLE_MAX_LENGTH),
-        prompt: text("Question or decision prompt.", REQUEST_HUMAN_INPUT_PROMPT_MAX_LENGTH),
+        title: text("Interaction card title.", 300),
+        prompt: text("Question or decision prompt.", 10_000),
         payload: openObject,
         resolverPolicy: { const: "human_only", description: "Optionally require an authenticated human response." },
         targetRevisionId: nullableText(
@@ -525,23 +512,6 @@ const descriptors: readonly PaperclipSemanticActionDescriptor[] = [
     placement: "optional",
     inputSchema: object({}),
   }),
-  ...[
-    listResponsibilitiesAction, getResponsibilityAction, findResponsibilitiesForAction,
-    createAreaAction, updateAreaAction, deleteAreaAction,
-    createResponsibilityAction, updateResponsibilityAction, deleteResponsibilityAction,
-    fileUnderResponsibilityAction, removeFromResponsibilityAction,
-    listRoutinesAction, updateRoutineAction, updateSkillDetailsAction,
-  ].map((action) => descriptor({
-    operationId: action.id,
-    title: action.documentation.title,
-    description: action.documentation.description,
-    placement: "optional",
-    effect: action.canonical.sideEffectClass === "read" ? "read" : "write",
-    requiredClaims: action.live.descriptor.requiredClaims,
-    allowedModes: action.live.descriptor.allowedModes,
-    inputSchema: action.live.descriptor.inputSchema,
-    outputSchema: openObject,
-  })),
   descriptor({
     operationId: "create_project",
     title: "Create project",
@@ -564,7 +534,7 @@ const descriptors: readonly PaperclipSemanticActionDescriptor[] = [
   descriptor({
     operationId: "create_task",
     title: "Create task",
-    description: "Create a task. When the user names an existing teammate or project, resolve their IDs with list_agents or list_projects and set assigneeActorId or projectId in this creation call. A todo task can start its assignee immediately; creating it for yourself and reassigning later can start the wrong agent. Persist initialPlan before execution. Use backlog to save or plan without starting work; backlog tasks never wake an agent. Omitted status means todo, subject to blockers. Include required inputs and constraints in self-contained task instructions.",
+    description: "Create a project task from a conversation, or a child from an ordinary task. When the user names an existing teammate or project, resolve their IDs with list_agents or list_projects and set assigneeActorId or projectId in this creation call. A todo task can start its assignee immediately; creating it for yourself and reassigning later can start the wrong agent. Persist initialPlan before execution. Use backlog to save or plan without starting work; backlog tasks never wake an agent. Omitted status means todo, subject to blockers. Include required inputs and constraints in self-contained child instructions.",
     placement: "optional",
     effect: "write",
     requiredClaims: ["delegation:tasks:create"],
@@ -575,7 +545,7 @@ const descriptors: readonly PaperclipSemanticActionDescriptor[] = [
         title: text("Task title.", 500),
         projectId: nullableText("Project ID from list_projects. Set the requested project in this creation call so the task does not inherit a different project."),
         initialPlan: nullableText("Remaining execution steps to persist as the task plan. Exclude completed planning, approval, and handoff steps; cite the source plan revision and approval. A copied plan is not a new approval gate."),
-        description: nullableText("Task description."),
+        description: nullableText("Child task description."),
         requiredQualityReview: object({
           version: { const: 1 },
           deliverables: { type: "array", minItems: 1, maxItems: 10, items: object({ key: text("Stable output key, e.g. copy or visual.", 80), label: text("Human-readable output name.", 120) }, ["key", "label"]) },

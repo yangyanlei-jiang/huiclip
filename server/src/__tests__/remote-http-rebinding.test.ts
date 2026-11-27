@@ -452,8 +452,7 @@ describe("guarded remote HTTP fetch (PAP-17098 DNS rebinding)", () => {
     expect(failure.response).toBeUndefined();
     expect(isExpectedMcpConnectionFailure(retainMcpConnectionFailure(failure, new HttpError(502, failure.message)))).toBe(true);
     await flush();
-    // One socket for the version probe, one for the handshake; both are released.
-    expect(network.sockets.map((socket) => socket.destroyed)).toEqual([true, true]);
+    expect(network.sockets.map((socket) => socket.destroyed)).toEqual([true]);
   });
 
   it.each([

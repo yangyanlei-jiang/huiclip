@@ -1,3 +1,5 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { ChevronDown, ChevronRight, ScrollText } from "lucide-react";
@@ -25,9 +27,6 @@ import {
 import { agentsApi } from "@/api/agents";
 import { AgentSelect } from "@/components/AgentMultiSelect";
 import { ToolsPageHeader, LoadingState, RelativeTime } from "./shared";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
-import { googleAccessRetrySummary } from "../../features/connections/googleAccessRemoval";
-import { auditTransportLabel } from "@/lib/connection-transport-label";
 
 const PAGE_SIZE = 50;
 const ALL = "__all";
@@ -115,9 +114,6 @@ function lifecycleSummary(event: ToolGatewayActivityEvent): string | null {
       return `${who} updated the allowlist for ${app}`;
     case "actions_quarantined":
       return `${count} new ${count === 1 ? "action needs" : "actions need"} review in ${app}`;
-    case "google_access_ended":
-    case "google_access_not_ended":
-      return `${googleAccessRetrySummary(event.lifecycleType, event.details ?? null)} (${app})`;
     default:
       return `${who} updated ${app}`;
   }
@@ -170,6 +166,8 @@ function ActivityRow({
   event: ToolGatewayActivityEvent;
   ruleNamesById: Map<string, string>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
@@ -223,17 +221,14 @@ function ActivityRow({
             <span className="block text-foreground">{lifecycle}</span>
           ) : isRuntimeMcpDeliveryDiagnostic ? (
             <span className="block text-foreground">
-              <span className="font-medium">{who}</span>'s run received 0 MCP servers —{" "}
-              <span className="font-medium">{permittedNotInstalledCount ?? permittedNotInstalledConnections.length}</span>{" "}
-              permitted {(permittedNotInstalledCount ?? permittedNotInstalledConnections.length) === 1 ? "connection" : "connections"} not installed
-            </span>
+              <span className="font-medium">{who}</span>{pageText("sRunReceived0MCPServers_3a39b5")}{" "}
+              <span className="font-medium">{permittedNotInstalledCount ?? permittedNotInstalledConnections.length}</span>{" "}{pageText("permitted_e0c3dc") + " "}{(permittedNotInstalledCount ?? permittedNotInstalledConnections.length) === 1 ? pageText("connection_814605") : pageText("connections_c0e3ce")}{" " + pageText("notInstalled_d49fe2")}</span>
           ) : (
             <span className="block text-foreground">
-              <span className="font-medium">{who}</span> used <span className="font-medium">{action}</span>
+              <span className="font-medium">{who}</span>{" " + pageText("used_192a56") + " "}<span className="font-medium">{action}</span>
               {app ? (
                 <>
-                  {" "}
-                  in <span className="font-medium">{app}</span>
+                  {" "}{pageText("in_af10ef") + " "}<span className="font-medium">{app}</span>
                 </>
               ) : null}
             </span>
@@ -261,14 +256,10 @@ function ActivityRow({
 
           <div className="flex flex-wrap gap-3 text-xs">
             {issueId ? (
-              <Link to={`/issues/${issueId}`} className="text-primary hover:underline">
-                View task
-              </Link>
+              <Link to={`/issues/${issueId}`} className="text-primary hover:underline">{pageText("viewTask_39e023")}</Link>
             ) : null}
             {runId && agentId ? (
-              <Link to={`/agents/${agentId}/runs/${runId}`} className="text-primary hover:underline">
-                View run
-              </Link>
+              <Link to={`/agents/${agentId}/runs/${runId}`} className="text-primary hover:underline">{translateUi("interfaceCopy.viewRun")}</Link>
             ) : null}
           </div>
 
@@ -278,34 +269,32 @@ function ActivityRow({
               onClick={() => setDetailsOpen((v) => !v)}
               className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
             >
-              {detailsOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
-              Details
-            </button>
+              {detailsOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}{pageText("details_dc3dec")}</button>
             {detailsOpen ? (
               <div className="mt-2 space-y-1.5 text-xs">
-                {rawTool ? <DetailFact label="Action name" value={rawTool} mono /> : null}
-                <DetailFact label="Reason code" value={reasonCode} mono />
-                <DetailFact label="Actor type" value={event.actorType ?? "—"} />
-                {runId ? <DetailFact label="Run ID" value={runId} mono /> : null}
-                {transport ? <DetailFact label="Type" value={auditTransportLabel(transport)} /> : null}
-                {requestMethod && endpoint ? <DetailFact label="HTTP request" value={`${requestMethod} ${endpoint}`} mono /> : null}
-                {mcpMethod ? <DetailFact label="MCP method" value={mcpMethod} mono /> : null}
-                {requestId ? <DetailFact label="Request ID" value={requestId} mono /> : null}
-                {request ? <DetailFact label="Dispatched" value={request.dispatched === true ? "Yes" : "No"} /> : null}
-                {httpStatus !== undefined ? <DetailFact label="HTTP status" value={String(httpStatus)} mono /> : null}
-                {contentType ? <DetailFact label="Content type" value={contentType} mono /> : null}
-                {responseBytes !== undefined ? <DetailFact label="Response size" value={`${responseBytes} bytes`} /> : null}
-                {upstreamRequestId ? <DetailFact label="Upstream ID" value={upstreamRequestId} mono /> : null}
+                {rawTool ? <DetailFact label={pageText("actionName_8d5381")} value={rawTool} mono /> : null}
+                <DetailFact label={pageText("reasonCode_194925")} value={reasonCode} mono />
+                <DetailFact label={pageText("actorType_a19a1c")} value={event.actorType ?? "—"} />
+                {runId ? <DetailFact label={pageText("runID_79adb1")} value={runId} mono /> : null}
+                {transport ? <DetailFact label={pageText("transport_c10d76")} value={transport} mono /> : null}
+                {requestMethod && endpoint ? <DetailFact label={pageText("httpRequest_670e08")} value={`${requestMethod} ${endpoint}`} mono /> : null}
+                {mcpMethod ? <DetailFact label={pageText("mcpMethod_6b4151")} value={mcpMethod} mono /> : null}
+                {requestId ? <DetailFact label={pageText("requestID_63aa59")} value={requestId} mono /> : null}
+                {request ? <DetailFact label={pageText("dispatched_ff0720")} value={request.dispatched === true ? "Yes" : "No"} /> : null}
+                {httpStatus !== undefined ? <DetailFact label={pageText("httpStatus_c9b2e3")} value={String(httpStatus)} mono /> : null}
+                {contentType ? <DetailFact label={pageText("contentType_de15f7")} value={contentType} mono /> : null}
+                {responseBytes !== undefined ? <DetailFact label={pageText("responseSize_5005fc")} value={`${responseBytes} bytes`} /> : null}
+                {upstreamRequestId ? <DetailFact label={pageText("upstreamID_5dfa4f")} value={upstreamRequestId} mono /> : null}
                 {isRuntimeMcpDeliveryDiagnostic ? (
                   <>
-                    <DetailFact label="Delivered MCP servers" value="0" mono />
+                    <DetailFact label={pageText("deliveredMCPServers_b9a52a")} value="0" mono />
                     {permittedNotInstalledConnections.map((connection) => {
                       const connectionId = detailString(connection, "id");
                       const connectionName = detailString(connection, "name") ?? "Unnamed connection";
                       return connectionId ? (
                         <div key={connectionId} className="flex gap-2">
-                          <span className="shrink-0 text-muted-foreground">Not installed</span>
-                          <Link to={`/apps/${connectionId}/permissions`} className={cn("font-medium text-primary hover:underline", ANALYTICS_MASK_CLASS)}>
+                          <span className="shrink-0 text-muted-foreground">{pageText("notInstalled_1aab9f")}</span>
+                          <Link to={`/apps/${connectionId}/permissions`} className="font-medium text-primary hover:underline">
                             {connectionName}
                           </Link>
                         </div>
@@ -315,8 +304,8 @@ function ActivityRow({
                 ) : null}
                 {argumentsText ? (
                   <div className="space-y-1">
-                    <span className="text-muted-foreground">Parameters (redacted)</span>
-                    <pre className={cn("whitespace-pre-wrap break-words rounded-md border border-border bg-background p-3 font-mono text-xs text-foreground", ANALYTICS_MASK_CLASS)}>
+                    <span className="text-muted-foreground">{pageText("parametersRedacted_e18870")}</span>
+                    <pre className="whitespace-pre-wrap break-words rounded-md border border-border bg-background p-3 font-mono text-xs text-foreground">
                       {argumentsText}
                     </pre>
                   </div>
@@ -331,6 +320,8 @@ function ActivityRow({
 }
 
 export function AuditTab({ companyId }: { companyId: string }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [app, setApp] = useState<string>(ALL);
   const [agent, setAgent] = useState<string>(ALL);
   const [outcome, setOutcome] = useState<string>(ALL);
@@ -405,17 +396,17 @@ export function AuditTab({ companyId }: { companyId: string }) {
   return (
     <div className="space-y-4">
       <ToolsPageHeader
-        title="Activity"
-        description="What your agents actually did with your apps, newest first. Each line is one decision — allowed, blocked, asked first, waiting, or failed."
+        title={translateUi("interfaceCopy.activity")}
+        description={pageText("whatYourAgentsActuallyDidWithYourApps_187a8e")}
       />
 
-      <div data-canonical-toolbar="tool-audit" role="toolbar" aria-label="Tool audit filters" className="flex flex-wrap items-center gap-2">
+      <div data-canonical-toolbar="tool-audit" role="toolbar" aria-label={pageText("toolAuditFilters_f7636f")} className="flex flex-wrap items-center gap-2">
         <Select value={app} onValueChange={setApp}>
           <SelectTrigger className="w-40">
-            <SelectValue placeholder="App" />
+            <SelectValue placeholder={pageText("app_fc4a69")} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={ALL}>All apps</SelectItem>
+            <SelectItem value={ALL}>{pageText("allApps_6f3347")}</SelectItem>
             {(apps.data?.applications ?? []).map((a) => (
               <SelectItem key={a.id} value={a.id}>
                 {a.name}
@@ -454,15 +445,13 @@ export function AuditTab({ companyId }: { companyId: string }) {
           </SelectContent>
         </Select>
         <Input
-          placeholder="Search activity…"
+          placeholder={pageText("searchActivity_9a9956")}
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           className="max-w-xs"
         />
         {hasActiveFilters ? (
-          <Button variant="ghost" size="sm" onClick={clearFilters}>
-            Clear filters
-          </Button>
+          <Button variant="ghost" size="sm" onClick={clearFilters}>{pageText("clearFilters_412226")}</Button>
         ) : null}
       </div>
 
@@ -481,14 +470,10 @@ export function AuditTab({ companyId }: { companyId: string }) {
             <CardContent className="flex flex-col items-center gap-3 py-14 text-center">
               <ScrollText className="h-10 w-10 text-muted-foreground/40" />
               <div>
-                <p className="text-sm font-medium text-foreground">No activity matches these filters</p>
-                <p className="mt-1 max-w-md text-sm text-muted-foreground">
-                  Try a wider time window or different filters.
-                </p>
+                <p className="text-sm font-medium text-foreground">{pageText("noActivityMatchesTheseFilters_23c3c2")}</p>
+                <p className="mt-1 max-w-md text-sm text-muted-foreground">{pageText("tryAWiderTimeWindowOrDifferentFilters_bfa6f4")}</p>
               </div>
-              <Button variant="outline" size="sm" onClick={clearFilters}>
-                Clear filters
-              </Button>
+              <Button variant="outline" size="sm" onClick={clearFilters}>{pageText("clearFilters_412226")}</Button>
             </CardContent>
           </Card>
         ) : (
@@ -496,10 +481,8 @@ export function AuditTab({ companyId }: { companyId: string }) {
             <CardContent className="flex flex-col items-center gap-3 py-14 text-center">
               <ScrollText className="h-10 w-10 text-muted-foreground/40" />
               <div>
-                <p className="text-sm font-medium text-foreground">Nothing here yet</p>
-                <p className="mt-1 max-w-md text-sm text-muted-foreground">
-                  As soon as your agents start using connected apps, what they do shows up here.
-                </p>
+                <p className="text-sm font-medium text-foreground">{pageText("nothingHereYet_e89225")}</p>
+                <p className="mt-1 max-w-md text-sm text-muted-foreground">{pageText("asSoonAsYourAgentsStartUsingConnected_df06be")}</p>
               </div>
             </CardContent>
           </Card>
@@ -524,7 +507,7 @@ export function AuditTab({ companyId }: { companyId: string }) {
             onClick={() => activity.fetchNextPage()}
             disabled={activity.isFetchingNextPage}
           >
-            {activity.isFetchingNextPage ? "Loading…" : "Load more"}
+            {activity.isFetchingNextPage ? pageText("loading_33ce41") : pageText("loadMore_dfe60c")}
           </Button>
         </div>
       ) : null}

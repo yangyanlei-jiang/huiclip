@@ -56,7 +56,7 @@ import { assertBoardOrgAccess, assertCompanyAccess, assertInstanceAdmin, getActo
 import { BUILTIN_ADAPTER_TYPES } from "../adapters/builtin-adapter-types.js";
 import { agentRunnerAvailability, type RunnerTarget } from "../services/agent-runner-selection.js";
 import type { AgentRunnerAvailability } from "@paperclipai/shared";
-import { antigravityCandidateForRunnerTarget } from "../services/native-runtime/antigravity-release.js";
+import { resolveAntigravityCandidateAdmission } from "../services/native-runtime/acpx-qualification.js";
 
 const execFileAsync = promisify(execFile);
 let warnedMalformedAntigravityAdmission = false;
@@ -304,11 +304,11 @@ export function adapterRoutes(options: {
     // One shared implementation, with independent provider rollouts. Explicit
     // adapter-admin disabling still applies to both choices.
 
-    let candidate: ReturnType<typeof antigravityCandidateForRunnerTarget>;
-    if (typeof companyId === "string" && target) {
+    let candidate: ReturnType<typeof resolveAntigravityCandidateAdmission>;
+    if (typeof companyId === "string" && target?.driver === "local") {
       // An expired optional preview must not hide the ordinary adapter catalog.
       // Execution and model discovery still perform strict admission checks.
-      try { candidate = antigravityCandidateForRunnerTarget(companyId, target); }
+      try { candidate = resolveAntigravityCandidateAdmission({ companyId }); }
       catch (error) {
         candidate = undefined;
         // Expiry is ordinary catalog state. Invalid trusted startup JSON needs

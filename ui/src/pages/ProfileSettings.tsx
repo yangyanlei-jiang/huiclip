@@ -1,3 +1,7 @@
+import { t as interfaceNotice } from "@/i18n";
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useId, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Camera, LoaderCircle, Save, Trash2, UserRoundPen } from "lucide-react";
@@ -10,7 +14,6 @@ import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useCompany } from "../context/CompanyContext";
 import { queryKeys } from "../lib/queryKeys";
 import { InboxAgentPolicyControl } from "@/components/InboxAgentPolicyControl";
-import { ProductAnalyticsSetting } from "@/components/ProductAnalyticsSetting";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,34 +28,34 @@ function deriveInitials(name: string) {
 }
 
 export function ProfileSettings() {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { selectedCompanyId, selectedCompany } = useCompany();
   const queryClient = useQueryClient();
   const avatarInputId = useId();
   const avatarInputRef = useRef<HTMLInputElement | null>(null);
-  // Unedited fields show the session's saved values from the first frame; a
-  // restored session must not render an empty name until an effect fills it.
-  const [nameDraft, setName] = useState<string | null>(null);
-  const [imageDraft, setImage] = useState<string | null>(null);
+  const [name, setName] = useState("");
+  const [image, setImage] = useState("");
   const [actionError, setActionError] = useState<string | null>(null);
   const sessionQuery = useQuery({
     queryKey: queryKeys.auth.session,
     queryFn: () => authApi.getSession(),
   });
   const sessionView = useQueryView(sessionQuery);
-  const name = nameDraft ?? sessionQuery.data?.user.name ?? "";
-  const image = imageDraft ?? sessionQuery.data?.user.image ?? "";
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: "Settings", href: "/company/settings" },
-      { label: "Profile" },
+      { label: interfaceNotice("interface:settings_c7f73b"), href: "/company/settings" },
+      { label: interfaceNotice("interface:profile_ff4fc0") },
     ]);
   }, [setBreadcrumbs]);
 
   useEffect(() => {
-    setName(null);
-    setImage(null);
+    const session = sessionQuery.data;
+    if (!session) return;
+    setName(session.user.name ?? "");
+    setImage(session.user.image ?? "");
   }, [sessionQuery.data]);
 
   function syncSessionProfile(profile: CurrentUserProfile) {
@@ -131,7 +134,7 @@ export function ProfileSettings() {
   });
 
   if (sessionQuery.isLoading || sessionView.kind === "reconnecting") {
-    return <div className="text-sm text-muted-foreground">Loading profile...</div>;
+    return <div className="text-sm text-muted-foreground">{pageText("loadingProfile_a9e1ee")}</div>;
   }
 
   if (sessionView.kind === "error") {
@@ -147,7 +150,7 @@ export function ProfileSettings() {
   }
 
   if (!sessionQuery.data) {
-    return <div className="text-sm text-destructive">Failed to load profile.</div>;
+    return <div className="text-sm text-destructive">{interfaceMessage("interface:errorFailedToLoadProfileSentence")}</div>;
   }
 
   const currentName = name.trim() || sessionQuery.data.user.name || "Board";
@@ -163,11 +166,9 @@ export function ProfileSettings() {
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <UserRoundPen className="h-5 w-5 text-muted-foreground" />
-          <h1 className="text-lg font-semibold">Profile</h1>
+          <h1 className="text-lg font-semibold">{pageText("profile_ff4fc0")}</h1>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Control how your account appears in the sidebar and other board surfaces.
-        </p>
+        <p className="text-sm text-muted-foreground">{pageText("controlHowYourAccountAppearsInTheSidebar_257521")}</p>
       </div>
 
       {actionError ? (
@@ -218,7 +219,7 @@ export function ProfileSettings() {
                     disabled={!selectedCompanyId || isSavingProfile}
                   >
                     {uploadAvatarMutation.isPending ? <LoaderCircle className="size-4 animate-spin" /> : <Camera className="size-4" />}
-                    {currentImage ? "Change photo" : "Upload photo"}
+                    {currentImage ? pageText("changePhoto_ed5690") : pageText("uploadPhoto_69abef")}
                   </Button>
                   {currentImage ? (
                     <Button
@@ -227,9 +228,7 @@ export function ProfileSettings() {
                       onClick={() => removeAvatarMutation.mutate()}
                       disabled={isSavingProfile}
                     >
-                      {removeAvatarMutation.isPending ? <LoaderCircle className="size-4 animate-spin" /> : <Trash2 className="size-4" />}
-                      Remove
-                    </Button>
+                      {removeAvatarMutation.isPending ? <LoaderCircle className="size-4 animate-spin" /> : <Trash2 className="size-4" />}{pageText("remove_e96390")}</Button>
                   ) : null}
                 </div>
               </div>
@@ -237,10 +236,9 @@ export function ProfileSettings() {
               <div className="min-w-0 flex-1 space-y-2 pb-1">
                 <div>
                   <h2 className="truncate text-2xl font-semibold text-foreground">{currentName}</h2>
-                  <p className="truncate text-sm text-muted-foreground">{sessionQuery.data.user.email ?? "No email"}</p>
+                  <p className="truncate text-sm text-muted-foreground">{sessionQuery.data.user.email ?? pageText("noEmail_4ceffd")}</p>
                 </div>
-                <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-                  Click the avatar to upload a new image. {uploadHint}
+                <p className="max-w-2xl text-sm leading-6 text-muted-foreground">{pageText("clickTheAvatarToUploadANewImage_a7458a") + " "}{uploadHint}
                 </p>
               </div>
             </div>
@@ -255,43 +253,37 @@ export function ProfileSettings() {
           }}
         >
           <div className="space-y-2">
-            <Label htmlFor="profile-name">Display name</Label>
+            <Label htmlFor="profile-name">{pageText("displayName_c7874a")}</Label>
             <Input
               id="profile-name"
               value={name}
               onChange={(event) => setName(event.target.value)}
               maxLength={120}
-              placeholder="Board"
+              placeholder={pageText("board_e879b0")}
             />
-            <p className="text-xs text-muted-foreground">
-              Shown in the sidebar account footer and comment author surfaces.
-            </p>
+            <p className="text-xs text-muted-foreground">{pageText("shownInTheSidebarAccountFooterAndComment_f6f46d")}</p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="profile-email">Email</Label>
+            <Label htmlFor="profile-email">{translateUi("interfaceCopy.email")}</Label>
             <Input
               id="profile-email"
               value={sessionQuery.data.user.email ?? ""}
               readOnly
               disabled
             />
-            <p className="text-xs text-muted-foreground">
-              Email is managed by your auth session and is read-only here.
-            </p>
+            <p className="text-xs text-muted-foreground">{pageText("emailIsManagedByYourAuthSessionAnd_bcc59d")}</p>
           </div>
 
           <div className="md:col-span-2 flex justify-end">
             <Button type="submit" disabled={isSavingProfile || !name.trim()}>
               {updateMutation.isPending ? <LoaderCircle className="size-4 animate-spin" /> : <Save className="size-4" />}
-              {updateMutation.isPending ? "Saving..." : "Save profile"}
+              {updateMutation.isPending ? pageText("saving_ae7e88") : pageText("saveProfile_f597c0")}
             </Button>
           </div>
         </form>
 
         <InboxAgentPolicyControl companyId={selectedCompanyId} />
-
-        <ProductAnalyticsSetting config={sessionQuery.data.browserAnalytics} />
       </section>
     </div>
   );

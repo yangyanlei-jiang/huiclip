@@ -1,12 +1,10 @@
 import { notifyGitHubCredentialChange } from "../../github-connection-notifications.js";
 import { writeToolConnectionHealthChange } from "../../tool-connection-health-notifications.js";
-import type { ActorInfo, DbTransaction } from "../types.js";
-import { withAccountHomeSecretMutationLock } from "@paperclipai/adapter-codex-local/server";
+import type { ActorInfo } from "../types.js";
 import { createOAuthClientProtocol, storedOAuthTokenEndpointAuthMethod } from "./client.js";
 import { oauthConfig, normalizeOauthScopes, resolveGrantedOauthScopes } from "./metadata.js";
-import { GOOGLE_SIGN_IN_CLOUD_ONLY_MESSAGE, googleWorkspaceEffectiveScopes, googleWorkspaceSubmittedScopesIn, isGoogleWorkspaceScopeGrant } from "@paperclipai/shared";
+import { googleWorkspaceEffectiveScopes, isGoogleWorkspaceScopeGrant } from "@paperclipai/shared";
 import { emitConnectionUpdated } from "../../connector-telemetry.js";
-import { deleteGoogleContentWhenAccessEnds } from "../connections/google-content-retention.js";
 import { and, eq, sql } from "drizzle-orm";
 import type { Db } from "@paperclipai/db";
 import { connectionGrants, companySecrets, toolConnections } from "@paperclipai/db";
@@ -17,11 +15,9 @@ import { isPaperclipCloudConnectorStrategy, PaperclipCloudConnectorError, type P
 
 import { actorForSecret, type OAuthCredentialStore } from "./credential-store.js";
 import { withoutOAuthRefreshLease, type OAuthRefreshLeases } from "./refresh-leases.js";
-import { managedConnectorProfile, managedConnectorSubject, oauthGrantConfig, oauthGrantExpiresAtMs } from "./client-settings.js";
+import { managedConnectorProfile, oauthGrantConfig, oauthGrantExpiresAtMs } from "./client-settings.js";
 import { connectionSetupUrl, connectionReconnectUrl } from "../identifiers.js";
 import { singleFlight } from "../single-flight.js";
-import { usesClientCredentials } from "./client-credentials.js";
-import { requireClientCredentials, type ClientCredentialsService } from "./client-credentials-service.js";
 function asRecord(value: unknown): Record<string, unknown> {
   if (value && typeof value === "object" && !Array.isArray(value))
     return value as Record<string, unknown>;
@@ -35,37 +31,12 @@ type GrantRefreshDependencies = {
   currentCloudConnector: () => PaperclipCloudConnector | null;
   getConnectionRow(idOrUid: string, companyId?: string): Promise<typeof toolConnections.$inferSelect>;
   exchangeOAuthToken: ReturnType<typeof createOAuthClientProtocol>["exchangeOAuthToken"];
-  /** Absent only in narrow test harnesses that never use machine sign-in. */
-  requestClientCredentialsToken?: ClientCredentialsService["requestClientCredentialsToken"];
 };
 
-export function createOAuthGrantRefresh(db: Db, { now, store, leases, currentCloudConnector, getConnectionRow, exchangeOAuthToken, requestClientCredentialsToken }: GrantRefreshDependencies) {
+export function createOAuthGrantRefresh(db: Db, { now, store, leases, currentCloudConnector, getConnectionRow, exchangeOAuthToken }: GrantRefreshDependencies) {
   const oauthGrantRefreshFlights = new Map<string, Promise<unknown>>();
   const { getOAuthGrantRow, resolveOAuthGrantSecret, createOrRotateOAuthSecret, oauthClientForConnection, syncCredentialBindings } = store;
   const { acquireOAuthGrantRefreshLease, clearOAuthGrantRefreshLease } = leases;
-  async function markConnectionNeedsSignInWhenNoGrantIsActive(tx: Db, connection: typeof toolConnections.$inferSelect) {
-    return writeToolConnectionHealthChange(tx, connection, async inner => {
-      const connectionScope = and(eq(toolConnections.id, connection.id), eq(toolConnections.companyId, connection.companyId));
-      await inner.select({ id: toolConnections.id }).from(toolConnections).where(connectionScope).for("update");
-      const [active] = await inner.select({ id: connectionGrants.id }).from(connectionGrants).where(and(
-        eq(connectionGrants.companyId, connection.companyId),
-        eq(connectionGrants.connectionId, connection.id),
-        eq(connectionGrants.status, "active"),
-      )).limit(1);
-      if (active) return null;
-      const [updated] = await inner
-        .update(toolConnections)
-        .set({
-          healthStatus: "error",
-          healthMessage: "Access to this app ended. Reconnect to continue.",
-          lastError: "oauth_reauthorization_required",
-          updatedAt: now(),
-        })
-        .where(connectionScope)
-        .returning();
-      return updated ?? null;
-    });
-  }
   async function refreshOAuthGrantCredentials(input: {
     companyId: string;
     connectionId: string;
@@ -130,7 +101,14 @@ export function createOAuthGrantRefresh(db: Db, { now, store, leases, currentClo
                 : undefined,
             );
             const cloudConnector = currentCloudConnector();
-            const connectorSubject = managedConnectorSubject(grant, oauth);
+            const connectorSubject =
+              grant.kind === "agent" && grant.subjectAgentId
+                ? `agent:${grant.subjectAgentId}`
+                : grant.kind === "user" && grant.subjectUserId
+                  ? grant.subjectUserId
+                  : typeof oauth.connectorSubjectUserId === "string"
+                    ? oauth.connectorSubjectUserId
+                    : null;
             const accessRef = grant.credentialSecretRefs.find(
               (ref) => ref.configPath === "oauth.access_token",
             );
@@ -166,45 +144,30 @@ export function createOAuthGrantRefresh(db: Db, { now, store, leases, currentClo
                 refreshToken: refreshSecret.value,
               });
               if (profile.id === "workspace.all") {
-                const requested = googleWorkspaceSubmittedScopesIn(normalizeOauthScopes(oauthGrantConfig(grant).requestedScopes ?? oauthGrantConfig(grant).scopes));
-                credentials.scopes = googleWorkspaceEffectiveScopes(requested, googleWorkspaceSubmittedScopesIn(credentials.scopes));
+                const requested = normalizeOauthScopes(oauthGrantConfig(grant).requestedScopes ?? oauthGrantConfig(grant).scopes);
+                credentials.scopes = googleWorkspaceEffectiveScopes(requested, credentials.scopes);
               }
               if (profile.id === "workspace.all" && !isGoogleWorkspaceScopeGrant(credentials.scopes)) {
                 throw new PaperclipCloudConnectorError("Google did not return verifiable permissions", "REAUTHORIZATION_REQUIRED");
               }
             } catch (error) {
-              const cloudOnly = error instanceof PaperclipCloudConnectorError
-                && profile.provider === "google"
-                && error.brokerReason === "PROVIDER_CLOUD_ONLY";
               if (
                 error instanceof PaperclipCloudConnectorError &&
-                (error.code === "REAUTHORIZATION_REQUIRED" || cloudOnly)
+                error.code === "REAUTHORIZATION_REQUIRED"
               ) {
-                const accessEndedAtGoogle = profile.provider === "google"
-                  && error.code === "REAUTHORIZATION_REQUIRED"
-                  && error.brokerReason === "PROVIDER_REAUTHORIZATION_REQUIRED";
-                const needsSignIn = await db.transaction(async (tx) => {
-                  const [marked] = await tx
-                    .update(connectionGrants)
-                    .set({ status: "needs_reauthorization", updatedAt: now() })
-                    .where(
-                      and(
-                        eq(connectionGrants.id, grant.id),
-                        eq(connectionGrants.companyId, grant.companyId),
-                        eq(connectionGrants.status, "active"),
-                        sql`${connectionGrants.providerTenant} -> 'oauth' -> 'refreshLease' ->> 'id' = ${lease.leaseId}`,
-                      ),
-                    )
-                    .returning({ id: connectionGrants.id });
-                  if (marked && accessEndedAtGoogle) await deleteGoogleContentWhenAccessEnds(tx as unknown as Db, connection, "provider_access_ended");
-                  return marked ? markConnectionNeedsSignInWhenNoGrantIsActive(tx as unknown as Db, connection) : null;
-                });
-                if (needsSignIn) emitConnectionUpdated(needsSignIn, connection, "credential_refresh");
+                await db
+                  .update(connectionGrants)
+                  .set({ status: "needs_reauthorization", updatedAt: now() })
+                  .where(
+                    and(
+                      eq(connectionGrants.id, grant.id),
+                      eq(connectionGrants.companyId, grant.companyId),
+                    ),
+                  );
                 throw unprocessable(
-                  cloudOnly ? `Reconnect required. ${GOOGLE_SIGN_IN_CLOUD_ONLY_MESSAGE}` : "Managed authorization must be reconnected",
+                  "Managed authorization must be reconnected",
                   {
                     code: "oauth_reauthorization_required",
-                    ...(cloudOnly ? { reason: "google_sign_in_cloud_only" } : {}),
                     setupUrl: connectionSetupUrl(connection),
                     reconnectUrl: connectionReconnectUrl(connection),
                   },
@@ -239,13 +202,13 @@ export function createOAuthGrantRefresh(db: Db, { now, store, leases, currentClo
               const txSecrets = secretService(tx);
               await txSecrets.rotate(
                 accessRef.secretId,
-                { value: credentials.accessToken, preserveAiSessionEpoch: true },
+                { value: credentials.accessToken },
                 actorForSecret(credentialActor),
               );
               if (credentials.refreshToken) {
                 await txSecrets.rotate(
                   refreshRef.secretId,
-                  { value: credentials.refreshToken, preserveAiSessionEpoch: true },
+                  { value: credentials.refreshToken },
                   actorForSecret(credentialActor),
                 );
               }
@@ -309,13 +272,10 @@ export function createOAuthGrantRefresh(db: Db, { now, store, leases, currentClo
       if (!lease.leaseId) return lease.grant;
       try {
         const grant = lease.grant;
-        // Machine sign-in has no refresh token: it simply asks for a new access
-        // token with the connection's own client credentials.
-        const machineSignIn = usesClientCredentials(connection);
-        const refreshRef = machineSignIn ? undefined : grant.credentialSecretRefs.find(
+        const refreshRef = grant.credentialSecretRefs.find(
           (ref) => ref.configPath === "oauth.refresh_token",
         );
-        if (!machineSignIn && !refreshRef) {
+        if (!refreshRef) {
           throw unprocessable(
             "OAuth credentials have expired and no refresh token is available",
             {
@@ -325,33 +285,29 @@ export function createOAuthGrantRefresh(db: Db, { now, store, leases, currentClo
             },
           );
         }
-        const refreshSecret = refreshRef ? await resolveOAuthGrantSecret(
+        const refreshSecret = await resolveOAuthGrantSecret(
           connection,
           grant,
           refreshRef,
           input.actor,
           input,
-        ) : null;
+        );
         const credentialActor: ActorInfo | undefined =
           grant.kind === "user" && grant.subjectUserId
             ? { actorType: "user", actorId: grant.subjectUserId }
             : input.actor;
+        const client = await oauthClientForConnection(
+          connection,
+          oauthProvider,
+          credentialActor,
+        );
+        if (!client.clientId)
+          throw unprocessable(
+            `OAuth client id is not configured for ${oauthProvider}`,
+          );
         const grantOauth = oauthGrantConfig(grant);
         let token: Awaited<ReturnType<typeof exchangeOAuthToken>>;
         try {
-          if (machineSignIn) {
-            token = await requireClientCredentials(requestClientCredentialsToken)(connection, input.actor);
-          } else {
-          const client = await oauthClientForConnection(
-            connection,
-            oauthProvider,
-            oauthTokenUrl,
-            credentialActor,
-          );
-          if (!client.clientId)
-            throw unprocessable(
-              `OAuth client id is not configured for ${oauthProvider}`,
-            );
           token = await exchangeOAuthToken({
             tokenUrl: oauthTokenUrl,
             clientId: client.clientId,
@@ -367,16 +323,14 @@ export function createOAuthGrantRefresh(db: Db, { now, store, leases, currentClo
                 : normalizeOauthScopes(oauth.scopes).length > 0
                   ? normalizeOauthScopes(oauth.scopes)
                   : normalizeOauthScopes(oauth.scope),
-            refreshToken: refreshSecret!.value,
+            refreshToken: refreshSecret.value,
             resource:
               typeof oauth.resource === "string" && oauth.resource
                 ? oauth.resource
                 : null,
           });
-          }
         } catch (error) {
           if (
-            refreshRef && refreshSecret &&
             error instanceof HttpError &&
             asRecord(error.details).code === "oauth_reauthorization_required"
           ) {
@@ -386,9 +340,7 @@ export function createOAuthGrantRefresh(db: Db, { now, store, leases, currentClo
                   ref.configPath !== "oauth.access_token" &&
                   ref.configPath !== "oauth.refresh_token",
               );
-            const accessEndedAtGoogle = asRecord(error.details).providerError === "invalid_grant";
-            const [marked] = await db.transaction(async (tx) => {
-              const rows = await tx
+            const [marked] = await db
               .update(connectionGrants)
               .set({
                 status: "needs_reauthorization",
@@ -411,9 +363,6 @@ export function createOAuthGrantRefresh(db: Db, { now, store, leases, currentClo
                 ),
               )
               .returning();
-              if (rows[0] && accessEndedAtGoogle) await deleteGoogleContentWhenAccessEnds(tx as unknown as Db, connection, "provider_access_ended");
-              return rows;
-            });
             if (!marked) {
               const latest = await getOAuthGrantRow(input);
               const latestExpiresAt = oauthGrantExpiresAtMs(latest, connection);
@@ -468,8 +417,6 @@ export function createOAuthGrantRefresh(db: Db, { now, store, leases, currentClo
                 "credential_refresh",
               );
             } else {
-              const needsSignIn = await markConnectionNeedsSignInWhenNoGrantIsActive(db, connection);
-              if (needsSignIn) emitConnectionUpdated(needsSignIn, connection, "credential_refresh");
               const activeGrantRefs = await db
                 .select({
                   refs: connectionGrants.credentialSecretRefs,
@@ -496,9 +443,6 @@ export function createOAuthGrantRefresh(db: Db, { now, store, leases, currentClo
           throw error;
         }
 
-        if (connection.config.sourceTemplateKey === "google-workspace") {
-          token.scope = googleWorkspaceSubmittedScopesIn(normalizeOauthScopes(token.scope)).join(" ");
-        }
         if (connection.config.sourceTemplateKey === "google-workspace"
           && !isGoogleWorkspaceScopeGrant(normalizeOauthScopes(token.scope))) {
           await db.update(connectionGrants).set({ status: "needs_reauthorization", updatedAt: now() })
@@ -513,7 +457,6 @@ export function createOAuthGrantRefresh(db: Db, { now, store, leases, currentClo
             configPath: "oauth.refresh_token",
             label: "OAuth refresh token",
             value: token.refreshToken,
-            preserveOAuthIdentity: true,
             actor: credentialActor,
             existingRefs: grant.credentialSecretRefs,
             ownerUserId:
@@ -522,31 +465,26 @@ export function createOAuthGrantRefresh(db: Db, { now, store, leases, currentClo
                 : undefined,
           });
         }
-        const writeAccessToken = (client?: DbTransaction) => createOrRotateOAuthSecret({
+        const accessRef = await createOrRotateOAuthSecret({
           companyId: connection.companyId,
           connection,
           configPath: "oauth.access_token",
           label: "OAuth access token",
           value: token.accessToken,
-          preserveOAuthIdentity: true,
           actor: credentialActor,
           existingRefs: grant.credentialSecretRefs,
           ownerUserId:
             grant.kind === "user"
               ? (grant.subjectUserId ?? undefined)
               : undefined,
-        }, client ? { dbClient: client, secretClient: secretService(client) } : undefined);
-        // Machine sign-in may take over a lease abandoned by a paused server, so
-        // its token is written only inside the commit that proves this refresh
-        // still owns the lease (below). Other grants keep their existing order.
-        const accessRef = machineSignIn ? null : await writeAccessToken();
-        const credentialSecretRefsWith = (access: ToolCredentialSecretRef) => [
+        });
+        const nextCredentialSecretRefs = [
           ...grant.credentialSecretRefs.filter(
             (ref) =>
               ref.configPath !== "oauth.access_token" &&
               (!nextRefreshRef || ref.configPath !== "oauth.refresh_token"),
           ),
-          access,
+          accessRef,
           ...(nextRefreshRef ? [nextRefreshRef] : []),
         ];
         const expiresAt = token.expiresIn
@@ -588,11 +526,11 @@ export function createOAuthGrantRefresh(db: Db, { now, store, leases, currentClo
             tokenType: token.tokenType,
             refreshedAt: now().toISOString(),
         };
-        const commitGrant = (tx: Db, access: ToolCredentialSecretRef) => tx
+        const [updated] = await writeToolConnectionHealthChange(db, connection, tx => tx
           .update(connectionGrants)
           .set({
             providerTenant: sql`jsonb_set(coalesce(${connectionGrants.providerTenant}, '{}'::jsonb), '{oauth}', (coalesce(${connectionGrants.providerTenant}->'oauth', '{}'::jsonb) || ${JSON.stringify(oauthUpdates)}::jsonb) - 'refreshLease')`,
-            credentialSecretRefs: credentialSecretRefsWith(access),
+            credentialSecretRefs: nextCredentialSecretRefs,
             status: "active",
             updatedAt: now(),
           })
@@ -604,22 +542,7 @@ export function createOAuthGrantRefresh(db: Db, { now, store, leases, currentClo
               sql`${connectionGrants.providerTenant} -> 'oauth' -> 'refreshLease' ->> 'id' = ${lease.leaseId}`,
             ),
           )
-          .returning();
-        const [updated] = machineSignIn
-          ? await withAccountHomeSecretMutationLock(undefined, connection.companyId, () =>
-            writeToolConnectionHealthChange(db, connection, async (tx) => {
-              const [owned] = await tx.select({ id: connectionGrants.id }).from(connectionGrants)
-                .where(and(
-                  eq(connectionGrants.id, grant.id),
-                  eq(connectionGrants.companyId, grant.companyId),
-                  eq(connectionGrants.status, "active"),
-                  sql`${connectionGrants.providerTenant} -> 'oauth' -> 'refreshLease' ->> 'id' = ${lease.leaseId}`,
-                ))
-                .for("update");
-              if (!owned) return [];
-              return commitGrant(tx, await writeAccessToken(tx as unknown as DbTransaction));
-            }))
-          : await writeToolConnectionHealthChange(db, connection, (tx) => commitGrant(tx, accessRef!));
+          .returning());
         if (!updated) {
           throw conflict(
             "OAuth credentials changed while refresh was in progress. Retry the request.",
@@ -678,7 +601,7 @@ export function createOAuthGrantRefresh(db: Db, { now, store, leases, currentClo
           ),
         );
         const nextKeys = new Set(
-          updated.credentialSecretRefs.map(
+          nextCredentialSecretRefs.map(
             (ref) => `${ref.secretId}:${ref.configPath}`,
           ),
         );

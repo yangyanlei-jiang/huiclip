@@ -1,3 +1,6 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { type FormEvent, useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { ToolMcpGatewayWithTokens, ToolProfileWithDetails } from "@paperclipai/shared";
@@ -16,8 +19,6 @@ import { useToast } from "@/context/ToastContext";
 import { allowedToolsLabel } from "./gateway-helpers";
 import { gatewaysQueryKey } from "./NewGatewayDialog";
 import { describeError } from "@/api/errors";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
-import { cn } from "@/lib/utils";
 
 export function EditGatewayDialog({
   companyId,
@@ -32,6 +33,8 @@ export function EditGatewayDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToast();
   const [name, setName] = useState(gateway.name);
@@ -54,13 +57,13 @@ export function EditGatewayDialog({
         profileId,
       }),
     onSuccess: async (updated) => {
-      pushToast({ title: "Gateway updated", body: updated.name, tone: "success" });
+      pushToast({ title: interfaceNotice("interface:gatewayUpdated_246038"), body: updated.name, tone: "success" });
       await queryClient.invalidateQueries({ queryKey: gatewaysQueryKey(companyId) });
       onOpenChange(false);
     },
     onError: (error) => {
       pushToast({
-        title: "Gateway was not updated",
+        title: interfaceNotice("interface:gatewayWasNotUpdated_282216"),
         body: describeError(error).body,
         tone: "error",
       });
@@ -75,20 +78,18 @@ export function EditGatewayDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={cn("sm:max-w-lg", ANALYTICS_MASK_CLASS)}>
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Edit gateway</DialogTitle>
-          <DialogDescription>
-            Change the label or the access profile that controls which tools this endpoint exposes.
-          </DialogDescription>
+          <DialogTitle>{pageText("editGateway_82cad1")}</DialogTitle>
+          <DialogDescription>{pageText("changeTheLabelOrTheAccessProfileThat_3193ae")}</DialogDescription>
         </DialogHeader>
         <form className="space-y-4" onSubmit={submit}>
           <label className="block space-y-1.5">
-            <span className="text-xs font-medium text-muted-foreground">Name</span>
+            <span className="text-xs font-medium text-muted-foreground">{translateUi("interfaceCopy.name")}</span>
             <Input value={name} onChange={(event) => setName(event.target.value)} required autoFocus />
           </label>
           <label className="block space-y-1.5">
-            <span className="text-xs font-medium text-muted-foreground">Access profile</span>
+            <span className="text-xs font-medium text-muted-foreground">{pageText("accessProfile_e59e8b")}</span>
             <select
               className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               value={profileId}
@@ -103,20 +104,18 @@ export function EditGatewayDialog({
             </select>
           </label>
           <label className="block space-y-1.5">
-            <span className="text-xs font-medium text-muted-foreground">Description (optional)</span>
+            <span className="text-xs font-medium text-muted-foreground">{pageText("descriptionOptional_388de6")}</span>
             <textarea
               className="min-h-16 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               value={description}
               onChange={(event) => setDescription(event.target.value)}
-              placeholder="Who this endpoint is for."
+              placeholder={pageText("whoThisEndpointIsFor_10c141")}
             />
           </label>
           <DialogFooter>
-            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
+            <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>{translateUi("interfaceCopy.cancel")}</Button>
             <Button type="submit" disabled={updateMutation.isPending || !name.trim() || !profileId}>
-              {updateMutation.isPending ? "Saving…" : "Save changes"}
+              {updateMutation.isPending ? pageText("saving_56a228") : pageText("saveChanges_179359")}
             </Button>
           </DialogFooter>
         </form>

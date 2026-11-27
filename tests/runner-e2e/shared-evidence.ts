@@ -1,13 +1,11 @@
-import { copyPrivateFrameworkReport } from "./private-framework-report.js";
-import type { SourceSdkAuditCapture } from "./source-sdk-evidence.js";
-import { cp, lstat, mkdir, readFile, readdir, writeFile } from "node:fs/promises";
+import { cp, mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import { runnerE2EServerControlPaths } from "./harness-env.js";
 import { redactText, sanitizeJson } from "./redaction.js";
 
 export async function copySharedEvidence(privateRoot: string, casePrivateDir: string,
-  temporaryRoot: string, secrets: readonly string[], sdkAudit?: SourceSdkAuditCapture) {
+  temporaryRoot: string, secrets: readonly string[]) {
   for (const relative of [
     "server.log",
     "playwright.log",
@@ -24,10 +22,6 @@ export async function copySharedEvidence(privateRoot: string, casePrivateDir: st
       if (error.code !== "ENOENT") throw error;
     });
   }
-  const frameworkReport = sdkAudit && await lstat(path.join(privateRoot, "framework-report.json")).then(() => true,
-    (error: NodeJS.ErrnoException) => { if (error.code === "ENOENT") return false; throw error; });
-  if (frameworkReport) await copyPrivateFrameworkReport(privateRoot, casePrivateDir, secrets);
-  if (sdkAudit) await (await import("./source-sdk-evidence.js")).copyPreparedSourceSdkAudit(temporaryRoot, casePrivateDir, secrets, sdkAudit);
   // The supervisor records each phase before it can fail. Copy its receipts
   // independently of the successful-restart acknowledgement before cleanup.
   const { controlDirectory } = runnerE2EServerControlPaths(temporaryRoot);

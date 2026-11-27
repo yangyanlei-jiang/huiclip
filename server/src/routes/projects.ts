@@ -1,5 +1,3 @@
-import { projectEnvironmentOptions } from "../services/project-environments.js";
-import { listProtectedEnvironmentKeyHolders, protectedEnvironmentKeyWarnings } from "../services/protected-environment-keys.js";
 import { projectGitAuthorizationService } from "../services/project-git-authorization.js";
 import { skillAccessRequestContext } from "../services/skill-access.js";
 import { createHash } from "node:crypto";
@@ -55,6 +53,8 @@ import {
 import { assertCanManageProjectWorkspaceRuntimeServices } from "./workspace-runtime-service-authz.js";
 import { getTelemetryClient } from "../telemetry.js";
 import { appendWithCap } from "../adapters/utils.js";
+import { assertEnvironmentSelectionForCompany } from "./environment-selection.js";
+import { environmentService } from "../services/environments.js";
 import { secretService } from "../services/secrets.js";
 
 const WORKSPACE_CONTROL_OUTPUT_MAX_CHARS = 256 * 1024;
@@ -86,6 +86,7 @@ export function projectRoutes(db: Db) {
     enabled: async () => (await instanceSettings.getExperimental()).enableExternalObjects === true,
   });
   const strictSecretsMode = process.env.PAPERCLIP_SECRETS_STRICT_MODE === "true";
+  const environmentsSvc = environmentService(db);
 
   /**
    * Managed-sandbox-only policy (`enableManagedSandboxOnly`): a project
@@ -112,24 +113,19 @@ export function projectRoutes(db: Db) {
     );
   }
 
-  /**
-   * PAP-749 task 1d: the project's decision owner gets this project's ownerless
-   * Needs You cards, so only a board user may choose them, and they must be an
-   * active member of the company. `null` clears it; agents cannot change it.
-   */
-  async function assertProjectDecisionOwner(
-    req: Request,
-    companyId: string,
-    decisionOwnerUserId: unknown,
-    current: string | null = null,
-  ) {
-    if (decisionOwnerUserId === undefined || decisionOwnerUserId === current) return;
-    if (req.actor.type !== "board") throw forbidden("Only board users can set a project's decision owner");
-    if (typeof decisionOwnerUserId !== "string") return;
-    const membership = await access.getMembership(companyId, "user", decisionOwnerUserId);
-    if (membership?.status !== "active") {
-      throw unprocessable("Project decision owner must be an active member of this company");
+  async function assertProjectEnvironmentSelection(companyId: string, environmentId: string | null | undefined) {
+    if (environmentId === undefined || environmentId === null) return;
+    await assertEnvironmentSelectionForCompany(environmentsSvc, companyId, environmentId, {
+      allowedDrivers: ["local", "ssh", "sandbox"],
+    });
+  }
+
+  function readProjectPolicyEnvironmentId(policy: unknown): string | null | undefined {
+    if (!policy || typeof policy !== "object" || !("environmentId" in policy)) {
+      return undefined;
     }
+    const environmentId = (policy as { environmentId?: unknown }).environmentId;
+    return typeof environmentId === "string" || environmentId === null ? environmentId : undefined;
   }
 
   async function resolveCompanyIdForProjectReference(req: Request) {
@@ -379,32 +375,24 @@ export function projectRoutes(db: Db) {
     res.json(summary);
   });
 
-  router.get("/companies/:companyId/project-environments", async (req, res) => {
-    const companyId = req.params.companyId as string;
-    assertCompanyAccess(req, companyId);
-    res.json(await projectEnvironmentOptions(db, companyId, {
-      userId: req.actor.type === "board" ? req.actor.userId : req.actor.onBehalfOfUserId,
-      agentId: req.actor.type === "agent" ? req.actor.agentId : null,
-    }));
-  });
-
   router.post("/companies/:companyId/projects", validate(createProjectSchema), async (req, res) => {
     const companyId = req.params.companyId as string;
     assertCompanyAccess(req, companyId);
     type CreateProjectPayload = Parameters<typeof svc.create>[1] & {
       workspace?: Parameters<typeof svc.createWorkspace>[1];
       repositoryIds?: string[];
-      environmentId?: string;
-      expectedStorageProviderPluginId?: string | null;
     };
 
-    const { workspace, repositoryIds, repositoryUrls, idempotencyKey, environmentId, expectedStorageProviderPluginId, ...projectData } = req.body as CreateProjectPayload & { idempotencyKey?: string; repositoryUrls?: string[] };
+    const { workspace, repositoryIds, repositoryUrls, idempotencyKey, ...projectData } = req.body as CreateProjectPayload & { idempotencyKey?: string; repositoryUrls?: string[] };
     const receiptOnly = req.get("X-Paperclip-Receipt-Only") === "true";
     if (receiptOnly && !idempotencyKey) throw unprocessable("Project receipt recovery requires an idempotency key");
     projectData.privacyOwnerUserId = req.actor.type === "board" ? req.actor.userId ?? null : req.actor.type === "agent" ? req.actor.onBehalfOfUserId ?? null : null;
     const runContext = req.actor.type === "agent" && req.actor.source === "agent_jwt" && req.actor.runId
       ? await projectToolContext(db, req.actor, true) : null;
-    await assertProjectDecisionOwner(req, companyId, projectData.decisionOwnerUserId);
+    await assertProjectEnvironmentSelection(
+      companyId,
+      readProjectPolicyEnvironmentId(projectData.executionWorkspacePolicy),
+    );
     assertNoAgentHostWorkspaceCommandMutation(
       req,
       [
@@ -420,13 +408,11 @@ export function projectRoutes(db: Db) {
         { strictMode: strictSecretsMode, fieldPath: "env" },
       );
     }
-    const configurationWarnings = projectData.env !== undefined
-      ? protectedEnvironmentKeyWarnings(await listProtectedEnvironmentKeyHolders(db), projectData.env, "env") : [];
     if (workspace && (repositoryIds || repositoryUrls)) throw unprocessable("Use either workspace or repositoryIds/repositoryUrls when creating a project");
     const urlRepositories = (repositoryUrls ?? []).map(normalizeProjectRepositoryUrl);
     const repositories = repositoryIds ? await selectedRepositories(req, companyId, repositoryIds) : null;
     const actor = getActorInfo(req);
-    const fingerprint = createHash("sha256").update(JSON.stringify({ projectData, workspace, repositoryIds, repositoryUrls, environmentId, expectedStorageProviderPluginId })).digest("hex");
+    const fingerprint = createHash("sha256").update(JSON.stringify({ projectData, workspace, repositoryIds, repositoryUrls })).digest("hex");
     const receiptKey = idempotencyKey ? `project:${companyId}:${actor.actorId}:${runContext?.issue.id ?? "board"}:${idempotencyKey}` : null;
     const result = await db.transaction(async (tx) => {
       if (receiptKey) {
@@ -471,13 +457,7 @@ export function projectRoutes(db: Db) {
       if (receiptOnly) return null;
       if (runContext && !museActor) await projectToolContext(tx as unknown as Db, req.actor, true);
       const service = projectService(tx as unknown as Db);
-      const environment = {
-        environmentId,
-        expectedStorageProviderPluginId,
-        userId: req.actor.type === "board" ? req.actor.userId : req.actor.onBehalfOfUserId,
-        agentId: req.actor.type === "agent" ? req.actor.agentId : null,
-      };
-      const project = repositories ? await service.createWithRepositories(companyId, projectData, repositories, environment) : await service.create(companyId, projectData, environment);
+      const project = repositories ? await service.createWithRepositories(companyId, projectData, repositories) : await service.create(companyId, projectData);
       if (project.visibility === "private") await addActorAsPrivateProjectPrincipal(req, project, tx as unknown as Db);
       const attachedUrls = new Set((repositories ?? []).map(repo => repo.url.toLowerCase()));
       const registeredUrls: typeof urlRepositories = [];
@@ -515,7 +495,7 @@ export function projectRoutes(db: Db) {
     if (telemetryClient) {
       trackProjectCreated(telemetryClient);
     }
-    res.status(result.duplicate ? 200 : 201).json({ ...result.project, ...(configurationWarnings.length ? { configurationWarnings } : {}) });
+    res.status(result.duplicate ? 200 : 201).json(result.project);
   });
 
   router.patch("/projects/:id", validate(updateProjectSchema), async (req, res) => {
@@ -532,7 +512,10 @@ export function projectRoutes(db: Db) {
       req,
       collectProjectExecutionWorkspaceCommandPaths(body.executionWorkspacePolicy),
     );
-    await assertProjectDecisionOwner(req, existing.companyId, body.decisionOwnerUserId, existing.decisionOwnerUserId ?? null);
+    await assertProjectEnvironmentSelection(
+      existing.companyId,
+      readProjectPolicyEnvironmentId(body.executionWorkspacePolicy),
+    );
     if (typeof body.archivedAt === "string") {
       body.archivedAt = new Date(body.archivedAt);
     }
@@ -542,8 +525,6 @@ export function projectRoutes(db: Db) {
         fieldPath: "env",
       });
     }
-    const configurationWarnings = body.env !== undefined
-      ? protectedEnvironmentKeyWarnings(await listProtectedEnvironmentKeyHolders(db), body.env, "env") : [];
     const project = await svc.update(id, body);
     if (!project) {
       res.status(404).json({ error: "Project not found" });
@@ -575,7 +556,7 @@ export function projectRoutes(db: Db) {
       },
     });
 
-    res.json({ ...project, ...(configurationWarnings.length ? { configurationWarnings } : {}) });
+    res.json(project);
   });
 
   router.get("/projects/:id/access-members", async (req, res) => {

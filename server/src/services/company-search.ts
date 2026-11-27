@@ -951,7 +951,6 @@ export function companySearchService(db: Db) {
           eq(issues.companyId, companyId),
           visibleIssueCondition(),
           ...artifactIssueFilters,
-          ...(options?.issueReadCondition ? [options.issueReadCondition] : []),
         ];
         const documentArtifactConditions = [
           eq(issueDocuments.companyId, companyId),
@@ -1036,7 +1035,7 @@ export function companySearchService(db: Db) {
         const result = await companyArtifactsService(db).list(companyId, {
           q: normalizedQuery.slice(0, COMPANY_ARTIFACTS_MAX_QUERY_LENGTH),
           limit: Math.min(fetchLimit, COMPANY_ARTIFACTS_MAX_LIMIT),
-        }, { issueConditions: issueFilters, readCondition: options?.issueReadCondition });
+        }, { issueConditions: issueFilters });
         return result.artifacts;
       }
 

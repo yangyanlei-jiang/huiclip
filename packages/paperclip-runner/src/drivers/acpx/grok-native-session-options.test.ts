@@ -85,9 +85,8 @@ it.each(["low", "high"] as const)("transports and restores native Grok %s effort
     protocolGuardFactory: () => admission.createGuard(),
     spawnAgent: () => spawn(process.execPath, [fixture], { cwd: root, env: {}, stdio: "pipe" }),
   };
-  // Like the runtime adapter, bind Grok's model only through session-open
-  // metadata: ACPX would replay a registered model with a rejected setter.
-  const input = { sessionKey: "grok-native-options", agent: "grok", mode: "persistent" as const };
+  const input = { sessionKey: "grok-native-options", agent: "grok", mode: "persistent" as const,
+    sessionOptions: { model } };
   let runtime = createAcpRuntime(options);
   let handle: AcpRuntimeHandle | undefined;
   try {

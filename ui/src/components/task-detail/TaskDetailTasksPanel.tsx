@@ -1,3 +1,7 @@
+import { t as interfaceNotice } from "@/i18n";
+import { t as translateDynamic } from "../../i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import type { ReactNode } from "react";
 import type { Issue, Project } from "@paperclipai/shared";
 import { ArrowUpRight, ChevronRight } from "lucide-react";
@@ -6,7 +10,7 @@ import { projectRouteRef } from "@/lib/utils";
 import { issueStatusOrder } from "@/lib/issue-filters";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { RelationNavigationList, resolveTaskDetailSubtaskState, TaskDetailSubtasksPanel, TaskDetailTaskList } from "./TaskDetailRelationsPanel";
+import { RelationNavigationList, TaskDetailSubtasksPanel, TaskDetailTaskList } from "./TaskDetailRelationsPanel";
 import { IssueCreatedFromNote } from "./IssueCreatedFromNote";
 
 function TaskGroup({ name, projectPath, children }: { name: string; projectPath?: string; children: ReactNode }) {
@@ -23,7 +27,7 @@ function TaskGroup({ name, projectPath, children }: { name: string; projectPath?
             </CollapsibleTrigger>
           </h2>
           {projectPath && (
-            <Link to={projectPath} aria-label={`Go to ${name} project`} title={`Go to ${name} project`} className="ml-auto inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity duration-(--motion-duration-fast) ease-(--motion-ease-standard) hover:bg-accent hover:text-foreground group-hover/header:opacity-100 group-focus-within/header:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            <Link to={projectPath} aria-label={translateDynamic("dynamic:goToProject", { value1: name })} title={translateDynamic("dynamic:goToProject", { value1: name })} className="ml-auto inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity duration-(--motion-duration-fast) ease-(--motion-ease-standard) hover:bg-accent hover:text-foreground group-hover/header:opacity-100 group-focus-within/header:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
               <ArrowUpRight aria-hidden className="h-3.5 w-3.5" />
             </Link>
           )}
@@ -49,22 +53,14 @@ export interface TaskDetailTasksPanelProps {
 }
 
 export function TaskDetailTasksPanel({ ancestors = [], createdFrom = null, subtasks, createdTasks, projects, isLoading, hasError, onRetry, issueLinkState }: TaskDetailTasksPanelProps) {
-  const visibleAncestors = ancestors.filter((item) => item.id !== createdFrom?.issue.id);
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const sortedSubtasks = sortTasks(subtasks);
-  const displayedTaskIds = new Set([
-    ...(createdFrom ? [createdFrom.issue.id] : []),
-    ...ancestors.map((item) => item.id),
-    ...sortedSubtasks.map((item) => item.id),
-  ]);
-  const { rootBlocker } = resolveTaskDetailSubtaskState(sortedSubtasks);
-  if (rootBlocker) displayedTaskIds.add(rootBlocker.id);
-  const projectsById = new Map(projects.map((project) => [project.id, project]));
   const groups = new Map<string, { name: string; path?: string; tasks: Issue[] }>();
   for (const item of sortTasks(createdTasks)) {
-    if (displayedTaskIds.has(item.id)) continue;
     const key = item.projectId ?? "no-project";
     const project = item.projectId
-      ? projectsById.get(item.projectId) ?? item.project
+      ? projects.find((candidate) => candidate.id === item.projectId) ?? item.project
       : null;
     const group = groups.get(key) ?? {
       name: project?.name ?? (item.projectId ? "Project" : "No project"),
@@ -75,18 +71,18 @@ export function TaskDetailTasksPanel({ ancestors = [], createdFrom = null, subta
     groups.set(key, group);
   }
   return (
-    <section className="flex flex-col gap-6" aria-label="Related tasks">
+    <section className="flex flex-col gap-6" aria-label={pageText("relatedTasks_961506")}>
       {createdFrom && (
         <TaskGroup name="Created from">
           <IssueCreatedFromNote createdFrom={createdFrom} issueLinkState={issueLinkState} className="px-2 text-sm" />
         </TaskGroup>
       )}
-      {visibleAncestors.length > 0 && (
+      {ancestors.length > 0 && (
         <TaskGroup name="Ancestors">
           <RelationNavigationList
-            items={[...visibleAncestors].reverse()}
+            items={[...ancestors].reverse()}
             emptyMessage=""
-            ariaLabel="Ancestor tasks, root to parent"
+            ariaLabel={interfaceNotice("interface:ancestorTasksRootToParent_d0aeae")}
             issueLinkState={issueLinkState}
           />
         </TaskGroup>
@@ -101,15 +97,15 @@ export function TaskDetailTasksPanel({ ancestors = [], createdFrom = null, subta
           <TaskDetailTaskList items={group.tasks} ariaLabel={`${group.name} tasks`} issueLinkState={issueLinkState} />
         </TaskGroup>
       ))}
-      {isLoading && <p role="status" className="text-sm text-muted-foreground">Loading tasks…</p>}
+      {isLoading && <p role="status" className="text-sm text-muted-foreground">{pageText("loadingTasks_a3495d")}</p>}
       {hasError && (
         <div role="alert" className="flex items-center gap-2 text-sm text-destructive">
-          <span>Could not load all tasks.</span>
-          {onRetry && <Button variant="ghost" size="sm" onClick={onRetry}>Retry</Button>}
+          <span>{pageText("couldNotLoadAllTasks_3da0ac")}</span>
+          {onRetry && <Button variant="ghost" size="sm" onClick={onRetry}>{translateUi("interfaceCopy.retry")}</Button>}
         </div>
       )}
       {!isLoading && !hasError && !createdFrom && ancestors.length === 0 && subtasks.length === 0 && createdTasks.length === 0 && (
-        <p className="py-6 text-center text-sm text-muted-foreground">No tasks yet.</p>
+        <p className="py-6 text-center text-sm text-muted-foreground">{pageText("noTasksYet_c1c785")}</p>
       )}
     </section>
   );

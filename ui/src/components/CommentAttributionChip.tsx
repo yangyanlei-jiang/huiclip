@@ -1,3 +1,5 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { t as translateDynamic } from "../i18n";
 import { UserCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -39,6 +41,7 @@ export function CommentAttributionChip({
   userName?: string | null;
   className?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const user = userName?.trim();
   if (!user) return null;
   const agent = agentName?.trim() || "This agent";
@@ -49,7 +52,7 @@ export function CommentAttributionChip({
         <Badge
           variant="outline"
           data-testid="comment-attribution-chip"
-          aria-label={`Posted on behalf of ${user}`}
+          aria-label={translateDynamic("dynamic:postedOnBehalfOf", { value1: user })}
           // `Badge` renders a span, which is not focusable — without this a
           // sighted keyboard user can never open the explanation. Radix opens
           // the tooltip on focus as well as hover.
@@ -61,7 +64,7 @@ export function CommentAttributionChip({
           )}
         >
           <UserCheck className="h-3 w-3 shrink-0" aria-hidden="true" />
-          <span className="truncate">for {user}</span>
+          <span className="truncate">{pageText("for_43eef9") + " "}{user}</span>
         </Badge>
       </TooltipTrigger>
       <TooltipContent className="max-w-xs text-xs">

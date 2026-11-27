@@ -1,3 +1,5 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, HelpCircle } from "lucide-react";
 import { isValidRoutineDateString, syncRoutineVariablesWithTemplate, type RoutineVariable } from "@paperclipai/shared";
@@ -55,15 +57,14 @@ export function RoutineVariablesEditor({
   description,
   value,
   onChange,
-  variant = "default",
 }: {
   title: string;
   description: string;
   value: RoutineVariable[];
   onChange: (value: RoutineVariable[]) => void;
-  /** `compact` puts each variable on one row under shared column labels. */
-  variant?: "default" | "compact";
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(true);
   const syncedVariables = useMemo(
     () => syncRoutineVariablesWithTemplate([title, description], value),
@@ -82,23 +83,12 @@ export function RoutineVariablesEditor({
     return null;
   }
 
-  if (variant === "compact") {
-    return (
-      <CompactVariableRows
-        variables={syncedVariables}
-        onPatch={(name, mutate) => onChange(updateVariableList(syncedVariables, name, mutate))}
-      />
-    );
-  }
-
   return (
     <Collapsible open={open} onOpenChange={setOpen} className="overflow-hidden rounded-lg border border-border/70">
       <CollapsibleTrigger className="flex w-full items-center justify-between px-3 py-2 text-left">
         <div>
-          <p className="text-sm font-medium">Variables</p>
-          <p className="text-xs text-muted-foreground">
-            Detected from `{"{{name}}"}` placeholders in the title and instructions.
-          </p>
+          <p className="text-sm font-medium">{pageText("variables_ac018d")}</p>
+          <p className="text-xs text-muted-foreground">{pageText("detectedFrom_c2ef92")}{"{{name}}"}{pageText("placeholdersInTheTitleAndInstructions_b626dc")}</p>
         </div>
         {open ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
       </CollapsibleTrigger>
@@ -109,14 +99,12 @@ export function RoutineVariablesEditor({
               <Badge variant="outline" className="font-mono text-xs">
                 {`{{${variable.name}}}`}
               </Badge>
-              <span className="text-xs text-muted-foreground">
-                Prompt the user for this value before each manual run.
-              </span>
+              <span className="text-xs text-muted-foreground">{pageText("promptTheUserForThisValueBeforeEach_c5e9a5")}</span>
             </div>
 
             <div className="grid gap-3 md:grid-cols-2">
               <div className="space-y-1.5">
-                <Label className="text-xs">Label</Label>
+                <Label className="text-xs">{pageText("label_74341e")}</Label>
                 <Input
                   value={variable.label ?? ""}
                   onChange={(event) => onChange(updateVariableList(syncedVariables, variable.name, (current) => ({
@@ -128,7 +116,7 @@ export function RoutineVariablesEditor({
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs">Type</Label>
+                <Label className="text-xs">{translateUi("interfaceCopy.type")}</Label>
                 <Select
                   value={variable.type}
                   onValueChange={(type) => onChange(updateVariableList(syncedVariables, variable.name, (current) => ({
@@ -151,7 +139,7 @@ export function RoutineVariablesEditor({
 
               <div className="space-y-1.5 md:col-span-2">
                 <div className="flex items-center justify-between gap-3">
-                  <Label className="text-xs">Default value</Label>
+                  <Label className="text-xs">{pageText("defaultValue_bdffe6")}</Label>
                   <label className="flex items-center gap-2 text-xs text-muted-foreground">
                     <input
                       type="checkbox"
@@ -160,9 +148,7 @@ export function RoutineVariablesEditor({
                         ...current,
                         required: event.target.checked,
                       })))}
-                    />
-                    Required
-                  </label>
+                    />{pageText("required_eed6bf")}</label>
                 </div>
 
                 {variable.type === "textarea" ? (
@@ -186,15 +172,15 @@ export function RoutineVariablesEditor({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="__unset__">No default</SelectItem>
-                      <SelectItem value="true">True</SelectItem>
-                      <SelectItem value="false">False</SelectItem>
+                      <SelectItem value="__unset__">{pageText("noDefault_0cd213")}</SelectItem>
+                      <SelectItem value="true">{pageText("true_88b33e")}</SelectItem>
+                      <SelectItem value="false">{pageText("false_97cdbd")}</SelectItem>
                     </SelectContent>
                   </Select>
                 ) : variable.type === "select" ? (
                   <div className="grid gap-3 md:grid-cols-2">
                     <div className="space-y-1.5">
-                      <Label className="text-xs">Options</Label>
+                      <Label className="text-xs">{pageText("options_6bf5da")}</Label>
                       <Input
                         value={variable.options.join(", ")}
                         onChange={(event) => {
@@ -208,11 +194,11 @@ export function RoutineVariablesEditor({
                                 : null,
                           })));
                         }}
-                        placeholder="high, medium, low"
+                        placeholder={pageText("highMediumLow_f5b1be")}
                       />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs">Default option</Label>
+                      <Label className="text-xs">{pageText("defaultOption_d374a0")}</Label>
                       <Select
                         value={typeof variable.defaultValue === "string" ? variable.defaultValue : "__unset__"}
                         onValueChange={(next) => onChange(updateVariableList(syncedVariables, variable.name, (current) => ({
@@ -221,10 +207,10 @@ export function RoutineVariablesEditor({
                         })))}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="No default" />
+                          <SelectValue placeholder={pageText("noDefault_0cd213")} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="__unset__">No default</SelectItem>
+                          <SelectItem value="__unset__">{pageText("noDefault_0cd213")}</SelectItem>
                           {variable.options.map((option) => (
                             <SelectItem key={option} value={option}>{option}</SelectItem>
                           ))}
@@ -249,7 +235,7 @@ export function RoutineVariablesEditor({
                       ...current,
                       defaultValue: event.target.value || null,
                     })))}
-                    placeholder={variable.type === "number" ? "42" : "Default value"}
+                    placeholder={variable.type === "number" ? "42" : pageText("defaultValue_bdffe6")}
                   />
                 )}
               </div>
@@ -258,145 +244,6 @@ export function RoutineVariablesEditor({
         ))}
       </CollapsibleContent>
     </Collapsible>
-  );
-}
-
-const compactColumns = {
-  name: "w-full shrink-0 sm:w-48",
-  type: "w-28 shrink-0",
-  defaultValue: "min-w-0 flex-1 basis-32",
-  required: "flex w-16 shrink-0 justify-center",
-};
-
-/** One row per variable: name, type, default and required, with the column labels shown once.
- * A saved label is kept as-is; this layout does not edit it. */
-function CompactVariableRows({
-  variables,
-  onPatch,
-}: {
-  variables: RoutineVariable[];
-  onPatch: (name: string, mutate: (variable: RoutineVariable) => RoutineVariable) => void;
-}) {
-  return (
-    <div className="flex flex-col gap-2" role="group" aria-label="Variables">
-      <Label>Variables</Label>
-      <div className="hidden items-center gap-2 text-xs text-muted-foreground sm:flex" aria-hidden="true">
-        <span className={compactColumns.name}>Name</span>
-        <span className={compactColumns.type}>Type</span>
-        <span className={compactColumns.defaultValue}>Default</span>
-        <span className={compactColumns.required}>Required</span>
-      </div>
-      {variables.map((variable) => {
-        const patch = (change: Partial<RoutineVariable>) => onPatch(variable.name, (current) => ({ ...current, ...change }));
-        return (
-          <div key={variable.name} className="flex flex-col gap-2">
-            <div className="flex flex-wrap items-center gap-2">
-              <code className={`${compactColumns.name} truncate font-mono text-xs`} title={`{{${variable.name}}}`}>
-                {`{{${variable.name}}}`}
-              </code>
-              <Select
-                value={variable.type}
-                onValueChange={(type) => onPatch(variable.name, (current) => ({
-                  ...current,
-                  type: type as RoutineVariable["type"],
-                  defaultValue: defaultValueForType(type as RoutineVariable["type"], current.defaultValue),
-                  options: type === "select" ? current.options : [],
-                }))}
-              >
-                <SelectTrigger className={compactColumns.type} aria-label={`Type of ${variable.name}`}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {variableTypes.map((type) => (
-                    <SelectItem key={type} value={type}>{type}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <div className={compactColumns.defaultValue}>
-                {variable.type === "boolean" ? (
-                  <Select
-                    value={variable.defaultValue === true ? "true" : variable.defaultValue === false ? "false" : "__unset__"}
-                    onValueChange={(next) => patch({ defaultValue: next === "__unset__" ? null : next === "true" })}
-                  >
-                    <SelectTrigger className="w-full" aria-label={`Default for ${variable.name}`}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__unset__">No default</SelectItem>
-                      <SelectItem value="true">True</SelectItem>
-                      <SelectItem value="false">False</SelectItem>
-                    </SelectContent>
-                  </Select>
-                ) : variable.type === "select" ? (
-                  <Select
-                    value={typeof variable.defaultValue === "string" ? variable.defaultValue : "__unset__"}
-                    onValueChange={(next) => patch({ defaultValue: next === "__unset__" ? null : next })}
-                  >
-                    <SelectTrigger className="w-full" aria-label={`Default for ${variable.name}`}>
-                      <SelectValue placeholder="No default" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="__unset__">No default</SelectItem>
-                      {variable.options.map((option) => (
-                        <SelectItem key={option} value={option}>{option}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                ) : variable.type === "textarea" ? (
-                  <Textarea
-                    rows={1}
-                    aria-label={`Default for ${variable.name}`}
-                    value={variable.defaultValue == null ? "" : String(variable.defaultValue)}
-                    placeholder="No default"
-                    onChange={(event) => patch({ defaultValue: event.target.value || null })}
-                  />
-                ) : (
-                  <Input
-                    type={variable.type === "number" ? "number" : variable.type === "date" ? "date" : "text"}
-                    aria-label={`Default for ${variable.name}`}
-                    value={variable.defaultValue == null ? "" : String(variable.defaultValue)}
-                    placeholder="No default"
-                    onChange={(event) => patch({ defaultValue: event.target.value || null })}
-                  />
-                )}
-              </div>
-              <label className={`${compactColumns.required} items-center gap-2 text-xs text-muted-foreground`}>
-                <input
-                  type="checkbox"
-                  checked={variable.required}
-                  aria-label={`${variable.name} is required`}
-                  onChange={(event) => patch({ required: event.target.checked })}
-                />
-                <span className="sm:hidden">Required</span>
-              </label>
-            </div>
-            {variable.type === "select" ? (
-              <div className="flex items-center gap-2">
-              <span className={`${compactColumns.name} hidden sm:block`} aria-hidden="true" />
-              <Input
-                className="min-w-0 flex-1"
-                aria-label={`Options for ${variable.name}`}
-                value={variable.options.join(", ")}
-                placeholder="Options, separated by commas: high, medium, low"
-                onChange={(event) => {
-                  const options = parseSelectOptions(event.target.value);
-                  onPatch(variable.name, (current) => ({
-                    ...current,
-                    options,
-                    defaultValue:
-                      typeof current.defaultValue === "string" && options.includes(current.defaultValue)
-                        ? current.defaultValue
-                        : null,
-                  }));
-                }}
-              />
-              <span className={`${compactColumns.required} hidden sm:block`} aria-hidden="true" />
-              </div>
-            ) : null}
-          </div>
-        );
-      })}
-    </div>
   );
 }
 
@@ -420,19 +267,19 @@ const BUILTIN_VARIABLE_DOCS: BuiltinVariableDoc[] = [
 ];
 
 export function RoutineVariablesHint() {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [helpOpen, setHelpOpen] = useState(false);
 
   return (
     <>
       <div className="flex items-center justify-between gap-2 rounded-lg border border-dashed border-border/70 px-3 py-2 text-xs text-muted-foreground">
-        <span>
-          Use `{"{{variable_name}}"}` placeholders in the title or instructions to prompt for inputs when the routine runs.
-        </span>
+        <span>{pageText("use_2cd949")}{"{{variable_name}}"}{pageText("placeholdersInTheTitleOrInstructionsToPrompt_d2378b")}</span>
         <button
           type="button"
           onClick={() => setHelpOpen(true)}
           className="shrink-0 rounded-full p-0.5 text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          aria-label="Show variable help"
+          aria-label={pageText("showVariableHelp_007290")}
         >
           <HelpCircle className="h-3.5 w-3.5" />
         </button>
@@ -441,49 +288,35 @@ export function RoutineVariablesHint() {
       <Dialog open={helpOpen} onOpenChange={setHelpOpen}>
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
-            <DialogTitle>Routine variables</DialogTitle>
-            <DialogDescription>
-              How to prompt for inputs and which variables Paperclip fills in automatically.
-            </DialogDescription>
+            <DialogTitle>{pageText("routineVariables_1c4206")}</DialogTitle>
+            <DialogDescription>{pageText("howToPromptForInputsAndWhichVariables_50fab3")}</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-5 text-sm">
             <section className="space-y-2">
-              <h3 className="text-xs font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
-                Custom variables
-              </h3>
-              <p className="text-muted-foreground">
-                Type{" "}
+              <h3 className="text-xs font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">{pageText("customVariables_0ef05a")}</h3>
+              <p className="text-muted-foreground">{pageText("type_3deb74")}{" "}
                 <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs text-foreground">
                   {"{{variable_name}}"}
-                </code>{" "}
-                anywhere in the title or instructions. Paperclip detects each placeholder, lists it
-                under <span className="font-medium text-foreground">Variables</span>, and prompts
-                for a value before each run.
-              </p>
+                </code>{" "}{pageText("anywhereInTheTitleOrInstructionsPaperclipDetects_f12f0c") + " "}<span className="font-medium text-foreground">{pageText("variables_ac018d")}</span>{pageText("andPromptsForAValueBeforeEachRun_7de7f0")}</p>
               <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
-                <li>Names must start with a letter and may use letters, numbers, and underscores.</li>
-                <li>Pick a type (text, textarea, number, boolean, select, date), default value, and whether it is required.</li>
-                <li>Variable names ending in capital Date, such as startDate, are created as date variables by default.</li>
-                <li>The same name reused across the title and instructions is treated as one variable.</li>
+                <li>{pageText("namesMustStartWithALetterAndMay_133b4c")}</li>
+                <li>{pageText("pickATypeTextTextareaNumberBooleanSelect_c1fd62")}</li>
+                <li>{pageText("variableNamesEndingInCapitalDateSuchAs_397ef8")}</li>
+                <li>{pageText("theSameNameReusedAcrossTheTitleAnd_af77f9")}</li>
               </ul>
             </section>
 
             <section className="space-y-2">
-              <h3 className="text-xs font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
-                Built-in variables
-              </h3>
-              <p className="text-muted-foreground">
-                These are filled in automatically — no setup needed and they will not appear in the
-                Variables list.
-              </p>
+              <h3 className="text-xs font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">{pageText("builtInVariables_f346e6")}</h3>
+              <p className="text-muted-foreground">{pageText("theseAreFilledInAutomaticallyNoSetupNeeded_d53dc4")}</p>
               <div className="overflow-hidden rounded-lg border border-border/70">
                 <table className="w-full text-left text-xs">
                   <thead className="bg-muted/40 text-muted-foreground">
                     <tr>
-                      <th className="px-3 py-2 font-medium">Placeholder</th>
-                      <th className="px-3 py-2 font-medium">Example</th>
-                      <th className="px-3 py-2 font-medium">Description</th>
+                      <th className="px-3 py-2 font-medium">{pageText("placeholder_ed212f")}</th>
+                      <th className="px-3 py-2 font-medium">{pageText("example_0f01ed")}</th>
+                      <th className="px-3 py-2 font-medium">{translateUi("interfaceCopy.description")}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/70">

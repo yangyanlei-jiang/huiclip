@@ -1,20 +1,17 @@
-import { and, asc, eq, gt, inArray, or, sql } from "drizzle-orm";
+import { and, asc, eq, gt, inArray, sql } from "drizzle-orm";
 import { issueThreadInteractions, toolActionRequests, toolInvocations, type Db } from "@paperclipai/db";
-import { TOOL_APPROVAL_CONNECTION_REQUIRED } from "./tool-approval-connection.js";
 
 export function toolReviewProjectionService(db: Db, reflect: (input: {
   actionRequestId: string;
-  status: "approved" | "executed" | "failed" | "expired" | "cancelled";
+  status: "executed" | "failed" | "expired" | "cancelled";
   errorCode: string | null;
   errorMessage: string | null;
   resultSummary: string | null;
 }) => Promise<void>) {
-  const mismatch = or(and(
+  const mismatch = and(
     inArray(toolActionRequests.status, ["executed", "failed", "expired", "cancelled"]),
     sql`coalesce(${issueThreadInteractions.result}->'toolAction'->>'status', '') <> case when ${toolActionRequests.status} = 'cancelled' then 'expired' else ${toolActionRequests.status} end`,
-  ), and(eq(toolActionRequests.status, "approved"), eq(toolInvocations.errorCode, TOOL_APPROVAL_CONNECTION_REQUIRED),
-    or(sql`coalesce(${issueThreadInteractions.result}->'toolAction'->>'status', '') <> 'approved'`,
-      sql`coalesce(${issueThreadInteractions.result}->'toolAction'->>'errorCode', '') <> ${TOOL_APPROVAL_CONNECTION_REQUIRED}`)));
+  );
   const candidates = (companyId?: string, cursor?: string) => db
     .select({ request: toolActionRequests, invocation: toolInvocations })
     .from(toolActionRequests)
@@ -58,7 +55,7 @@ export function toolReviewProjectionService(db: Db, reflect: (input: {
           if (!canContinue()) break;
           try {
             await reflect({ actionRequestId: request.id,
-              status: request.status as "approved" | "executed" | "failed" | "expired" | "cancelled",
+              status: request.status as "executed" | "failed" | "expired" | "cancelled",
               errorCode: invocation.errorCode, errorMessage: invocation.errorMessage,
               resultSummary: invocation.resultSummary?.summary ?? null });
           } catch (error) { failures.push(error); }

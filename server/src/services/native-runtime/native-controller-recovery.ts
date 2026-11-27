@@ -1,19 +1,14 @@
-import { posix } from "node:path";
-import { and, eq, inArray, isNull, ne, or, sql } from "drizzle-orm";
-import { environmentLeases, heartbeatRunEvents, heartbeatRuns, issues, nativeRunFinalizations, nativeRunnerCheckpoints, type Db } from "@paperclipai/db";
+import { and, eq, inArray, ne, or, sql } from "drizzle-orm";
+import { environmentLeases, heartbeatRuns, issues, nativeRunFinalizations, nativeRunnerCheckpoints, type Db } from "@paperclipai/db";
 import type { AdapterExecutionTarget } from "@paperclipai/adapter-utils/execution-target";
 import { captureLegacyDurablePrpCheckpoint, parseNativeExecutionInput, type DurablePrpCheckpoint, type PersistedNativeSession } from "../../vendor/paperclip-runner/index.js";
 import { notifyNativeFinalizationWork } from "../native-finalization-notifications.js";
 import { readRunCancellation } from "../run-cancellation.js";
-import { OWN_PROCESS_START_EVENT_TYPES } from "../native-process-start-events.js";
 import { nativeSha256 } from "./canonical.js";
 import { findNativeSessionResumeRun, isNativeSessionId, isUnusedNativeSessionBootstrap, nativeSessionProviderEvidence } from "./native-session-resume.js";
 import { insertMigratedNativeRunnerCheckpoint, loadNativeRunnerCheckpoint } from "./native-runner-checkpoint.js";
 import { offlineMigrationExecutionWhere } from "../offline-migration-execution.js";
 import { redactRunnerApiPayloads } from "./runner-api-log-redaction.js";
-import { NATIVE_AGENT_DIRECTORY_BUSY_WAIT, NATIVE_RETAINED_OWNER_WAIT } from "./native-recovery-wait-codes.js";
-
-export { NATIVE_AGENT_DIRECTORY_BUSY_WAIT, NATIVE_RETAINED_OWNER_WAIT };
 
 export const NATIVE_CONTROLLER_RECOVERY_MAX_BYTES = 4 * 1024;
 
@@ -71,11 +66,10 @@ export type NativeControllerRecoveryOutcome =
   | { kind: "missing_evidence" | "unsupported" | "dependency_unavailable"; reason: string; cause?: unknown }
   | { kind: "no_prior_execution" };
 
-
-export type NativeRetainedOwnerWait = { runId: string; controllerBootId: string };
+export const NATIVE_RETAINED_OWNER_WAIT = "native_controller_recovery_waiting_for_owner";
 
 export class NativeControllerRecoveryWaitingError extends Error {
-  constructor(readonly retryAt: Date, readonly owner?: NativeRetainedOwnerWait) {
+  constructor(readonly retryAt: Date) {
     super(NATIVE_RETAINED_OWNER_WAIT);
     this.name = "NativeControllerRecoveryWaitingError";
   }
@@ -87,7 +81,7 @@ export class NativeControllerRecoveryWaitingError extends Error {
  * permissions and task ownership when this deadline arrives. */
 export async function deferNativeControllerRecovery(db: Db, input: {
   companyId: string; agentId: string; issueId: string; runId: string;
-  leaseOwner?: string; retryAt: Date; waitingForOwner?: NativeRetainedOwnerWait;
+  leaseOwner?: string; retryAt: Date;
 }): Promise<void> {
   await db.transaction(async tx => {
     const [task] = await tx.select({ executionRunId: issues.executionRunId }).from(issues)
@@ -104,26 +98,15 @@ export async function deferNativeControllerRecovery(db: Db, input: {
     const cancellation = record(run?.resultJson?.nativeCancellation);
     const stop = readRunCancellation(run?.resultJson);
     const [clock] = await tx.execute<{ now: Date }>(sql`select clock_timestamp() as now`);
-    const hasProcessIdentity = Boolean(run?.processPid || run?.processGroupId || run?.processStartedAt);
-    const inheritedProcessIdentity = hasProcessIdentity
-      && typeof record(run?.runnerProfileJson).inheritedProcessIdentityRunId === "string"
-      && !(await tx.select({ id: heartbeatRunEvents.id }).from(heartbeatRunEvents).where(and(
-        eq(heartbeatRunEvents.companyId, input.companyId), eq(heartbeatRunEvents.runId, input.runId),
-        isNull(heartbeatRunEvents.sourceEventId),
-        inArray(heartbeatRunEvents.eventType, [...OWN_PROCESS_START_EVENT_TYPES]))).limit(1)).length;
     if (!run || run.runtimeMode !== "native" || run.status !== "running" || task?.executionRunId !== input.runId
       || !owner || owner.phase !== "observed" || owner.resultId || owner.attempt !== 0
       || owner.controllerGeneration !== 0 || owner.leaseOwner !== (input.leaseOwner ?? null)
       || (input.leaseOwner && (!owner.leaseExpiresAt || owner.leaseExpiresAt <= new Date(clock.now)))
-      || (hasProcessIdentity && !inheritedProcessIdentity) || authority || progress.size
+      || run.processPid || run.processGroupId || run.processStartedAt || authority || progress.size
       || !record(run.runnerProfileJson).nativeExecutionInput || run.resultJson?.startupCancellation
       || (stop?.source === "operator" && stop.expected)
       || (["run", "issue"].includes(String(cancellation.scope)) && ["pending", "acknowledged"].includes(String(cancellation.dispatchState)))) {
       throw new Error("native_controller_recovery_wait_authority_changed");
-    }
-    if (inheritedProcessIdentity) {
-      await tx.update(heartbeatRuns).set({ processPid: null, processGroupId: null, processStartedAt: null, updatedAt: new Date() })
-        .where(eq(heartbeatRuns.id, input.runId));
     }
     await notifyNativeFinalizationWork(tx, input);
     await tx.update(nativeRunFinalizations).set({
@@ -132,93 +115,18 @@ export async function deferNativeControllerRecovery(db: Db, input: {
       failureDetail: { originalFailureCode: NATIVE_RETAINED_OWNER_WAIT,
         message: "Waiting for the retained native controller owner to release its lease.",
         recoveryMode: record(run.runnerProfileJson).sessionCheckpoint ? "same_session_resume" : "bootstrap_retry",
-        providerSessionEstablished: false, providerEventsExist: false,
-        ...(input.waitingForOwner ? { waitingForOwner: { runId: input.waitingForOwner.runId,
-          controllerBootId: input.waitingForOwner.controllerBootId } } : {}) },
+        providerSessionEstablished: false, providerEventsExist: false },
       updatedAt: new Date(),
     }).where(eq(nativeRunFinalizations.runId, input.runId));
   });
 }
 
-
-export async function deferNativeRunForBusyAgentDirectory(db: Db, input: {
-  companyId: string; runId: string; leaseOwner?: string; retryAt: Date; maxDeferrals: number;
-}): Promise<"deferred" | "pre_admission" | "refused"> {
-  return db.transaction(async tx => {
-    const [current] = await tx.select({ issueId: heartbeatRuns.nativeIssueId }).from(heartbeatRuns)
-      .where(and(eq(heartbeatRuns.id, input.runId), eq(heartbeatRuns.companyId, input.companyId)));
-    const [existing] = await tx.select({ runId: nativeRunFinalizations.runId }).from(nativeRunFinalizations)
-      .where(and(eq(nativeRunFinalizations.companyId, input.companyId), eq(nativeRunFinalizations.runId, input.runId)));
-    if (!current?.issueId || !existing) return "pre_admission";
-    const [task] = await tx.select({ executionRunId: issues.executionRunId }).from(issues)
-      .where(and(eq(issues.companyId, input.companyId), eq(issues.id, current.issueId))).for("update");
-    const [owner] = await tx.select().from(nativeRunFinalizations).where(and(
-      eq(nativeRunFinalizations.companyId, input.companyId), eq(nativeRunFinalizations.issueId, current.issueId),
-      eq(nativeRunFinalizations.runId, input.runId))).for("update");
-    const [run] = await tx.select().from(heartbeatRuns).where(and(
-      eq(heartbeatRuns.id, input.runId), eq(heartbeatRuns.companyId, input.companyId),
-      eq(heartbeatRuns.nativeIssueId, current.issueId))).for("update");
-    const cancellation = record(run?.resultJson?.nativeCancellation);
-    const stop = readRunCancellation(run?.resultJson);
-    const context = record(run?.contextSnapshot);
-    const deferrals = typeof context.agentDirectoryBusyDeferrals === "number" ? context.agentDirectoryBusyDeferrals : 0;
-    const [clock] = await tx.execute<{ now: Date }>(sql`select clock_timestamp() as now`);
-    if (!run || run.runtimeMode !== "native" || run.status !== "running" || task?.executionRunId !== input.runId
-      || !owner || owner.resultId || owner.phase !== "observed"
-      || owner.leaseOwner !== (input.leaseOwner ?? null)
-      || (input.leaseOwner && (!owner.leaseExpiresAt || owner.leaseExpiresAt <= new Date(clock.now)))
-      || run.resultJson?.startupCancellation || stop
-      || (["run", "issue"].includes(String(cancellation.scope)) && ["pending", "acknowledged"].includes(String(cancellation.dispatchState)))
-      || deferrals >= input.maxDeferrals) return "refused";
-    await notifyNativeFinalizationWork(tx, { companyId: input.companyId, issueId: current.issueId, runId: input.runId });
-    await tx.update(heartbeatRuns).set({ contextSnapshot: { ...context, agentDirectoryBusyDeferrals: deferrals + 1 }, updatedAt: new Date() })
-      .where(eq(heartbeatRuns.id, input.runId));
-    const detail = record(owner.failureDetail);
-    await tx.update(nativeRunFinalizations).set({
-      phase: "retryable_failure", leaseOwner: null, leaseExpiresAt: null, controlDeadlineAt: null,
-      nextAttemptAt: input.retryAt, recoveryState: "resuming_session", failureCode: NATIVE_AGENT_DIRECTORY_BUSY_WAIT,
-      failureDetail: {
-        recoveryMode: record(run.runnerProfileJson).sessionCheckpoint ? "same_session_resume" : "bootstrap_retry",
-        providerSessionEstablished: false, providerEventsExist: false,
-        ...detail,
-        originalFailureCode: detail.originalFailureCode ?? NATIVE_AGENT_DIRECTORY_BUSY_WAIT,
-        message: "Waiting for another run of this agent to finish with its files.",
-      },
-      updatedAt: new Date(),
-    }).where(eq(nativeRunFinalizations.runId, input.runId));
-    return "deferred";
-  });
-}
-
-/** The retained Runner keeps its state under the directory its own lease
- * recorded. A workspace can move to a new allocation of the SAME sandbox: its
- * prior epoch was abandoned, so the last save was restored into a fresh root
- * named for the new lease. Both roots are canonical siblings under the
- * sandbox's `.paperclip-workspaces` and carry the same execution-workspace ID.
- * Anything else (another workspace, another parent, a non-canonical path) is
- * not the retained allocation and stays refused. */
-function sameSandboxWorkspaceAllocation(recorded: string, current: string): boolean {
-  if (recorded === current) return true;
-  const canonical = (path: string) => posix.isAbsolute(path) && posix.normalize(path) === path && !path.endsWith("/");
-  if (!canonical(recorded) || !canonical(current)) return false;
-  const parent = posix.dirname(recorded);
-  if (posix.basename(parent) !== ".paperclip-workspaces" || posix.dirname(current) !== parent) return false;
-  const workspace = WORKSPACE_ALLOCATION.exec(posix.basename(recorded))?.[1];
-  return Boolean(workspace && WORKSPACE_ALLOCATION.exec(posix.basename(current))?.[1] === workspace);
-}
-
-/** The published allocation names (remote-workspaces publishedWorkspaceDirectory):
- * exactly `<workspaceId>`, or `<workspaceId>-<epoch>-<leaseId>`. */
-const UUID = "[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}";
-const WORKSPACE_ALLOCATION = new RegExp(`^(${UUID})(?:-[1-9][0-9]*-${UUID})?$`);
-
-/** Bind a read of retained Runner lifecycle to the surviving sandbox and
- * return the directory that Runner wrote under. The ordinary admission owner
- * still checks current permissions before execution. */
+/** Bind a read of retained Runner lifecycle to the surviving sandbox. The
+ * ordinary admission owner still checks current permissions before execution. */
 export async function assertNativeRetainedSandboxBinding(db: Db, input: {
   companyId: string; issueId: string; runId: string;
   target: Extract<AdapterExecutionTarget, { kind: "remote" }>;
-}): Promise<{ remoteCwd: string }> {
+}): Promise<void> {
   const { target } = input;
   if (target.transport !== "sandbox" || target.sandboxLeaseAcquisition?.outcome !== "resumed"
     || !target.providerKey || !target.environmentId || !target.leaseId) {
@@ -231,9 +139,8 @@ export async function assertNativeRetainedSandboxBinding(db: Db, input: {
     eq(environmentLeases.companyId, input.companyId), eq(environmentLeases.issueId, input.issueId),
     eq(environmentLeases.heartbeatRunId, input.runId), eq(environmentLeases.environmentId, target.environmentId),
     eq(environmentLeases.provider, target.providerKey), eq(environmentLeases.providerLeaseId, target.sandboxLeaseAcquisition.providerLeaseId)));
-  const recordedCwd = leases.length === 1 ? leases[0].metadata?.remoteCwd : undefined;
-  if (!owner || !owner.resultId || owner.recoveryState || typeof recordedCwd !== "string"
-    || !sameSandboxWorkspaceAllocation(recordedCwd, target.remoteCwd)
+  if (!owner || !owner.resultId || owner.recoveryState
+    || leases.length !== 1 || leases[0].metadata?.remoteCwd !== target.remoteCwd
     || !["active", "released", "expired"].includes(leases[0].status)) {
     throw new Error("native_controller_recovery_missing_evidence:retained_sandbox_binding");
   }
@@ -243,7 +150,6 @@ export async function assertNativeRetainedSandboxBinding(db: Db, input: {
   if (owner.leaseOwner || owner.phase !== "committed") {
     throw new Error("native_controller_recovery_missing_evidence:retained_sandbox_binding");
   }
-  return { remoteCwd: recordedCwd };
 }
 
 /** Only the existing bounded selector chooses history. Never search backwards

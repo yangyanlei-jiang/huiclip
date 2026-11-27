@@ -4,8 +4,7 @@ import { cases, type Db } from "@paperclipai/db";
 import { z } from "zod";
 import { caseInitialDocumentsSchema, caseWorkflowDocumentTextSchema, isUuidLike } from "@paperclipai/shared";
 import { patchCaseSchema } from "../../routes/cases-schemas.js";
-import { badRequest, notFound } from "../../errors.js";
-import { casesDisabledError } from "../cases-disabled.js";
+import { badRequest, forbidden, notFound } from "../../errors.js";
 import { assertActorCanReadCase } from "../case-access.js";
 import type { AuthorizationActor } from "../authorization.js";
 import { instanceSettingsService } from "../instance-settings.js";
@@ -59,7 +58,7 @@ export async function executeNativeCaseTool(input: {
   callApi: (receiptKey: string, request: RunnerApiCall) => Promise<unknown>;
 }) {
   if (input.binding.casesEnabled !== true || !(await instanceSettingsService(input.db).getExperimental()).enableCases) {
-    throw casesDisabledError({ inlineRemediation: true });
+    throw forbidden("Cases are disabled");
   }
   const schema = schemas[input.tool as keyof typeof schemas];
   if (!schema) throw badRequest("Unknown native case operation");

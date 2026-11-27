@@ -21,7 +21,6 @@ import {
   usePluginStream,
   usePluginToast,
 } from "./bridge.js";
-import { companyProjectsQuery } from "@/lib/company-projects-query";
 import { Component, createElement, useEffect, useMemo, useState, type ComponentType, type ReactNode } from "react";
 import * as ReactJsxRuntimeModule from "react/jsx-runtime";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -40,6 +39,7 @@ import { agentsApi } from "@/api/agents";
 import { authApi } from "@/api/auth";
 import { heartbeatsApi } from "@/api/heartbeats";
 import { issuesApi } from "@/api/issues";
+import { projectsApi } from "@/api/projects";
 import {
   buildCompanyUserInlineOptions,
 } from "@/lib/company-members";
@@ -277,7 +277,8 @@ function PluginSdkIssuesList({
     enabled: !!companyId,
   });
   const { data: projects } = useQuery({
-    ...companyProjectsQuery(companyId ?? "__no-company__", { includeArchived: true }),
+    queryKey: queryKeys.projects.list(companyId ?? "__no-company__", { includeArchived: true }),
+    queryFn: () => projectsApi.list(companyId!, { includeArchived: true }),
     enabled: !!companyId,
   });
   const liveRunsQueryKey = queryKeys.liveRuns(companyId ?? "__no-company__");
@@ -472,7 +473,8 @@ function PluginSdkProjectPicker({
   });
   const currentUserId = session?.user?.id ?? session?.session?.userId ?? null;
   const { data: projects } = useQuery({
-    ...companyProjectsQuery(resolvedCompanyId ?? "__no-company__", { includeArchived }),
+    queryKey: queryKeys.projects.list(resolvedCompanyId ?? "__no-company__", { includeArchived }),
+    queryFn: () => projectsApi.list(resolvedCompanyId!, { includeArchived }),
     enabled: !!resolvedCompanyId,
   });
   const visibleProjects = useMemo(

@@ -1,11 +1,10 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect } from "react";
-import { ArrowLeft } from "lucide-react";
-import { Link } from "@/lib/router";
-import { Button } from "@/components/ui/button";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { useCompany } from "@/context/CompanyContext";
 import { ReviewQueueCard } from "./ReviewQueueCard";
-import { useReviewQueue } from "./useReviewCount";
 
 /**
  * Review — the "decisions waiting on you" inbox (PAP-12371, Finding B).
@@ -18,41 +17,31 @@ import { useReviewQueue } from "./useReviewCount";
  * "Needs attention"; decisions live here.
  */
 export function AppsReview() {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
-  const queue = useReviewQueue();
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: "Plugins", href: "/apps" },
-      { label: "Reviews" },
+      { label: interfaceNotice("interface:connectors_4b1e95"), href: "/apps" },
+      { label: interfaceNotice("interface:review_e29a79") },
     ]);
     return () => setBreadcrumbs([]);
   }, [setBreadcrumbs]);
 
   if (!selectedCompanyId) {
-    return <div className="p-6 text-sm text-muted-foreground">Select an organization to review approvals.</div>;
+    return <div className="p-6 text-sm text-muted-foreground">{pageText("selectAnOrganizationToReviewApprovals_0786e7")}</div>;
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 pb-16">
-      <header className="flex flex-col gap-3">
-        <Button asChild variant="ghost" size="sm" className="-ml-3 h-8 self-start text-muted-foreground">
-          <Link to="/apps"><ArrowLeft className="size-4" aria-hidden />Plugins</Link>
-        </Button>
-        <div className="flex flex-col gap-1">
-          <h1 className="text-2xl leading-8 font-semibold tracking-tight text-foreground">Reviews</h1>
-          {queue.loaded ? (
-            <p className="text-sm leading-5 text-muted-foreground">
-              {queue.count === 0
-                ? "Nothing is waiting on you."
-                : `${queue.count} ${queue.count === 1 ? "request" : "requests"} from your plugins ${queue.count === 1 ? "is" : "are"} waiting on you.`}
-            </p>
-          ) : null}
-        </div>
+    <div className="max-w-3xl space-y-6 pb-12">
+      <header>
+        <h1 className="text-2xl font-bold tracking-tight">{translateUi("interfaceCopy.review")}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{pageText("actionsYourAgentsWantToRunThatNeed_2d3106")}</p>
       </header>
 
-      <ReviewQueueCard layout="decisions" />
+      <ReviewQueueCard emptyState="reassure" heading="Waiting for your OK" />
     </div>
   );
 }

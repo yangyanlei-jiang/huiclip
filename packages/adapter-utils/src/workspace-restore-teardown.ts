@@ -36,7 +36,7 @@ export function createWorkspaceRestoreTeardown(input: {
   const { stagedRuntime, onLog, startMessage, failurePrefix } = input;
   return () => withWorkspaceRestoreDiagnosticCapture(async () => {
     try {
-      await Promise.resolve().then(() => onLog("stdout", startMessage)).catch(() => {});
+      await onLog("stdout", startMessage);
       await stagedRuntime.restoreWorkspace((line) => onLog("stdout", line));
       return { ok: true };
     } catch (err) {
@@ -46,7 +46,7 @@ export function createWorkspaceRestoreTeardown(input: {
       // diagnostic for the classified code.
       const code = classifyWorkspaceRestoreFailure(err);
       const diagnostic = getWorkspaceRestoreDiagnostic(err);
-      await Promise.resolve().then(() => onLog("stderr", `${failurePrefix}: ${describeWorkspaceRestoreFailure(code)}\n`)).catch(() => {});
+      await onLog("stderr", `${failurePrefix}: ${describeWorkspaceRestoreFailure(code)}\n`);
       return { ok: false, code, ...(diagnostic ? { diagnostic } : {}) };
     }
   });

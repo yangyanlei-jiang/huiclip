@@ -16,7 +16,6 @@ import {
   reconcileExecutionWorkspaceBranchSchema,
   updateExecutionWorkspaceSchema,
   workspaceOverviewQuerySchema,
-  executionWorkspaceSummaryIdsQuerySchema,
   executionWorkspaceSummaryPageQuerySchema,
   workspaceRuntimeControlTargetSchema,
 } from "@paperclipai/shared";
@@ -135,17 +134,7 @@ export function executionWorkspaceRoutes(db: Db, opts: { pluginWorkerManager?: P
     const companyId = req.params.companyId as string;
     assertCompanyAccess(req, companyId);
     if (!(await assertExecutionWorkspaceReadAllowed(req, res, companyId))) return;
-    let ids: string[] | undefined;
-    if (req.query.ids !== undefined) {
-      const parsedIds = executionWorkspaceSummaryIdsQuerySchema.safeParse(req.query.ids);
-      if (!parsedIds.success) {
-        res.status(422).json({ error: "Invalid workspace ids", details: parsedIds.error.flatten() });
-        return;
-      }
-      ids = parsedIds.data;
-    }
     const filters = {
-      ids,
       readCondition: await executionWorkspaceReadSqlCondition(db, req.actor),
       projectId: req.query.projectId as string | undefined,
       projectWorkspaceId: req.query.projectWorkspaceId as string | undefined,

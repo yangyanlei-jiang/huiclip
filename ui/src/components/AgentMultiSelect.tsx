@@ -1,3 +1,6 @@
+import { t as translateDynamic } from "../i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { AgentAvatar, type AvatarAgent } from "@/components/AgentAvatar";
 import { useEffect, useMemo, useState, type ComponentProps, type ReactNode } from "react";
 import { ChevronRight } from "lucide-react";
@@ -34,6 +37,8 @@ export function AgentSelect({
   triggerClassName?: string;
   id?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState("");
   const selectedAgent = agents.find((agent) => agent.id === value);
@@ -75,7 +80,7 @@ export function AgentSelect({
           <Input
             value={filter}
             onChange={(event) => setFilter(event.target.value)}
-            placeholder="Filter agents"
+            placeholder={pageText("filterAgents_9b26f6")}
             className="h-8"
             autoFocus
           />
@@ -89,7 +94,7 @@ export function AgentSelect({
                 key={agent.id}
                 type="button"
                 className="flex w-full items-start gap-2 px-3 py-2 text-left hover:bg-accent/30"
-                aria-label={`Select ${agent.name}`}
+                aria-label={translateDynamic("dynamic:select", { value1: agent.name })}
                 onClick={() => {
                   onChange(agent.id);
                   setOpen(false);
@@ -103,7 +108,7 @@ export function AgentSelect({
               </button>
             ))}
             {filteredAgents.length === 0 ? (
-              <div className="px-3 py-4 text-sm text-muted-foreground">No matches.</div>
+              <div className="px-3 py-4 text-sm text-muted-foreground">{translateUi("interfaceCopy.noMatches")}</div>
             ) : null}
           </div>
         )}
@@ -157,6 +162,8 @@ export function AgentMultiSelect({
   showSelectionPreview?: boolean;
   onOpenChange?: (open: boolean) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState("");
   const [draftAgentIds, setDraftAgentIds] = useState<Set<string>>(new Set(selectedAgentIds));
@@ -213,7 +220,7 @@ export function AgentMultiSelect({
               {triggerIcon}
               <span className="truncate">
                 {triggerLabel ?? (selectedCount === 0
-                  ? "Select agents"
+                  ? pageText("selectAgents_b52729")
                   : `${selectedCount} ${selectedCount === 1 ? "agent" : "agents"} selected`)}
               </span>
             </span>
@@ -225,7 +232,7 @@ export function AgentMultiSelect({
           <Input
             value={filter}
             onChange={(event) => setFilter(event.target.value)}
-            placeholder="Filter agents"
+            placeholder={pageText("filterAgents_9b26f6")}
             className="h-8"
             autoFocus
           />
@@ -254,7 +261,7 @@ export function AgentMultiSelect({
                   <Checkbox
                     checked={workingAgentIds.has(agent.id)}
                     disabled={optionDisabled}
-                    aria-label={`Allow ${agent.name}`}
+                    aria-label={translateDynamic("dynamic:allow", { value1: agent.name })}
                     onCheckedChange={(checked) => {
                       const next = new Set(workingAgentIds);
                       if (checked) next.add(agent.id);
@@ -274,19 +281,17 @@ export function AgentMultiSelect({
               );
             })}
             {filteredAgents.length === 0 ? (
-              <div className="px-3 py-4 text-sm text-muted-foreground">No matches.</div>
+              <div className="px-3 py-4 text-sm text-muted-foreground">{translateUi("interfaceCopy.noMatches")}</div>
             ) : null}
           </div>
         )}
           <div className="flex items-center justify-between border-t border-border px-3 py-2">
             <span className="text-xs text-muted-foreground">
-              {workingAgentIds.size === 0 ? "No agents selected" : `${workingAgentIds.size} selected`}
+              {workingAgentIds.size === 0 ? pageText("noAgentsSelected_28f5d7") : `${workingAgentIds.size} selected`}
             </span>
             <div className="flex items-center gap-2">
               {staged ? (
-                <Button type="button" variant="ghost" size="sm" onClick={() => setOpen(false)} disabled={pending}>
-                  Cancel
-                </Button>
+                <Button type="button" variant="ghost" size="sm" onClick={() => setOpen(false)} disabled={pending}>{translateUi("interfaceCopy.cancel")}</Button>
               ) : null}
               <Button
                 type="button"
@@ -297,7 +302,7 @@ export function AgentMultiSelect({
                 }}
                 disabled={pending}
               >
-                {staged ? (pending ? "Saving…" : "Save") : "Done"}
+                {staged ? (pending ? pageText("saving_56a228") : pageText("save_efc007")) : pageText("done_e9b450")}
               </Button>
             </div>
           </div>
@@ -312,7 +317,7 @@ export function AgentMultiSelect({
             </div>
           ))}
           {selectedAgents.length > 3 ? (
-            <p className="px-1.5 pt-0.5 text-xs text-muted-foreground">and {selectedAgents.length - 3} more</p>
+            <p className="px-1.5 pt-0.5 text-xs text-muted-foreground">{pageText("and_cffa50") + " "}{selectedAgents.length - 3}{" " + pageText("more_e7c95b")}</p>
           ) : null}
         </div>
       ) : null}

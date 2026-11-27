@@ -26,26 +26,12 @@ impl AcpxCommandExecutor {
 
     pub(super) fn restart_session_after_turn(&mut self) -> Result<(), DurableRunnerError> {
         self.ensure_persistence_healthy()?;
-        if self.awaiting_provider_turn()
-            || self
-                .session
-                .as_ref()
-                .is_some_and(AcpxProviderSession::continues_in_process)
-            || !self.generation_restartable(AcpxProviderSession::can_restart_after_turn)
-        {
+        if !self.generation_restartable(AcpxProviderSession::can_restart_after_turn) {
             return Ok(());
         }
         let session = self.session.as_mut().expect("checked ACPX session");
         if session.settle_park_observation().is_err()
             || !self.generation_restartable(AcpxProviderSession::can_restart_after_turn)
-        {
-            return Ok(());
-        }
-        if self
-            .session
-            .as_mut()
-            .expect("checked ACPX session")
-            .continue_after_quiet_turn()
         {
             return Ok(());
         }
@@ -57,18 +43,15 @@ impl AcpxCommandExecutor {
         let Err(error) = restarted else {
             return Ok(());
         };
-        // Later turns of this run fail closed, exactly like a failed restart at
-        // turn start. The saved session stays resumable: the reaped provider is
-        // proven gone, then it is saved suspended, so the next run resumes the
-        // same conversation instead of starting a new one.
-        self.failed_turn_end_restart = Some(error.to_string());
-        self.unreported_turn_end_restart_failure = Some(error.to_string());
-        let run_id = self.context.run_id.clone();
-        self.state
+        let state = self
+            .state
             .as_mut()
-            .expect("ACPX state remains available after a failed turn-end restart")
-            .turn_end_restart_failed_run = Some(run_id);
-        self.recover_failed_generation_restart()
+            .expect("ACPX state remains available after a turn-end restart");
+        state.lifecycle = "closed".to_owned();
+        self.context.provider_turn_id = None;
+        self.session = None;
+        self.failed_turn_end_restart = Some(error.to_string());
+        self.save_state()
     }
 
     pub(super) fn prepare_session_for_park(
@@ -87,7 +70,7 @@ impl AcpxCommandExecutor {
         match prepared {
             Ok(restarted) => Ok(restarted),
             Err(error) => {
-                self.recover_failed_generation_restart()?;
+                self.recover_failed_park_preparation()?;
                 Err(DurableRunnerError::invalid(format!(
                     "ACPX park preparation failed: {error}"
                 )))
@@ -95,23 +78,20 @@ impl AcpxCommandExecutor {
         }
     }
 
-    /// A provider generation restart (at park or after a turn) failed: wait until
-    /// the reaped provider loses its lifetime fence, then save the session
-    /// suspended so a later run can resume it.
-    fn recover_failed_generation_restart(&mut self) -> Result<(), DurableRunnerError> {
+    fn recover_failed_park_preparation(&mut self) -> Result<(), DurableRunnerError> {
         self.session = None;
         self.context.provider_turn_id = None;
         let candidates = {
             let state = self
                 .state
                 .as_mut()
-                .expect("ACPX state remains available after a failed generation restart");
+                .expect("ACPX state remains available after park preparation");
             state.lifecycle = "prepared".to_owned();
             state.provider_exit_unconfirmed = true;
             state
                 .identity
                 .as_ref()
-                .expect("a generation restart requires a provider identity")
+                .expect("park preparation requires a provider identity")
                 .provider_lifetime_fence_candidates
         };
         self.save_state()?;
@@ -119,7 +99,7 @@ impl AcpxCommandExecutor {
         let state = self
             .state
             .as_mut()
-            .expect("ACPX state remains available after a failed generation restart");
+            .expect("ACPX state remains available after park preparation");
         state.provider_exit_unconfirmed = false;
         state.lifecycle = "suspended".to_owned();
         if let Err(error) = self.save_state() {

@@ -1,5 +1,7 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useQueryView } from "@/components/QueryView";
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { GOOGLE_WORKSPACE_DEFAULT_SELECTION, GOOGLE_WORKSPACE_SERVICE_GROUPS, googleWorkspaceDraftRequestedScopes, googleWorkspaceSelectionForScopes, type GoogleWorkspaceServiceSelection, type ToolConnection } from "@paperclipai/shared";
 import { toolsApi } from "@/api/tools";
@@ -8,15 +10,12 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { NativeSelect } from "@/components/ui/select";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { AppLogo } from "@/pages/apps/AppLogo";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
-import { cn } from "@/lib/utils";
-
-export const GOOGLE_WORKSPACE_PRIVACY_POLICY_URL = "https://paperclip.ing/privacy";
 
 export function GoogleWorkspaceServiceFields({ value, onChange }: {
   value: GoogleWorkspaceServiceSelection;
   onChange: (value: GoogleWorkspaceServiceSelection) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return <div className="divide-y">
     {GOOGLE_WORKSPACE_SERVICE_GROUPS.map(group => <div key={group.id} className="flex items-center gap-3 py-3">
       <AppLogo name={group.name} brandKey={group.brandKey} size={28} />
@@ -27,7 +26,7 @@ export function GoogleWorkspaceServiceFields({ value, onChange }: {
       <NativeSelect aria-label={`${group.name} access`} disabled={!value[group.id]} value={value[group.id] ?? "write"}
         className="w-auto shrink-0 disabled:opacity-50"
         onChange={event => onChange({ ...value, [group.id]: event.target.value as "read" | "write" })}>
-        <option value="read">Read only</option><option value="write">Read &amp; write</option>
+        <option value="read">{pageText("readOnly_601dcc")}</option><option value="write">{pageText("readWrite_4bf56d")}</option>
       </NativeSelect>
       <ToggleSwitch id={`workspace-service-${group.id}`} aria-label={group.name} checked={Boolean(value[group.id])}
         onCheckedChange={checked => {
@@ -40,26 +39,6 @@ export function GoogleWorkspaceServiceFields({ value, onChange }: {
   </div>;
 }
 
-export function isGoogleWorkspaceConnection(connection: Pick<ToolConnection, "config">): boolean {
-  return connection.config?.sourceTemplateKey === "google-workspace";
-}
-
-export function useGoogleWorkspaceServiceGate(): {
-  dialog: ReactNode;
-  run: (connection: ToolConnection, start: (selection?: GoogleWorkspaceServiceSelection) => void) => void;
-} {
-  const [pending, setPending] = useState<{ connection: ToolConnection; start: (selection: GoogleWorkspaceServiceSelection) => void } | null>(null);
-  return {
-    dialog: pending ? <GoogleWorkspaceServicesDialog connection={pending.connection}
-      onCancel={() => setPending(null)}
-      onContinue={selection => { setPending(null); pending.start(selection); }} /> : null,
-    run: (connection, start) => {
-      if (isGoogleWorkspaceConnection(connection)) setPending({ connection, start });
-      else start();
-    },
-  };
-}
-
 type DialogProps = {
   onContinue: (value: GoogleWorkspaceServiceSelection) => void;
   onCancel: (selection?: GoogleWorkspaceServiceSelection) => void;
@@ -68,14 +47,16 @@ type DialogProps = {
 };
 
 export function GoogleWorkspaceServicesDialog(props: DialogProps) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const existing = props.connection ?? null;
   const oauth = props.connection?.config?.oauth as { pendingWorkspaceServiceRequests?: Record<string, { requestedScopes?: unknown; requestedAt?: string }> } | undefined;
   const pendingRequests = oauth?.pendingWorkspaceServiceRequests;
   const grants = useQuery({ queryKey: ["workspace-service-consent", existing?.id], queryFn: () => toolsApi.listConnectionGrants(existing!.id), enabled: Boolean(existing) });
   const grantsView = useQueryView(grants);
-  if (existing && !grants.data) return <Dialog open onOpenChange={open => { if (!open) props.onCancel(); }}><DialogContent className={ANALYTICS_MASK_CLASS}>
-    <DialogTitle>Connect Google Workspace</DialogTitle><DialogDescription>{(grantsView.kind === "error") ? "Could not load your saved service access. Your connection has not changed." : "Loading your saved service access…"}</DialogDescription>
-    <footer className="flex items-center justify-between gap-3"><Button variant="ghost" onClick={() => props.onCancel()}>Cancel</Button>{(grantsView.kind === "error") && <Button onClick={() => void grants.refetch()}>Try again</Button>}</footer>
+  if (existing && !grants.data) return <Dialog open onOpenChange={open => { if (!open) props.onCancel(); }}><DialogContent>
+    <DialogTitle>{pageText("connectGoogleWorkspace_c9d2f7")}</DialogTitle><DialogDescription>{(grantsView.kind === "error") ? pageText("couldNotLoadYourSavedServiceAccessYour_7dda4d") : pageText("loadingYourSavedServiceAccess_5ae07d")}</DialogDescription>
+    <footer className="flex items-center justify-between gap-3"><Button variant="ghost" onClick={() => props.onCancel()}>{translateUi("interfaceCopy.cancel")}</Button>{(grantsView.kind === "error") && <Button onClick={() => void grants.refetch()}>{translateUi("interfaceCopy.tryAgain")}</Button>}</footer>
   </DialogContent></Dialog>;
   const grant = grants.data?.grants.find(grant => existing?.credentialPolicy === "per_user"
     ? grant.kind === "user" && grant.subjectUserId === grants.data?.currentUserId
@@ -102,24 +83,21 @@ export function GoogleWorkspaceServicesDialog(props: DialogProps) {
 }
 
 function ServicePicker({ onContinue, onCancel, initial = GOOGLE_WORKSPACE_DEFAULT_SELECTION }: DialogProps) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [selection, setSelection] = useState(initial);
   const empty = Object.keys(selection).length === 0;
   return <Dialog open onOpenChange={open => { if (!open) onCancel(selection); }}>
-    <DialogContent className={cn("max-h-(--sz-85vh) overflow-y-auto sm:max-w-3xl", ANALYTICS_MASK_CLASS)}>
+    <DialogContent className="sm:max-w-3xl">
       <DialogHeader className="text-left">
-        <div className="flex items-center gap-3"><AppLogo name="Google Workspace" brandKey="google" size={40} /><DialogTitle>Connect Google Workspace</DialogTitle></div>
-        <DialogDescription className="sr-only">Choose the Google services to connect.</DialogDescription>
+        <div className="flex items-center gap-3"><AppLogo name="Google Workspace" brandKey="google" size={40} /><DialogTitle>{pageText("connectGoogleWorkspace_c9d2f7")}</DialogTitle></div>
+        <DialogDescription className="sr-only">{pageText("chooseTheGoogleServicesToConnect_eba261")}</DialogDescription>
       </DialogHeader>
       <GoogleWorkspaceServiceFields value={selection} onChange={setSelection} />
-      <p className="text-sm text-muted-foreground">
-        <a href={GOOGLE_WORKSPACE_PRIVACY_POLICY_URL} target="_blank" rel="noopener noreferrer" className="underline">
-          Read our privacy policy, including how we meet Google's Limited Use requirements<span className="sr-only"> (opens in a new tab)</span>
-        </a>
-      </p>
-      {empty && <p role="status" className="text-xs text-muted-foreground">Select at least one service to continue.</p>}
+      {empty && <p role="status" className="text-xs text-muted-foreground">{pageText("selectAtLeastOneServiceToContinue_2de32d")}</p>}
       <footer className="flex items-center justify-between gap-3 pt-4">
-        <Button variant="ghost" onClick={() => onCancel(selection)}>Cancel</Button>
-        <Button disabled={empty} onClick={() => onContinue(selection)}>Continue</Button>
+        <Button variant="ghost" onClick={() => onCancel(selection)}>{translateUi("interfaceCopy.cancel")}</Button>
+        <Button disabled={empty} onClick={() => onContinue(selection)}>{translateUi("interfaceCopy.continue")}</Button>
       </footer>
     </DialogContent>
   </Dialog>;

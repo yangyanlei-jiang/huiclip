@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useRef, useState } from "react";
 import { Loader2, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ export function WorkspaceRetryButton({ onRetry, unavailableReason }: {
   onRetry: () => Promise<void>;
   unavailableReason: string | null;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const inFlight = useRef(false);
   const [pending, setPending] = useState(false);
   const [requested, setRequested] = useState(false);
@@ -22,14 +24,14 @@ export function WorkspaceRetryButton({ onRetry, unavailableReason }: {
     setPending(true);
     setError(null);
     try { await onRetry(); setRequested(true); }
-    catch (cause) { setError(cause instanceof Error ? cause.message : "Couldn’t retry. Try again."); }
+    catch (cause) { setError(cause instanceof Error ? cause.message : pageText("retryFailed")); }
     finally { inFlight.current = false; setPending(false); }
   }
   return <div className="flex flex-col items-start gap-2 py-3">
     <Button size="xs" variant="outline" disabled={pending || requested || Boolean(unavailableReason)}
       title={unavailableReason ?? undefined} onClick={() => void retry()}>
       {pending ? <Loader2 aria-hidden className="size-3 animate-spin motion-reduce:animate-none" /> : <RotateCcw aria-hidden className="size-3" />}
-      {pending || requested ? "Retrying…" : "Retry"}
+      {pending || requested ? pageText("retrying_231013") : pageText("retry_9f5cd8")}
     </Button>
     {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
   </div>;

@@ -1,3 +1,6 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { AlertCircle, UserRound, UserRoundPen } from "lucide-react";
@@ -60,29 +63,31 @@ function HeroStat({ label, value, hint }: { label: string; value: string; hint?:
 }
 
 function WindowColumn({ stats }: { stats: UserProfileWindowStats }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const tokens = totalTokens(stats);
   return (
     <div className="flex min-w-0 flex-col gap-4 border-l border-border pl-5 first:border-l-0 first:pl-0">
       <div className="flex items-baseline justify-between gap-3">
         <h2 className="text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">{stats.label}</h2>
-        <span className="text-(length:--text-micro) text-muted-foreground tabular-nums">{completionRate(stats)} done</span>
+        <span className="text-(length:--text-micro) text-muted-foreground tabular-nums">{completionRate(stats)}{" " + pageText("done_e5fd9c")}</span>
       </div>
 
       <div className="grid grid-cols-2 gap-x-5 gap-y-3">
-        <Metric value={formatNumber(stats.touchedIssues)} label="Touched" />
-        <Metric value={formatNumber(stats.completedIssues)} label="Completed" />
-        <Metric value={formatNumber(stats.commentCount)} label="Comments" />
-        <Metric value={formatNumber(stats.activityCount)} label="Actions" />
+        <Metric value={formatNumber(stats.touchedIssues)} label={pageText("touched_9b7a71")} />
+        <Metric value={formatNumber(stats.completedIssues)} label={pageText("completed_1798b3")} />
+        <Metric value={formatNumber(stats.commentCount)} label={pageText("comments_fce06e")} />
+        <Metric value={formatNumber(stats.activityCount)} label={pageText("actions_c3cd63")} />
       </div>
 
       <div className="grid grid-cols-2 gap-x-5 gap-y-1.5 pt-3 text-xs tabular-nums text-muted-foreground">
-        <span>Tokens</span>
+        <span>{pageText("tokens_c38c6c")}</span>
         <span className="text-right text-foreground">{formatTokens(tokens)}</span>
-        <span>Spend</span>
+        <span>{pageText("spend_14eeee")}</span>
         <span className="text-right text-foreground">{formatCents(stats.costCents)}</span>
-        <span>Created</span>
+        <span>{translateUi("interfaceCopy.created")}</span>
         <span className="text-right text-foreground">{formatNumber(stats.createdIssues)}</span>
-        <span>Open</span>
+        <span>{translateUi("interfaceCopy.open")}</span>
         <span className="text-right text-foreground">{formatNumber(stats.assignedOpenIssues)}</span>
       </div>
     </div>
@@ -99,6 +104,7 @@ function Metric({ value, label }: { value: string; label: string }) {
 }
 
 function UsageChart({ points }: { points: UserProfileDailyPoint[] }) {
+  const { t: pageText } = usePageTranslation("interface");
   const totals = points.map((point) => totalTokens(point));
   const maxTokens = Math.max(1, ...totals);
   const maxCompleted = Math.max(1, ...points.map((point) => point.completedIssues));
@@ -107,10 +113,10 @@ function UsageChart({ points }: { points: UserProfileDailyPoint[] }) {
   return (
     <section>
       <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-3">
-        <h2 className="text-sm font-semibold">Last 14 days</h2>
+        <h2 className="text-sm font-semibold">{pageText("last14Days_73fccb")}</h2>
         <div className="flex items-baseline gap-4 text-xs text-muted-foreground">
           <span className="tabular-nums text-foreground">{formatTokens(totalTokensSum)}</span>
-          <span>tokens total</span>
+          <span>{pageText("tokensTotal_c2ef0b")}</span>
         </div>
       </div>
       <div className="mt-6 grid grid-cols-(--gtc-57) items-end gap-1.5 sm:gap-2">
@@ -146,11 +152,9 @@ function UsageChart({ points }: { points: UserProfileDailyPoint[] }) {
       </div>
       <div className="mt-4 flex flex-wrap items-center gap-4 text-(length:--text-nano) uppercase tracking-wide text-muted-foreground">
         <span className="inline-flex items-center gap-1.5">
-          <span className="h-2 w-2 bg-foreground/80" /> tokens / day
-        </span>
+          <span className="h-2 w-2 bg-foreground/80" />{" " + pageText("tokensDay_78bda7")}</span>
         <span className="inline-flex items-center gap-1.5">
-          <span className="h-(--sz-3px) w-4 rounded-full bg-emerald-500/80" /> completions
-        </span>
+          <span className="h-(--sz-3px) w-4 rounded-full bg-emerald-500/80" />{" " + pageText("completions_e7b484")}</span>
       </div>
     </section>
   );
@@ -204,6 +208,8 @@ function UsageList({
 }
 
 export function UserProfile() {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const { userSlug = "" } = useParams<{ userSlug: string }>();
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -227,7 +233,7 @@ export function UserProfile() {
     !hidesInstancePage(hiddenSettings, "instance.profile");
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Users" }, { label: data?.user.name ?? userSlug }]);
+    setBreadcrumbs([{ label: interfaceNotice("interface:users_57f2b1") }, { label: data?.user.name ?? userSlug }]);
   }, [data?.user.name, setBreadcrumbs, userSlug]);
 
   const allTime = data?.stats.find((entry) => entry.key === "all");
@@ -263,7 +269,7 @@ export function UserProfile() {
   );
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={UserRound} message="Select an organization to view user profiles." />;
+    return <EmptyState icon={UserRound} message={pageText("selectAnOrganizationToViewUserProfiles_73fcc6")} />;
   }
 
   if (isLoading) {
@@ -271,7 +277,7 @@ export function UserProfile() {
   }
 
   if (error || !data) {
-    return <EmptyState icon={AlertCircle} message="User profile not found for this organization." />;
+    return <EmptyState icon={AlertCircle} message={pageText("userProfileNotFoundForThisOrganization_ffd838")} />;
   }
 
   const allTimeTokens = allTime ? totalTokens(allTime) : 0;
@@ -303,18 +309,16 @@ export function UserProfile() {
           {canEditProfile ? (
             <Button asChild variant="outline" size="sm">
               <Link to={PROFILE_SETTINGS_PATH}>
-                <UserRoundPen />
-                Edit profile
-              </Link>
+                <UserRoundPen />{pageText("editProfile_15141e")}</Link>
             </Button>
           ) : null}
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <HeroStat label="All-time tokens" value={formatTokens(allTimeTokens)} hint={formatCents(allTime?.costCents ?? 0) + " spent"} />
-          <HeroStat label="Completed" value={formatNumber(allTime?.completedIssues ?? 0)} hint={allTime ? `${completionRate(allTime)} rate` : undefined} />
-          <HeroStat label="Open assigned" value={formatNumber(allTime?.assignedOpenIssues ?? 0)} hint={`${formatNumber(allTime?.createdIssues ?? 0)} created`} />
-          <HeroStat label="7-day actions" value={formatNumber(last7?.activityCount ?? 0)} hint={`${formatNumber(last7?.commentCount ?? 0)} comments`} />
+          <HeroStat label={pageText("allTimeTokens_c614ad")} value={formatTokens(allTimeTokens)} hint={formatCents(allTime?.costCents ?? 0) + " spent"} />
+          <HeroStat label={pageText("completed_1798b3")} value={formatNumber(allTime?.completedIssues ?? 0)} hint={allTime ? `${completionRate(allTime)} rate` : undefined} />
+          <HeroStat label={pageText("openAssigned_30647a")} value={formatNumber(allTime?.assignedOpenIssues ?? 0)} hint={`${formatNumber(allTime?.createdIssues ?? 0)} created`} />
+          <HeroStat label={pageText("7DayActions_3eaa7f")} value={formatNumber(last7?.activityCount ?? 0)} hint={`${formatNumber(last7?.commentCount ?? 0)} comments`} />
         </div>
       </section>
 
@@ -327,11 +331,11 @@ export function UserProfile() {
       <div className="grid gap-10 pt-2 xl:grid-cols-2">
         <section>
           <div className="flex items-baseline justify-between gap-3 border-b border-border pb-3">
-            <h2 className="text-sm font-semibold">Recent tasks</h2>
+            <h2 className="text-sm font-semibold">{pageText("recentTasks_21bcad")}</h2>
             <span className="text-xs text-muted-foreground tabular-nums">{data.recentIssues.length}</span>
           </div>
           {data.recentIssues.length === 0 ? (
-            <div className="pt-4 text-sm text-muted-foreground">No touched tasks yet.</div>
+            <div className="pt-4 text-sm text-muted-foreground">{pageText("noTouchedTasksYet_e3ac9f")}</div>
           ) : (
             <ul className="divide-y divide-border">
               {data.recentIssues.map((issue) => (
@@ -355,11 +359,11 @@ export function UserProfile() {
 
         <section>
           <div className="flex items-baseline justify-between gap-3 border-b border-border pb-3">
-            <h2 className="text-sm font-semibold">Recent activity</h2>
+            <h2 className="text-sm font-semibold">{translateUi("interfaceCopy.recentActivity")}</h2>
             <span className="text-xs text-muted-foreground tabular-nums">{data.recentActivity.length}</span>
           </div>
           {data.recentActivity.length === 0 ? (
-            <div className="pt-4 text-sm text-muted-foreground">No direct user actions recorded yet.</div>
+            <div className="pt-4 text-sm text-muted-foreground">{pageText("noDirectUserActionsRecordedYet_9bbd41")}</div>
           ) : (
             <ul className="divide-y divide-border">
               {data.recentActivity.map((event) => (
@@ -379,8 +383,8 @@ export function UserProfile() {
       </div>
 
       <div className="grid gap-10 xl:grid-cols-2">
-        <UsageList title="Agent attribution" empty="No issue-linked token usage yet." rows={agentUsageRows} />
-        <UsageList title="Provider mix" empty="No provider usage attributed yet." rows={providerUsageRows} />
+        <UsageList title={pageText("agentAttribution_c279ab")} empty="No issue-linked token usage yet." rows={agentUsageRows} />
+        <UsageList title={pageText("providerMix_d28e5b")} empty="No provider usage attributed yet." rows={providerUsageRows} />
       </div>
     </div>
   );

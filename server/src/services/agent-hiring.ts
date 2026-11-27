@@ -1,5 +1,3 @@
-import { assertAgentInteraction } from "./agent-interaction-policy.js";
-import { assertNoInitialAgentInteractionPermissions, preserveAgentInteractionPermissions } from "../lib/agent-interaction-permissions.js";
 import { assertEphemeralAgentInstructions } from "./agent-instructions.js";
 import { initializeDurableAgentFiles } from "./agent-file-durability.js";
 import { notifyAttentionRetentionWork } from "./retention-work-notifications.js";
@@ -23,9 +21,6 @@ import { instanceSettingsService } from "./instance-settings.js";
 import { assertProviderApiPlacementPolicy, isProviderApiSetupDraft, resolveProviderApiPlacement } from "./native-runtime/provider-api-placement.js";
 
 export async function prepareAgentHire(db: Db, companyId: string, input: CreateAgentData, options?: CreateAgentOptions): Promise<CreateAgentData> {
-  assertNoInitialAgentInteractionPermissions(input.permissions);
-  await assertAgentInteraction(db, { companyId, actorAgentId: options?.createdByAgentId, actorCompanyId: options?.createdByAgentCompanyId,
-    operation: "mention", texts: [JSON.stringify(input), ...(options?.interactionTexts ?? [])], lock: "update" });
   await notifyAttentionRetentionWork(db, { companyId });
   const { runner, ...data } = input;
   const selection = options?.runnerResolved
@@ -140,7 +135,7 @@ export async function prepareAgentHireApproval(txDb: Db, existing: AgentHireReco
   if (patch.permissions !== undefined) {
     // The pending-approval activation replays the original hire
     // request, so the new-agent creation default applies.
-    patch.permissions = normalizeAgentPermissions(preserveAgentInteractionPermissions(existing.permissions, patch.permissions), { context: "create" });
+    patch.permissions = normalizeAgentPermissions(patch.permissions, { context: "create" });
   }
   if (hasApprovedAdapterConfig) {
     await agentCredentialService(txDb).enforceClaudeOAuthBindingClaim(txDb, {

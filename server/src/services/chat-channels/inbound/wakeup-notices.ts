@@ -10,7 +10,6 @@ import { isExternalChatWaitAuthorizationContention } from "../../native-runtime/
 import { projectSafeChatPublication } from "../../chat-publication-projection.js";
 import { inboundWakePublicationKey, inboundWakePublicationText, parseInboundWakePublicationKey, resolveInboundWakeReceipt } from "../../chat-inbound-wakeup-publications.js";
 import { inboundWakeScope, type createInboundWakeAuthority } from "./wakeup-authorization.js";
-import { SILENT_CHAT_WAKE_SETTLEMENT_KEY } from "../../durable-chat-wakeup.js";
 import type { createChatFailedRunRetry } from "../failed-run-retry.js";
 type NoticeOptions = {
   authorizeInboundWakeup: ReturnType<typeof createInboundWakeAuthority>["authorizeInboundWakeup"];
@@ -183,8 +182,6 @@ export function createInboundWakeNotices(db: Db, options: NoticeOptions) {
           scope?.issueId ? eq(payloadIssueId, scope.issueId) : undefined,
           inArray(chatActions.status, ["processed", "failed"]),
           eq(owner.companyId, chatActions.companyId),
-          sql`${owner.payload}->>${SILENT_CHAT_WAKE_SETTLEMENT_KEY} is distinct from 'true'`,
-          sql`${agentWakeupRequests.payload}->>${SILENT_CHAT_WAKE_SETTLEMENT_KEY} is distinct from 'true'`,
           or(
             and(
               isNull(owner.runId),

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import {
   CircleCheck,
   CircleAlert,
@@ -65,6 +66,7 @@ export function RuntimeTestCard({
   metadataOnly?: boolean;
   tone?: "card" | "tile";
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const missingRuntime = state === "fail"
     ? result?.checks.find(check => check.code === "acpx_runtime_package_missing")
     : undefined;
@@ -86,7 +88,7 @@ export function RuntimeTestCard({
           : Play;
   return (
     <section
-      aria-label="Runtime test"
+      aria-label={pageText("runtimeTest_a614f2")}
       data-agent-tile={tone === "tile" ? "" : undefined}
       className={tone === "tile" ? "rounded-lg bg-(--agent-detail-tile)" : "rounded-lg border border-border bg-card"}
     >
@@ -141,9 +143,7 @@ export function RuntimeTestCard({
             <ChevronRight
               aria-hidden="true"
               className="size-3 transition-transform group-open:rotate-90"
-            />
-            Test details
-          </summary>
+            />{pageText("testDetails_bcfd44")}</summary>
           <ul className="space-y-3 px-4 pb-4">
             {result.checks.map((check) => (
               <li

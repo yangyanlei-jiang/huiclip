@@ -1,3 +1,6 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { describeError } from "@/api/errors";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -34,6 +37,8 @@ export interface AgentAdvancedTabProps {
 }
 
 export function AgentAdvancedTab(props: AgentAdvancedTabProps) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [initial, setInitial] = useState<AgentConfigurationSnapshot | null>(null);
   const query = useQuery({
     queryKey: ["agent-configuration-yaml", props.agent.companyId, props.agent.id],
@@ -46,14 +51,15 @@ export function AgentAdvancedTab(props: AgentAdvancedTabProps) {
   if (!initial) {
     if (query.error) return <div role="alert" className="space-y-3 text-sm">
       <p>{describeError(query.error).body}</p>
-      <Button variant="outline" onClick={() => query.refetch()}>Retry</Button>
+      <Button variant="outline" onClick={() => query.refetch()}>{translateUi("interfaceCopy.retry")}</Button>
     </div>;
-    return <p role="status" className="text-sm text-muted-foreground">Loading configuration…</p>;
+    return <p role="status" className="text-sm text-muted-foreground">{pageText("loadingConfiguration_b0f132")}</p>;
   }
   return <ConfigurationEditor key={props.agent.id} {...props} initial={initial} />;
 }
 
 function ConfigurationEditor({ agent, initial, onDirtyChange, onSaved, onSavingChange }: AgentAdvancedTabProps & { initial: AgentConfigurationSnapshot }) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const [saved, setSaved] = useState(initial);
@@ -97,7 +103,7 @@ function ConfigurationEditor({ agent, initial, onDirtyChange, onSaved, onSavingC
       setReloadRequired(false);
       onSaved(configuration.agent);
       const warnings = configuration.agent.configurationWarnings;
-      pushToast({ title: "Agent saved", tone: warnings?.length ? "warn" : "success", body: warnings?.map(warning => warning.message).join("\n") });
+      pushToast({ title: interfaceNotice("interface:agentSaved_6f1f08"), tone: warnings?.length ? "warn" : "success", body: warnings?.map(warning => warning.message).join("\n") });
     },
     onSettled: () => {
       operationPending.current = false;
@@ -125,31 +131,31 @@ function ConfigurationEditor({ agent, initial, onDirtyChange, onSaved, onSavingC
   useEffect(() => { onSavingChange?.(busy); }, [busy, onSavingChange]);
   useEffect(() => () => onSavingChange?.(false), [onSavingChange]);
   return <div className="space-y-4">
-    <p className="text-sm text-muted-foreground">Omitted settings stay unchanged. Instruction file contents, inherited access, and history are available in their settings tabs.</p>
-    {receipts.length > 0 && <div className="space-y-3 rounded-md border border-border p-4" aria-label="Created credentials">
+    <p className="text-sm text-muted-foreground">{pageText("omittedSettingsStayUnchangedInstructionFileContentsInherited_b16881")}</p>
+    {receipts.length > 0 && <div className="space-y-3 rounded-md border border-border p-4" aria-label={pageText("createdCredentials_f18637")}>
       {receipts.map((receipt, index) => <div key={`${receipt.id}-${index}`} className="space-y-2 text-sm">
         <p className="font-medium">{receipt.label}</p>
         {receipt.token ? <>
-          <p className="text-muted-foreground">Copy this key now. It won’t be shown again after leaving this page.</p>
+          <p className="text-muted-foreground">{pageText("copyThisKeyNowItWonTBe_6dc8d2")}</p>
           <input readOnly aria-label={`${receipt.label} token`} value={receipt.token} className="w-full rounded-md border border-border bg-muted p-2 font-mono text-sm" />
         </> : <p className="font-mono text-muted-foreground">{receipt.id}</p>}
       </div>)}
     </div>}
     <AgentYamlEditor value={source} onChange={value => { setSource(value); if (!reloadRequired) setError(null); }} readOnly={busy} />
     {dirty && validation.changes.length > 0 && <details className="rounded-md border border-border p-3 text-sm">
-      <summary className="cursor-pointer font-medium">{validation.changes.length} {validation.changes.length === 1 ? "change" : "changes"} to apply</summary>
+      <summary className="cursor-pointer font-medium">{validation.changes.length} {validation.changes.length === 1 ? pageText("change_7550b6") : pageText("changes_49a04b")}{" " + pageText("toApply_b2bcb1")}</summary>
       <ul className="mt-2 list-inside list-disc space-y-1">{validation.changes.map((label, index) => <li key={index}>{label}</li>)}</ul>
-      <p className="mt-2 text-muted-foreground">Changes save in this order. If one fails, earlier changes remain saved.</p>
+      <p className="mt-2 text-muted-foreground">{pageText("changesSaveInThisOrderIfOneFails_410fc6")}</p>
     </details>}
     {(validation.error || error) && <p role="alert" className="whitespace-pre-wrap text-sm text-destructive">{validation.error || error}</p>}
     <footer className="sticky bottom-0 z-10 flex items-center justify-between gap-3 border-t border-border bg-background py-4">
-      <Button variant="ghost" disabled={busy} onClick={() => { if (!operationPending.current) { operationPending.current = true; reload.mutate(); } }}>Reload saved</Button>
+      <Button variant="ghost" disabled={busy} onClick={() => { if (!operationPending.current) { operationPending.current = true; reload.mutate(); } }}>{pageText("reloadSaved_0056b9")}</Button>
       <div className="flex items-center gap-3">
         <span role="status" className="flex items-center gap-2 text-xs text-muted-foreground">
           {!save.isPending && !reload.isPending && dirty ? <span aria-hidden className="size-1.5 shrink-0 rounded-full bg-(--agent-detail-dot-unsaved)" /> : null}
-          {save.isPending ? `Saving: ${progress || "configuration"}…` : reload.isPending ? "Loading configuration…" : dirty ? validation.document && !validation.changes.length ? "No configuration changes" : "Unsaved changes" : "No unsaved changes"}
+          {save.isPending ? `Saving: ${progress || "configuration"}…` : reload.isPending ? pageText("loadingConfiguration_b0f132") : dirty ? validation.document && !validation.changes.length ? pageText("noConfigurationChanges_a0fcf7") : pageText("unsavedChanges_292672") : pageText("noUnsavedChanges_505329")}
         </span>
-        <Button disabled={!dirty || busy || reloadRequired || !validation.document || !validation.changes.length} onClick={() => { if (!operationPending.current) { operationPending.current = true; save.mutate(); } }}>{save.isPending ? "Saving…" : "Save changes"}</Button>
+        <Button disabled={!dirty || busy || reloadRequired || !validation.document || !validation.changes.length} onClick={() => { if (!operationPending.current) { operationPending.current = true; save.mutate(); } }}>{save.isPending ? pageText("saving_56a228") : pageText("saveChanges_179359")}</Button>
       </div>
     </footer>
   </div>;

@@ -1,3 +1,5 @@
+import { controlText } from "@/i18n/controls";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useId, useState, type ReactNode } from "react";
 import { completedActivitySummary } from "./completed-activity-summary";
 import {
@@ -31,15 +33,16 @@ import {
 import { TaskChatUsageReadout } from "./TaskChatUsageReadout";
 import { TaskChatReasoningSummary } from "./TaskChatReasoningSummary";
 import { latestReasoningHeadline } from "./reasoning-summary";
-import { retriedLabel, sentenceRowLabel, SUBJECT_FAMILIES, subjectRowLabel, toolActivityPresentation, type ToolIcon } from "./tool-taxonomy";
+import { toolActivityPresentation, type ToolIcon } from "./tool-taxonomy";
 import { useTaskChatShimmer } from "./TaskChatShimmer";
 import { TaskChatDiffCounts, TaskChatDiffView } from "./TaskChatDiffView";
 import { useTaskReferenceLabel, withTaskReference } from "./task-reference";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 type Activity = TaskChatActivityPhaseItem["items"][number];
 type ToolActivity = Extract<Activity, { kind: "tool" }>;
 
+/** Families whose rows read as "<verb> <subject>", for example "Ran $ node --test". */
+const SUBJECT_FAMILIES = new Set(["terminal", "read", "edit", "grep", "search", "web"]);
 const READ_RUN_MIN = 3;
 
 /** "120ms", "1.2s", "14s", "2m 03s". */
@@ -112,7 +115,7 @@ function presentation(item: Activity, active: boolean, taskLabel?: string): Acti
       active && (item.status === "pending" || item.status === "in_progress");
     const label =
       item.status === "failed"
-        ? item.retried ? retriedLabel(tool.failedLabel) : tool.failedLabel
+        ? tool.failedLabel
         : item.status === "interrupted"
           ? tool.interruptedLabel
           : running
@@ -123,12 +126,13 @@ function presentation(item: Activity, active: boolean, taskLabel?: string): Acti
     // With a concrete subject, the verb alone reads better: "Read README.md".
     // A finished command needs no verb at all: the icon and "$" say it ran.
     // A failure or stop keeps its marker ("Read · failed") unless an exit
-    // chip already says how a command ended. Live rows use the same helper.
-    const verb = subject && tool.sentenceSubject
-      ? sentenceRowLabel(label)
-      : subject && SUBJECT_FAMILIES.has(tool.family)
-        ? subjectRowLabel(label, terminal && !running && (item.status === "completed" || item.exitCode != null))
-        : label;
+    // chip already says how a command ended.
+    const marker = item.status === "failed" || item.status === "interrupted" ? label.split(" · ").at(1) : undefined;
+    const verb = subject && SUBJECT_FAMILIES.has(tool.family)
+      ? terminal && !running && (item.status === "completed" || item.exitCode != null)
+        ? ""
+        : `${label.split(" ")[0]!}${marker ? ` · ${marker}` : ""}`
+      : label;
     // Exit 0 is only news for commands; for reads and searches it is noise.
     const exitCode = item.exitCode ?? null;
     const shownExit = exitCode === 0 && !terminal ? null : exitCode;
@@ -144,7 +148,7 @@ function presentation(item: Activity, active: boolean, taskLabel?: string): Acti
     }
     return {
       icon: tool.icon,
-      label: verb,
+      label: controlText(verb),
       target: subject ? (terminal ? `$ ${subject}` : subject) : undefined,
       mono: true,
       running,
@@ -157,7 +161,7 @@ function presentation(item: Activity, active: boolean, taskLabel?: string): Acti
     const running = active && Boolean(item.streaming);
     return {
       icon: Brain,
-      label: running ? "Thinking" : "Thought",
+      label: controlText(running ? "Thinking" : "Thought"),
       target:
         latestReasoningHeadline(item.lines.join("\n")) ??
         item.lines
@@ -247,6 +251,7 @@ function ActivityRowContent({
   active: boolean;
   taskLabel?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const row = presentation(item, active, taskLabel);
   const shimmer = useTaskChatShimmer(item.id);
   if (!row) return null;
@@ -314,8 +319,7 @@ function ActivityRowContent({
                 exitCode === 0 ? "bg-muted text-muted-foreground" : "bg-destructive/10 text-destructive",
               )}
               data-tool-exit-code={exitCode}
-            >
-              exit {exitCode}
+            >{pageText("exit_de3ac2") + " "}{exitCode}
             </span>
           ) : null}
           {durationMs != null ? (
@@ -405,6 +409,7 @@ function ActivityDetails({ item }: { item: Activity }) {
 }
 
 function ActivityDetailsBody({ item }: { item: Activity }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (item.kind === "thinking")
     return <TaskChatReasoningSummary text={item.lines.join("\n")} streaming={Boolean(item.streaming)} />;
   if (item.kind === "usage") return <TaskChatUsageReadout item={item} />;
@@ -426,13 +431,13 @@ function ActivityDetailsBody({ item }: { item: Activity }) {
       {item.target ? (
         <p className="break-all font-mono">{item.target}</p>
       ) : null}
-      {item.blockedReason ? <p className="text-destructive">Blocked: {item.blockedReason}</p> : null}
+      {item.blockedReason ? <p className="text-destructive">{pageText("blocked_3111b3") + " "}{item.blockedReason}</p> : null}
       {item.detail ? (
-        <pre className={cn("whitespace-pre-wrap break-words font-mono", ANALYTICS_MASK_CLASS)}>
+        <pre className="whitespace-pre-wrap break-words font-mono">
           {item.detail}
         </pre>
       ) : null}
-      {item.decision ? <p>Permission {item.decision}</p> : null}
+      {item.decision ? <p>{pageText("permission_178571") + " "}{item.decision}</p> : null}
       {item.diff ? (
         <p className="break-all font-mono">
           {item.diff.path} · +{item.diff.added} −{item.diff.removed}
@@ -546,6 +551,7 @@ function readRunPreview(items: ToolActivity[]): string {
 }
 
 function ReadRunActivity({ items }: { items: ToolActivity[] }) {
+  const { t: pageText } = usePageTranslation("interface");
   const id = `runner-reads:${items[0]!.id}`;
   const [open, setOpen] = useTaskChatExpansion(id, false);
   const listId = useId();
@@ -563,14 +569,14 @@ function ReadRunActivity({ items }: { items: ToolActivity[] }) {
             <BookOpen className="size-3.5" aria-hidden="true" />
           </span>
           <span className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden whitespace-nowrap">
-            <span className="shrink-0 text-xs">Read {items.length} files</span>
+            <span className="shrink-0 text-xs">{pageText("read_852b43") + " "}{items.length}{" " + pageText("files_a1f13b")}</span>
             <span className="truncate font-mono text-xs text-muted-foreground">{readRunPreview(items)}</span>
           </span>
         </span>
         <ChevronRight className={cn("size-3.5 shrink-0", open && "rotate-90")} aria-hidden="true" />
       </button>
       {open ? (
-        <ol id={listId} className="ml-2.5 flex min-w-0 flex-col border-l border-border pl-2" aria-label="Files read">
+        <ol id={listId} className="ml-2.5 flex min-w-0 flex-col border-l border-border pl-2" aria-label={pageText("filesRead_1da178")}>
           {items.map((item) => (
             <ExpandedActivity key={item.id} item={item} active={false} />
           ))}
@@ -588,6 +594,7 @@ export function TaskChatRunnerActivityGroup({
   item: TaskChatActivityPhaseItem;
   defaultExpanded?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [expanded, setExpanded] = useTaskChatExpansion(
     item.id,
     defaultExpanded,
@@ -677,7 +684,7 @@ export function TaskChatRunnerActivityGroup({
             <ol
               id={historyId}
               className="flex min-w-0 flex-col gap-1"
-              aria-label="Activity history"
+              aria-label={pageText("activityHistory_bc3552")}
               data-testid="task-chat-runner-activity-list"
             >
               {foldReadRuns(activities).map((row) =>

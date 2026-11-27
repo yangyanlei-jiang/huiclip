@@ -74,13 +74,12 @@ export function humanizeSystemNotice(input: {
       tone: presentationTone ?? "warning",
     };
   }
-  if (body.includes("no live execution path")
-    || /^Paperclip tried to (?:start|continue) this task again\b/.test(body.trim())) {
+  if (body.includes("no live execution path")) {
     const owner = recoveryOwnerName(body);
     return {
       title: owner
         ? `Task paused — waiting on ${owner}`
-        : "Task could not continue",
+        : "Task paused — waiting on a recovery owner",
       tone: presentationTone ?? "warning",
     };
   }

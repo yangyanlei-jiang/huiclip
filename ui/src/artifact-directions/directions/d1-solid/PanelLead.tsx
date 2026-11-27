@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useRef, useState } from "react";
 import type { LabArtifact } from "../../kit";
 import { KindTag, PlatePicture } from "./KindBlock";
@@ -16,6 +17,7 @@ import { KindTag, PlatePicture } from "./KindBlock";
 const LEAD = "relative aspect-(--solid-lead-ratio) w-full overflow-hidden rounded-md bg-(--solid-sheet)";
 
 function VideoLead({ artifact }: { artifact: LabArtifact }) {
+  const { t: pageText } = usePageTranslation("interface");
   const video = useRef<HTMLVideoElement>(null);
   const [started, setStarted] = useState(false);
   return (
@@ -34,7 +36,7 @@ function VideoLead({ artifact }: { artifact: LabArtifact }) {
         <button
           type="button"
           aria-label={`Play video: ${artifact.title}`}
-          title="Play video"
+          title={pageText("playVideo_4ef474")}
           onClick={() => {
             setStarted(true);
             void video.current?.play();

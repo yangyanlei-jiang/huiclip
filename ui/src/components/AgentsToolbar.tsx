@@ -1,8 +1,7 @@
-import type { ReactNode, Ref } from "react";
+import { useTranslation } from "@/i18n";
 import { List, Network, Plus } from "lucide-react";
 import { ToolbarSearch } from "./ToolbarSearch";
 import { Button } from "./ui/button";
-import { OrgChartControls, type OrgChartActions } from "./OrgChartControls";
 
 export interface AgentsToolbarProps {
   query: string;
@@ -11,29 +10,20 @@ export interface AgentsToolbarProps {
   onViewChange: (value: "list" | "org") => void;
   hideViewToggle?: boolean;
   onNewAgent: () => void;
-  filters?: ReactNode;
-  orgControlsRef?: Ref<HTMLDivElement>;
-  orgActions?: OrgChartActions;
 }
 
 /** Shared roster search, view controls and actions for the page and stories. */
-export function AgentsToolbar({ query, onQueryChange, view, onViewChange, hideViewToggle, onNewAgent, filters, orgControlsRef, orgActions }: AgentsToolbarProps) {
-  return <div data-canonical-toolbar="agents" role="toolbar" aria-label="Agents controls" className="flex flex-wrap items-center gap-3">
+export function AgentsToolbar({ query, onQueryChange, view, onViewChange, hideViewToggle, onNewAgent }: AgentsToolbarProps) {
+  const { t } = useTranslation();
+  return <div data-canonical-toolbar="agents" role="toolbar" aria-label={t("agents.controls")} className="flex flex-wrap items-center gap-3">
     <div className="design-toolbar-controls flex w-full flex-wrap items-center gap-4">
-      <ToolbarSearch query={query} onQueryChange={onQueryChange} label="Search agents" placeholder="Search agents…" />
-      {!hideViewToggle && <div className="design-view-toggle" role="group" aria-label="Agent view">
-          <Button type="button" size="icon-sm" variant={view === "list" ? "secondary" : "ghost"} className="design-toolbar-icon" onClick={() => onViewChange("list")} title="List view" aria-label="List view" aria-pressed={view === "list"}><List aria-hidden /></Button>
-          <Button type="button" size="icon-sm" variant={view === "org" ? "secondary" : "ghost"} className="design-toolbar-icon" onClick={() => onViewChange("org")} title="Org chart view" aria-label="Org chart view" aria-pressed={view === "org"}><Network aria-hidden /></Button>
+      <ToolbarSearch query={query} onQueryChange={onQueryChange} label={t("agents.search")} placeholder={t("agents.searchHint")} />
+      {!hideViewToggle && <div className="design-view-toggle" role="group" aria-label={t("agents.view")}>
+          <Button type="button" size="icon-sm" variant={view === "list" ? "secondary" : "ghost"} className="design-toolbar-icon" onClick={() => onViewChange("list")} title={t("agents.listView")} aria-label={t("agents.listView")} aria-pressed={view === "list"}><List aria-hidden /></Button>
+          <Button type="button" size="icon-sm" variant={view === "org" ? "secondary" : "ghost"} className="design-toolbar-icon" onClick={() => onViewChange("org")} title={t("agents.chartView")} aria-label={t("agents.chartView")} aria-pressed={view === "org"}><Network aria-hidden /></Button>
       </div>}
-      {filters}
       <div className="design-toolbar-actions">
-        {orgActions && (
-          <div ref={orgControlsRef} data-org-toolbar-controls className="agents-org-controls-reveal"
-            data-visible={view === "org"} aria-hidden={view !== "org"} inert={view !== "org"}>
-            <div className="min-w-0 overflow-hidden"><OrgChartControls {...orgActions} /></div>
-          </div>
-        )}
-        <Button size="sm" variant="outline" data-toolbar-primary onClick={onNewAgent}><Plus aria-hidden />New Agent</Button>
+        <Button size="sm" variant="outline" data-toolbar-primary onClick={onNewAgent}><Plus aria-hidden />{t("agents.new")}</Button>
       </div>
     </div>
   </div>;

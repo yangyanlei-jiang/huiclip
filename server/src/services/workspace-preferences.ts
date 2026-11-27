@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { userWorkspacePreferences, type Db } from "@paperclipai/db";
-import type { UpdateWorkspacePreference, WorkspacePreference } from "@paperclipai/shared";
+import type { WorkspacePreference } from "@paperclipai/shared";
 import { persistActivity, publishActivity } from "./activity-log.js";
 import { logger } from "../middleware/logger.js";
 
@@ -12,27 +12,18 @@ export function workspacePreferenceService(db: Db) {
     return {
       userId,
       coordinatorWorkspaceEnabled: !(row?.classicWorkspaceEnabled ?? false),
-      timeZone: row?.timeZone ?? null,
       updatedAt: row?.updatedAt.toISOString() ?? null,
     };
   }
   return {
     get,
-    /** Updates only the fields the caller supplied. */
-    async set(companyId: string, userId: string, update: UpdateWorkspacePreference): Promise<WorkspacePreference> {
-      const changes = {
-        ...(update.coordinatorWorkspaceEnabled === undefined ? {} : {
-          coordinatorWorkspaceEnabled: update.coordinatorWorkspaceEnabled,
-          classicWorkspaceEnabled: !update.coordinatorWorkspaceEnabled,
-        }),
-        ...(update.timeZone === undefined ? {} : { timeZone: update.timeZone }),
-      };
+    async set(companyId: string, userId: string, enabled: boolean): Promise<WorkspacePreference> {
       const result = await db.transaction(async tx => {
         const txDb = tx as unknown as Db;
-        await tx.insert(userWorkspacePreferences).values({ userId, ...changes })
+        await tx.insert(userWorkspacePreferences).values({ userId, coordinatorWorkspaceEnabled: enabled, classicWorkspaceEnabled: !enabled })
           .onConflictDoUpdate({
             target: userWorkspacePreferences.userId,
-            set: { ...changes, updatedAt: new Date() },
+            set: { coordinatorWorkspaceEnabled: enabled, classicWorkspaceEnabled: !enabled, updatedAt: new Date() },
           });
         const { publication } = await persistActivity(txDb, {
           companyId, actorType: "user", actorId: userId,

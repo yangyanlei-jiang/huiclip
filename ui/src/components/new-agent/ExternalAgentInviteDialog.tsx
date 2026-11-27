@@ -1,3 +1,4 @@
+import { t as interfaceMessage } from "@/i18n";
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type { MuseInvitation } from "@paperclipai/shared";
@@ -38,11 +39,11 @@ export function ExternalAgentInviteDialog({ companyId, onClose, onBack, initialP
   const experimental = useQuery({ queryKey: queryKeys.instance.experimentalSettings, queryFn: instanceSettingsApi.getExperimental });
   const dotDisabledReason = experimental.isPending ? "Loading available agents…"
     : experimental.error ? "Unable to load experimental settings. Try again after refreshing."
-    : !experimental.data?.enableOpenAiDot
-      ? "Enable OpenAI Dot in experimental settings." : undefined;
-  const grokDisabledReason = experimental.isPending ? "Loading available agents…" : experimental.error ? "Unable to load experimental settings."
-    : !experimental.data?.enableGrokBot || !experimental.data.enableNativeRunner
-      ? "Enable Grok Bot and Paperclip Runner in experimental settings." : undefined;
+    : !experimental.data?.enableOpenAiDot || !experimental.data.enablePublicMcp
+      ? "Enable OpenAI Dot and Assistant connections (MCP) in experimental settings." : undefined;
+  const grokDisabledReason = experimental.isPending ? "Loading available agents…" : experimental.error ? interfaceMessage("interface:errorUnableToLoadExperimentalSettingsSentence")
+    : !experimental.data?.enableGrokBot || !experimental.data.enablePublicMcp || !experimental.data.enableNativeRunner
+      ? "Enable Grok Bot, Assistant connections (MCP), and Paperclip Runner in experimental settings." : undefined;
   const key = ["dot-binding", companyId, invitation?.agent.id];
   const state = useQuery({ queryKey: key,
     queryFn: ({ signal }) => dotInvitationsApi.connection(companyId, invitation!.agent.id, signal),

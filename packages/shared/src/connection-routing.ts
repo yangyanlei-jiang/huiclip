@@ -217,19 +217,9 @@ for (const [toolkit, name] of composioCatalog.toolkits as Array<[string, string]
   }
 }
 
-const supportIdentities = new Map<AggregatorServiceDefinition, string>();
-function supportIdentity(entry: AggregatorServiceDefinition) {
-  let identity = supportIdentities.get(entry);
-  if (identity === undefined) {
-    identity = aggregatorAppIdentity(entry.name);
-    supportIdentities.set(entry, identity);
-  }
-  return identity;
-}
 for (const app of arcadeCatalog.apps) {
-  const appIdentity = aggregatorAppIdentity(app.name);
   const existing = AGGREGATOR_SUPPORT_INDEX.find((entry) =>
-    entry.slug === app.slug || supportIdentity(entry) === appIdentity);
+    entry.slug === app.slug || aggregatorAppIdentity(entry.name) === aggregatorAppIdentity(app.name));
   if (existing) {
     existing.aliases = [...new Set([...existing.aliases, app.slug, ...app.aliases])];
     existing.providers = { ...existing.providers, arcade: arcadeCatalog.verifiedAt };

@@ -555,7 +555,6 @@ export async function applyManagedEnvironments(
       pluginKey: spec.pluginKey,
       driverKey: spec.driverKey,
       driverConfig: { ...spec.driverConfig },
-      ...(spec.runnerLifecycleMode ? { runnerLifecycleMode: spec.runnerLifecycleMode } : {}),
       workerManager,
     });
 

@@ -5,7 +5,7 @@ import type { createDeliveryWorkCoordinator } from "./delivery-work-coordinator.
 import { DELIVERY_QUEUES } from "./delivery-work-notifications.js";
 import { registerDeadlineWork } from "./deadline-work.js";
 import { registerIdleLocalWorkProbe, type IdleLocalWork } from "./idle-local-work.js";
-import { migrateRunEvidencePage } from "./run-evidence-migration-page.js";
+import { migrateRunEvidence } from "./run-evidence-migration.js";
 
 export function registerRunEvidenceMigrationWork(
   db: Db,
@@ -29,7 +29,8 @@ export function registerRunEvidenceMigrationWork(
     continuationMs: 1_000,
     async run(signal) {
       if (next === null) return;
-      const result = await migrateRunEvidencePage(db, {
+      const result = await migrateRunEvidence(db, {
+        apply: true,
         limit: 1,
         afterRunId: runCursor,
         afterTraceId: traceCursor,
@@ -37,7 +38,6 @@ export function registerRunEvidenceMigrationWork(
         signal,
       });
       signal.throwIfAborted();
-      if (result.busy) { pending = "present"; next = Date.now() + 1_000; return; }
       for (const item of result.items) {
         if (item.state === "blocked") {
           blocked++;

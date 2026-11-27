@@ -7,6 +7,7 @@ import { MarkdownBody } from "./MarkdownBody";
 type DocumentMarkdownBodyProps = Omit<ComponentProps<typeof MarkdownBody>, "onImageClick"> & {
   documentKey: string;
   revisionId?: string;
+  documentIssueId?: string;
   currentIssueId?: string;
 };
 
@@ -65,7 +66,7 @@ export function DocumentMarkdownBody({ documentKey, revisionId, documentIssueId,
 
   return (
     <div ref={containerRef}>
-      <MarkdownBody {...props} documentIssueId={documentIssueId} onImageClick={openImage} />
+      <MarkdownBody {...props} onImageClick={openImage} />
       <ImageGalleryModal
         items={items}
         initialIndex={(image ?? 1) - 1}

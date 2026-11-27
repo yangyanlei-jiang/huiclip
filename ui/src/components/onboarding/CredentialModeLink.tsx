@@ -1,3 +1,4 @@
+import { useTranslation } from "@/i18n";
 import { AnimatePresence, motion } from "motion/react";
 
 import { cn } from "../../lib/utils";
@@ -9,7 +10,7 @@ import { LINK_LABEL_FADE_IN, LINK_LABEL_FADE_OUT } from "./onboarding-motion";
  * alternate for the connect step, not a replacement.
  *
  * The label names the destination rather than the state: "Use API keys
- * instead" while on the subscription, "Use subscription instead" once on API
+ * instead" while on the subscription, "connectModel.useSub" once on API
  * keys. That is what makes a link work where a checkbox does not — a checkbox
  * can be ticked or not and reads the same either way, whereas a bare sentence
  * has to say what pressing it does. The consequence is that this control never
@@ -18,8 +19,8 @@ import { LINK_LABEL_FADE_IN, LINK_LABEL_FADE_OUT } from "./onboarding-motion";
  */
 
 const LINK_LABEL: Record<CredentialMode, string> = {
-  subscription: "Use subscription instead",
-  api: "Use API key instead",
+  subscription: "connectModel.useSub",
+  api: "connectModel.useApi",
 };
 const NATIVE_MODES: CredentialMode[] = ["subscription", "api"];
 
@@ -43,10 +44,11 @@ function ModeLink({ destination, onClick, modes }: {
   onClick: () => void;
   modes: CredentialMode[];
 }) {
+  const { t } = useTranslation();
   return (
     <button
       type="button"
-      aria-label={LINK_LABEL[destination]}
+      aria-label={t(LINK_LABEL[destination])}
       onClick={onClick}
       className={cn(
         // A grid rather than a flow of text, so both labels can occupy one cell
@@ -69,7 +71,7 @@ function ModeLink({ destination, onClick, modes }: {
           aria-hidden
           className="invisible col-start-1 row-start-1 whitespace-nowrap"
         >
-          {LINK_LABEL[sizerMode]}
+          {t(LINK_LABEL[sizerMode])}
         </span>
       ))}
 
@@ -91,7 +93,7 @@ function ModeLink({ destination, onClick, modes }: {
           animate={{ opacity: 1, transition: LINK_LABEL_FADE_IN }}
           exit={{ opacity: 0, transition: LINK_LABEL_FADE_OUT }}
         >
-          {LINK_LABEL[destination]}
+          {t(LINK_LABEL[destination])}
         </motion.span>
       </AnimatePresence>
     </button>

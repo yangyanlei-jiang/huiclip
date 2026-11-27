@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
@@ -195,17 +196,12 @@ export function ScheduleEditor({
   value,
   onChange,
   onValidityChange,
-  inline = false,
-  trailing,
 }: {
   value: string;
   onChange: (cron: string) => void;
   onValidityChange?: (valid: boolean) => void;
-  /** Lay the frequency and its time controls out on one wrapping line. */
-  inline?: boolean;
-  /** Extra control placed after the time controls, such as a time zone picker. */
-  trailing?: ReactNode;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const parsed = useMemo(() => parseCronToPreset(value), [value]);
   const [preset, setPreset] = useState<SchedulePreset>(parsed.preset);
   const [hour, setHour] = useState(parsed.hour);
@@ -251,10 +247,10 @@ export function ScheduleEditor({
   };
 
   return (
-    <div className={inline ? "flex flex-wrap items-center gap-2" : "space-y-3"}>
+    <div className="space-y-3">
       <Select value={preset} onValueChange={(v) => handlePresetChange(v as SchedulePreset)}>
-        <SelectTrigger className={inline ? "w-36" : "w-full"} aria-label="Schedule frequency">
-          <SelectValue placeholder="Choose frequency..." />
+        <SelectTrigger className="w-full" aria-label={pageText("scheduleFrequency_5dd6bd")}>
+          <SelectValue placeholder={pageText("chooseFrequency_e38071")} />
         </SelectTrigger>
         <SelectContent>
           {PRESETS.map((p) => (
@@ -266,7 +262,7 @@ export function ScheduleEditor({
       </Select>
 
       {preset === "custom" ? (
-        <div className={inline ? "min-w-48 flex-1 space-y-1.5" : "space-y-1.5"}>
+        <div className="space-y-1.5">
           <Input
             value={customCron}
             onChange={(e) => {
@@ -283,13 +279,11 @@ export function ScheduleEditor({
               }
             }}
             placeholder="0 10 * * *"
-            aria-label="Cron expression"
+            aria-label={pageText("cronExpression_0a2e94")}
             aria-invalid={!customValidation.valid}
             className="font-mono text-sm"
           />
-          <p className="text-xs text-muted-foreground">
-            Five fields: minute hour day-of-month month day-of-week
-          </p>
+          <p className="text-xs text-muted-foreground">{pageText("fiveFieldsMinuteHourDayOfMonthMonth_4bd2a0")}</p>
           <p
             className={customValidation.valid ? "text-xs text-muted-foreground" : "text-xs text-destructive"}
             aria-live="polite"
@@ -301,10 +295,10 @@ export function ScheduleEditor({
           </p>
         </div>
       ) : (
-        <div className={inline ? "contents" : "flex flex-wrap items-center gap-2"}>
+        <div className="flex flex-wrap items-center gap-2">
           {preset !== "every_minute" && preset !== "every_hour" && (
             <>
-              <span className="text-sm text-muted-foreground">at</span>
+              <span className="text-sm text-muted-foreground">{pageText("at_27e90d")}</span>
               <Select
                 value={hour}
                 onValueChange={(h) => {
@@ -347,7 +341,7 @@ export function ScheduleEditor({
 
           {preset === "every_hour" && (
             <>
-              <span className="text-sm text-muted-foreground">at minute</span>
+              <span className="text-sm text-muted-foreground">{pageText("atMinute_3411f5")}</span>
               <Select
                 value={minute}
                 onValueChange={(m) => {
@@ -371,7 +365,7 @@ export function ScheduleEditor({
 
           {preset === "weekly" && (
             <>
-              <span className="text-sm text-muted-foreground">on</span>
+              <span className="text-sm text-muted-foreground">{pageText("on_db3d40")}</span>
               <div className="flex gap-1">
                 {DAYS_OF_WEEK.map((d) => (
                   <Button
@@ -395,7 +389,7 @@ export function ScheduleEditor({
 
           {preset === "monthly" && (
             <>
-              <span className="text-sm text-muted-foreground">on day</span>
+              <span className="text-sm text-muted-foreground">{pageText("onDay_330355")}</span>
               <Select
                 value={dayOfMonth}
                 onValueChange={(dom) => {
@@ -418,7 +412,6 @@ export function ScheduleEditor({
           )}
         </div>
       )}
-      {trailing}
     </div>
   );
 }

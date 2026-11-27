@@ -32,10 +32,12 @@ export type ModelSource = {
   credentialMode?: ModelConnectionMode | null;
 };
 
+import { useTranslation } from "@/i18n";
+
 const CREDENTIAL_TAG_LABEL: Record<ModelConnectionMode, string> = {
-  subscription: "Subscription",
-  api: "API key",
-  advanced: "Custom Gateway",
+  subscription: "connectModel.subscription",
+  api: "connectModel.api",
+  advanced: "connectModel.gateway",
 };
 
 /**
@@ -48,6 +50,7 @@ const CREDENTIAL_TAG_LABEL: Record<ModelConnectionMode, string> = {
  * tile's padding and over the row below.
  */
 export function CredentialTag({ mode }: { mode: ModelConnectionMode }) {
+  const { t } = useTranslation();
   return (
     <span className="relative flex h-4 w-full items-center justify-center overflow-hidden text-(length:--text-micro) text-muted-foreground">
       <AnimatePresence initial={false} mode="sync">
@@ -58,9 +61,7 @@ export function CredentialTag({ mode }: { mode: ModelConnectionMode }) {
           animate={{ opacity: 1, y: 0, transition: TAG_SWAP_ENTER }}
           exit={{ opacity: 0, y: TAG_SWAP_TRAVEL, transition: TAG_SWAP_EXIT }}
         >
-          <motion.span layout="position" transition={SOURCE_COLLAPSE_MOVE}>
-            {CREDENTIAL_TAG_LABEL[mode]}
-          </motion.span>
+          {t(CREDENTIAL_TAG_LABEL[mode])}
         </motion.span>
       </AnimatePresence>
     </span>
@@ -116,13 +117,9 @@ function ModelSourceTile({
           : "border-border bg-card hover:bg-accent/40",
       )}
     >
-      <motion.span
-        layout="position"
-        transition={SOURCE_COLLAPSE_MOVE}
-        className="flex size-(--sz-30px) shrink-0 items-center justify-center"
-      >
+      <span className="flex size-(--sz-30px) shrink-0 items-center justify-center">
         {source.icon}
-      </motion.span>
+      </span>
       {/*
         One step up the named ladder each — the source name from text-xs (12px)
         to --text-compact (13px), the tag under it from --text-nano (10px) to
@@ -130,13 +127,9 @@ function ModelSourceTile({
         font-size-only token form, so the line box comes from the tile's own
         rhythm rather than the Tailwind scale's paired line-height.
       */}
-      <motion.span
-        layout="position"
-        transition={SOURCE_COLLAPSE_MOVE}
-        className="text-(length:--text-compact) font-medium text-foreground"
-      >
+      <span className="text-(length:--text-compact) font-medium text-foreground">
         {source.label}
-      </motion.span>
+      </span>
       {mode ? <CredentialTag mode={mode} /> : <span aria-hidden className="h-4" />}
     </button>
   );

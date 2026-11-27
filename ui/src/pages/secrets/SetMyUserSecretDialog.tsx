@@ -1,7 +1,9 @@
-import { useEffect, useId, useState } from "react";
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
+import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { CompanySecret, UserSecretDefinition } from "@paperclipai/shared";
-import { Eye, EyeOff } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -16,14 +18,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { secretsApi } from "../../api/secrets";
 import { queryKeys } from "../../lib/queryKeys";
 import { useToastActions } from "../../context/ToastContext";
+import { UserSecretChip } from "./user-secret-presentation";
 import { describeError } from "@/api/errors";
 
-// Hides the pasted value like a password field while keeping a multi-line box.
-
 /**
- * Shared dialog where a person adds or replaces their own value for a secret.
- * Used both from the Secrets → My secrets tab and from the missing-secret
- * warning surfaces (task run / task failure), so both behave identically.
+ * Shared "set my value" dialog for a user-secret definition. Used both from the
+ * Secrets → My secrets tab and from the missing-required-secret warning surfaces
+ * (task run / issue failure), so a user can satisfy a required secret from either
+ * place with identical behavior.
  */
 export function SetMyUserSecretDialog({
   companyId,
@@ -40,13 +42,13 @@ export function SetMyUserSecretDialog({
   onOpenChange: (open: boolean) => void;
   onSaved?: (secret: CompanySecret) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const [value, setValue] = useState("");
   const [externalRef, setExternalRef] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [showValue, setShowValue] = useState(false);
-  const fieldId = useId();
 
   const isExternal = definition?.managedMode === "external_reference";
 
@@ -55,7 +57,6 @@ export function SetMyUserSecretDialog({
       setValue("");
       setExternalRef("");
       setError(null);
-      setShowValue(false);
     }
   }, [open, definition?.id]);
 
@@ -79,7 +80,7 @@ export function SetMyUserSecretDialog({
       queryClient.invalidateQueries({ queryKey: queryKeys.secrets.myUserSecrets(companyId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.secrets.userDefinitions(companyId) });
       pushToast({
-        title: existingSecret ? "Your value was replaced" : "Your value was saved",
+        title: existingSecret ? interfaceNotice("interface:valueUpdated_2f7775") : interfaceNotice("interface:valueSaved_f0a0ca"),
         body: definition?.name,
         tone: "success",
       });
@@ -99,92 +100,64 @@ export function SetMyUserSecretDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>
-            {existingSecret ? "Replace your value" : "Set your value"}
-            {definition ? ` for ${definition.name}` : ""}
+          <DialogTitle className="flex items-center gap-2">
+            {existingSecret ? pageText("updateYourValue_119edd") : pageText("setYourValue_97028f")}
+            <UserSecretChip />
           </DialogTitle>
           <DialogDescription>
-            Only you provide this value. Agents use it when they work for you.
+            {definition ? (
+              <>{pageText("thisValueIsYoursOnlyItIsUsed_381321") + " "}<span className="font-mono">{definition.key}</span>.
+              </>
+            ) : null}
           </DialogDescription>
         </DialogHeader>
 
         {definition ? (
-          <div className="flex flex-col gap-3">
-            {definition.description || definition.usageGuidance ? (
-              <div className="flex flex-col gap-1 text-xs text-muted-foreground">
-                {definition.description ? <p>{definition.description}</p> : null}
-                {definition.usageGuidance ? <p>{definition.usageGuidance}</p> : null}
-              </div>
-            ) : null}
+          <div className="space-y-3">
+            <div className="rounded-md border border-border bg-muted/20 p-3 text-xs">
+              <div className="font-medium text-foreground">{definition.name}</div>
+              {definition.description ? (
+                <p className="mt-1 text-muted-foreground">{definition.description}</p>
+              ) : null}
+              {definition.usageGuidance ? (
+                <p className="mt-1 text-muted-foreground">{definition.usageGuidance}</p>
+              ) : null}
+            </div>
 
             {isExternal ? (
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium text-foreground" htmlFor={fieldId}>
-                  Where your value is stored
-                </label>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-foreground">{translateUi("interfaceCopy.externalReference")}</label>
                 <Input
-                  id={fieldId}
                   value={externalRef}
                   onChange={(event) => setExternalRef(event.target.value)}
-                  placeholder="Reference or ARN"
+                  placeholder={pageText("providerReferenceOrARN_8fdd1c")}
                   className="font-mono text-sm"
-                  autoComplete="off"
-                  spellCheck={false}
                   autoFocus
                 />
-                <p className="text-xs text-muted-foreground">
-                  Points to your own secret in your organization's vault. Paperclip saves the
-                  reference, not the value.
-                </p>
+                <p className="text-(length:--text-micro) text-muted-foreground">{pageText("pointsAtYourOwnCredentialInTheConfigured_8821fd")}</p>
               </div>
             ) : (
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium text-foreground" htmlFor={fieldId}>
-                  Your value
-                </label>
-                <div className="relative">
-                  <Textarea
-                    id={fieldId}
-                    value={value}
-                    onChange={(event) => setValue(event.target.value)}
-                    placeholder="Paste your token or key"
-                    className={`min-h-(--sz-80px) pr-11 font-mono text-sm${showValue ? "" : " secret-value-masked"}`}
-                    autoComplete="off"
-                    spellCheck={false}
-                    autoFocus
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-xs"
-                    className="absolute right-2 top-2"
-                    aria-label={showValue ? "Hide value" : "Show value"}
-                    aria-pressed={showValue}
-                    onClick={() => setShowValue((current) => !current)}
-                  >
-                    {showValue ? <EyeOff aria-hidden /> : <Eye aria-hidden />}
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Encrypted when saved. After that it can be replaced, never viewed.
-                </p>
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-foreground">{pageText("yourValue_990b78")}</label>
+                <Textarea
+                  value={value}
+                  onChange={(event) => setValue(event.target.value)}
+                  placeholder={pageText("pasteYourTokenOrCredential_df993f")}
+                  className="font-mono text-sm min-h-(--sz-80px)"
+                  autoFocus
+                />
+                <p className="text-(length:--text-micro) text-muted-foreground">{pageText("storedEncryptedNeverShownBackToAnyoneIncluding_cd050c")}</p>
               </div>
             )}
 
-            {error ? (
-              <p className="text-xs text-destructive" role="alert">
-                {error}
-              </p>
-            ) : null}
+            {error ? <p className="text-xs text-destructive">{error}</p> : null}
           </div>
         ) : null}
 
-        <DialogFooter className="flex-row items-center justify-between sm:justify-between">
-          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={save.isPending}>
-            Cancel
-          </Button>
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={save.isPending}>{translateUi("interfaceCopy.cancel")}</Button>
           <Button onClick={() => save.mutate()} disabled={!canSave || save.isPending}>
-            {save.isPending ? "Saving…" : existingSecret ? "Replace value" : "Save value"}
+            {save.isPending ? pageText("saving_56a228") : existingSecret ? pageText("updateValue_af2072") : pageText("saveValue_f63b76")}
           </Button>
         </DialogFooter>
       </DialogContent>

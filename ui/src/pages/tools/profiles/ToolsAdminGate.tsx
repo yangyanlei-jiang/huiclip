@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type { ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ShieldAlert } from "lucide-react";
@@ -17,6 +18,7 @@ import { useCompany } from "@/context/CompanyContext";
  * denial card is only for a loaded answer (or a real 403).
  */
 export function ToolsAdminGate({ children }: { children: ReactNode }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { selectedCompanyId } = useCompany();
   const boardAccess = useQuery({
     queryKey: queryKeys.access.currentBoardAccess,
@@ -25,7 +27,7 @@ export function ToolsAdminGate({ children }: { children: ReactNode }) {
   const view = useQueryView(boardAccess);
 
   if (boardAccess.isLoading || view.kind === "reconnecting") {
-    return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">Loading…</div>;
+    return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">{pageText("loading_33ce41")}</div>;
   }
   if (view.kind === "error" && view.errorKind !== "forbidden") {
     return (
@@ -56,14 +58,10 @@ export function ToolsAdminGate({ children }: { children: ReactNode }) {
         <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-6">
           <div className="flex items-center gap-2 text-foreground">
             <ShieldAlert className="h-5 w-5 text-muted-foreground" />
-            <h1 className="text-lg font-semibold">Access profiles require editing access</h1>
+            <h1 className="text-lg font-semibold">{pageText("accessProfilesRequireEditingAccess_f4588e")}</h1>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Access profiles decide which tools your agents can use. Ask a company editor to set these up, or
-            head back to{" "}
-            <Link to="/apps" className="font-medium text-primary hover:underline">
-              your apps
-            </Link>
+          <p className="text-sm text-muted-foreground">{pageText("accessProfilesDecideWhichToolsYourAgentsCan_47c6ec")}{" "}
+            <Link to="/apps" className="font-medium text-primary hover:underline">{pageText("yourApps_a4a5fe")}</Link>
             .
           </p>
         </div>

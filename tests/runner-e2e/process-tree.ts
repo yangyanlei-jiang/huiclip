@@ -167,10 +167,7 @@ export function diagnosticProcessKind(command: string, platform: NodeJS.Platform
   return diagnosticProcessKinds.has(name) ? name : "other";
 }
 
-export async function readProcessTable(
-  startInspector?: () => ChildProcess,
-  onFailure?: (reason: string) => void,
-): Promise<ProcessObservation[] | null> {
+export async function readProcessTable(startInspector?: () => ChildProcess): Promise<ProcessObservation[] | null> {
   if (process.platform === "win32") {
     return null;
   }
@@ -180,7 +177,7 @@ export async function readProcessTable(
       ["-e", "-o", "pid=,ppid=,pgid=,lstart=,stat=,comm="],
       {
         env: { PATH: "/usr/bin:/bin", LANG: "C", LC_ALL: "C" },
-        stdio: ["ignore", "pipe", "pipe"],
+        stdio: ["ignore", "pipe", "ignore"],
         // A wrapper-group shutdown must not interrupt its own bounded audit.
         detached: true,
       },
@@ -188,37 +185,29 @@ export async function readProcessTable(
     let output = "";
     let settled = false;
     let truncated = false;
-    let errorOutput = "";
-    const finish = (value: ProcessObservation[] | null, reason?: string) => {
+    const finish = (value: ProcessObservation[] | null) => {
       if (settled) return;
       settled = true;
       clearTimeout(inspectionTimeout);
-      if (value === null && reason) onFailure?.(reason);
       resolve(value);
     };
     const inspectionTimeout = setTimeout(() => {
       inspector.kill("SIGKILL");
-      finish(null, "ps did not finish within 5000ms");
+      finish(null);
     }, 5_000);
     inspectionTimeout.unref();
     inspector.stdout?.setEncoding("utf8").on("data", (chunk: string) => {
       if (output.length + chunk.length > 1024 * 1024) {
         truncated = true;
         inspector.kill("SIGKILL");
-        finish(null, "ps output exceeded 1 MiB");
+        finish(null);
         return;
       }
       output += chunk;
     });
-    inspector.stderr?.setEncoding("utf8").on("data", (chunk: string) => {
-      errorOutput = (errorOutput + chunk).slice(-512);
-    });
-    inspector.once("error", (error) => finish(null, `ps could not start: ${error.message}`));
-    inspector.once("close", (code, signal) => {
-      if (code !== 0 || truncated) {
-        finish(null, `ps exited code=${code} signal=${signal}${errorOutput.trim() ? `: ${errorOutput.trim()}` : ""}`);
-        return;
-      }
+    inspector.once("error", () => finish(null));
+    inspector.once("close", (code) => {
+      if (code !== 0 || truncated) { finish(null); return; }
       const observations = output
         .split(/\r?\n/)
         .map((line) =>

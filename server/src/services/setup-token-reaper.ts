@@ -35,19 +35,10 @@ export interface SetupTokenReaperDeps {
  */
 export function createSetupTokenReaper(deps: SetupTokenReaperDeps) {
   const now = deps.now ?? Date.now;
-  let failures = 0;
   async function sweep(): Promise<SetupTokenReapResult> {
-    try {
-      const result = await reapSetupTokenLeases({ store: deps.store, leases: deps.leases, log: deps.log }, now());
-      failures = result.failed > 0 ? Math.min(failures + 1, 7) : 0;
-      return result;
-    } catch (error) {
-      failures = Math.min(failures + 1, 7);
-      throw error;
-    }
+    return reapSetupTokenLeases({ store: deps.store, leases: deps.leases, log: deps.log }, now());
   }
-  const retryDelayMs = () => failures === 0 ? 0 : Math.min(30_000 * 2 ** (failures - 1), 30 * 60_000);
-  return { sweep, retryDelayMs };
+  return { sweep };
 }
 
 export type SetupTokenReaper = ReturnType<typeof createSetupTokenReaper>;
@@ -75,7 +66,6 @@ export function createProductionSetupTokenReaper(
 ): SetupTokenReaper {
   const environments = environmentService(deps.db);
   const sandbox = createProductionSetupTokenSandboxProvider({
-    db: deps.db,
     environments,
     environmentRuntime: deps.environmentRuntime,
     log: deps.log,

@@ -1,10 +1,14 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useId, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { ChatExecutionDefaults as Defaults, TaskWorkspaceSelection } from "@paperclipai/shared";
+import { projectsApi } from "@/api/projects";
 import { executionWorkspacesApi } from "@/api/execution-workspaces";
 import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/select";
-import { companyProjectsQuery } from "@/lib/company-projects-query";
+import { queryKeys } from "@/lib/queryKeys";
 
 function selectionKey(value: TaskWorkspaceSelection | null | undefined): string {
   if (value === undefined) return "inherit";
@@ -20,12 +24,14 @@ export function ChatExecutionDefaults({ companyId, value, resource = false, onSa
   resource?: boolean;
   onSave: (defaults: Defaults | null) => Promise<void>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const id = useId();
   const [draft, setDraft] = useState<Defaults | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savedFrom, setSavedFrom] = useState<string | null>(null);
-  const projects = useQuery({ ...companyProjectsQuery(companyId) });
+  const projects = useQuery({ queryKey: queryKeys.projects.list(companyId), queryFn: () => projectsApi.list(companyId) });
   const workspaces = useQuery({
     queryKey: ["channel-workspace-choices", companyId],
     queryFn: () => executionWorkspacesApi.listSummaries(companyId, { selectableForTask: true }),
@@ -58,28 +64,28 @@ export function ChatExecutionDefaults({ companyId, value, resource = false, onSa
     if (pending || !dirty) return;
     setPending(true); setError(null); setSavedFrom(null);
     try { await onSave(Object.keys(current).length ? current : null); setSavedFrom(valueKey); }
-    catch (cause) { setError(cause instanceof Error ? cause.message : "Couldn’t save task defaults. Try again."); }
+    catch (cause) { setError(cause instanceof Error ? cause.message : interfaceNotice("interface:couldnTSaveTaskDefaultsTryAgain_a27b97")); }
     finally { setPending(false); }
   }}>
     <div className="space-y-1">
-      <h3 id={`${id}-title`} className="text-sm font-semibold">Task defaults</h3>
-      <p className="text-sm text-muted-foreground">Applies to new conversations. Existing tasks keep their files and project.</p>
+      <h3 id={`${id}-title`} className="text-sm font-semibold">{translateUi("interfaceCopy.taskDefaults")}</h3>
+      <p className="text-sm text-muted-foreground">{pageText("appliesToNewConversationsExistingTasksKeepTheir_f5b341")}</p>
     </div>
-    {(projects.isError || workspaces.isError) && <p role="alert" className="text-sm text-destructive">Couldn’t load available projects or workspaces. <button type="button" className="underline" onClick={() => { void projects.refetch(); void workspaces.refetch(); }}>Try again</button></p>}
+    {(projects.isError || workspaces.isError) && <p role="alert" className="text-sm text-destructive">{pageText("couldnTLoadAvailableProjectsOrWorkspaces_e4cd1b") + " "}<button type="button" className="underline" onClick={() => { void projects.refetch(); void workspaces.refetch(); }}>{translateUi("interfaceCopy.tryAgain")}</button></p>}
     <div className="space-y-2">
-      <label htmlFor={`${id}-project`} className="text-sm font-medium">Project</label>
+      <label htmlFor={`${id}-project`} className="text-sm font-medium">{translateUi("interfaceCopy.project")}</label>
       <NativeSelect id={`${id}-project`} value={projectValue} disabled={pending || projects.isPending} onChange={(event) => {
         const { projectId: _previous, ...rest } = current;
         change(event.target.value === "inherit" ? rest : { ...rest, projectId: event.target.value === "none" ? null : event.target.value });
       }}>
-        <option value="inherit">{resource ? "Use connection defaults" : "Use task defaults"}</option>
-        <option value="none">No project</option>
-        {current.projectId && !projects.data?.some((project) => project.id === current.projectId) && <option value={current.projectId}>Saved project (unavailable)</option>}
+        <option value="inherit">{resource ? pageText("useConnectionDefaults_6c8987") : pageText("useTaskDefaults_06ef17")}</option>
+        <option value="none">{pageText("noProject_c326b7")}</option>
+        {current.projectId && !projects.data?.some((project) => project.id === current.projectId) && <option value={current.projectId}>{pageText("savedProjectUnavailable_df4090")}</option>}
         {(projects.data ?? []).map((project) => <option key={project.id} value={project.id}>{project.name}</option>)}
       </NativeSelect>
     </div>
     <div className="space-y-2">
-      <label htmlFor={`${id}-workspace`} className="text-sm font-medium">Workspace</label>
+      <label htmlFor={`${id}-workspace`} className="text-sm font-medium">{pageText("workspace_4ca0a7")}</label>
       <NativeSelect id={`${id}-workspace`} value={workspaceValue} disabled={pending || projects.isPending || workspaces.isPending} onChange={(event) => {
         const key = event.target.value;
         const { workspace: _previous, ...rest } = current;
@@ -87,25 +93,25 @@ export function ChatExecutionDefaults({ companyId, value, resource = false, onSa
         else if (key === "clear") change({ ...rest, workspace: null });
         else { const workspace = choices.get(key); if (workspace) change({ ...rest, workspace }); }
       }}>
-        <option value="inherit">{resource ? "Use connection defaults" : "Use project or task defaults"}</option>
-        {resource && <option value="clear">Use project or task defaults</option>}
-        {!resource && workspaceValue === "clear" && <option value="clear">Use project or task defaults</option>}
-        <option value="task">Task files — separate folder</option>
-        {current.workspace && !choices.has(workspaceValue) && <option value={workspaceValue}>Saved workspace (unavailable)</option>}
+        <option value="inherit">{resource ? pageText("useConnectionDefaults_6c8987") : pageText("useProjectOrTaskDefaults_ddf6d9")}</option>
+        {resource && <option value="clear">{pageText("useProjectOrTaskDefaults_ddf6d9")}</option>}
+        {!resource && workspaceValue === "clear" && <option value="clear">{pageText("useProjectOrTaskDefaults_ddf6d9")}</option>}
+        <option value="task">{pageText("taskFilesSeparateFolder_6de11b")}</option>
+        {current.workspace && !choices.has(workspaceValue) && <option value={workspaceValue}>{pageText("savedWorkspaceUnavailable_a26fa3")}</option>}
         {(projects.data ?? []).filter((project) => project.workspaces?.length).map((project) => <optgroup key={project.id} label={project.name}>
           {project.workspaces.flatMap((source) => [
-            <option key={`${source.id}:isolated`} value={`source:${source.id}:managed_isolated`}>{source.name} — isolated checkout</option>,
-            <option key={`${source.id}:shared`} value={`source:${source.id}:shared`}>{source.name} — shared folder</option>,
+            <option key={`${source.id}:isolated`} value={`source:${source.id}:managed_isolated`}>{source.name}{" " + pageText("isolatedCheckout_04a3e6")}</option>,
+            <option key={`${source.id}:shared`} value={`source:${source.id}:shared`}>{source.name}{" " + pageText("sharedFolder_3d61c7")}</option>,
           ])}
         </optgroup>)}
-        {(workspaces.data?.length ?? 0) > 0 && <optgroup label="Existing workspaces">{workspaces.data!.map((workspace) => <option key={workspace.id} value={`existing:${workspace.id}`}>{workspace.name}</option>)}</optgroup>}
+        {(workspaces.data?.length ?? 0) > 0 && <optgroup label={pageText("existingWorkspaces_95fbd6")}>{workspaces.data!.map((workspace) => <option key={workspace.id} value={`existing:${workspace.id}`}>{workspace.name}</option>)}</optgroup>}
       </NativeSelect>
-      <p className="text-xs text-muted-foreground">Project and workspace access is checked for each task. A shared folder must also be allowed by the agent’s execution policy.</p>
+      <p className="text-xs text-muted-foreground">{pageText("projectAndWorkspaceAccessIsCheckedForEach_7ecbc3")}</p>
     </div>
     {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
     <div className="flex items-center justify-between gap-3">
-      <div>{dirty ? <Button type="button" variant="ghost" disabled={pending} onClick={() => { setDraft(null); setError(null); }}>Cancel</Button> : saved ? <span role="status" className="text-sm text-muted-foreground">Saved for new tasks.</span> : null}</div>
-      <Button type="submit" disabled={!dirty || pending}>{pending ? "Saving…" : "Save defaults"}</Button>
+      <div>{dirty ? <Button type="button" variant="ghost" disabled={pending} onClick={() => { setDraft(null); setError(null); }}>{translateUi("interfaceCopy.cancel")}</Button> : saved ? <span role="status" className="text-sm text-muted-foreground">{pageText("savedForNewTasks_25fe0b")}</span> : null}</div>
+      <Button type="submit" disabled={!dirty || pending}>{pending ? pageText("saving_56a228") : pageText("saveDefaults_90df04")}</Button>
     </div>
   </form>;
 }

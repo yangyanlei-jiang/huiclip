@@ -5,7 +5,6 @@ import { toolApplications, toolActionRequests, toolCatalogEntries, toolConnectio
 import type { ToolActionRequestListItem, ToolActionRequestStatus } from "@paperclipai/shared";
 import { readSignedToolArgumentsPayload, TOOL_ACTION_REQUEST_SIGNING_GRACE_MS } from "../../tool-content-guards.js";
 import { toToolActionRequest } from "./projection.js";
-import { googleWorkspaceCatalogToolTitle } from "../../google-workspace-rest-dispatch.js";
 /** Pending requests stay hidden until signing completes; invalid signatures are cancelled. */
 export function createToolActionReviewQueue(db: Db) {
   return {
@@ -186,7 +185,7 @@ listActionRequests: async (
         return {
           request: toToolActionRequest(request),
           toolName: invocation?.toolName ?? catalogEntry?.toolName ?? "",
-          toolTitle: googleWorkspaceCatalogToolTitle(connection?.config?.sourceTemplateKey, catalogEntry?.toolName ?? invocation?.toolName ?? "", catalogEntry?.title),
+          toolTitle: catalogEntry?.title ?? null,
           connectionId: connection?.id ?? invocation?.connectionId ?? null,
           connectionName: connection?.name ?? null,
           applicationName: application?.name ?? null,

@@ -1,14 +1,16 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { ArrowUpRight, ChevronRight, Loader2, Lock } from "lucide-react";
 import type {
   AppDefinition,
   ConnectionGrant,
-  GoogleWorkspaceServiceSelection,
   ToolConnection,
   ToolConnectionCredentialPolicy,
 } from "@paperclipai/shared";
-import { connectionCredentialConfigPath, credentialConfigPath, getAvailableConnectionMethod, humanizeConnectionDisplayName, isGoogleWorkspaceConnectionConfig } from "@paperclipai/shared";
+import { connectionCredentialConfigPath, credentialConfigPath, getAvailableConnectionMethod, humanizeConnectionDisplayName } from "@paperclipai/shared";
 import { toolsApi } from "@/api/tools";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,13 +24,10 @@ import { useToast } from "@/context/ToastContext";
 import { redactUrlSecrets } from "@/lib/redact-url-secrets";
 import { useAuthorizationWindow } from "@/hooks/useAuthorizationWindow";
 import { cn } from "@/lib/utils";
-import { connectionTransportLabel } from "@/lib/connection-transport-label";
 import { Link } from "@/lib/router";
 import type { AppDetailSectionProps } from "./types";
 import { RevokeGrantDialog } from "./IdentitiesSection";
-import { GOOGLE_CONTENT_DELETION_NOTICE } from "@/features/connections/googleAccessRemoval";
 import { describeError } from "@/api/errors";
-import { useGoogleWorkspaceServiceGate } from "@/features/connections/GoogleWorkspaceServices";
 
 export function AdvancedPanel({
   connection,
@@ -112,6 +111,8 @@ function KeySection({
   canReplace: boolean;
   unavailableMessage: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
   return (
     <section>
@@ -119,16 +120,14 @@ function KeySection({
         <div className="flex items-start gap-3">
           <Lock className="mt-0.5 h-4 w-4 text-muted-foreground" />
           <div>
-            <h2 className="text-sm font-medium text-foreground">Reconnect</h2>
+            <h2 className="text-sm font-medium text-foreground">{translateUi("interfaceCopy.reconnect")}</h2>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              {canReplace ? "Replace the stored credential." : unavailableMessage}
+              {canReplace ? pageText("replaceTheStoredCredential_3a6988") : unavailableMessage}
             </p>
           </div>
         </div>
         {canReplace && !open && (
-          <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
-            Reconnect
-          </Button>
+          <Button size="sm" variant="outline" onClick={() => setOpen(true)}>{translateUi("interfaceCopy.reconnect")}</Button>
         )}
       </div>
       {open && (
@@ -163,25 +162,23 @@ export function ReconnectCard({
   canReconnect?: boolean;
   reconnectUnavailableMessage?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const { pushToast } = useToast();
   const authorization = useAuthorizationWindow();
-  const workspaceGate = useGoogleWorkspaceServiceGate();
   const reconnectOAuth = useMutation({
     // Reconnect is not a new identity choice. Personal-only connections must
     // put the replacement token back on the signed-in user's existing grant;
     // shared and legacy fallback connections keep using the organization slot.
-    mutationFn: (workspaceServices?: GoogleWorkspaceServiceSelection) => {
-      const services = workspaceServices ? { workspaceServices } : {};
-      return connection.credentialPolicy === "per_user"
-        ? toolsApi.startOAuth(connection.id, { asCurrentUser: true, ...services })
-        : workspaceServices ? toolsApi.startOAuth(connection.id, services) : toolsApi.startOAuth(connection.id);
-    },
+    mutationFn: () => connection.credentialPolicy === "per_user"
+      ? toolsApi.startOAuth(connection.id, { asCurrentUser: true })
+      : toolsApi.startOAuth(connection.id),
     onSuccess: async (start) => {
       try {
         await authorization.open(start);
       } catch (error) {
         pushToast({
-          title: "Couldn’t start sign-in",
+          title: interfaceNotice("interface:couldnTStartSignIn_6da48b"),
           body: describeError(error).body,
           tone: "error",
         });
@@ -190,7 +187,7 @@ export function ReconnectCard({
     onError: (error) => {
       authorization.cancel();
       pushToast({
-        title: "Couldn’t start sign-in",
+        title: interfaceNotice("interface:couldnTStartSignIn_6da48b"),
         body: describeError(error).body,
         tone: "error",
       });
@@ -200,14 +197,14 @@ export function ReconnectCard({
     mutationFn: () => toolsApi.checkConnectionHealth(connection.id),
     onSuccess: () => {
       pushToast({
-        title: "Vercel credential verified",
+        title: interfaceNotice("interface:vercelCredentialVerified_9dd646"),
         body: `${humanizeConnectionDisplayName(connection)} is back online.`,
         tone: "success",
       });
       onReconnected();
     },
     onError: (error) => pushToast({
-      title: "Credential still needs attention",
+      title: interfaceNotice("interface:credentialStillNeedsAttention_556633"),
       body: describeError(error).body,
       tone: "error",
     }),
@@ -219,37 +216,33 @@ export function ReconnectCard({
   return (
     <div className="flex flex-col gap-4 rounded-lg border border-amber-500/50 bg-amber-500/10 px-4 py-3">
       {authorization.fallback}
-      {workspaceGate.dialog}
       <div className="min-w-0">
         <h2 className="text-sm font-semibold text-amber-900 dark:text-amber-100">
-          {methodUnavailable ? "Connection no longer supported" : oauth ? "Reconnect required" : "This app needs reconnecting"}
+          {methodUnavailable ? pageText("connectionNoLongerSupported_440ac3") : oauth ? pageText("reconnectRequired_c8e1da") : pageText("thisAppNeedsReconnecting_806b03")}
         </h2>
         <p className="mt-0.5 text-sm text-amber-800 dark:text-amber-200">
           {methodUnavailable
-            ? "Add a supported connection from Connectors, then remove this connection."
+            ? pageText("addASupportedConnectionFromConnectorsThenRemove_f387c9")
             : connection.healthMessage?.trim() || (oauth
-            ? "Authorization expired or was revoked. Sign in again to restore access."
-            : "The key stopped working. Paste a new one to get it back online.")}
+            ? pageText("authorizationExpiredOrWasRevokedSignInAgain_190b7a")
+            : pageText("theKeyStoppedWorkingPasteANewOne_da47e6"))}
         </p>
       </div>
       <div className="shrink-0">
         {!canReconnect ? (
           <p className="text-sm text-amber-800 dark:text-amber-200">
-            {reconnectUnavailableMessage ?? "You don't have permission to reconnect this identity."}
+            {reconnectUnavailableMessage ?? pageText("youDonTHavePermissionToReconnectThis_a8adf0")}
           </p>
         ) : methodUnavailable ? (
           <Button size="sm" variant="outline" asChild>
-            <Link to={`/apps/connect?source=${encodeURIComponent(galleryEntry!.slug)}`}>
-              Add supported connection
-            </Link>
+            <Link to={`/apps/connect?source=${encodeURIComponent(galleryEntry!.slug)}`}>{pageText("addSupportedConnection_63a34d")}</Link>
           </Button>
         ) : onReconnect ? (
-          <Button size="sm" variant="outline" onClick={onReconnect}>Reconnect</Button>
+          <Button size="sm" variant="outline" onClick={onReconnect}>{translateUi("interfaceCopy.reconnect")}</Button>
         ) : managedByVercel && !oauth ? (
           <div className="flex items-center gap-2">
             <Button type="button" size="sm" variant="outline" asChild>
-              <a href="https://vercel.com/connect" target="_blank" rel="noreferrer">
-                Manage in Vercel <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
+              <a href="https://vercel.com/connect" target="_blank" rel="noreferrer">{pageText("manageInVercel_f530ac") + " "}<ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
               </a>
             </Button>
             <Button
@@ -258,19 +251,17 @@ export function ReconnectCard({
               disabled={verifyVercel.isPending}
               onClick={() => verifyVercel.mutate()}
             >
-              {verifyVercel.isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-              Check again
-            </Button>
+              {verifyVercel.isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}{pageText("checkAgain_e18504")}</Button>
           </div>
         ) : oauth ? (
           <Button
             type="button"
             size="sm"
             disabled={reconnectOAuth.isPending}
-            onClick={() => workspaceGate.run(connection, (services) => { authorization.reserve(); reconnectOAuth.mutate(services); })}
+            onClick={() => { authorization.reserve(); reconnectOAuth.mutate(); }}
           >
             {reconnectOAuth.isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-            {reconnectOAuth.isPending ? "Opening sign-in…" : "Reconnect"}
+            {reconnectOAuth.isPending ? pageText("openingSignIn_fc76c4") : pageText("reconnect_6988b1")}
           </Button>
         ) : (
           <ReconnectForm connection={connection} galleryEntry={galleryEntry} onReconnected={onReconnected} />
@@ -291,6 +282,8 @@ function ReconnectForm({
   onCancel?: () => void;
   onReconnected: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const { pushToast } = useToast();
   const methodKey = typeof connection.config?.connectionMethodKey === "string"
     ? connection.config.connectionMethodKey
@@ -327,22 +320,22 @@ function ReconnectForm({
         result.connection.healthStatus === "ok" || result.connection.healthStatus === "healthy" || result.connection.healthStatus === "unknown";
       if (healthy) {
         pushToast({
-          title: "Reconnected",
+          title: interfaceNotice("interface:reconnected_43e3de"),
           body: `${humanizeConnectionDisplayName(connection)} is back online.`,
           tone: "success",
         });
         onReconnected();
       } else {
         pushToast({
-          title: "Still not working",
-          body: result.connection.healthMessage?.trim() || "That key didn't check out. Try another.",
+          title: interfaceNotice("interface:stillNotWorking_46fc2f"),
+          body: result.connection.healthMessage?.trim() || interfaceNotice("interface:thatKeyDidnTCheckOutTryAnother_8c12ab"),
           tone: "error",
         });
       }
     },
     onError: (error) =>
       pushToast({
-        title: "That key didn't work",
+        title: interfaceNotice("interface:thatKeyDidnTWork_332d66"),
         body: describeError(error).body,
         tone: "error",
       }),
@@ -354,9 +347,7 @@ function ReconnectForm({
 
   if (connection.credentialSource === "vercel_connect") {
     return (
-      <p className="text-sm text-muted-foreground">
-        Credentials for this connection are managed in Vercel Connect.
-      </p>
+      <p className="text-sm text-muted-foreground">{pageText("credentialsForThisConnectionAreManagedInVercel_31cf3a")}</p>
     );
   }
 
@@ -381,8 +372,7 @@ function ReconnectForm({
                 target="_blank"
                 rel="noreferrer"
                 className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-foreground underline underline-offset-2"
-              >
-                Where do I find this? <ArrowUpRight className="h-3 w-3" />
+              >{pageText("whereDoIFindThis_78c640") + " "}<ArrowUpRight className="h-3 w-3" />
               </a>
             )}
           </div>
@@ -390,23 +380,21 @@ function ReconnectForm({
       ) : (
         <Input
           type="password"
-          aria-label="App key"
+          aria-label={pageText("appKey_6d3fb6")}
           autoComplete="off"
           value={single}
           onChange={(e) => setSingle(e.target.value)}
-          placeholder="Paste your new key"
+          placeholder={pageText("pasteYourNewKey_65469a")}
           className="h-10 font-mono"
         />
       )}
       <div className="flex items-center gap-2">
         <Button size="sm" disabled={!filled || reconnect.isPending} onClick={() => reconnect.mutate()}>
           {reconnect.isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-          {reconnect.isPending ? "Checking..." : "Check & reconnect"}
+          {reconnect.isPending ? pageText("checking_494d0f") : pageText("checkReconnect_b8ed4f")}
         </Button>
         {onCancel && (
-          <Button size="sm" variant="ghost" onClick={onCancel} disabled={reconnect.isPending}>
-            Cancel
-          </Button>
+          <Button size="sm" variant="ghost" onClick={onCancel} disabled={reconnect.isPending}>{translateUi("interfaceCopy.cancel")}</Button>
         )}
       </div>
     </div>
@@ -414,13 +402,15 @@ function ReconnectForm({
 }
 
 function TechnicalDetails({ connection }: { connection: ToolConnection }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
   return (
     <Collapsible open={open} onOpenChange={setOpen} asChild>
       <section>
         <CollapsibleTrigger asChild>
           <button type="button" className="flex w-full items-center gap-3 py-1 text-left">
-            <span className="min-w-0 flex-1 text-sm font-medium text-foreground">Connection details</span>
+            <span className="min-w-0 flex-1 text-sm font-medium text-foreground">{pageText("connectionDetails_ab30a5")}</span>
             <ChevronRight
               className={cn("h-4 w-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-90")}
             />
@@ -428,9 +418,9 @@ function TechnicalDetails({ connection }: { connection: ToolConnection }) {
         </CollapsibleTrigger>
         <CollapsibleContent>
           <dl className="mt-4 grid gap-2 pb-2 text-xs sm:grid-cols-(--gtc-59)">
-            <dt className="text-muted-foreground">Address</dt>
+            <dt className="text-muted-foreground">{pageText("address_d70f93")}</dt>
             <dd className="break-all font-mono text-foreground">{connectionAddress(connection)}</dd>
-            <dt className="text-muted-foreground">Type</dt>
+            <dt className="text-muted-foreground">{translateUi("interfaceCopy.type")}</dt>
             <dd className="text-foreground">{connectionTransportLabel(connection.transport)}</dd>
           </dl>
         </CollapsibleContent>
@@ -476,6 +466,8 @@ export function DangerZone({
   onReconnectIdentity?: () => void;
   onRevokeIdentity?: (grant: ConnectionGrant) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [revokeTarget, setRevokeTarget] = useState<ConnectionGrant | null>(null);
@@ -483,7 +475,6 @@ export function DangerZone({
     ? connection.enabled === false || connection.status === "disabled"
     : false;
   const methodUnavailable = connection ? connectionMethodUnavailable(connection, galleryEntry) : false;
-  const googleWorkspace = isGoogleWorkspaceConnectionConfig(connection?.config, connection?.transportConfig);
 
   return (
     <Collapsible
@@ -500,7 +491,7 @@ export function DangerZone({
             type="button"
             className="flex w-full items-center gap-3 py-1 text-left"
           >
-            <span className="min-w-0 flex-1 text-sm font-medium text-destructive">Danger zone</span>
+            <span className="min-w-0 flex-1 text-sm font-medium text-destructive">{translateUi("interfaceCopy.dangerZone")}</span>
             <ChevronRight
               className={cn("h-4 w-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-90")}
             />
@@ -511,9 +502,9 @@ export function DangerZone({
           <div className="mt-3 divide-y divide-border border-t border-border">
             {connection && onToggleConnection ? (
               <div className="flex items-center justify-between gap-4 py-4">
-                <h2 className="text-sm font-medium text-foreground">Pause connection</h2>
+                <h2 className="text-sm font-medium text-foreground">{pageText("pauseConnection_b2e7c2")}</h2>
                 <ToggleSwitch
-                  aria-label="Pause connection"
+                  aria-label={pageText("pauseConnection_b2e7c2")}
                   checked={paused}
                   disabled={toggleDisabled}
                   onCheckedChange={onToggleConnection}
@@ -537,7 +528,7 @@ export function DangerZone({
             {connection?.authKind === "oauth" && !methodUnavailable && (onReconnectIdentity || !canReplaceCredential) ? (
               <div className="flex flex-wrap items-center justify-between gap-3 py-4">
                 <div>
-                  <p className="text-sm font-medium text-foreground">Reconnect</p>
+                  <p className="text-sm font-medium text-foreground">{translateUi("interfaceCopy.reconnect")}</p>
                   <p className="text-xs text-muted-foreground">
                     {canReplaceCredential
                       ? `Sign in to ${identityProviderName} again.`
@@ -551,9 +542,7 @@ export function DangerZone({
                     disabled={identityActionPending}
                     onClick={onReconnectIdentity}
                   >
-                    {identityActionPending ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
-                    Reconnect
-                  </Button>
+                    {identityActionPending ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}{pageText("reconnect_6988b1")}</Button>
                 ) : null}
               </div>
             ) : null}
@@ -563,43 +552,32 @@ export function DangerZone({
               && onRevokeIdentity ? (
                 <div className="flex flex-wrap items-center justify-between gap-3 py-4">
                   <div>
-                    <p className="text-sm font-medium text-foreground">Revoke identity</p>
-                    <p className="text-xs text-muted-foreground">
-                      Disconnect the identity currently used by this app.
-                    </p>
+                    <p className="text-sm font-medium text-foreground">{pageText("revokeIdentity_38a6af")}</p>
+                    <p className="text-xs text-muted-foreground">{pageText("disconnectTheIdentityCurrentlyUsedByThisApp_ecc247")}</p>
                   </div>
                   <Button
                     variant="destructive"
                     size="sm"
                     onClick={() => setRevokeTarget(identityGrant)}
-                  >
-                    Revoke
-                  </Button>
+                  >{pageText("revoke_0be720")}</Button>
                 </div>
             ) : null}
 
             <div className="flex flex-wrap items-center justify-between gap-3 py-4">
               <div>
-                <p className="text-sm font-medium text-foreground">Remove this app</p>
+                <p className="text-sm font-medium text-foreground">{pageText("removeThisApp_8c21bb")}</p>
                 <p className="text-xs text-muted-foreground">
                   {`Deletes credentials for ${appName} and removes agent access. Reconnecting requires a new sign-in or key.`}
                 </p>
-                {googleWorkspace ? <p className="text-xs text-muted-foreground">{GOOGLE_CONTENT_DELETION_NOTICE}</p> : null}
               </div>
               {confirming ? (
                 <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="sm" onClick={() => setConfirming(false)} disabled={removing}>
-                    Cancel
-                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setConfirming(false)} disabled={removing}>{translateUi("interfaceCopy.cancel")}</Button>
                   <Button variant="destructive" size="sm" onClick={onRemove} disabled={removing}>
-                    {removing && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-                    Yes, remove it
-                  </Button>
+                    {removing && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}{pageText("yesRemoveIt_5289fd")}</Button>
                 </div>
               ) : (
-                <Button variant="destructive" size="sm" onClick={() => setConfirming(true)}>
-                  Remove app
-                </Button>
+                <Button variant="destructive" size="sm" onClick={() => setConfirming(true)}>{pageText("removeApp_55d5b0")}</Button>
               )}
             </div>
           </div>
@@ -617,9 +595,7 @@ export function DangerZone({
               onRevokeIdentity?.(revokeTarget);
               setRevokeTarget(null);
             }}
-          >
-            {googleWorkspace ? <p className="text-sm text-muted-foreground">{GOOGLE_CONTENT_DELETION_NOTICE}</p> : null}
-          </RevokeGrantDialog>
+          />
         ) : null}
       </section>
     </Collapsible>
@@ -634,4 +610,8 @@ export function connectionAddress(connection: ToolConnection): string {
   return "Not set";
 }
 
-export { connectionTransportLabel };
+export function connectionTransportLabel(transport: ToolConnection["transport"]): string {
+  if (transport === "mcp_remote") return "Remote HTTP";
+  if (transport === "local_stdio") return "Local command";
+  return "Unknown";
+}

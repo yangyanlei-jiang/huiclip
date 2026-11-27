@@ -1,3 +1,6 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { TaskChatImageGrid } from "./TaskChatImageGrid";
 import { imageResourceSource } from "./image-resources";
@@ -57,7 +60,6 @@ import { TaskChatDiffCounts, TaskChatDiffView } from "./TaskChatDiffView";
 import { parseUnifiedDiffLines } from "./diff-lines";
 import { useArtifactsV1Enabled } from "@/hooks/useArtifactsV1Enabled";
 import { ArtifactFileRow, ArtifactRow, fileRowSourceFromAttachment, fileRowSourceFromWorkProduct, subjectFromAttachment, subjectFromDocumentSummary, subjectFromWorkProduct, workProductStateBadge } from "@/components/artifacts/v1";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 export interface TaskChatProtocolCardProps {
   item: TaskChatProtocolItem;
@@ -244,9 +246,10 @@ function CardShell({
 }
 
 function PlanSteps({ steps }: { steps: TaskChatProtocolStep[] }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (steps.length === 0) return null;
   return (
-    <ol className="flex flex-col gap-1.5" aria-label="Plan steps">
+    <ol className="flex flex-col gap-1.5" aria-label={pageText("planSteps_007446")}>
       {steps.map((step) => (
         <li key={step.id} className="flex items-start gap-2 text-sm">
           <StatusIcon status={step.status} className="mt-0.5 shrink-0" />
@@ -271,6 +274,7 @@ function PlanSteps({ steps }: { steps: TaskChatProtocolStep[] }) {
  * the turn keeps only a one-line record.
  */
 function PlanProposalCard({ item }: { item: TaskChatProviderActivityItem }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (item.status === "running") {
     return <TaskChatPlanPreviewCard source={{ kind: "live", activity: item }} testId="task-chat-plan-proposal" />;
   }
@@ -281,7 +285,7 @@ function PlanProposalCard({ item }: { item: TaskChatProviderActivityItem }) {
     <details className="group" data-testid="task-chat-plan-proposal">
       <summary className="flex cursor-pointer list-none items-center gap-2 rounded-sm px-1 py-1 text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
         <FileText aria-hidden className="h-3.5 w-3.5 shrink-0" />
-        <span className="min-w-0 truncate">Proposed a plan · <span className="text-foreground">{title}</span></span>
+        <span className="min-w-0 truncate">{pageText("proposedAPlan_a856d7") + " "}<span className="text-foreground">{title}</span></span>
       </summary>
       {item.output ? (
         <div className="mt-1 rounded-md border border-border bg-muted/25 px-4 py-3 text-sm" data-testid="task-chat-plan-proposal-body">
@@ -297,6 +301,7 @@ function ProviderActivityCard({
 }: {
   item: TaskChatProviderActivityItem;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (item.family === "plan_proposal") return <PlanProposalCard item={item} />;
   const Icon = FAMILY_ICON[item.family];
   const hasDetails =
@@ -314,7 +319,7 @@ function ProviderActivityCard({
     >
       {item.steps.length > 0 ? <PlanSteps steps={item.steps} /> : null}
       {item.children.length > 0 ? (
-        <ul className="flex flex-col gap-2" aria-label="Delegated agents">
+        <ul className="flex flex-col gap-2" aria-label={pageText("delegatedAgents_735036")}>
           {item.children.map((child) => (
             <li
               key={child.id}
@@ -347,7 +352,7 @@ function ProviderActivityCard({
         </ul>
       ) : null}
       {item.links.length > 0 ? (
-        <ul className="flex flex-col gap-2" aria-label="Research sources">
+        <ul className="flex flex-col gap-2" aria-label={pageText("researchSources_1805e8")}>
           {item.links.map((link) => (
             <li key={link.href}>
               <a
@@ -378,8 +383,7 @@ function ProviderActivityCard({
           )}
         >
           <summary className="flex cursor-pointer list-none items-center gap-1 text-xs font-medium text-muted-foreground">
-            <ChevronDown aria-hidden className="h-3.5 w-3.5" /> Details
-          </summary>
+            <ChevronDown aria-hidden className="h-3.5 w-3.5" />{" " + pageText("details_dc3dec")}</summary>
           {item.details.length > 0 ? (
             <dl className="mt-2 flex min-w-0 flex-col gap-1.5 text-xs">
               {item.details.map((detail) => (
@@ -401,14 +405,12 @@ function ProviderActivityCard({
             </dl>
           ) : null}
           {item.output ? (
-            <pre className={cn("mt-2 max-h-(--sz-64) overflow-auto whitespace-pre-wrap rounded-sm bg-muted/50 p-2 font-mono text-xs text-foreground", ANALYTICS_MASK_CLASS)}>
+            <pre className="mt-2 max-h-(--sz-64) overflow-auto whitespace-pre-wrap rounded-sm bg-muted/50 p-2 font-mono text-xs text-foreground">
               {item.output}
             </pre>
           ) : null}
           {item.outputTruncated ? (
-            <p className="mt-1 text-xs text-muted-foreground">
-              Output truncated to 8 KiB.
-            </p>
+            <p className="mt-1 text-xs text-muted-foreground">{pageText("outputTruncatedTo8KiB_fdab16")}</p>
           ) : null}
         </details>
       ) : null}
@@ -425,6 +427,7 @@ function WorkspaceChangeFileRow({
   open: boolean;
   onToggle: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const parsed = useMemo(
     () => (file.diff ? parseUnifiedDiffLines(file.diff) : null),
     [file.diff],
@@ -455,17 +458,17 @@ function WorkspaceChangeFileRow({
         </span>
         {file.operation !== "modify" ? (
           <span className="shrink-0 text-(length:--text-micro) capitalize text-muted-foreground">
-            {file.binary ? "binary · " : ""}
+            {file.binary ? pageText("binary_e616d0") + " " : ""}
             {OPERATION_LABEL[file.operation] ?? file.operation.replaceAll("_", " ")}
           </span>
         ) : file.binary ? (
-          <span className="shrink-0 text-(length:--text-micro) text-muted-foreground">binary</span>
+          <span className="shrink-0 text-(length:--text-micro) text-muted-foreground">{pageText("binary_7e57cf")}</span>
         ) : null}
         <TaskChatDiffCounts added={file.additions} removed={file.deletions} />
       </button>
       {open ? (
         file.binary ? (
-          <p className="ml-7 mt-1 text-xs text-muted-foreground">Binary file; text diff is unavailable.</p>
+          <p className="ml-7 mt-1 text-xs text-muted-foreground">{pageText("binaryFileTextDiffIsUnavailable_e9e994")}</p>
         ) : parsed?.lines.length ? (
           <TaskChatDiffView
             className="ml-7 mt-1"
@@ -473,7 +476,7 @@ function WorkspaceChangeFileRow({
             truncated={parsed.truncated || file.diffTruncated === true}
           />
         ) : (
-          <p className="ml-7 mt-1 text-xs text-muted-foreground">This patch is too large to show here.</p>
+          <p className="ml-7 mt-1 text-xs text-muted-foreground">{pageText("thisPatchIsTooLargeToShowHere_a70d09")}</p>
         )
       ) : null}
     </div>
@@ -488,6 +491,7 @@ const OPERATION_LABEL: Record<string, string> = {
 };
 
 function WorkspaceChangeCard({ item }: { item: TaskChatWorkspaceChangeItem }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [openPaths, setOpenPaths] = useState<ReadonlySet<string>>(() => new Set());
   const [expanded, setExpanded] = useState(false);
   const visibleFiles = expanded ? item.files : item.files.slice(0, 5);
@@ -504,7 +508,7 @@ function WorkspaceChangeCard({ item }: { item: TaskChatWorkspaceChangeItem }) {
   return (
     <CardShell
       icon={GitBranch}
-      title={item.complete ? "Changed in this turn" : "Changing files"}
+      title={item.complete ? pageText("changedInThisTurn_ab200c") : pageText("changingFiles_433162")}
       status={item.complete ? null : "running"}
       testId="task-chat-workspace-change"
     >
@@ -521,7 +525,7 @@ function WorkspaceChangeCard({ item }: { item: TaskChatWorkspaceChangeItem }) {
               )
             }
           >
-            {openPaths.size > 0 ? "Collapse all" : "Expand all"}
+            {openPaths.size > 0 ? pageText("collapseAll_ec8983") : pageText("expandAll_2af9d4")}
           </button>
         ) : null}
       </div>
@@ -543,20 +547,19 @@ function WorkspaceChangeCard({ item }: { item: TaskChatWorkspaceChangeItem }) {
           className="mt-1"
           onClick={() => setExpanded((value) => !value)}
         >
-          {expanded ? "Show fewer files" : `Show ${item.files.length - 5} more files`}
+          {expanded ? pageText("showFewerFiles_19ee77") : `Show ${item.files.length - 5} more files`}
         </Button>
       ) : null}
       {fileCount > item.files.length ? (
         <p className="mt-1 px-2 text-xs text-muted-foreground" data-testid="task-chat-workspace-change-omitted">
-          {fileCount - item.files.length} more {fileCount - item.files.length === 1 ? "file" : "files"} changed.
-          This change set is too large to list them here.
-        </p>
+          {fileCount - item.files.length}{" " + pageText("more_e7c95b") + " "}{fileCount - item.files.length === 1 ? pageText("file_971c41") : pageText("files_a1f13b")}{" " + pageText("changedThisChangeSetIsTooLargeTo_440bd8")}</p>
       ) : null}
     </CardShell>
   );
 }
 
 function WorkspaceFileCard({ item }: { item: TaskChatWorkspaceFileItem }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [open, setOpen] = useState(false);
   const extension = item.displayName.includes(".")
     ? item.displayName.split(".").at(-1)?.toUpperCase()
@@ -595,9 +598,7 @@ function WorkspaceFileCard({ item }: { item: TaskChatWorkspaceFileItem }) {
             size="sm"
             variant="outline"
             onClick={() => setOpen(true)}
-          >
-            Preview
-          </Button>
+          >{pageText("preview_f1fbb2")}</Button>
         </div>
       </CardShell>
       <Dialog open={open} onOpenChange={setOpen}>
@@ -607,10 +608,7 @@ function WorkspaceFileCard({ item }: { item: TaskChatWorkspaceFileItem }) {
           </DialogHeader>
           <p className="font-mono text-xs text-muted-foreground">{item.path}</p>
           {item.preview == null ? (
-            <p className="rounded-sm bg-muted/50 p-3 text-sm text-muted-foreground">
-              Preview unavailable. The verified workspace reference is still
-              available above.
-            </p>
+            <p className="rounded-sm bg-muted/50 p-3 text-sm text-muted-foreground">{pageText("previewUnavailableTheVerifiedWorkspaceReferenceIsStill_8cfc27")}</p>
           ) : item.presentation === "document" ? (
             <div className="max-h-(--sz-70vh) overflow-auto rounded-sm bg-muted/30 p-3">
               <MarkdownBody>{item.preview}</MarkdownBody>
@@ -624,14 +622,12 @@ function WorkspaceFileCard({ item }: { item: TaskChatWorkspaceFileItem }) {
               src={item.preview}
             />
           ) : (
-            <pre className={cn("max-h-(--sz-70vh) overflow-auto whitespace-pre-wrap rounded-sm bg-muted/50 p-3 font-mono text-xs", ANALYTICS_MASK_CLASS)}>
+            <pre className="max-h-(--sz-70vh) overflow-auto whitespace-pre-wrap rounded-sm bg-muted/50 p-3 font-mono text-xs">
               {item.preview}
             </pre>
           )}
           {item.previewTruncated ? (
-            <p className="text-xs text-muted-foreground">
-              Preview truncated by the runner.
-            </p>
+            <p className="text-xs text-muted-foreground">{pageText("previewTruncatedByTheRunner_6e54fe")}</p>
           ) : null}
         </DialogContent>
       </Dialog>
@@ -650,6 +646,7 @@ function RuntimeQuestionHistory({
 }: {
   item: TaskChatRuntimeRequestItem;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const questionSet = item.questionSet;
   if (!questionSet) return null;
   return (
@@ -676,7 +673,7 @@ function RuntimeQuestionHistory({
           ))}
           <p className="text-xs text-muted-foreground">
             {item.status === "resolved"
-              ? "Answer details were not recorded by this older runtime."
+              ? pageText("answerDetailsWereNotRecordedByThisOlder_6cd95a")
               : `No answers were submitted; this request was ${item.status}.`}
           </p>
         </div>
@@ -690,6 +687,7 @@ function RuntimeQuestionReceipt({
 }: {
   item: TaskChatRuntimeRequestItem;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const label =
     item.status === "resolved"
       ? "Questions answered"
@@ -721,7 +719,7 @@ function RuntimeQuestionReceipt({
       <div className="pb-3 pl-7 pr-1">
         <div className="mb-3">
           <p className="text-sm font-medium text-foreground">
-            {item.questionSet?.title ?? "Runtime input"}
+            {item.questionSet?.title ?? pageText("runtimeInput_5e0e20")}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">{item.prompt}</p>
         </div>
@@ -746,6 +744,8 @@ function RuntimeRequestCard({
   imageUploadHandler?: (file: File) => Promise<string>;
   mentions?: MentionOption[];
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const historyIssueId = useContext(TaskChatRequestHistoryContext);
   const draftKey = requestedDraftKey ?? (historyIssueId
     ? `paperclip:task-input:${historyIssueId}:runtime:${item.runId}:${item.requestId}`
@@ -795,7 +795,7 @@ function RuntimeRequestCard({
       setError(
         cause instanceof Error
           ? cause.message
-          : "The runtime request could not be resolved.",
+          : interfaceNotice("interface:theRuntimeRequestCouldNotBeResolved_07d443"),
       );
     }
   };
@@ -894,7 +894,7 @@ function RuntimeRequestCard({
               size="sm"
               disabled={!onDecision || submitting || !canSubmitInput}
             >
-              {submitting ? "Submitting…" : "Submit response"}
+              {submitting ? pageText("submitting_25bdf9") : pageText("submitResponse_a5f0c0")}
             </Button>
             {item.choices.some((choice) => choice.key === "decline") ? (
               <Button
@@ -903,9 +903,7 @@ function RuntimeRequestCard({
                 variant="outline"
                 disabled={!onDecision || submitting}
                 onClick={() => void submit({ action: "decline" })}
-              >
-                Deny
-              </Button>
+              >{pageText("deny_53577b")}</Button>
             ) : null}
             {presentation === "timeline" ? (
               <Button
@@ -914,9 +912,7 @@ function RuntimeRequestCard({
                 variant="outline"
                 disabled={!onDecision || submitting}
                 onClick={() => void submit({ action: "cancel" })}
-              >
-                Cancel
-              </Button>
+              >{translateUi("interfaceCopy.cancel")}</Button>
             ) : null}
           </div>
         </form>
@@ -947,15 +943,13 @@ function RuntimeRequestCard({
                   }
                 }}
               >
-                {submitting ? "Submitting…" : choice.label}
+                {submitting ? pageText("submitting_25bdf9") : choice.label}
               </Button>
             ))}
         </div>
       ) : null}
       {item.status === "pending" && !onDecision ? (
-        <p className="mt-2 text-xs text-muted-foreground">
-          Resolve this request in the active runtime session.
-        </p>
+        <p className="mt-2 text-xs text-muted-foreground">{pageText("resolveThisRequestInTheActiveRuntimeSession_027dd0")}</p>
       ) : null}
       {error ? (
         <p className="mt-2 text-xs text-destructive" role="alert">
@@ -988,6 +982,7 @@ function ResultCard({
 }: {
   item: Extract<TaskChatProtocolItem, { surface: "run_result" }>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const hasDetails =
     item.verification.length > 0 ||
     item.remainingWork.length > 0 ||
@@ -996,7 +991,7 @@ function ResultCard({
   return (
     <CardShell
       icon={PackageCheck}
-      title="Run result"
+      title={pageText("runResult_f1760e")}
       status={item.disposition}
       summary={item.summary}
       testId="task-chat-run-result"
@@ -1005,7 +1000,7 @@ function ResultCard({
         <div className="flex flex-col gap-3 text-sm">
           {item.blocker ? (
             <div className="rounded-sm bg-muted/50 p-2">
-              <strong>Blocked: {item.blocker.reasonCode}</strong>
+              <strong>{pageText("blocked_3111b3") + " "}{item.blocker.reasonCode}</strong>
               <p className="mt-1 text-muted-foreground">
                 {item.blocker.unblockAction}
               </p>
@@ -1014,7 +1009,7 @@ function ResultCard({
           {item.verification.length > 0 ? (
             <ul
               className="flex flex-col gap-1"
-              aria-label="Verification results"
+              aria-label={pageText("verificationResults_41b3be")}
             >
               {item.verification.map((check, index) => (
                 <li
@@ -1044,7 +1039,7 @@ function ResultCard({
               {item.remainingWork.map((work, index) => (
                 <li key={`${work.description}:${index}`}>
                   {work.description}
-                  {work.blocksCompletion ? " · blocks completion" : ""}
+                  {work.blocksCompletion ? " " + pageText("blocksCompletion_2d586e") : ""}
                 </li>
               ))}
             </ul>
@@ -1072,10 +1067,11 @@ function TerminalCard({
 }: {
   item: Extract<TaskChatProtocolItem, { surface: "run_terminal" }>;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <CardShell
       icon={TerminalSquare}
-      title="Run ended"
+      title={pageText("runEnded_0704cf")}
       status={item.runState}
       summary={[item.disposition.replaceAll("_", " "), item.stopReason]
         .filter(Boolean)

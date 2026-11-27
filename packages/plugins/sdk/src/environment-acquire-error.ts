@@ -1,11 +1,4 @@
-import {
-  ENVIRONMENT_ACQUIRE_ERROR_SCHEMA,
-  ENVIRONMENT_CREATION_CLEANUP_SCHEMA,
-  PluginEnvironmentAcquisitionError,
-  PluginEnvironmentCreationCleanupError,
-  environmentCreationCleanupErrorData,
-  readEnvironmentAcquisitionDiagnostic,
-} from "./environment-creation-cleanup.js";
+import { PluginEnvironmentCreationCleanupError, environmentCreationCleanupErrorData } from "./environment-creation-cleanup.js";
 import {
   providerErrorDiagnostic,
   sanitizeProviderErrorDiagnostic,
@@ -22,8 +15,8 @@ import {
  */
 export type PluginEnvironmentAcquireErrorDiagnostic = PluginEnvironmentResumeErrorDiagnostic;
 
-const SCHEMA = ENVIRONMENT_ACQUIRE_ERROR_SCHEMA;
-const CLEANUP_SCHEMA = ENVIRONMENT_CREATION_CLEANUP_SCHEMA;
+const SCHEMA = "paperclip/environment-acquire-error/v1";
+const CLEANUP_SCHEMA = "paperclip/environment-creation-cleanup/v1";
 
 function field(value: unknown, key: string): unknown {
   try { return value && typeof value === "object" ? (value as Record<string, unknown>)[key] : undefined; }
@@ -42,14 +35,7 @@ export function environmentAcquireErrorData(error: unknown): unknown {
   if (cleanup && typeof cleanup === "object") {
     return providerDiagnostic ? { ...cleanup, providerDiagnostic } : cleanup;
   }
-  const acquisitionDiagnostic = error instanceof PluginEnvironmentAcquisitionError
-    ? readEnvironmentAcquisitionDiagnostic(error) : null;
-  if (!providerDiagnostic && !acquisitionDiagnostic) return undefined;
-  return {
-    schema: SCHEMA,
-    ...(providerDiagnostic ? { providerDiagnostic } : {}),
-    ...(acquisitionDiagnostic ? { acquisitionDiagnostic } : {}),
-  };
+  return providerDiagnostic ? { schema: SCHEMA, providerDiagnostic } : undefined;
 }
 
 /** Host side: read and re-validate the provider diagnostic from an RPC error. */

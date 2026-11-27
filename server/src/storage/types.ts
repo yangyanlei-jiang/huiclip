@@ -61,7 +61,6 @@ export interface HeadObjectResult {
 
 export interface StorageProvider {
   id: StorageProviderId;
-  readonly immutableObjectNamespace?: string;
   putObject(input: PutObjectInput): Promise<void | PutObjectReceipt>;
   getObject(input: GetObjectInput): Promise<GetObjectResult>;
   headObject(input: GetObjectInput): Promise<HeadObjectResult>;
@@ -71,8 +70,6 @@ export interface StorageProvider {
     | { ifNoneMatch: "*"; ifMatch?: never }
     | { ifMatch: string; ifNoneMatch?: never }
   )): Promise<{ etag: string }>;
-
-  abortIncompleteUploads?(input: { objectKey: string; signal?: AbortSignal }): Promise<number>;
 
   listObjects?(input: { prefix: string; continuationToken?: string; signal?: AbortSignal }): Promise<{
     keys: string[];
@@ -103,10 +100,8 @@ export interface PutFileResult {
 
 export interface StorageService {
   provider: StorageProviderId;
-  readonly immutableObjectNamespace?: string;
   putFile(input: PutFileInput): Promise<PutFileResult>;
   getObject(companyId: string, objectKey: string, options?: Pick<GetObjectInput, "range" | "signal">): Promise<GetObjectResult>;
   headObject(companyId: string, objectKey: string, options?: Pick<GetObjectInput, "signal">): Promise<HeadObjectResult>;
   deleteObject(companyId: string, objectKey: string, options?: Pick<DeleteObjectInput, "signal" | "allVersions">): Promise<void>;
-  abortIncompleteUploads?(companyId: string, objectKey: string, options?: { signal?: AbortSignal }): Promise<number>;
 }

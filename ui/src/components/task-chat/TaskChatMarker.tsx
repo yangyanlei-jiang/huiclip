@@ -1,3 +1,5 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useId, useState } from "react";
 import { cn } from "@/lib/utils";
 import { ChevronDown, CircleDot, FoldVertical, OctagonX, Square, Flag, KeyRound } from "lucide-react";
@@ -6,7 +8,6 @@ import type { TaskChatMarkerItem } from "./task-chat-model";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/lib/router";
 import { timeAgo } from "@/lib/timeAgo";
-import { useProviderLimitMessage } from "@/hooks/useProviderLimitMessage";
 
 const VARIANT_ICON = {
   session_start: CircleDot,
@@ -29,14 +30,14 @@ export function TaskChatMarker({
   onTryAgain?: () => Promise<void> | void;
   tryAgainPending?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(false);
   const detailsId = useId();
   const streamlined = useStreamlinedTaskChatPresentation();
   const Icon = item.tone === "neutral" ? Square : VARIANT_ICON[item.variant];
   const interrupted = item.variant === "interrupted" && item.tone !== "neutral";
   const relative = item.createdAtIso ? timeAgo(item.createdAtIso) : undefined;
-  const label = useProviderLimitMessage(item.label);
-  const detail = useProviderLimitMessage(item.detail ?? "", !item.collapsible || open);
   const handleTryAgain = () => {
     void Promise.resolve()
       .then(() => onTryAgain?.())
@@ -51,16 +52,13 @@ export function TaskChatMarker({
         className="tc-enter-marker flex w-full items-start gap-3 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm">
         <KeyRound className="mt-0.5 size-5 shrink-0 text-destructive" aria-hidden />
         <div className="flex min-w-0 flex-1 flex-col gap-2">
-          <p className="font-semibold text-destructive">{agentName} couldn’t start</p>
+          <p className="font-semibold text-destructive">{agentName}{" " + pageText("couldnTStart_c90efe")}</p>
           <p className="break-words font-medium text-foreground">
-            {agentName} is configured to use {credentialName || "an AI credential"}, but {deniedUser === "you" ? "you don’t" : `${deniedUser} doesn’t`} have access to that credential.
-          </p>
-          <p className="text-muted-foreground">
-            Choose an AI connection {deniedUser === "you" ? "you can" : `${deniedUser} can`} use, or ask an administrator to update {agentName}’s connection. Then try again.
-          </p>
+            {agentName}{" " + pageText("isConfiguredToUse_bdf8a6") + " "}{credentialName || pageText("anAICredential_aa43e2")}{pageText("but_dede3f") + " "}{deniedUser === "you" ? pageText("youDonT_8c0c5e") : `${deniedUser} doesn’t`}{" " + pageText("haveAccessToThatCredential_5ef4b0")}</p>
+          <p className="text-muted-foreground">{pageText("chooseAnAIConnection_6802cc") + " "}{deniedUser === "you" ? pageText("youCan_978e59") : `${deniedUser} can`}{" " + pageText("useOrAskAnAdministratorToUpdate_8106e5") + " "}{agentName}{pageText("sConnectionThenTryAgain_47b37c")}</p>
           <div className="flex flex-wrap items-center gap-2 pt-1">
-            <Button asChild variant="outline" size="sm"><Link to={settingsHref}>Change AI connection</Link></Button>
-            {item.runHref && <Button asChild variant="ghost" size="sm"><Link to={item.runHref}>View run</Link></Button>}
+            <Button asChild variant="outline" size="sm"><Link to={settingsHref}>{pageText("changeAIConnection_0a8a53")}</Link></Button>
+            {item.runHref && <Button asChild variant="ghost" size="sm"><Link to={item.runHref}>{translateUi("interfaceCopy.viewRun")}</Link></Button>}
           </div>
         </div>
       </div>
@@ -86,7 +84,7 @@ export function TaskChatMarker({
             )}
           >
             <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden />
-            <span className="truncate font-medium">{label}</span>
+            <span className="truncate font-medium">{item.label}</span>
             {relative ? (
               <span className="shrink-0 text-muted-foreground">
                 · {relative}
@@ -109,7 +107,7 @@ export function TaskChatMarker({
               disabled={tryAgainPending}
               data-testid="task-chat-run-failed-try-again"
             >
-              {tryAgainPending ? "Trying again..." : "Try again"}
+              {tryAgainPending ? pageText("tryingAgain_f42d99") : pageText("tryAgain_042c86")}
             </Button>
           ) : null}
         </div>
@@ -119,21 +117,21 @@ export function TaskChatMarker({
             data-testid="task-chat-collapsible-marker-details"
             className="mt-1 w-full max-w-(--pct-85) overflow-hidden rounded-lg border border-border bg-muted/25 text-left text-sm dark:bg-muted/15"
           >
-            {detail ? (
+            {item.detail ? (
               <div className="px-3 py-2.5 text-foreground/90">
-                {detail}
+                {item.detail}
               </div>
             ) : null}
             {item.runHref || item.planHref || onTryAgain ? (
               <div className="flex items-center justify-end gap-2 border-t border-border/70 bg-background/50 px-3 py-2 dark:bg-background/30">
                 {item.planHref ? (
                   <Button asChild variant="ghost" size="xs">
-                    <Link to={item.planHref}>View saved plan</Link>
+                    <Link to={item.planHref}>{pageText("viewSavedPlan_8c6185")}</Link>
                   </Button>
                 ) : null}
                 {item.runHref ? (
                   <Button asChild variant="ghost" size="xs">
-                    <Link to={item.runHref}>View run</Link>
+                    <Link to={item.runHref}>{translateUi("interfaceCopy.viewRun")}</Link>
                   </Button>
                 ) : null}
                 {onTryAgain ? (
@@ -144,7 +142,7 @@ export function TaskChatMarker({
                     disabled={tryAgainPending}
                     data-testid="task-chat-run-failed-try-again"
                   >
-                    {tryAgainPending ? "Trying again..." : "Try again"}
+                    {tryAgainPending ? pageText("tryingAgain_f42d99") : pageText("tryAgain_042c86")}
                   </Button>
                 ) : null}
               </div>
@@ -159,7 +157,7 @@ export function TaskChatMarker({
     <div
       className="tc-enter-marker flex items-center gap-2 py-1 text-xs text-muted-foreground"
       role={streamlined && item.variant !== "interrupted" ? "separator" : undefined}
-      aria-label={streamlined && item.variant !== "interrupted" ? label : undefined}
+      aria-label={streamlined && item.variant !== "interrupted" ? item.label : undefined}
     >
       {item.variant !== "interrupted" ? <span className="h-px flex-1 bg-border" /> : null}
       <span
@@ -169,9 +167,9 @@ export function TaskChatMarker({
         )}
       >
         <Icon className="h-3.5 w-3.5" />
-        <span className="font-medium">{label}</span>
-        {detail ? (
-          <span className="text-muted-foreground">· {detail}</span>
+        <span className="font-medium">{item.label}</span>
+        {item.detail ? (
+          <span className="text-muted-foreground">· {item.detail}</span>
         ) : null}
         {onTryAgain ? (
           <Button
@@ -183,7 +181,7 @@ export function TaskChatMarker({
             disabled={tryAgainPending}
             data-testid="task-chat-run-failed-try-again"
           >
-            {tryAgainPending ? "Trying again..." : "Try again"}
+            {tryAgainPending ? pageText("tryingAgain_f42d99") : pageText("tryAgain_042c86")}
           </Button>
         ) : null}
       </span>

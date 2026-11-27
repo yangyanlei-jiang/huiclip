@@ -1,3 +1,6 @@
+import { t as translateDynamic } from "../../i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -49,6 +52,8 @@ function AuthAttempt({
   onCancel,
   onDone,
 }: AiConnectionAuthProps) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [value, setValue] = useState("");
   const info = AI_PROVIDERS[provider];
   const busy = state.phase === "starting" || state.phase === "submitting";
@@ -63,21 +68,19 @@ function AuthAttempt({
   };
   return (
     <section
-      aria-label={`Connect ${info.name}`}
+      aria-label={translateDynamic("dynamic:connect", { value1: info.name })}
       className="flex flex-col gap-4"
     >
       <div className="flex flex-col gap-1">
-        <h3 className="text-sm font-semibold">Connect {info.name}</h3>
+        <h3 className="text-sm font-semibold">{pageText("connect_b65463") + " "}{info.name}</h3>
         <p className="text-xs text-muted-foreground">
           {aiMethodLabel(provider, method)}
         </p>
       </div>
       {state.phase === "connected" ? (
         <>
-          <p role="status" className="text-sm">
-            Connected. This account is saved in Connections and can be reused.
-          </p>
-          <Button onClick={onDone}>Use connection</Button>
+          <p role="status" className="text-sm">{pageText("connectedThisAccountIsSavedInConnectionsAnd_845d20")}</p>
+          <Button onClick={onDone}>{pageText("useConnection_e48414")}</Button>
         </>
       ) : (
         <>
@@ -85,7 +88,7 @@ function AuthAttempt({
             <p role="status" className="text-sm text-muted-foreground">
               {state.phase === "unsupported"
                 ? state.message
-                : "This provider does not offer a subscription connection."}
+                : pageText("thisProviderDoesNotOfferASubscriptionConnection_eb9f33")}
             </p>
           ) : (
             <>
@@ -95,9 +98,7 @@ function AuthAttempt({
                 </p>
               )}
               {state.phase === "cancelled" && (
-                <p role="status" className="text-sm text-muted-foreground">
-                  Sign-in cancelled. No connection was created.
-                </p>
+                <p role="status" className="text-sm text-muted-foreground">{pageText("signInCancelledNoConnectionWasCreated_b15358")}</p>
               )}
               {method === "api_key" ? (
                 <ProviderApiKeyCard
@@ -105,7 +106,7 @@ function AuthAttempt({
                   value={value}
                   onChange={setValue}
                   onSubmit={submit}
-                  placeholder="Enter API key here"
+                  placeholder={pageText("enterAPIKeyHere_4991fd")}
                   disabled={busy}
                   autoFocus
                 />
@@ -142,8 +143,7 @@ function AuthAttempt({
                   )}
                 </ProviderSubscriptionCard>
               ) : (
-                <p className="text-sm text-muted-foreground">
-                  Sign in with your {info.subscriptionName}.
+                <p className="text-sm text-muted-foreground">{pageText("signInWithYour_85ddba") + " "}{info.subscriptionName}.
                 </p>
               )}
             </>
@@ -155,31 +155,25 @@ function AuthAttempt({
                 setValue("");
                 onCancel();
               }}
-            >
-              Cancel
-            </Button>
+            >{translateUi("interfaceCopy.cancel")}</Button>
             {!unsupported &&
               (method === "api_key" ? (
                 <Button disabled={busy || !value.trim()} onClick={submit}>
-                  {busy ? "Connecting…" : "Connect"}
+                  {busy ? pageText("connecting_fd3e79") : pageText("connect_b65463")}
                 </Button>
               ) : state.phase === "waiting" ? (
                 provider === "anthropic" ? (
-                  <Button disabled={!value.trim()} onClick={submit}>
-                    Submit code
-                  </Button>
+                  <Button disabled={!value.trim()} onClick={submit}>{pageText("submitCode_32aefb")}</Button>
                 ) : (
-                  <span role="status" className="text-sm text-muted-foreground">
-                    Waiting for sign-in…
-                  </span>
+                  <span role="status" className="text-sm text-muted-foreground">{pageText("waitingForSignIn_6c3c69")}</span>
                 )
               ) : (
                 <Button disabled={busy} onClick={onStart}>
                   {busy
-                    ? "Preparing sign-in…"
+                    ? pageText("preparingSignIn_514845")
                     : state.phase === "idle"
-                      ? "Sign in"
-                      : "Try again"}
+                      ? pageText("signIn_ada2e9")
+                      : pageText("tryAgain_042c86")}
                 </Button>
               ))}
           </div>

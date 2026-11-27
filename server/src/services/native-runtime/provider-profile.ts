@@ -11,23 +11,15 @@ import {
   type PaperclipRunnerProvider,
 } from "@paperclipai/adapter-utils";
 import {
-  codexCliVersionAtLeast,
   codexLocalReasoningEffortsForModel,
   isCodexLocalKnownModel,
-  minimumCodexCliVersionForModel,
 } from "@paperclipai/adapter-codex-local";
 import {
   AGENTCORE_QUALIFIED_MODEL,
   CLAUDE_MANAGED_QUALIFIED_MODEL,
 } from "../provider-profile-qualification.js";
 import { resolveAcpxQualification, resolveAntigravityCandidateAdmission, resolveKimiCandidateAdmission, type AcpxQualificationCandidate } from "./acpx-qualification.js";
-import { antigravityReleasePending } from "./antigravity-release.js";
 import { compatibleCodexModel } from "./codex-model-fallback.js";
-import {
-  claudeCliVersionAtLeast,
-  claudeCodeVersionForAgentSdk,
-  minimumClaudeCliVersionForModel,
-} from "@paperclipai/adapter-claude-local/server";
 import { parseNativeCursorCloudConfig, type NativeCursorCloudConfig } from "../../vendor/paperclip-runner/index.js";
 
 export const QUALIFIED_OPENCODE_RUNNER_VERSION = "1.18.34" as const;
@@ -44,12 +36,11 @@ export const DEFAULT_ACPX_RUNNER_MODELS = {
   copilot: null,
   pi: null,
   kimi: null,
-  antigravity: null,
 } as const;
 
 export type QualifiedPaperclipRunnerAcpxAgent =
   keyof typeof DEFAULT_ACPX_RUNNER_MODELS;
-type AdmittedPaperclipRunnerAcpxAgent = QualifiedPaperclipRunnerAcpxAgent | AcpxQualificationCandidate;
+type AdmittedPaperclipRunnerAcpxAgent = QualifiedPaperclipRunnerAcpxAgent | AcpxQualificationCandidate | "antigravity";
 
 export type PaperclipRunnerProviderProfile =
   | { provider: "cursor_cloud"; backend: "cursor_cloud_api"; model: string }
@@ -162,7 +153,6 @@ export class PaperclipRunnerProviderProfileError extends Error {
   constructor(
     readonly code: string,
     message: string,
-    readonly detailReason?: string,
   ) {
     super(message);
     this.name = "PaperclipRunnerProviderProfileError";
@@ -217,17 +207,10 @@ export function resolvePaperclipRunnerCursorCloudConfig(config: Record<string, u
 /** Configuration can be saved before pairing; task admission requires a binding. */
 export function validatePaperclipRunnerDotConfig(config: Record<string, unknown>, requireBinding = true): string | null {
   const bindingId = optionalString(config.dotBindingId);
-  const invalidSettings =
-    Boolean(bindingId && !/^[0-9a-f-]{36}$/i.test(bindingId))
-    || config.allowUnmeteredProvider !== true
-    || Boolean(config.lifecycleMode && config.lifecycleMode !== "per_turn")
-    || Boolean(optionalString(config.model));
-  if (invalidSettings || (requireBinding && !bindingId)) {
-    throw new PaperclipRunnerProviderProfileError(
-      "paperclip_runner_dot_config_invalid",
-      "Dot requires per-turn lifecycle and explicit externally billed, unmetered-provider acknowledgement. Pair a binding before assigning work.",
-      invalidSettings ? "dot_config_invalid" : "dot_pairing_required",
-    );
+  if ((requireBinding && !bindingId) || (bindingId && !/^[0-9a-f-]{36}$/i.test(bindingId))
+      || config.allowUnmeteredProvider !== true || (config.lifecycleMode && config.lifecycleMode !== "per_turn")
+      || optionalString(config.model)) {
+    throw new PaperclipRunnerProviderProfileError("paperclip_runner_dot_config_invalid", "Dot requires per-turn lifecycle and explicit externally billed, unmetered-provider acknowledgement. Pair a binding before assigning work.");
   }
   return bindingId;
 }
@@ -465,11 +448,7 @@ export function claudeRunnerUnsupportedSettings(config: Record<string, unknown>)
  */
 export function resolvePaperclipRunnerProviderProfile(
   adapterConfig: unknown,
-  context: {
-    companyId?: string;
-    /** The execution target's platform, when known: a pending Antigravity grant must name it. */
-    candidateTarget?: { platform: string; architecture: string };
-  } = {},
+  context: { companyId?: string } = {},
 ): PaperclipRunnerProviderProfile {
   const config = asRecord(adapterConfig);
   const candidate = config.provider ?? "codex";
@@ -617,17 +596,12 @@ export function resolvePaperclipRunnerProviderProfile(
   if (acpxAgent === "copilot" && (!model || ["auto", "default"].includes(model.toLowerCase()))) {
     throw new PaperclipRunnerProviderProfileError("paperclip_runner_acpx_model_required", "GitHub Copilot requires an explicit model ID; there is no default model.");
   }
-  if (acpxAgent === "antigravity" && (!model || ["auto", "default"].includes(model.toLowerCase()))) {
-    throw new PaperclipRunnerProviderProfileError("paperclip_runner_acpx_model_required", "Google Antigravity requires an explicit model ID; there is no default model.");
-  }
-  const pendingAcpxProfile = acpxAgent === "antigravity"
-    ? (antigravityReleasePending() ? PAPERCLIP_RUNNER_ACPX_PROFILES.find(profile => profile.value === "antigravity") : undefined)
-    : PAPERCLIP_RUNNER_ACPX_PROFILES.find(profile => profile.value === acpxAgent && !profile.qualified);
+  const pendingAcpxProfile = PAPERCLIP_RUNNER_ACPX_PROFILES.find(profile => profile.value === acpxAgent && !profile.qualified);
   if (pendingAcpxProfile) {
     if (!model) throw new PaperclipRunnerProviderProfileError("paperclip_runner_acpx_model_required", `${pendingAcpxProfile.label} requires an explicit model ID; there is no default model.`);
     if (pendingAcpxProfile.value === "antigravity") {
       try {
-        if (resolveAntigravityCandidateAdmission({ companyId: context.companyId, model, target: context.candidateTarget }, process.env)) {
+        if (resolveAntigravityCandidateAdmission({ companyId: context.companyId, model }, process.env)) {
           return { provider: "acpx", backend: "acpx_runtime", model, acpxAgent: "antigravity" };
         }
       } catch {
@@ -656,10 +630,10 @@ export function resolvePaperclipRunnerProviderProfile(
     }
     throw new PaperclipRunnerProviderProfileError("paperclip_runner_acpx_agent_unavailable", `${pendingAcpxProfile.label} is awaiting native Runner acceptance. Its profile is not enabled for production runs.`);
   }
-  if ((acpxAgent === "cursor" || acpxAgent === "pi" || acpxAgent === "kimi" || acpxAgent === "antigravity") && !model) {
+  if ((acpxAgent === "cursor" || acpxAgent === "pi" || acpxAgent === "kimi") && !model) {
     throw new PaperclipRunnerProviderProfileError("paperclip_runner_acpx_model_required", "This ACPX agent requires an explicit model ID; there is no default model.");
   }
-  if (acpxAgent !== "claude" && acpxAgent !== "codex" && acpxAgent !== "grok" && acpxAgent !== "cursor" && acpxAgent !== "copilot" && acpxAgent !== "pi" && acpxAgent !== "kimi" && acpxAgent !== "antigravity") {
+  if (acpxAgent !== "claude" && acpxAgent !== "codex" && acpxAgent !== "grok" && acpxAgent !== "cursor" && acpxAgent !== "copilot" && acpxAgent !== "pi" && acpxAgent !== "kimi") {
     throw new PaperclipRunnerProviderProfileError(
       "paperclip_runner_acpx_agent_unavailable",
       "Paperclip Runner ACPX requires a qualified agent profile.",
@@ -668,37 +642,13 @@ export function resolvePaperclipRunnerProviderProfile(
   const selectedModel = acpxAgent === "grok" && model === "grok-build"
     ? DEFAULT_ACPX_RUNNER_MODELS.grok
     : model || DEFAULT_ACPX_RUNNER_MODELS[acpxAgent] || "";
-  let qualifiedProfile: ReturnType<typeof resolveQualifiedAcpxProfile>;
   try {
-    qualifiedProfile = resolveQualifiedAcpxProfile(acpxAgent, selectedModel);
+    resolveQualifiedAcpxProfile(acpxAgent, selectedModel);
   } catch (error) {
     throw new PaperclipRunnerProviderProfileError(
       "paperclip_runner_acpx_model_unqualified",
       error instanceof Error ? error.message : "Paperclip Runner ACPX requires an admitted model.",
     );
-  }
-  if (acpxAgent === "claude") {
-    // The provider pack runs the Claude Code its Agent SDK bundles; name the gap instead of
-    // letting an older CLI fail the turn with an opaque backend error.
-    const minimum = minimumClaudeCliVersionForModel(selectedModel);
-    const bundled = claudeCodeVersionForAgentSdk(qualifiedProfile.agentRuntimeVersion);
-    if (minimum && bundled && !claudeCliVersionAtLeast(bundled, minimum)) {
-      throw new PaperclipRunnerProviderProfileError(
-        "paperclip_runner_claude_cli_version_incompatible",
-        `${selectedModel} requires Claude Code ${minimum} or newer; this Paperclip Runner bundles Claude Code ${bundled}. Choose another model or use the legacy Claude runner until the Runner is updated.`,
-      );
-    }
-  }
-  if (acpxAgent === "codex") {
-    // ACPX Codex runs the qualified runtime pin, so the backend would reject a newer model.
-    const minimum = minimumCodexCliVersionForModel(selectedModel);
-    const bundled = qualifiedProfile.agentRuntimeVersion;
-    if (minimum && bundled && !codexCliVersionAtLeast(bundled, minimum)) {
-      throw new PaperclipRunnerProviderProfileError(
-        "paperclip_runner_codex_cli_version_incompatible",
-        `${selectedModel} requires Codex ${minimum} or newer; this Paperclip Runner bundles Codex ${bundled}. Choose another model or use the legacy Codex runner until the Runner is updated.`,
-      );
-    }
   }
   return {
     provider: "acpx",
@@ -706,13 +656,6 @@ export function resolvePaperclipRunnerProviderProfile(
     model: selectedModel,
     acpxAgent,
   };
-}
-
-export function supportsPaperclipRunnerPreconfiguredHome(adapterConfig: unknown, options: { companyId?: string } = {}): boolean {
-  const config = asRecord(adapterConfig);
-  const profile = resolvePaperclipRunnerProviderProfile(config, options);
-  return profile.provider === "codex" || (profile.provider === "acpx" && profile.acpxAgent === "claude"
-    && (config.acpxPermissionMode === undefined || config.acpxPermissionMode === "approve-all"));
 }
 
 /**

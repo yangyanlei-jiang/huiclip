@@ -1,2 +1,0 @@
-ALTER TABLE "tool_connection_content_deletions" ADD COLUMN "reason" text DEFAULT 'requested' NOT NULL;--> statement-breakpoint
-ALTER TABLE "tool_connection_content_deletions" ADD COLUMN "not_before" timestamp with time zone;

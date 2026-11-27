@@ -1,11 +1,15 @@
+import { t as translateDynamic } from "../i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useCallback, useMemo } from "react";
 import { NavLink, useLocation } from "@/lib/router";
 import { useQuery } from "@tanstack/react-query";
 import { Lock, Loader2, LogOut, MoreHorizontal, Star } from "lucide-react";
 import { useCompany } from "../context/CompanyContext";
 import { useSidebar } from "../context/SidebarContext";
+import { projectsApi } from "../api/projects";
 import { SIDEBAR_SCROLL_RESET_STATE } from "../lib/navigation-scroll";
-import { cn, projectRouteRef } from "../lib/utils";
+import { queryKeys } from "../lib/queryKeys";
+import { cn, projectRouteRef, SIDEBAR_RAIL_HIDDEN_LABEL } from "../lib/utils";
 import {
   isStarred,
   starredResourceIds,
@@ -23,8 +27,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Project } from "@paperclipai/shared";
-import { companyProjectsQuery } from "@/lib/company-projects-query";
 
 // Sidebar star reveals with the row's own group, not the shared unnamed group.
 const STAR_ROW_REVEAL =
@@ -38,12 +42,15 @@ const STAR_ROW_REVEAL =
  * server-side, so a stale star never resurrects a hidden project.
  */
 export function SidebarStarredProjects() {
+  const { t: pageText } = usePageTranslation("interface");
   const { selectedCompanyId } = useCompany();
-  const { isMobile, setSidebarOpen } = useSidebar();
+  const { isMobile, setSidebarOpen, collapsed, peeking } = useSidebar();
+  const rail = collapsed && !peeking;
   const location = useLocation();
 
   const { data: projects } = useQuery({
-    ...companyProjectsQuery(selectedCompanyId!),
+    queryKey: queryKeys.projects.list(selectedCompanyId!),
+    queryFn: () => projectsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
   const membershipsQuery = useResourceMemberships(selectedCompanyId);
@@ -100,7 +107,7 @@ export function SidebarStarredProjects() {
   }
 
   return (
-    <div className="flex flex-col gap-0.5" aria-label="Starred projects">
+    <div className="flex flex-col gap-0.5" aria-label={pageText("starredProjects_14c247")}>
       {starredProjects.map((project) => {
         const routeRef = projectRouteRef(project);
         const isActive = activeProjectRef === routeRef || activeProjectRef === project.id;
@@ -118,26 +125,35 @@ export function SidebarStarredProjects() {
             }}
             className={cn(
               "flex min-w-0 flex-1 items-center gap-2.5 mx-2 rounded-lg px-2 py-1.5 pointer-coarse:py-1 pr-8 text-(length:--text-compact) font-medium transition-colors",
-              "pl-6",
+              !rail && "pl-6",
               isActive
                 ? "bg-sidebar-accent text-sidebar-accent-foreground"
                 : "text-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
             )}
           >
             <ProjectTile color={project.color ?? null} icon={project.icon ?? null} size="xs" />
-            <span className="flex-1 truncate">{project.name}</span>
-            {project.visibility === "private" ? <Lock className="size-3.5 shrink-0 text-muted-foreground" aria-label="Private project" /> : null}
-            {project.pauseReason === "budget" ? (
-              <BudgetSidebarMarker title="Project paused by budget" />
+            <span className={rail ? SIDEBAR_RAIL_HIDDEN_LABEL : "flex-1 truncate"}>{project.name}</span>
+            {!rail && project.visibility === "private" ? <Lock className="size-3.5 shrink-0 text-muted-foreground" aria-label={pageText("privateProject_505bbd")} /> : null}
+            {!rail && project.pauseReason === "budget" ? (
+              <BudgetSidebarMarker title={pageText("projectPausedByBudget_07dd7d")} />
             ) : null}
           </NavLink>
         );
 
         return (
           <div key={project.id} className="group/starred-project relative flex items-center">
-            {link}
+            {rail ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="min-w-0 flex-1">{link}</div>
+                </TooltipTrigger>
+                <TooltipContent side="right">{project.name}</TooltipContent>
+              </Tooltip>
+            ) : (
+              link
+            )}
 
-            {!isMobile ? (
+            {!rail && !isMobile ? (
               // Desktop: quiet inline unstar revealed on hover/focus.
               <span className="absolute right-3 top-1/2 -translate-y-1/2">
                 <StarToggle
@@ -152,7 +168,7 @@ export function SidebarStarredProjects() {
               </span>
             ) : null}
 
-            {isMobile ? (
+            {!rail && isMobile ? (
               // Touch: explicit ⋯ menu (no hover). Star action + separated Leave.
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -160,7 +176,7 @@ export function SidebarStarredProjects() {
                     variant="ghost"
                     size="icon-xs"
                     className="absolute right-3 top-1/2 h-6 w-6 -translate-y-1/2 opacity-100"
-                    aria-label={`Open actions for ${project.name}`}
+                    aria-label={translateDynamic("dynamic:openActionsFor", { value1: project.name })}
                   >
                     <MoreHorizontal className="h-3.5 w-3.5" />
                   </Button>
@@ -178,7 +194,7 @@ export function SidebarStarredProjects() {
                     ) : (
                       <Star className="size-4 fill-amber-500 text-amber-500" />
                     )}
-                    <span>Remove from starred</span>
+                    <span>{pageText("removeFromStarred_93e94f")}</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
@@ -193,7 +209,7 @@ export function SidebarStarredProjects() {
                     ) : (
                       <LogOut className="size-4" />
                     )}
-                    <span>Leave project</span>
+                    <span>{pageText("leaveProject_7db1f1")}</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

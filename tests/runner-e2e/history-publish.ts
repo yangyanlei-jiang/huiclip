@@ -1,4 +1,3 @@
-import { screenshotPrivacyReasons } from "./screenshot-privacy.js";
 import { validateCampaignAccounting, validateRetainedRunnerResult } from "./result-validation.js";
 import { validateEvalOperationsReport } from "./operations-report.js";
 import { validateCampaignFeedbackReview } from "./feedback-dispositions.js";
@@ -90,7 +89,6 @@ export function publicScreenshotPaths(campaign: RunnerE2ECampaign) {
   assertPublicCampaign(campaign);
   const screenshots = new Set<string>();
   for (const result of campaign.results) {
-    if (result.screenshotPrivacy?.withheld || screenshotPrivacyReasons(result).length) continue;
     const files =
       result.screenshots
         ?.filter(

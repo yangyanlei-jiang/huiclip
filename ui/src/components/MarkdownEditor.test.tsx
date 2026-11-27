@@ -193,7 +193,7 @@ vi.mock("@mdxeditor/editor", async () => {
         }}
       >
         {/* The real editor paints resolved text, never the escapes that carried it in. */}
-        {content.replace(/\\</g, "<").replace(/(?:&#x20;)+$/, (suffix) => " ".repeat(suffix.length / 6)) || placeholder || ""}
+        {content.replace(/\\</g, "<") || placeholder || ""}
       </div>
     );
   });
@@ -1710,14 +1710,14 @@ describe("MarkdownEditor", () => {
   it("places the caret after a plain action command", () => {
     const editable = document.createElement("div");
     editable.contentEditable = "true";
-    editable.innerHTML = '<p><span data-lexical-text="true">/goal </span></p>';
+    editable.textContent = "/goal\u00a0";
     document.body.appendChild(editable);
 
     expect(placeCaretAtEditableEnd(editable)).toBe(true);
 
     const selection = window.getSelection();
-    expect(selection?.anchorNode).toBe(editable.querySelector("span")?.firstChild);
-    expect(selection?.anchorOffset).toBe("/goal ".length);
+    expect(selection?.anchorNode).toBe(editable);
+    expect(selection?.anchorOffset).toBe(1);
 
     editable.remove();
   });

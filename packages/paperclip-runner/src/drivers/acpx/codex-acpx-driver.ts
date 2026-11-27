@@ -1,5 +1,4 @@
 import { type CopilotToolEvidence } from "./copilot-tool-evidence.js";
-import { RUNNER_TOOL_BRIDGE_DIAGNOSTIC_CODE } from "../tool-input-coercion.js";
 import { classifyClaudeStatusBanner } from "./claude-status-banners.js";
 import { resolveCompletionContinuation } from "../completion-continuation.js";
 import { isProviderMode } from "../../contracts/provider-mode.js";
@@ -23,7 +22,6 @@ import type {
 import {
   PRP_BLOCK_TOOL_NAME,
   PRP_COMPLETION_TOOL_NAME,
-  prpSemanticResultConflictMessage,
 } from "../../contracts/completion-result.js";
 import {
   HarnessCapabilityUnavailableError,
@@ -67,8 +65,8 @@ import {
 import {
   DEFAULT_CODEX_ACPX_RUNTIME_SHUTDOWN_BOUND_MS,
   AcpxProviderProcessLostError,
-  openQualifiedAcpxRuntime,
-} from "./acpx-runtime-adapter.js";
+  openCodexAcpxRuntime,
+} from "./codex-runtime-adapter.js";
 import { normalizeAcpxPermission } from "./acp-permission-adapter.js";
 import {
   normalizeAcpFormElicitation,
@@ -276,7 +274,7 @@ function openProductionAcpxHost(
   options: OpenAcpxRuntimeHostOptions,
 ): Promise<AcpxRuntimeHost> {
   return AcpxRuntimeHost.open(options, {
-    openRuntime: openQualifiedAcpxRuntime,
+    openRuntime: openCodexAcpxRuntime,
     reportRetainedCleanupFailure: reportRetainedAcpxCleanupFailure,
   });
 }
@@ -501,7 +499,6 @@ export class CodexAcpxDriver implements HarnessDriver {
             }
             return session.dispatchTool(call);
           },
-          onDiagnostic: (message) => session?.recordToolBridgeDiagnostic(message),
         },
       },
       input.signal,
@@ -1154,13 +1151,6 @@ class CodexAcpxSession implements HarnessSession {
     return this.#copilotToolEvidence?.captureSemanticReceipt();
   }
 
-  /** Records a runner tool bridge diagnostic, such as an accepted input coercion, as a run event. */
-  recordToolBridgeDiagnostic(message: string): void {
-    if (this.#closed) return;
-    this.#emit("harness.diagnostic", { code: RUNNER_TOOL_BRIDGE_DIAGNOSTIC_CODE, message },
-      this.#activeTurnId ? { turnId: this.#activeTurnId } : {});
-  }
-
   async dispatchTool(call: RunnerToolCall): Promise<unknown> {
     this.#assertOpen();
     if (this.#pendingTerminal) {
@@ -1200,7 +1190,7 @@ class CodexAcpxSession implements HarnessSession {
         this.#semanticFingerprint !== null &&
         this.#semanticFingerprint !== fingerprint
       ) {
-        throw new Error(prpSemanticResultConflictMessage(this.#semanticResult));
+        throw new Error("A different semantic result is already committed");
       }
       const claimsLaterTurn =
         this.#semanticFingerprint === fingerprint &&
@@ -1521,11 +1511,8 @@ class CodexAcpxSession implements HarnessSession {
       const trackSubagents = this.#agent === "claude"
         ? createClaudeSubagentLineageTracker<AcpRuntimeEvent>(activity.toolExecutionId ?? ((id) => id))
         : (event: AcpRuntimeEvent) => event;
-      const projectToolEvent = activity.createToolEventProjection?.() ?? ((event: AcpRuntimeEvent) => event);
-      for await (const raw of turn.events) {
-        toolEvidence?.tool(raw);
-        const event = projectToolEvent(raw);
-        if (!event) continue;
+      for await (const event of turn.events) {
+        toolEvidence?.tool(event);
         const projected = activity.toolExecutionId && event.type === "tool_call" && typeof event.toolCallId === "string"
           ? { ...event, toolCallId: activity.toolExecutionId(event.toolCallId) } : event;
         this.#mapRuntimeEvent(normalizeMessage(trackSubagents(normalizeToolEvent(projected))), turnId, ++index);
@@ -1941,7 +1928,7 @@ class CodexAcpxSession implements HarnessSession {
   async #handleElicitation(
     turnId: string,
     request: AcpElicitationRequest,
-    context: AcpElicitationContext & { responseDelivery?: Promise<void> },
+    context: AcpElicitationContext,
   ): Promise<AcpElicitationResponse> {
     if (
       this.#closed ||

@@ -1,3 +1,8 @@
+import { controlText } from "@/i18n/controls";
+import { t as interfaceNotice } from "@/i18n";
+import { t as translateDynamic } from "../i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "@/lib/router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -22,9 +27,6 @@ import { AGENT_ADAPTER_TYPES } from "@paperclipai/shared";
 import { teamCatalogApi } from "../api/teamCatalog";
 import { agentsApi } from "../api/agents";
 import { getAdapterLabel } from "../adapters/adapter-display-registry";
-import { useCloudInstance } from "@/hooks/useCloudInstance";
-import { useCloudHarnessPolicy } from "@/hooks/useCloudHarnessPolicy";
-import { unrestrictedCloudHarnessPolicy, type CloudHarnessPolicy } from "@/lib/cloud-harness-policy";
 import {
   useAdapterRegistryLoaded,
   useDisabledAdaptersSync,
@@ -117,7 +119,6 @@ import {
   XOctagon,
 } from "lucide-react";
 import { GithubIcon } from "../components/icons/github-icon";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 // Matches design §11 breakpoints. Module-level so stories and the page agree.
 const DESKTOP_MIN = 1024;
@@ -128,12 +129,9 @@ const TEAM_INSTALL_FORBIDDEN_ADAPTER_TYPES = new Set(["process", "http"]);
 export function listTeamInstallAdapterTypes(
   disabledTypes: Set<string>,
   adapterRegistryLoaded: boolean,
-  cloud = false,
-  harnessPolicy: CloudHarnessPolicy = unrestrictedCloudHarnessPolicy,
 ) {
   return AGENT_ADAPTER_TYPES.filter(
     (type) =>
-      (!cloud || harnessPolicy.isCloudHarnessAllowed(type)) &&
       !TEAM_INSTALL_FORBIDDEN_ADAPTER_TYPES.has(type) &&
       !disabledTypes.has(type) &&
       (type !== "paperclip_runner" || adapterRegistryLoaded),
@@ -143,29 +141,12 @@ export function listTeamInstallAdapterTypes(
 export function resolveTeamInstallAdapterType(
   requestedType: string,
   selectableAdapterTypes: readonly string[],
-  { cloud = false, adapterConfig = {}, harnessPolicy = unrestrictedCloudHarnessPolicy, nativeRunnerAvailable = selectableAdapterTypes.includes("paperclip_runner") }: {
-    cloud?: boolean; adapterConfig?: Record<string, unknown>; harnessPolicy?: CloudHarnessPolicy; nativeRunnerAvailable?: boolean;
-  } = {},
 ) {
-  const profileAllowed = !cloud || harnessPolicy.isCloudHarnessAllowed(requestedType, adapterConfig);
-  // A saved native profile can be allowed even when the default Codex profile
-  // is excluded. Keep that profile without adding an invalid generic fallback.
-  if (profileAllowed && (selectableAdapterTypes.includes(requestedType) || (requestedType === "paperclip_runner" && nativeRunnerAvailable))) return requestedType;
+  if (selectableAdapterTypes.includes(requestedType)) return requestedType;
   if (selectableAdapterTypes.includes(TEAM_INSTALL_FALLBACK_ADAPTER_TYPE)) {
     return TEAM_INSTALL_FALLBACK_ADAPTER_TYPE;
   }
   return selectableAdapterTypes[0] ?? null;
-}
-
-function teamInstallSelectionConfig(
-  source: { adapterType: string; adapterConfig: Record<string, unknown> },
-  overrideType: string | undefined,
-  cloud: boolean,
-  harnessPolicy: CloudHarnessPolicy,
-) {
-  const preserveSource = !overrideType || (overrideType === source.adapterType
-    && (!cloud || harnessPolicy.isCloudHarnessAllowed(source.adapterType, source.adapterConfig)));
-  return preserveSource ? source.adapterConfig : {};
 }
 
 function useMediaQuery(query: string): boolean {
@@ -338,6 +319,7 @@ function CompatChip({ compatibility }: { compatibility: CatalogTeamCompatibility
 }
 
 function ProvenanceBadge({ team }: { team: CatalogTeam }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (!team.packageName) return null;
   return (
     <Tooltip>
@@ -348,12 +330,13 @@ function ProvenanceBadge({ team }: { team: CatalogTeam }) {
           {team.packageVersion ? `@${team.packageVersion}` : ""}
         </Badge>
       </TooltipTrigger>
-      <TooltipContent>Catalog package provenance</TooltipContent>
+      <TooltipContent>{pageText("catalogPackageProvenance_8787fc")}</TooltipContent>
     </Tooltip>
   );
 }
 
 function RiskBanner({ team }: { team: CatalogTeam }) {
+  const { t: pageText } = usePageTranslation("interface");
   const unsafe = team.sourceRefs.filter(
     (s) => sourceWarningCode(s) !== "ok",
   );
@@ -364,16 +347,14 @@ function RiskBanner({ team }: { team: CatalogTeam }) {
       className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2.5 text-amber-700 dark:text-amber-300"
     >
       <div className="flex items-center gap-2 text-sm font-medium">
-        <AlertTriangle className="h-4 w-4" />
-        This team references {unsafe.length} external source
-        {unsafe.length === 1 ? "" : "s"}
+        <AlertTriangle className="h-4 w-4" />{pageText("thisTeamReferences_a0f01f") + " "}{unsafe.length}{" " + pageText("externalSource_2e983b")}{unsafe.length === 1 ? "" : "s"}
       </div>
       <ul className="mt-1.5 space-y-0.5 text-xs">
         {unsafe.map((s) => (
           <li key={`${s.type}:${s.ref}`} className="font-mono">
             {s.ref}{" "}
             <span className="not-italic font-sans opacity-80">
-              ({sourceWarningCode(s) === "unsupported_in_ui" ? "unsupported in browser install" : "unpinned"})
+              ({sourceWarningCode(s) === "unsupported_in_ui" ? pageText("unsupportedInBrowserInstall_607698") : pageText("unpinned_05acba")})
             </span>
           </li>
         ))}
@@ -517,6 +498,7 @@ function TeamFileTree({
 // ---------------------------------------------------------------------------
 
 export function TeamHierarchyPreview({ team }: { team: CatalogTeam }) {
+  const { t: pageText } = usePageTranslation("interface");
   const roots = new Set(team.rootAgentSlugs);
   const members = team.agentSlugs.filter((slug) => !roots.has(slug));
   const requiresManager = team.rootAgentSlugs.length > 0;
@@ -533,7 +515,7 @@ export function TeamHierarchyPreview({ team }: { team: CatalogTeam }) {
           >
             <Crown className="h-3.5 w-3.5 text-amber-500" />
             <span className="font-medium">{titleCase(slug)}</span>
-            <span className="text-xs text-muted-foreground">root agent</span>
+            <span className="text-xs text-muted-foreground">{pageText("rootAgent_2ac59a")}</span>
           </li>
         ))}
         {members.map((slug) => (
@@ -543,7 +525,7 @@ export function TeamHierarchyPreview({ team }: { team: CatalogTeam }) {
           </li>
         ))}
         {team.agentSlugs.length === 0 && (
-          <li className="px-3 py-2 text-xs text-muted-foreground">No agents in this team.</li>
+          <li className="px-3 py-2 text-xs text-muted-foreground">{pageText("noAgentsInThisTeam_4e7317")}</li>
         )}
       </ul>
     </div>
@@ -583,7 +565,8 @@ function MetricTile({
 }
 
 export function RequiredSkillsList({ skills }: { skills: CatalogTeamSkillRequirement[] }) {
-  if (skills.length === 0) return <p className="text-sm text-muted-foreground">No required skills.</p>;
+  const { t: pageText } = usePageTranslation("interface");
+  if (skills.length === 0) return <p className="text-sm text-muted-foreground">{pageText("noRequiredSkills_ac290e")}</p>;
   return (
     <ul className="space-y-1">
       {skills.map((skill) => (
@@ -597,13 +580,9 @@ export function RequiredSkillsList({ skills }: { skills: CatalogTeamSkillRequire
             {skill.type}
           </Badge>
           {skill.resolved ? (
-            <Badge variant="outline" className="text-(length:--text-nano) text-emerald-600 dark:text-emerald-300 border-emerald-500/30">
-              resolved
-            </Badge>
+            <Badge variant="outline" className="text-(length:--text-nano) text-emerald-600 dark:text-emerald-300 border-emerald-500/30">{pageText("resolved_026ab2")}</Badge>
           ) : (
-            <Badge variant="outline" className="text-(length:--text-nano) text-amber-600 dark:text-amber-300 border-amber-500/30">
-              external
-            </Badge>
+            <Badge variant="outline" className="text-(length:--text-nano) text-amber-600 dark:text-amber-300 border-amber-500/30">{pageText("external_59d8f3")}</Badge>
           )}
         </li>
       ))}
@@ -612,10 +591,11 @@ export function RequiredSkillsList({ skills }: { skills: CatalogTeamSkillRequire
 }
 
 export function EnvInputsList({ inputs }: { inputs: CatalogTeamEnvInputSummary[] }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (inputs.length === 0) return null;
   return (
     <div className="space-y-1.5">
-      <SectionHeader>Secrets & env inputs</SectionHeader>
+      <SectionHeader>{pageText("secretsEnvInputs_04c4c0")}</SectionHeader>
       <ul className="space-y-1">
         {inputs.map((input) => (
           <li
@@ -636,7 +616,7 @@ export function EnvInputsList({ inputs }: { inputs: CatalogTeamEnvInputSummary[]
               {input.kind}
             </Badge>
             {input.requirement === "required" && (
-              <Badge variant="outline" className="text-(length:--text-nano)">required</Badge>
+              <Badge variant="outline" className="text-(length:--text-nano)">{pageText("required_1a77d4")}</Badge>
             )}
           </li>
         ))}
@@ -652,6 +632,7 @@ function envInputFormKey(input: CatalogTeamEnvInputSummary) {
 }
 
 export function ExternalSourcesList({ sources }: { sources: CatalogTeamSourceRef[] }) {
+  const { t: pageText } = usePageTranslation("interface");
   const external = sources.filter((s) => s.type !== "include");
   const [open, setOpen] = useState(false);
   if (external.length === 0) return null;
@@ -662,8 +643,7 @@ export function ExternalSourcesList({ sources }: { sources: CatalogTeamSourceRef
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
       >
-        {open ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-        External sources · {external.length}
+        {open ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}{pageText("externalSources_5df9a7") + " "}{external.length}
       </button>
       {open && (
         <ul className="divide-y divide-border rounded-md border border-border">
@@ -676,13 +656,13 @@ export function ExternalSourcesList({ sources }: { sources: CatalogTeamSourceRef
                 <span className="font-mono text-xs truncate">{source.ref}</span>
                 <span className="ml-auto text-(length:--text-micro)">
                   {code === "ok" && (
-                    <span className="text-emerald-600 dark:text-emerald-300">Pinned</span>
+                    <span className="text-emerald-600 dark:text-emerald-300">{pageText("pinned_f93121")}</span>
                   )}
                   {code === "unpinned" && (
-                    <span className="text-amber-600 dark:text-amber-300">Unpinned</span>
+                    <span className="text-amber-600 dark:text-amber-300">{pageText("unpinned_63ca08")}</span>
                   )}
                   {code === "unsupported_in_ui" && (
-                    <span className="text-rose-600 dark:text-rose-300">Unsupported in browser install</span>
+                    <span className="text-rose-600 dark:text-rose-300">{pageText("unsupportedInBrowserInstall_51c361")}</span>
                   )}
                 </span>
               </li>
@@ -711,6 +691,8 @@ export function TeamDetailPane({
   fileContent: string | null;
   installed?: InstalledCatalogTeam | null;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [expandedDirs, setExpandedDirs] = useState<Set<string>>(new Set());
   const tree = useMemo(() => buildTree(team.files), [team.files]);
   const invalid = team.compatibility === "invalid";
@@ -741,7 +723,7 @@ export function TeamDetailPane({
       ) : (
         <Download className="h-4 w-4" />
       )}
-      {isInstalled ? "Re-install latest" : "Install team"}
+      {isInstalled ? pageText("reInstallLatest_e27fae") : pageText("installTeam_a5f894")}
     </Button>
   );
 
@@ -762,16 +744,14 @@ export function TeamDetailPane({
               <ProvenanceBadge team={team} />
               {isInstalled && !outOfDate && (
                 <Badge variant="secondary" className="gap-1 text-(length:--text-nano)">
-                  <CheckCircle2 className="h-3 w-3" /> Installed
-                </Badge>
+                  <CheckCircle2 className="h-3 w-3" />{" " + pageText("installed_7bb440")}</Badge>
               )}
               {outOfDate && (
                 <Badge
                   variant="outline"
                   className="gap-1 border-amber-500/40 bg-amber-500/10 text-(length:--text-nano) text-amber-600 dark:text-amber-300"
                 >
-                  <ChevronUp className="h-3 w-3" /> Update available
-                </Badge>
+                  <ChevronUp className="h-3 w-3" />{" " + pageText("updateAvailable_21f186")}</Badge>
               )}
             </div>
           </div>
@@ -780,14 +760,14 @@ export function TeamDetailPane({
               <TooltipTrigger asChild>
                 <span tabIndex={0}>{installButton}</span>
               </TooltipTrigger>
-              <TooltipContent>This team cannot be installed — the package manifest is invalid.</TooltipContent>
+              <TooltipContent>{pageText("thisTeamCannotBeInstalledThePackageManifest_dc9445")}</TooltipContent>
             </Tooltip>
           ) : !canInstall ? (
             <Tooltip>
               <TooltipTrigger asChild>
                 <span tabIndex={0}>{installButton}</span>
               </TooltipTrigger>
-              <TooltipContent>Requires board operator or agent-create permissions.</TooltipContent>
+              <TooltipContent>{pageText("requiresBoardOperatorOrAgentCreatePermissions_d1e303")}</TooltipContent>
             </Tooltip>
           ) : (
             installButton
@@ -805,22 +785,22 @@ export function TeamDetailPane({
 
         {/* Summary grid */}
         <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-          <MetricTile label="Agents" value={team.counts.agents} Icon={Users2} />
-          <MetricTile label="Projects" value={team.counts.projects} Icon={FolderKanban} />
-          <MetricTile label="Routines" value={team.counts.routines} Icon={Repeat} />
-          <MetricTile label="Required skills" value={skillCount(team)} Icon={Boxes} />
+          <MetricTile label={translateUi("interfaceCopy.agents")} value={team.counts.agents} Icon={Users2} />
+          <MetricTile label={translateUi("interfaceCopy.projects")} value={team.counts.projects} Icon={FolderKanban} />
+          <MetricTile label={pageText("routines_a445e5")} value={team.counts.routines} Icon={Repeat} />
+          <MetricTile label={pageText("requiredSkills_86d908")} value={skillCount(team)} Icon={Boxes} />
         </div>
 
         {/* Agent hierarchy */}
         <div className="space-y-2">
-          <SectionHeader>Agent hierarchy</SectionHeader>
+          <SectionHeader>{pageText("agentHierarchy_3adc0e")}</SectionHeader>
           <TeamHierarchyPreview team={team} />
         </div>
 
         {/* Projects */}
         {team.projectSlugs.length > 0 && (
           <div className="space-y-2">
-            <SectionHeader>Projects</SectionHeader>
+            <SectionHeader>{translateUi("interfaceCopy.projects")}</SectionHeader>
             <ul className="space-y-1">
               {team.projectSlugs.map((slug) => (
                 <li key={slug} className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm">
@@ -835,7 +815,7 @@ export function TeamDetailPane({
 
         {/* Required skills */}
         <div className="space-y-2">
-          <SectionHeader>Required skills</SectionHeader>
+          <SectionHeader>{pageText("requiredSkills_86d908")}</SectionHeader>
           <RequiredSkillsList skills={team.requiredSkills} />
         </div>
 
@@ -847,7 +827,7 @@ export function TeamDetailPane({
 
         {/* File inventory */}
         <div className="space-y-2">
-          <SectionHeader>Files</SectionHeader>
+          <SectionHeader>{translateUi("interfaceCopy.files")}</SectionHeader>
           <div className="rounded-md border border-border p-1.5">
             <TeamFileTree
               nodes={tree}
@@ -865,9 +845,7 @@ export function TeamDetailPane({
                   type="button"
                   className="text-xs text-muted-foreground hover:text-foreground"
                   onClick={() => onSelectFile(null)}
-                >
-                  Close
-                </button>
+                >{translateUi("interfaceCopy.close")}</button>
               </div>
               <div className="max-h-96 overflow-auto p-3">
                 {fileContent === null ? (
@@ -877,7 +855,7 @@ export function TeamDetailPane({
                     <MarkdownBody>{fileContent}</MarkdownBody>
                   </div>
                 ) : (
-                  <pre className={cn("whitespace-pre-wrap break-words font-mono text-xs", ANALYTICS_MASK_CLASS)}>{fileContent}</pre>
+                  <pre className="whitespace-pre-wrap break-words font-mono text-xs">{fileContent}</pre>
                 )}
               </div>
             </div>
@@ -1107,17 +1085,16 @@ export function TeamInstallerDialog({
   defaultCollisionStrategy?: CompanyPortabilityCollisionStrategy;
   onInstalled: (result: CatalogTeamInstallResult) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const steps = useMemo(() => computeSteps(team), [team]);
   const [stepIndex, setStepIndex] = useState(0);
   const [phase, setPhase] = useState<ApplyPhase>("form");
   const disabledAdapterTypes = useDisabledAdaptersSync({ enabled: open });
   const adapterRegistryLoaded = useAdapterRegistryLoaded({ enabled: open });
-  const nativeRunnerAvailable = adapterRegistryLoaded && !disabledAdapterTypes.has("paperclip_runner");
-  const cloud = Boolean(useCloudInstance());
-  const harnessPolicy = useCloudHarnessPolicy();
   const selectableAdapterTypes = useMemo(
-    () => listTeamInstallAdapterTypes(disabledAdapterTypes, adapterRegistryLoaded, cloud, harnessPolicy),
-    [adapterRegistryLoaded, disabledAdapterTypes, cloud, harnessPolicy],
+    () => listTeamInstallAdapterTypes(disabledAdapterTypes, adapterRegistryLoaded),
+    [adapterRegistryLoaded, disabledAdapterTypes],
   );
 
   // Step 1 — target manager
@@ -1186,21 +1163,15 @@ export function TeamInstallerDialog({
     const overrides: Record<string, CompanyPortabilityAdapterOverride> = {};
     for (const [slug, adapterType] of Object.entries(adapterOverrides)) {
       if (adapterType) {
-        const source = previewResult?.portabilityPreview.manifest.agents.find(agent => agent.slug === slug);
-        const adapterConfig = source ? teamInstallSelectionConfig(source, adapterType, cloud, harnessPolicy) : {};
         const resolvedAdapterType = resolveTeamInstallAdapterType(
           adapterType,
           selectableAdapterTypes,
-          { cloud, adapterConfig, harnessPolicy, nativeRunnerAvailable },
         );
         if (!resolvedAdapterType) {
           throw new Error("Enable a legacy adapter before installing this team.");
         }
-        if (cloud && source?.adapterType === "paperclip_runner" && resolvedAdapterType === source.adapterType
-          && harnessPolicy.isCloudHarnessAllowed(source.adapterType, source.adapterConfig)) continue;
         overrides[slug] = {
           adapterType: resolvedAdapterType,
-          ...(cloud ? { adapterConfig: resolvedAdapterType === "paperclip_runner" ? { provider: "codex" } : {} } : {}),
         };
       }
     }
@@ -1209,15 +1180,12 @@ export function TeamInstallerDialog({
       const adapterType = resolveTeamInstallAdapterType(
         agent.adapterType,
         selectableAdapterTypes,
-        { cloud, adapterConfig: agent.adapterConfig, harnessPolicy, nativeRunnerAvailable },
       );
       if (!adapterType) {
         throw new Error("Enable a legacy adapter before installing this team.");
       }
-      if (adapterType !== agent.adapterType || (cloud && !harnessPolicy.isCloudHarnessAllowed(agent.adapterType, agent.adapterConfig))) {
-        overrides[agent.slug] = { adapterType,
-          ...(cloud ? { adapterConfig: adapterType === "paperclip_runner" ? { provider: "codex" } : {} } : {}),
-        };
+      if (adapterType !== agent.adapterType) {
+        overrides[agent.slug] = { adapterType };
       }
     }
     const enteredSecretValues = Object.fromEntries(
@@ -1293,7 +1261,6 @@ export function TeamInstallerDialog({
         !resolveTeamInstallAdapterType(
           adapterOverrides[agent.slug] ?? agent.adapterType,
           selectableAdapterTypes,
-          { cloud, adapterConfig: teamInstallSelectionConfig(agent, adapterOverrides[agent.slug], cloud, harnessPolicy), harnessPolicy, nativeRunnerAvailable },
         ),
     ),
   );
@@ -1320,15 +1287,13 @@ export function TeamInstallerDialog({
 
   const headerTitle = (
     <span className="flex items-center gap-2">
-      <Users2 className="h-4 w-4" />
-      Install {team.name}
+      <Users2 className="h-4 w-4" />{pageText("install_fd6c3e") + " "}{team.name}
     </span>
   );
   const headerDescription =
     phase === "form" ? (
       <span className="flex items-center gap-2">
-        <span>
-          Step {stepIndex + 1} of {totalSteps} · {STEP_LABELS[currentStep]}
+        <span>{pageText("step_dc416e") + " "}{stepIndex + 1}{" " + pageText("of_de04fa") + " "}{totalSteps} · {STEP_LABELS[currentStep]}
         </span>
         <span className="flex items-center gap-1" aria-hidden>
           {steps.map((s, i) => (
@@ -1390,9 +1355,6 @@ export function TeamInstallerDialog({
                 onRename={(slug, name) => setNameOverrides((cur) => ({ ...cur, [slug]: name }))}
                 adapterOverrides={adapterOverrides}
                 selectableAdapterTypes={selectableAdapterTypes}
-                cloud={cloud}
-                harnessPolicy={harnessPolicy}
-                nativeRunnerAvailable={nativeRunnerAvailable}
                 onAdapterChange={(slug, adapterType) => setAdapterOverrides((cur) => ({ ...cur, [slug]: adapterType }))}
                 secretValues={secretValues}
                 visibleSecretKeys={visibleSecretKeys}
@@ -1411,11 +1373,9 @@ export function TeamInstallerDialog({
             <div role="alert" className="flex items-start gap-2 rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2.5 text-sm text-rose-700 dark:text-rose-300">
               <XCircle className="mt-0.5 h-4 w-4 shrink-0" />
               <div>
-                <p className="font-medium">Install failed</p>
+                <p className="font-medium">{pageText("installFailed_50c51c")}</p>
                 <p className="mt-0.5 text-xs">{applyError}</p>
-                <p className="mt-1 text-xs opacity-80">
-                  Partial state is not rolled back. Review the organization activity log before retrying.
-                </p>
+                <p className="mt-1 text-xs opacity-80">{pageText("partialStateIsNotRolledBackReviewThe_7b35af")}</p>
               </div>
             </div>
           </div>
@@ -1428,47 +1388,41 @@ export function TeamInstallerDialog({
       <div className="flex items-center justify-between gap-3">
         <div>
           {stepIndex > 0 ? (
-            <Button variant="ghost" onClick={goBack}>Back</Button>
+            <Button variant="ghost" onClick={goBack}>{translateUi("interfaceCopy.back")}</Button>
           ) : (
-            <Button variant="ghost" onClick={onClose}>Cancel</Button>
+            <Button variant="ghost" onClick={onClose}>{translateUi("interfaceCopy.cancel")}</Button>
           )}
         </div>
         <div className="flex items-center gap-3">
           {currentStep === "preview" && hasErrors && (
-            <span className="text-xs text-rose-600 dark:text-rose-300">
-              Install blocked: {blockedCount} error{blockedCount === 1 ? "" : "s"}
+            <span className="text-xs text-rose-600 dark:text-rose-300">{pageText("installBlocked_f87c49") + " "}{blockedCount}{" " + pageText("error_11f957")}{blockedCount === 1 ? "" : "s"}
             </span>
           )}
           {currentStep === "preview" && !hasErrors && missingRequiredSecretCount > 0 && (
-            <span className="text-xs text-rose-600 dark:text-rose-300">
-              Required secrets missing: {missingRequiredSecretCount}
+            <span className="text-xs text-rose-600 dark:text-rose-300">{pageText("requiredSecretsMissing_d71f67") + " "}{missingRequiredSecretCount}
             </span>
           )}
           {currentStep === "preview" && !hasErrors && missingRequiredSecretCount === 0 && missingEnabledAdapter && (
-            <span className="text-xs text-rose-600 dark:text-rose-300">
-              Enable a legacy adapter to install this team
-            </span>
+            <span className="text-xs text-rose-600 dark:text-rose-300">{pageText("enableALegacyAdapterToInstallThisTeam_a7a8b3")}</span>
           )}
           {currentStep === "preview" ? (
             needsScriptsConfirm && confirmScripts ? (
               <Button variant="destructive" onClick={submitInstall} disabled={installBlocked || previewMutation.isPending}>
-                <AlertTriangle className="h-4 w-4" />
-                Confirm — install with executables
-              </Button>
+                <AlertTriangle className="h-4 w-4" />{pageText("confirmInstallWithExecutables_8ab76e")}</Button>
             ) : (
               <Button onClick={submitInstall} disabled={installBlocked || previewMutation.isPending || !previewResult}>
                 {needsScriptsConfirm ? <AlertTriangle className="h-4 w-4" /> : <Download className="h-4 w-4" />}
-                {needsScriptsConfirm ? "Install with executables" : "Install team"}
+                {needsScriptsConfirm ? pageText("installWithExecutables_4dc2de") : pageText("installTeam_a5f894")}
               </Button>
             )
           ) : (
-            <Button onClick={goNext} disabled={!canContinue(currentStep)}>Continue</Button>
+            <Button onClick={goNext} disabled={!canContinue(currentStep)}>{translateUi("interfaceCopy.continue")}</Button>
           )}
         </div>
       </div>
     ) : phase === "error" ? (
       <div className="flex justify-end">
-        <Button variant="ghost" onClick={onClose}>Close</Button>
+        <Button variant="ghost" onClick={onClose}>{translateUi("interfaceCopy.close")}</Button>
       </div>
     ) : null;
 
@@ -1521,18 +1475,16 @@ export function StepTargetManager({
   onToggleFullCompany: (v: boolean) => void;
   canBypassManager: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="space-y-4">
       <div
         className="rounded-md border border-blue-500/30 bg-blue-500/10 px-3 py-2.5 text-sm text-blue-700 dark:text-blue-300"
         id="target-manager-help"
-      >
-        This team&apos;s root agents need a manager in your organization. Pick the agent who will become
-        their parent. Internal team hierarchy is preserved.
-      </div>
+      >{pageText("thisTeamSRootAgentsNeedAManager_ac6a7d")}</div>
 
       <div className="space-y-1.5">
-        <SectionHeader>Root agents</SectionHeader>
+        <SectionHeader>{pageText("rootAgents_6a3faf")}</SectionHeader>
         <ul className="rounded-md border border-border">
           {team.rootAgentSlugs.map((slug) => (
             <li key={slug} className="flex items-center gap-2 border-b border-border/60 px-3 py-2 text-sm last:border-b-0">
@@ -1548,11 +1500,11 @@ export function StepTargetManager({
 
       {!fullCompany && (
         <div className="space-y-1.5" aria-describedby="target-manager-help">
-          <SectionHeader>Target manager</SectionHeader>
-          {agents.length === 0 ? <p role="status" className="rounded-md border border-border p-3 text-sm text-muted-foreground">No agents are available to manage this team. Create an agent in your company, then try again.</p> : <Command className="rounded-md border border-border">
-            <CommandInput placeholder="Search agents…" />
+          <SectionHeader>{pageText("targetManager_ebdd29")}</SectionHeader>
+          {agents.length === 0 ? <p role="status" className="rounded-md border border-border p-3 text-sm text-muted-foreground">{pageText("noAgentsAreAvailableToManageThisTeam_726de4")}</p> : <Command className="rounded-md border border-border">
+            <CommandInput placeholder={pageText("searchAgents_97ce8a")} />
             <CommandList>
-              <CommandEmpty>No agents found.</CommandEmpty>
+              <CommandEmpty>{pageText("noAgentsFound_6893bf")}</CommandEmpty>
               <CommandGroup>
                 {agents.map((agent) => (
                   <CommandItem
@@ -1580,9 +1532,7 @@ export function StepTargetManager({
             type="radio"
             checked={fullCompany}
             onChange={(e) => onToggleFullCompany(e.target.checked)}
-          />
-          Use this team as a full-organization package (no target manager)
-        </label>
+          />{pageText("useThisTeamAsAFullOrganizationPackage_807343")}</label>
       )}
     </div>
   );
@@ -1601,14 +1551,12 @@ export function StepSourcePolicy({
   allowLocalPathSources: boolean;
   onChange: (key: "external" | "unpinned" | "localPath", value: boolean) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const external = team.sourceRefs.filter((s) => s.type !== "include");
   const hasUnsupported = external.some((s) => sourceWarningCode(s) === "unsupported_in_ui");
   return (
     <div className="space-y-4">
-      <div role="alert" className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2.5 text-sm text-amber-700 dark:text-amber-300">
-        This team references {external.length} external source{external.length === 1 ? "" : "s"}.
-        Review each one and decide what to allow before continuing.
-      </div>
+      <div role="alert" className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2.5 text-sm text-amber-700 dark:text-amber-300">{pageText("thisTeamReferences_a0f01f") + " "}{external.length}{" " + pageText("externalSource_2e983b")}{external.length === 1 ? "" : "s"}{pageText("reviewEachOneAndDecideWhatToAllow_ba990f")}</div>
 
       <ul className="divide-y divide-border rounded-md border border-border">
         {external.map((source) => {
@@ -1620,9 +1568,9 @@ export function StepSourcePolicy({
               <div className="min-w-0">
                 <p className="font-mono text-xs truncate">{source.ref}</p>
                 <p className="text-(length:--text-micro) text-muted-foreground">
-                  {code === "ok" && "pinned"}
-                  {code === "unpinned" && "unpinned reference"}
-                  {code === "unsupported_in_ui" && "not installable from the browser"}
+                  {code === "ok" && pageText("pinned_33469d")}
+                  {code === "unpinned" && pageText("unpinnedReference_7a1649")}
+                  {code === "unsupported_in_ui" && pageText("notInstallableFromTheBrowser_2dc4ac")}
                 </p>
               </div>
               <Badge
@@ -1645,30 +1593,27 @@ export function StepSourcePolicy({
 
       <div className="space-y-2.5 rounded-md border border-border p-3">
         <PolicyToggle
-          label="Allow external sources"
-          description="Resolve github/url skill and team sources at install time."
+          label={pageText("allowExternalSources_aaa439")}
+          description={pageText("resolveGithubUrlSkillAndTeamSourcesAt_8fe89f")}
           checked={allowExternalSources}
           onChange={(v) => onChange("external", v)}
         />
         <PolicyToggle
-          label="Allow unpinned optional sources"
-          description="Permit optional sources that are not pinned to a ref or checksum."
+          label={pageText("allowUnpinnedOptionalSources_354218")}
+          description={pageText("permitOptionalSourcesThatAreNotPinnedTo_c61e5e")}
           checked={allowUnpinnedOptionalSources}
           onChange={(v) => onChange("unpinned", v)}
         />
         <PolicyToggle
-          label="Allow local-path sources"
-          description="Required for local_path / agent_package sources. Development use only."
+          label={pageText("allowLocalPathSources_5f2515")}
+          description={pageText("requiredForLocalPathAgentPackageSourcesDevelopment_715e36")}
           checked={allowLocalPathSources}
           onChange={(v) => onChange("localPath", v)}
         />
       </div>
 
       {hasUnsupported && !allowLocalPathSources && (
-        <p className="text-xs text-rose-600 dark:text-rose-300">
-          This team has local-path sources. Enable &ldquo;Allow local-path sources&rdquo; to continue,
-          or install it from the CLI.
-        </p>
+        <p className="text-xs text-rose-600 dark:text-rose-300">{pageText("thisTeamHasLocalPathSourcesEnableAllow_1aa484")}</p>
       )}
     </div>
   );
@@ -1713,15 +1658,13 @@ export function StepSkillPlan({
   team: CatalogTeam;
   preparations: CatalogTeamSkillPreparation[] | null;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   // Use the live preparations when a preview has run; otherwise fall back to the
   // static required-skill list (read-only — the strict API does not accept a
   // per-skill plan override, design §7 graceful degradation).
   return (
     <div className="space-y-4">
-      <div role="alert" className="rounded-md border border-blue-500/30 bg-blue-500/10 px-3 py-2.5 text-sm text-blue-700 dark:text-blue-300">
-        Before agents are imported, the catalog resolves the skills they depend on. This is the
-        resolution plan.
-      </div>
+      <div role="alert" className="rounded-md border border-blue-500/30 bg-blue-500/10 px-3 py-2.5 text-sm text-blue-700 dark:text-blue-300">{pageText("beforeAgentsAreImportedTheCatalogResolvesThe_faf6f1")}</div>
       <ul className="divide-y divide-border rounded-md border border-border">
         {(preparations ?? team.requiredSkills.map(toPreparation)).map((prep) => {
           const meta = SKILL_ACTION_META[prep.action];
@@ -1817,9 +1760,6 @@ export function StepPreview({
   onRename,
   adapterOverrides,
   selectableAdapterTypes,
-  cloud = false,
-  harnessPolicy = unrestrictedCloudHarnessPolicy,
-  nativeRunnerAvailable = selectableAdapterTypes.includes("paperclip_runner"),
   onAdapterChange,
   secretValues = {},
   visibleSecretKeys = {},
@@ -1837,9 +1777,6 @@ export function StepPreview({
   onRename: (slug: string, name: string) => void;
   adapterOverrides: Record<string, string>;
   selectableAdapterTypes: readonly string[];
-  cloud?: boolean;
-  harnessPolicy?: CloudHarnessPolicy;
-  nativeRunnerAvailable?: boolean;
   onAdapterChange: (slug: string, adapterType: string) => void;
   secretValues?: Record<string, string>;
   visibleSecretKeys?: Record<string, boolean>;
@@ -1847,11 +1784,12 @@ export function StepPreview({
   onToggleSecretVisibility?: (key: string) => void;
   onRetry: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   if (loading && !result) {
     return (
       <div className="flex items-center gap-2 py-12 text-sm text-muted-foreground">
-        <Loader2 className="h-4 w-4 animate-spin" /> Preparing preview…
-      </div>
+        <Loader2 className="h-4 w-4 animate-spin" />{" " + pageText("preparingPreview_312e7b")}</div>
     );
   }
   if (error) {
@@ -1862,8 +1800,7 @@ export function StepPreview({
           {error}
         </div>
         <Button variant="outline" onClick={onRetry}>
-          <RotateCcw className="h-4 w-4" /> Retry
-        </Button>
+          <RotateCcw className="h-4 w-4" />{" " + pageText("retry_9f5cd8")}</Button>
       </div>
     );
   }
@@ -1878,25 +1815,25 @@ export function StepPreview({
     <div className="space-y-4">
       {/* Summary */}
       <div className="space-y-2">
-        <SectionHeader>Summary</SectionHeader>
+        <SectionHeader>{translateUi("interfaceCopy.summary")}</SectionHeader>
         <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-4">
-          <SummaryCount label="Agents" value={plan.agentPlans.length} />
-          <SummaryCount label="Projects" value={plan.projectPlans.length} />
-          <SummaryCount label="Starter tasks" value={plan.issuePlans.length} />
-          <SummaryCount label="Required skills" value={result.skillPreparations.length} />
+          <SummaryCount label={translateUi("interfaceCopy.agents")} value={plan.agentPlans.length} />
+          <SummaryCount label={translateUi("interfaceCopy.projects")} value={plan.projectPlans.length} />
+          <SummaryCount label={pageText("starterTasks_f26ee7")} value={plan.issuePlans.length} />
+          <SummaryCount label={pageText("requiredSkills_86d908")} value={result.skillPreparations.length} />
         </div>
       </div>
 
       {/* Collision strategy */}
       <div className="flex items-center gap-3">
-        <span className="text-sm font-medium">Collision strategy</span>
+        <span className="text-sm font-medium">{pageText("collisionStrategy_68f53e")}</span>
         <Select value={collisionStrategy} onValueChange={(v) => onCollisionStrategyChange(v as CompanyPortabilityCollisionStrategy)}>
           <SelectTrigger className="h-8 w-40">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="rename">Rename collisions</SelectItem>
-            <SelectItem value="skip">Skip collisions</SelectItem>
+            <SelectItem value="rename">{pageText("renameCollisions_4418a1")}</SelectItem>
+            <SelectItem value="skip">{pageText("skipCollisions_7e17bb")}</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -1904,7 +1841,7 @@ export function StepPreview({
       {/* Errors / warnings */}
       {result.errors.length > 0 && (
         <div role="alert" className="rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2.5 text-sm text-rose-700 dark:text-rose-300">
-          <p className="font-medium">Install blocked</p>
+          <p className="font-medium">{pageText("installBlocked_65cb6d")}</p>
           <ul className="mt-1 list-disc space-y-0.5 pl-4 text-xs">
             {result.errors.map((e, i) => <li key={i}>{e}</li>)}
           </ul>
@@ -1920,7 +1857,7 @@ export function StepPreview({
 
       {/* Agents */}
       {plan.agentPlans.length > 0 && (
-        <PreviewSection title={`Agents · ${plan.agentPlans.length}`}>
+        <PreviewSection title={translateDynamic("dynamic:agents", { value1: plan.agentPlans.length })}>
           {plan.agentPlans.map((p) => (
             <PlanRow
               key={p.slug}
@@ -1938,7 +1875,7 @@ export function StepPreview({
 
       {/* Projects */}
       {plan.projectPlans.length > 0 && (
-        <PreviewSection title={`Projects · ${plan.projectPlans.length}`}>
+        <PreviewSection title={translateDynamic("dynamic:projects", { value1: plan.projectPlans.length })}>
           {plan.projectPlans.map((p) => (
             <PlanRow
               key={p.slug}
@@ -1956,7 +1893,7 @@ export function StepPreview({
 
       {/* Starter tasks */}
       {plan.issuePlans.length > 0 && (
-        <PreviewSection title={`Starter tasks · ${plan.issuePlans.length}`}>
+        <PreviewSection title={translateDynamic("dynamic:starterTasks", { value1: plan.issuePlans.length })}>
           {plan.issuePlans.map((p) => (
             <PlanRow key={p.slug} slug={p.slug} action={p.action} plannedName={p.plannedTitle} reason={p.reason} canRename={false} />
           ))}
@@ -1965,14 +1902,11 @@ export function StepPreview({
 
       {/* Adapter selection — install schema accepts adapterOverrides (design §4.4) */}
       {manifestAgents.length > 0 && (
-        <PreviewSection title={`Adapter selection · ${manifestAgents.length}`}>
+        <PreviewSection title={translateDynamic("dynamic:adapterSelection", { value1: manifestAgents.length })}>
           {manifestAgents.map((agent) => {
-            const savedRunnerSelectable = agent.adapterType === "paperclip_runner" && nativeRunnerAvailable
-              && (!cloud || harnessPolicy.isCloudHarnessAllowed(agent.adapterType, agent.adapterConfig));
             const selected = resolveTeamInstallAdapterType(
               adapterOverrides[agent.slug] ?? agent.adapterType,
               selectableAdapterTypes,
-              { cloud, adapterConfig: teamInstallSelectionConfig(agent, adapterOverrides[agent.slug], cloud, harnessPolicy), harnessPolicy, nativeRunnerAvailable },
             );
             return (
               <li key={agent.slug} className="flex items-center gap-2 px-3 py-2 text-sm">
@@ -1988,29 +1922,21 @@ export function StepPreview({
                       {selectableAdapterTypes.map((type) => (
                         <SelectItem key={type} value={type}>{getAdapterLabel(type)}</SelectItem>
                       ))}
-                      {savedRunnerSelectable && !selectableAdapterTypes.includes("paperclip_runner") && (
-                        <SelectItem value="paperclip_runner">{getAdapterLabel("paperclip_runner")}</SelectItem>
-                      )}
                     </SelectContent>
                   </Select>
                 ) : (
-                  <span className="ml-auto text-xs text-rose-600 dark:text-rose-300">
-                    No enabled legacy adapter
-                  </span>
+                  <span className="ml-auto text-xs text-rose-600 dark:text-rose-300">{pageText("noEnabledLegacyAdapter_ef7aa6")}</span>
                 )}
               </li>
             );
           })}
-          <li className="px-3 py-1.5 text-(length:--text-micro) text-muted-foreground">
-            Each imported agent defaults to its package adapter; override here before install.
-            Deeper per-adapter model config is editable on the agent after install.
-          </li>
+          <li className="px-3 py-1.5 text-(length:--text-micro) text-muted-foreground">{pageText("eachImportedAgentDefaultsToItsPackageAdapter_72947f")}</li>
         </PreviewSection>
       )}
 
       {/* Env inputs */}
       {envInputs.length > 0 && (
-        <PreviewSection title={`Secrets & env inputs · ${envInputs.length}`}>
+        <PreviewSection title={translateDynamic("dynamic:secretsEnvInputs", { value1: envInputs.length })}>
           {envInputs.map((input) => {
             const formKey = envInputFormKey(input);
             const visible = Boolean(visibleSecretKeys[formKey]);
@@ -2022,7 +1948,7 @@ export function StepPreview({
                   <span className="font-mono text-xs uppercase tracking-wide">{input.key}</span>
                   {input.description && <span className="truncate text-xs text-muted-foreground">{input.description}</span>}
                   {input.requirement === "required" && (
-                    <Badge variant="outline" className="text-(length:--text-nano)">required</Badge>
+                    <Badge variant="outline" className="text-(length:--text-nano)">{pageText("required_1a77d4")}</Badge>
                   )}
                   <Badge
                     variant="outline"
@@ -2036,7 +1962,7 @@ export function StepPreview({
                     type={visible ? "text" : "password"}
                     value={secretValues[formKey] ?? ""}
                     onChange={(event) => onSecretChange(formKey, event.target.value)}
-                    placeholder={input.requirement === "required" ? "Required" : "Optional"}
+                    placeholder={input.requirement === "required" ? pageText("required_eed6bf") : pageText("optional_0c6c41")}
                     aria-label={`${input.key} value`}
                     aria-invalid={missingRequired || undefined}
                     className={cn("h-8 min-w-0", missingRequired && "border-rose-500/60 focus-visible:ring-rose-500/30")}
@@ -2054,7 +1980,7 @@ export function StepPreview({
                         {visible ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                       </Button>
                     </TooltipTrigger>
-                    <TooltipContent>{visible ? "Hide value" : "Show value"}</TooltipContent>
+                    <TooltipContent>{visible ? pageText("hideValue_945e0c") : pageText("showValue_8b9ac8")}</TooltipContent>
                   </Tooltip>
                 </div>
               </li>
@@ -2064,11 +1990,8 @@ export function StepPreview({
       )}
 
       {/* Provenance */}
-      <div className="rounded-md border border-border px-3 py-2.5 text-xs text-muted-foreground">
-        Imported entities are stamped with <code className="font-mono">metadata.paperclip.catalogTeam</code>{" "}
-        ({team.packageName ?? team.key}, content hash <code className="font-mono">{team.contentHash.slice(0, 16)}…</code>),
-        and an activity event is recorded for preview and install.
-      </div>
+      <div className="rounded-md border border-border px-3 py-2.5 text-xs text-muted-foreground">{pageText("importedEntitiesAreStampedWith_db7203") + " "}<code className="font-mono">metadata.paperclip.catalogTeam</code>{" "}
+        ({team.packageName ?? team.key}{pageText("contentHash_2cb221") + " "}<code className="font-mono">{team.contentHash.slice(0, 16)}…</code>{pageText("andAnActivityEventIsRecordedForPreview_4ce84b")}</div>
     </div>
   );
 }
@@ -2097,14 +2020,13 @@ function PreviewSection({ title, children }: { title: string; children: React.Re
 // per-step progress mid-flight. Show one honest in-flight row; the resolved
 // per-category checklist is rendered from the real result on the success screen.
 export function ApplyProgress({ team }: { team: CatalogTeam }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="flex items-center gap-3 py-10 text-sm">
       <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       <div>
-        <p className="font-medium">Installing {team.name}…</p>
-        <p className="text-xs text-muted-foreground">
-          Resolving skills, importing agents, projects, and routines. This may take a moment.
-        </p>
+        <p className="font-medium">{pageText("installing_e38432") + " "}{team.name}…</p>
+        <p className="text-xs text-muted-foreground">{pageText("resolvingSkillsImportingAgentsProjectsAndRoutinesThis_85d672")}</p>
       </div>
     </div>
   );
@@ -2129,6 +2051,8 @@ export function ApplySuccess({
   result: CatalogTeamInstallResult | null;
   onClose: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const imp = result?.portabilityImport;
   const agentsCreated = imp?.agents.filter((a) => a.action !== "skipped").length ?? 0;
   const projectsCreated = imp?.projects.filter((p) => p.action !== "skipped").length ?? 0;
@@ -2138,16 +2062,15 @@ export function ApplySuccess({
     <div className="space-y-4 py-2">
       <div className="flex items-center gap-2">
         <CheckCircle2 className="h-6 w-6 text-emerald-500" />
-        <p className="text-base font-semibold">Team installed</p>
+        <p className="text-base font-semibold">{pageText("teamInstalled_d5449d")}</p>
       </div>
       <p className="text-sm text-muted-foreground">
-        {team.name} was imported into your organization. Imported entities are stamped with catalog provenance.
-      </p>
+        {team.name}{" " + pageText("wasImportedIntoYourOrganizationImportedEntitiesAre_38958b")}</p>
       {result && (
         <ul className="divide-y divide-border/60 rounded-md border border-border px-3">
-          <ResultRow label="Agents imported" count={agentsCreated} />
-          <ResultRow label="Projects imported" count={projectsCreated} />
-          <ResultRow label="Skills resolved" count={skillsResolved} />
+          <ResultRow label={pageText("agentsImported_445591")} count={agentsCreated} />
+          <ResultRow label={pageText("projectsImported_594244")} count={projectsCreated} />
+          <ResultRow label={pageText("skillsResolved_0ddaf9")} count={skillsResolved} />
         </ul>
       )}
       {warnings.length > 0 && (
@@ -2158,13 +2081,13 @@ export function ApplySuccess({
         </div>
       )}
       <ul className="space-y-1 text-sm">
-        <li><a className="text-primary hover:underline" href="/agents/all">View imported agents →</a></li>
-        <li><a className="text-primary hover:underline" href="/projects">View imported projects →</a></li>
-        <li><a className="text-primary hover:underline" href="/routines">View routines →</a></li>
-        <li><a className="text-primary hover:underline" href="/activity">View activity log →</a></li>
+        <li><a className="text-primary hover:underline" href="/agents/all">{pageText("viewImportedAgents_24ddef")}</a></li>
+        <li><a className="text-primary hover:underline" href="/projects">{pageText("viewImportedProjects_f3653e")}</a></li>
+        <li><a className="text-primary hover:underline" href="/routines">{pageText("viewRoutines_b95d74")}</a></li>
+        <li><a className="text-primary hover:underline" href="/activity">{pageText("viewActivityLog_559a30")}</a></li>
       </ul>
       <div className="flex justify-end">
-        <Button onClick={onClose}>Done</Button>
+        <Button onClick={onClose}>{translateUi("interfaceCopy.done")}</Button>
       </div>
     </div>
   );
@@ -2185,6 +2108,7 @@ export function TeamRow({
   onSelect: () => void;
   installed?: InstalledCatalogTeam | null;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const risk = teamRisk(team);
   const outOfDate = Boolean(installed?.outOfDate);
   return (
@@ -2205,13 +2129,13 @@ export function TeamRow({
           <Tooltip>
             <TooltipTrigger asChild>
               <span
-                aria-label="Update available"
+                aria-label={pageText("updateAvailable_21f186")}
                 className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-300"
               >
                 <ChevronUp className="h-3 w-3" />
               </span>
             </TooltipTrigger>
-            <TooltipContent>Update available — installed team is out of date</TooltipContent>
+            <TooltipContent>{pageText("updateAvailableInstalledTeamIsOutOfDate_01cbda")}</TooltipContent>
           </Tooltip>
         )}
         {risk !== "safe" && (
@@ -2219,7 +2143,7 @@ export function TeamRow({
             <TooltipTrigger asChild>
               <AlertTriangle className={cn("ml-auto h-3.5 w-3.5", risk === "blocked" ? "text-rose-500" : "text-amber-500")} />
             </TooltipTrigger>
-            <TooltipContent>Has external sources</TooltipContent>
+            <TooltipContent>{pageText("hasExternalSources_d7fd70")}</TooltipContent>
           </Tooltip>
         )}
       </div>
@@ -2249,6 +2173,7 @@ export function TeamCard({
   selected?: boolean;
   onSelect?: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <button
       type="button"
@@ -2270,9 +2195,9 @@ export function TeamCard({
       <div className="space-y-0.5">
         <h3 className="text-sm font-semibold leading-snug">{team.name}</h3>
         <p className="text-xs text-muted-foreground">
-          {team.counts.agents} agent{team.counts.agents === 1 ? "" : "s"} ·{" "}
-          {team.counts.projects} project{team.counts.projects === 1 ? "" : "s"} ·{" "}
-          {team.counts.routines} routine{team.counts.routines === 1 ? "" : "s"}
+          {team.counts.agents}{" " + pageText("agent_0608c4")}{team.counts.agents === 1 ? "" : "s"} ·{" "}
+          {team.counts.projects}{" " + pageText("project_98f541")}{team.counts.projects === 1 ? "" : "s"} ·{" "}
+          {team.counts.routines}{" " + pageText("routine_012da8")}{team.counts.routines === 1 ? "" : "s"}
         </p>
       </div>
 
@@ -2312,6 +2237,8 @@ function matchesSearch(team: CatalogTeam, q: string): boolean {
 }
 
 export function TeamCatalog() {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const { "*": routePath } = useParams<{ "*": string }>();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -2345,8 +2272,8 @@ export function TeamCatalog() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: "Org Chart", href: "/org" },
-      { label: "Teams", href: TEAM_CATALOG_ROUTE_ROOT },
+      { label: interfaceNotice("interface:orgChart_989088"), href: "/org" },
+      { label: interfaceNotice("interface:teams_cbfd44"), href: TEAM_CATALOG_ROUTE_ROOT },
     ]);
   }, [setBreadcrumbs]);
 
@@ -2443,7 +2370,7 @@ export function TeamCatalog() {
   if (!selectedCompanyId) {
     return (
       <div className="p-8">
-        <EmptyState icon={Users2} message="Select an organization to browse the team catalog." />
+        <EmptyState icon={Users2} message={pageText("selectAnOrganizationToBrowseTheTeamCatalog_45b694")} />
       </div>
     );
   }
@@ -2451,14 +2378,14 @@ export function TeamCatalog() {
   return (
     <div className="flex h-full flex-col">
       {/* Toolbar */}
-      <div data-canonical-toolbar="teams" role="toolbar" aria-label="Teams controls" className="flex flex-wrap items-center gap-2 border-b border-border px-5 py-3">
-        <h1 className="text-lg font-semibold">Teams</h1>
+      <div data-canonical-toolbar="teams" role="toolbar" aria-label={pageText("teamsControls_e25e9e")} className="flex flex-wrap items-center gap-2 border-b border-border px-5 py-3">
+        <h1 className="text-lg font-semibold">{pageText("teams_cbfd44")}</h1>
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={q}
             onChange={(e) => setFilterParam("search", e.target.value)}
-            placeholder="Search teams"
+            placeholder={pageText("searchTeams_267492")}
             className="h-8 w-56 pl-8"
           />
         </div>
@@ -2467,16 +2394,16 @@ export function TeamCatalog() {
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="h-8">
               <Filter className="h-3.5 w-3.5" />
-              {kindFilter === "all" ? "All kinds" : kindFilter === "bundled" ? "Bundled" : "Optional"}
+              {kindFilter === "all" ? pageText("allKinds_c2cebe") : kindFilter === "bundled" ? pageText("bundled_e10c08") : pageText("optional_0c6c41")}
               <ChevronDown className="h-3.5 w-3.5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
-            <DropdownMenuLabel>Kind</DropdownMenuLabel>
+            <DropdownMenuLabel>{pageText("kind_e00ac2")}</DropdownMenuLabel>
             <DropdownMenuRadioGroup value={kindFilter} onValueChange={(v) => setFilterParam("kind", v)}>
-              <DropdownMenuRadioItem value="all">All kinds</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="bundled">Bundled</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="optional">Optional</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="all">{pageText("allKinds_c2cebe")}</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="bundled">{translateUi("interfaceCopy.bundled")}</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="optional">{translateUi("interfaceCopy.optional")}</DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -2485,14 +2412,14 @@ export function TeamCatalog() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="h-8">
-                {categoryFilter ? `Category · ${titleCase(categoryFilter)}` : "All categories"}
+                {categoryFilter ? `Category · ${titleCase(categoryFilter)}` : pageText("allCategories_060be0")}
                 <ChevronDown className="h-3.5 w-3.5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
-              <DropdownMenuLabel>Category</DropdownMenuLabel>
+              <DropdownMenuLabel>{translateUi("interfaceCopy.category")}</DropdownMenuLabel>
               <DropdownMenuRadioGroup value={categoryFilter} onValueChange={(v) => setFilterParam("category", v)}>
-                <DropdownMenuRadioItem value="">All categories</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="">{translateUi("interfaceCopy.allCategories")}</DropdownMenuRadioItem>
                 {categories.map((cat) => (
                   <DropdownMenuRadioItem key={cat} value={cat}>{titleCase(cat)}</DropdownMenuRadioItem>
                 ))}
@@ -2504,17 +2431,17 @@ export function TeamCatalog() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="h-8">
-              {riskFilter === "any" ? "Any risk" : riskFilter === "safe" ? "Safe only" : riskFilter === "has_warnings" ? "Has warnings" : "Blocked"}
+              {riskFilter === "any" ? pageText("anyRisk_6edb25") : riskFilter === "safe" ? pageText("safeOnly_3a80e5") : riskFilter === "has_warnings" ? pageText("hasWarnings_22e725") : pageText("blocked_99613c")}
               <ChevronDown className="h-3.5 w-3.5" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
-            <DropdownMenuLabel>Risk</DropdownMenuLabel>
+            <DropdownMenuLabel>{translateUi("interfaceCopy.risk")}</DropdownMenuLabel>
             <DropdownMenuRadioGroup value={riskFilter} onValueChange={(v) => setFilterParam("risk", v)}>
-              <DropdownMenuRadioItem value="any">Any risk</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="safe">Safe only</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="has_warnings">Has warnings</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="blocked">Blocked</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="any">{pageText("anyRisk_6edb25")}</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="safe">{pageText("safeOnly_3a80e5")}</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="has_warnings">{pageText("hasWarnings_22e725")}</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="blocked">{pageText("blocked_99613c")}</DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
             {anyFilterActive && (
               <>
@@ -2524,17 +2451,14 @@ export function TeamCatalog() {
                   className="flex w-full items-center gap-1.5 px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"
                   onClick={() => setSearchParams(new URLSearchParams())}
                 >
-                  <RotateCcw className="h-3 w-3" /> Reset filters
-                </button>
+                  <RotateCcw className="h-3 w-3" />{" " + pageText("resetFilters_565531")}</button>
               </>
             )}
           </DropdownMenuContent>
         </DropdownMenu>
 
         {anyFilterActive && (
-          <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => setSearchParams(new URLSearchParams())}>
-            Reset filters
-          </Button>
+          <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => setSearchParams(new URLSearchParams())}>{pageText("resetFilters_565531")}</Button>
         )}
       </div>
 
@@ -2562,20 +2486,19 @@ export function TeamCatalog() {
               />
             </div>
           ) : teams.length === 0 ? (
-            <EmptyState icon={Users2} message="No team catalog configured." />
+            <EmptyState icon={Users2} message={pageText("noTeamCatalogConfigured_fabfdf")} />
           ) : filtered.length === 0 ? (
             <EmptyState
               icon={Search}
-              message="No teams match this filter."
-              action="Reset filters"
+              message={pageText("noTeamsMatchThisFilter_5b803e")}
+              action={controlText("Reset filters")}
               onAction={() => setSearchParams(new URLSearchParams())}
             />
           ) : (
             <div>
               {grouped.bundled.length > 0 && (
                 <>
-                  <div className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-                    Bundled · {grouped.bundled.length}
+                  <div className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">{pageText("bundled_d82008") + " "}{grouped.bundled.length}
                   </div>
                   {grouped.bundled.map((team) => (
                     <TeamRow
@@ -2589,8 +2512,7 @@ export function TeamCatalog() {
               )}
               {grouped.optional.length > 0 && (
                 <>
-                  <div className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-                    Optional · {grouped.optional.length}
+                  <div className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">{pageText("optional_dcac93") + " "}{grouped.optional.length}
                   </div>
                   {grouped.optional.map((team) => (
                     <TeamRow
@@ -2604,8 +2526,7 @@ export function TeamCatalog() {
               )}
               {grouped.installed.length > 0 && (
                 <>
-                  <div className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
-                    Installed · {grouped.installed.length}
+                  <div className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">{pageText("installed_29b26f") + " "}{grouped.installed.length}
                   </div>
                   {grouped.installed.map((team) => (
                     <TeamRow
@@ -2636,8 +2557,7 @@ export function TeamCatalog() {
                 onClick={() => navigate(withFilters(TEAM_CATALOG_ROUTE_ROOT))}
                 className="flex items-center gap-1.5 border-b border-border px-4 py-2 text-sm text-muted-foreground hover:text-foreground"
               >
-                <ChevronLeft className="h-4 w-4" /> Back to catalog
-              </button>
+                <ChevronLeft className="h-4 w-4" />{" " + pageText("backToCatalog_5faf45")}</button>
             )}
             {selectedTeam ? (
               <TeamDetailPane
@@ -2652,9 +2572,7 @@ export function TeamCatalog() {
                 installed={installedById.get(selectedTeam.id) ?? null}
               />
             ) : (
-              <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
-                Select a team to view details.
-              </div>
+              <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">{pageText("selectATeamToViewDetails_fb210b")}</div>
             )}
           </div>
         )}
@@ -2668,7 +2586,7 @@ export function TeamCatalog() {
           open={installOpen}
           onClose={() => setInstallOpen(false)}
           onInstalled={() => {
-            pushToast({ tone: "success", title: "Team installed", body: `${selectedTeam.name} was imported.` });
+            pushToast({ tone: "success", title: interfaceNotice("interface:teamInstalled_d5449d"), body: `${selectedTeam.name} was imported.` });
             // Provenance now lives on the new agents — refresh installed/out-of-date state.
             void queryClient.invalidateQueries({
               queryKey: queryKeys.teamCatalog.installed(selectedCompanyId),

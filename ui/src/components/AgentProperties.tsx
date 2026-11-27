@@ -1,3 +1,6 @@
+import { optionLabel } from "@/i18n/option-label";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { AgentIdentity } from "@/components/AgentIdentity";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@/lib/router";
@@ -28,6 +31,8 @@ function PropertyRow({ label, children }: { label: string; children: React.React
 }
 
 export function AgentProperties({ agent, runtimeState }: AgentPropertiesProps) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const { selectedCompanyId } = useCompany();
   const lastErrorIsActive = agent.status === "error";
 
@@ -42,25 +47,25 @@ export function AgentProperties({ agent, runtimeState }: AgentPropertiesProps) {
   return (
     <div className="space-y-4">
       <div className="space-y-1">
-        <PropertyRow label="Status">
+        <PropertyRow label={translateUi("interfaceCopy.status")}>
           <AgentStatusBadge status={agent.status} />
         </PropertyRow>
         {lastErrorIsActive && agent.errorReason && (
-          <PropertyRow label="Error reason">
+          <PropertyRow label={pageText("errorReason_ad2fdc")}>
             <span className="text-xs text-red-600 dark:text-red-400 break-words min-w-0">
               {agent.errorReason}
             </span>
           </PropertyRow>
         )}
-        <PropertyRow label="Role">
-          <span className="text-sm">{roleLabels[agent.role] ?? agent.role}</span>
+        <PropertyRow label={translateUi("interfaceCopy.role")}>
+          <span className="text-sm">{roleLabels[agent.role] ? optionLabel(roleLabels[agent.role]) : agent.role}</span>
         </PropertyRow>
         {agent.title && (
-          <PropertyRow label="Title">
+          <PropertyRow label={translateUi("interfaceCopy.title")}>
             <span className="text-sm">{agent.title}</span>
           </PropertyRow>
         )}
-        <PropertyRow label="Adapter">
+        <PropertyRow label={translateUi("interfaceCopy.adapter")}>
           <span className="text-sm font-mono">{getAdapterLabel(agentDisplayAdapterType(agent))}</span>
         </PropertyRow>
       </div>
@@ -69,14 +74,14 @@ export function AgentProperties({ agent, runtimeState }: AgentPropertiesProps) {
 
       <div className="space-y-1">
         {(runtimeState?.sessionDisplayId ?? runtimeState?.sessionId) && (
-          <PropertyRow label="Session">
+          <PropertyRow label={pageText("session_f7f199")}>
             <span className="text-xs font-mono">
               {String(runtimeState.sessionDisplayId ?? runtimeState.sessionId).slice(0, 12)}...
             </span>
           </PropertyRow>
         )}
         {runtimeState?.lastError && (
-          <PropertyRow label={lastErrorIsActive ? "Last error" : "Last run error"}>
+          <PropertyRow label={lastErrorIsActive ? pageText("lastError_5e4df8") : pageText("lastRunError_766d2e")}>
             <span
               className={
                 lastErrorIsActive
@@ -89,12 +94,12 @@ export function AgentProperties({ agent, runtimeState }: AgentPropertiesProps) {
           </PropertyRow>
         )}
         {agent.lastHeartbeatAt && (
-          <PropertyRow label="Last Heartbeat">
+          <PropertyRow label={pageText("lastHeartbeat_1b5e51")}>
             <span className="text-sm">{formatDate(agent.lastHeartbeatAt)}</span>
           </PropertyRow>
         )}
         {agent.reportsTo && (
-          <PropertyRow label="Reports To">
+          <PropertyRow label={pageText("reportsTo_75defa")}>
             {reportsToAgent ? (
               <Link to={agentUrl(reportsToAgent)} className="hover:underline">
                 <AgentIdentity agent={reportsToAgent} size="sm" />
@@ -104,7 +109,7 @@ export function AgentProperties({ agent, runtimeState }: AgentPropertiesProps) {
             )}
           </PropertyRow>
         )}
-        <PropertyRow label="Created">
+        <PropertyRow label={translateUi("interfaceCopy.created")}>
           <span className="text-sm">{formatDate(agent.createdAt)}</span>
         </PropertyRow>
       </div>

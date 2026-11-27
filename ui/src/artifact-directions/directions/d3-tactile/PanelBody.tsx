@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -44,15 +45,17 @@ function FilterButton({ pressed, onPress, count, children }: { pressed: boolean;
 const BLANK: LabArtifact = { id: "empty", kind: "file", title: "", author: "", updatedAt: "", updatedLabel: "", dayLabel: "", taskIdentifier: "", taskTitle: "" };
 
 function Empty() {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="flex items-center gap-4 px-1 py-6">
       <ArtifactObject artifact={BLANK} size="sm" flag="none" repose={2} />
-      <p className="text-sm text-(--tac-meta)">No artifacts yet. Work products, documents, and agent-produced files will appear here.</p>
+      <p className="text-sm text-(--tac-meta)">{pageText("noArtifactsYetWorkProductsDocumentsAndAgent_35c17e")}</p>
     </div>
   );
 }
 
 export function PanelBody({ artifacts }: { artifacts: LabArtifact[] }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [filter, setFilter] = useState<Filter>("all");
   const sections = useMemo(() => sectionsOf(artifacts), [artifacts]);
   const toReview = sections.reduce((sum, section) => sum + section.reviewCount, 0);
@@ -62,14 +65,10 @@ export function PanelBody({ artifacts }: { artifacts: LabArtifact[] }) {
   return (
     <div data-tac-desk className="-m-4 flex flex-col gap-7 bg-(--tac-desk) bg-(image:--tac-ground-grain) p-4 pb-6 shadow-(--tac-desk-rim)">
       {toReview > 0 ? (
-        <div role="group" aria-label="Show" className="-mb-2 flex items-center gap-1">
-          <FilterButton pressed={filter === "all"} onPress={() => setFilter("all")} count={artifacts.length}>
-            All
-          </FilterButton>
+        <div role="group" aria-label={pageText("show_d97d1e")} className="-mb-2 flex items-center gap-1">
+          <FilterButton pressed={filter === "all"} onPress={() => setFilter("all")} count={artifacts.length}>{pageText("all_6a7208")}</FilterButton>
           <FilterButton pressed={filter === "review"} onPress={() => setFilter("review")} count={toReview}>
-            <span aria-hidden className="block h-2.5 w-3.5 bg-(--tac-flag)" style={FLAG} />
-            To review
-          </FilterButton>
+            <span aria-hidden className="block h-2.5 w-3.5 bg-(--tac-flag)" style={FLAG} />{pageText("toReview_066f77")}</FilterButton>
         </div>
       ) : null}
       {shown.map((section) => (

@@ -1,3 +1,7 @@
+import { serverErrorCopy } from "./server-error-copy";
+import i18n from "i18next";
+import englishErrors from "../i18n/errors/en.json";
+
 /**
  * Shared error classification and user-facing copy.
  *
@@ -11,8 +15,6 @@
  * client can depend on this module without an import cycle, and errors thrown
  * by hand-rolled fetches (health, uploads) classify the same way.
  */
-
-import { CancelledError } from "@tanstack/react-query";
 
 export type ErrorKind =
   | "transient"
@@ -62,76 +64,30 @@ const CONNECTIVITY_CODES = new Set(["tenant_app_unavailable", "tenant_app_starti
 // raw `body.error`/`body.code`) or an `ErrorKind` fallback. Never return a raw
 // code to the user: anything not in this table falls back to its kind's copy.
 
-const UNAVAILABLE_BODY = "Paperclip is temporarily unavailable. Please try again in a moment.";
+const CODE_KEYS = new Set(["tenant_app_unavailable", "tenant_app_starting", "WORKER_UNAVAILABLE", "TIMEOUT", "interaction_audience_denied", "interaction_forbidden", "interaction_settled", "interaction_submit_failed"]);
+const KIND_KEYS = new Set<ErrorKind>(["transient", "auth", "forbidden", "not_found", "conflict", "invalid", "aborted", "unknown"]);
 
-const CODE_COPY: Record<string, { title: string; body: string }> = {
-  tenant_app_unavailable: {
-    title: "Reconnecting to Paperclip",
-    body: "Paperclip is restarting or updating. Please try again in a moment.",
-  },
-  tenant_app_starting: {
-    title: "Paperclip is starting",
-    body: "Paperclip is starting up. Please try again in a few seconds.",
-  },
-  WORKER_UNAVAILABLE: {
-    title: "Plugin unavailable",
-    body: "This plugin is restarting. Please try again in a moment.",
-  },
-  TIMEOUT: {
-    title: "Request timed out",
-    body: "This took too long to respond. Please try again in a moment.",
-  },
-  // Queued message edits. The editor keeps the person's text in every case.
-  queued_comment_revision_conflict: {
-    title: "Queue changed",
-    body: "The queue changed in another session. Your edit is still here; save again to apply it to the latest queue.",
-  },
-  queued_comment_stale_queue: {
-    title: "Queue changed",
-    body: "The queue changed in another session. Your edit is still here; save again to apply it to the latest queue.",
-  },
-  queued_comment_stale_target: {
-    title: "Queued message changed",
-    body: "This queued message was already sent or removed. Your text is still here; you can queue it as a new message.",
-  },
-  queued_comment_not_pending: {
-    title: "Queued message changed",
-    body: "This queued message was already sent or removed. Your text is still here; you can queue it as a new message.",
-  },
-  // Issue-thread interaction resolution (moved from lib/interaction-resolution-error.ts).
-  interaction_audience_denied: {
-    title: "You can’t respond to this card",
-    body: "You are not in this card's resolver audience.",
-  },
-  interaction_forbidden: {
-    title: "You can’t respond to this card",
-    body: "You do not have permission to respond to this card.",
-  },
-  interaction_settled: {
-    title: "Already handled",
-    body: "This request is no longer waiting for a decision.",
-  },
-  interaction_submit_failed: {
-    title: "Couldn't submit",
-    body: "Couldn't submit. Try again.",
-  },
-};
+function errorText(key: string, fallback: string): string {
+  return i18n.isInitialized ? i18n.t(key, { ns: "errors", defaultValue: fallback }) : fallback;
+}
 
-const KIND_COPY: Record<ErrorKind, { title: string; body: string }> = {
-  // Moved from `ApiUnavailableError` (api/response.ts).
-  transient: { title: "Connection interrupted", body: UNAVAILABLE_BODY },
-  auth: { title: "Signed out", body: "Your session has ended. Sign in again to continue." },
-  forbidden: { title: "Not allowed", body: "You don’t have permission to do that." },
-  not_found: { title: "Not found", body: "This item doesn’t exist or was moved." },
-  conflict: { title: "Out of date", body: "This changed since you loaded it. Refresh and try again." },
-  invalid: { title: "Check your input", body: "Some details aren’t valid. Review them and try again." },
-  aborted: { title: "Cancelled", body: "The request was cancelled." },
-  unknown: { title: "Something went wrong", body: "An unexpected error occurred. Please try again." },
-};
+export function retryErrorText(): string {
+  return errorText("retry", englishErrors.retry);
+}
 
-/** Copy for a specific code or kind, for callers that build their own messages. */
 export function errorCopy(key: string): { title: string; body: string } {
-  return CODE_COPY[key] ?? KIND_COPY[key as ErrorKind] ?? KIND_COPY.unknown;
+  type CopyKey = Exclude<keyof typeof englishErrors, "actions" | "actionFailed" | "retry">;
+  const known = CODE_KEYS.has(key) || KIND_KEYS.has(key as ErrorKind) ? key as CopyKey : "unknown";
+  return {
+    title: errorText(`${known}.title`, englishErrors[known].title),
+    body: errorText(`${known}.body`, englishErrors[known].body),
+  };
+}
+
+function failedActionTitle(action: string): string {
+  if (!i18n.isInitialized) return `Couldn't ${action}`;
+  const label = Object.hasOwn(englishErrors.actions, action) ? errorText(`actions.${action}`, action) : action;
+  return i18n.t("actionFailed", { ns: "errors", defaultValue: englishErrors.actionFailed, action: label });
 }
 
 // --- Field extraction -------------------------------------------------------------
@@ -178,23 +134,26 @@ export function errorCodes(err: unknown): string[] {
 export function isRawErrorCode(value: string): boolean {
   const text = value.trim();
   if (!text || /\s/.test(text)) return false;
-  return Object.hasOwn(KIND_COPY, text) || text === "unauthorized"
+  return KIND_KEYS.has(text as ErrorKind) || text === "unauthorized"
     || /^[A-Za-z0-9]+(?:[_.][A-Za-z0-9]+)+$/.test(text) || /^[A-Z][A-Z0-9_]{2,}$/.test(text);
 }
 
 /** A server message that is safe to show: not a raw code, not a generic status line. */
 function readableServerMessage(err: unknown): string | null {
   const error = record(err);
-  const body = record(error?.body);
-  // OAuth endpoints (RFC 6749) put the readable sentence in `error_description`
-  // and a machine code in `error`.
-  const candidates = [stringField(body?.message), stringField(body?.error), stringField(body?.error_description)];
+  const response = record(error?.body);
+  const raw = stringField(response?.error);
+  const status = errorStatus(err);
+  const candidates = [
+    stringField(response?.message),
+    raw && status !== null ? serverErrorCopy(status, raw) : raw,
+  ];
   if (err instanceof Error) candidates.push(stringField(err.message));
   for (const candidate of candidates) {
     if (!candidate) continue;
     if (isRawErrorCode(candidate)) continue;
     if (/^Request failed: \d+$/.test(candidate)) continue;
-    if (candidate === UNAVAILABLE_BODY) continue;
+    if (candidate === englishErrors.transient.body) continue;
     return candidate;
   }
   return null;
@@ -203,9 +162,8 @@ function readableServerMessage(err: unknown): string | null {
 // --- Classification ---------------------------------------------------------------
 
 function isAbortError(err: unknown): boolean {
-  // React Query's `CancelledError` keeps the default `name` ("Error"), so it
-  // can only be recognized by class.
-  return record(err)?.name === "AbortError" || err instanceof CancelledError;
+  const name = record(err)?.name;
+  return name === "AbortError" || name === "CancelledError";
 }
 
 function isNetworkTypeError(err: unknown): boolean {
@@ -292,8 +250,9 @@ export function errorRetryAfterMs(err: unknown): number | null {
 export function describeError(err: unknown, options: DescribeErrorOptions = {}): ErrorDescription {
   const kind = classifyError(err);
   const retryable = kind === "transient" || kind === "unknown";
-  const coded = errorCodes(err).map((code) => CODE_COPY[code]).find(Boolean);
-  const fallback = KIND_COPY[kind];
+  const code = errorCodes(err).find((entry) => CODE_KEYS.has(entry));
+  const coded = code ? errorCopy(code) : undefined;
+  const fallback = errorCopy(kind);
 
   let body: string;
   if (coded) body = coded.body;
@@ -301,7 +260,7 @@ export function describeError(err: unknown, options: DescribeErrorOptions = {}):
   else body = readableServerMessage(err) ?? fallback.body;
 
   const title = options.action && kind !== "transient"
-    ? `Couldn't ${options.action}`
+    ? failedActionTitle(options.action)
     : (coded?.title ?? fallback.title);
   return { title, body, retryable };
 }
@@ -313,6 +272,6 @@ export function describeError(err: unknown, options: DescribeErrorOptions = {}):
  */
 export function apiErrorMessage(status: number, body: unknown): string {
   const raw = stringField(record(body)?.error);
-  if (raw && !isRawErrorCode(raw)) return raw;
+  if (raw && !isRawErrorCode(raw)) return serverErrorCopy(status, raw);
   return describeError({ status, body, code: raw }).body;
 }

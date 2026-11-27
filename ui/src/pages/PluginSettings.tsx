@@ -1,3 +1,7 @@
+import { t as interfaceNotice } from "@/i18n";
+import { t as timeText } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Puzzle, ArrowLeft, ShieldAlert, ActivitySquare, CheckCircle, XCircle, Loader2, Clock, Cpu, Webhook, CalendarClock, AlertTriangle, FolderOpen, Save } from "lucide-react";
@@ -63,6 +67,8 @@ import { QueryErrorState, QueryPlaceholder, useQueryView } from "@/components/Qu
  * @see doc/plugins/PLUGIN_SPEC.md §19.8 — Plugin Settings UI.
  */
 export function PluginSettings() {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const { selectedCompany, selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const { companyPrefix, pluginId } = useParams<{ companyPrefix?: string; pluginId: string }>();
@@ -106,7 +112,7 @@ export function PluginSettings() {
     ? queryKeys.plugins.config(pluginId, selectedCompanyId)
     : ["plugins", pluginId ?? "__missing_plugin__", "companies", "__missing_company__", "config"] as const;
 
-  const { data: configData, isLoading: configLoading, isSuccess: configLoaded } = useQuery({
+  const { data: configData, isLoading: configLoading } = useQuery({
     queryKey: configQueryKey,
     queryFn: () => pluginsApi.getConfig(pluginId!, selectedCompanyId!),
     enabled: !!pluginId && !!hasConfigSchema && !!selectedCompanyId,
@@ -127,10 +133,10 @@ export function PluginSettings() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: selectedCompany?.name ?? "Organization", href: "/dashboard" },
-      { label: "Settings", href: "/company/settings" },
-      { label: "System plugins", href: "/company/settings/instance/plugins" },
-      { label: plugin?.manifestJson?.displayName ?? plugin?.packageName ?? "Plugin Details" },
+      { label: selectedCompany?.name ?? interfaceNotice("interface:organization_519255"), href: "/dashboard" },
+      { label: interfaceNotice("interface:settings_c7f73b"), href: "/company/settings" },
+      { label: interfaceNotice("interface:plugins_ab2e26"), href: "/company/settings/instance/plugins" },
+      { label: plugin?.manifestJson?.displayName ?? plugin?.packageName ?? interfaceNotice("interface:pluginDetails_85214a") },
     ]);
   }, [selectedCompany?.name, setBreadcrumbs, companyPrefix, plugin]);
 
@@ -139,7 +145,7 @@ export function PluginSettings() {
   }, [pluginId]);
 
   if (pluginView.kind === "loading" || pluginView.kind === "reconnecting") {
-    return <QueryPlaceholder size="page" label="Loading plugin details" className="p-4" />;
+    return <QueryPlaceholder size="page" label={pageText("loadingPluginDetails_2f71b7")} className="p-4" />;
   }
 
   // A failed load must not bounce the operator back to the plugin list: a
@@ -218,19 +224,19 @@ export function PluginSettings() {
         <TabsContent value="configuration" className="space-y-6">
           <div className="space-y-8">
             <section className="space-y-5">
-              <h2 className="text-base font-semibold">About</h2>
+              <h2 className="text-base font-semibold">{pageText("about_6b21fb")}</h2>
               <div className="grid gap-8 lg:grid-cols-(--gtc-52)">
                 <div className="space-y-2">
-                  <h3 className="text-sm font-medium text-muted-foreground">Description</h3>
+                  <h3 className="text-sm font-medium text-muted-foreground">{translateUi("interfaceCopy.description")}</h3>
                   <p className="text-sm leading-6 text-foreground/90">{pluginDescription}</p>
                 </div>
                 <div className="space-y-4 text-sm">
                   <div className="space-y-1.5">
-                    <h3 className="font-medium text-muted-foreground">Author</h3>
+                    <h3 className="font-medium text-muted-foreground">{pageText("author_5fda23")}</h3>
                     <p className="text-foreground">{plugin.manifestJson.author}</p>
                   </div>
                   <div className="space-y-2">
-                    <h3 className="font-medium text-muted-foreground">Categories</h3>
+                    <h3 className="font-medium text-muted-foreground">{translateUi("interfaceCopy.categories")}</h3>
                     <div className="flex flex-wrap gap-2">
                       {plugin.categories.length > 0 ? (
                         plugin.categories.map((category) => (
@@ -239,7 +245,7 @@ export function PluginSettings() {
                           </Badge>
                         ))
                       ) : (
-                        <span className="text-foreground">None</span>
+                        <span className="text-foreground">{translateUi("interfaceCopy.none")}</span>
                       )}
                     </div>
                   </div>
@@ -251,7 +257,7 @@ export function PluginSettings() {
 
             <section className="space-y-4">
               <div className="space-y-1">
-                <h2 className="text-base font-semibold">Settings</h2>
+                <h2 className="text-base font-semibold">{translateUi("interfaceCopy.settings")}</h2>
               </div>
               {hasLocalFolders ? (
                 <PluginLocalFoldersSettings
@@ -280,28 +286,23 @@ export function PluginSettings() {
                   companyId={selectedCompanyId}
                   schema={configSchema!}
                   initialValues={configData?.configJson}
-                  needsInitialSave={configLoaded && configData === null}
                   isLoading={configLoading}
                   pluginStatus={plugin.status}
                   supportsConfigTest={(plugin as unknown as { supportsConfigTest?: boolean }).supportsConfigTest === true}
                 />
               ) : environmentDrivers.length > 0 ? (
                 <div className="rounded-md border border-border/60 bg-muted/20 px-4 py-3 text-sm">
-                  <p className="font-medium text-foreground">Configure this plugin from Settings → Environments.</p>
+                  <p className="font-medium text-foreground">{pageText("configureThisPluginFromSettingsEnvironments_35e123")}</p>
                   <p className="mt-1 text-muted-foreground">
-                    {driverLabel || "This plugin"} registers environment runtime settings there so the execution target
-                    stays instance-scoped while secret bindings still resolve through the selected organization context.
-                  </p>
+                    {driverLabel || pageText("thisPlugin_52a1fb")}{" " + pageText("registersEnvironmentRuntimeSettingsThereSoTheExecution_9f8477")}</p>
                   <div className="mt-3">
                     <Link to="/company/settings/instance/environments">
-                      <Button variant="outline" size="sm">Open Environments</Button>
+                      <Button variant="outline" size="sm">{pageText("openEnvironments_e5ecb9")}</Button>
                     </Link>
                   </div>
                 </div>
               ) : !hasLocalFolders ? (
-                <p className="text-sm text-muted-foreground">
-                  This plugin does not require any settings.
-                </p>
+                <p className="text-sm text-muted-foreground">{pageText("thisPluginDoesNotRequireAnySettings_b767ac")}</p>
               ) : null}
             </section>
           </div>
@@ -313,25 +314,19 @@ export function PluginSettings() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-1.5">
-                    <Cpu className="h-4 w-4" />
-                    Runtime Dashboard
-                  </CardTitle>
-                  <CardDescription>
-                    Worker process, scheduled jobs, and webhook deliveries
-                  </CardDescription>
+                    <Cpu className="h-4 w-4" />{pageText("runtimeDashboard_c7de89")}</CardTitle>
+                  <CardDescription>{pageText("workerProcessScheduledJobsAndWebhookDeliveries_956e76")}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {dashboardData ? (
                     <>
                       <div>
                         <h3 className="text-sm font-medium mb-3 flex items-center gap-1.5">
-                          <Cpu className="h-3.5 w-3.5 text-muted-foreground" />
-                          Worker Process
-                        </h3>
+                          <Cpu className="h-3.5 w-3.5 text-muted-foreground" />{pageText("workerProcess_c7ebca")}</h3>
                         {dashboardData.worker ? (
                           <div className="grid grid-cols-2 gap-3 text-sm">
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">Status</span>
+                              <span className="text-muted-foreground">{translateUi("interfaceCopy.status")}</span>
                               <Badge variant={dashboardData.worker.status === "running" ? "default" : "secondary"}>
                                 {dashboardData.worker.status}
                               </Badge>
@@ -341,27 +336,24 @@ export function PluginSettings() {
                               <span className="font-mono text-xs">{dashboardData.worker.pid ?? "—"}</span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">Uptime</span>
+                              <span className="text-muted-foreground">{pageText("uptime_6aafa8")}</span>
                               <span className="text-xs">{formatUptime(dashboardData.worker.uptime)}</span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">Pending RPCs</span>
+                              <span className="text-muted-foreground">{pageText("pendingRPCs_8b2977")}</span>
                               <span className="text-xs">{dashboardData.worker.pendingRequests}</span>
                             </div>
                             {dashboardData.worker.totalCrashes > 0 && (
                               <>
                                 <div className="flex justify-between col-span-2">
                                   <span className="text-muted-foreground flex items-center gap-1">
-                                    <AlertTriangle className="h-3 w-3 text-amber-500" />
-                                    Crashes
-                                  </span>
+                                    <AlertTriangle className="h-3 w-3 text-amber-500" />{pageText("crashes_e94f80")}</span>
                                   <span className="text-xs">
-                                    {dashboardData.worker.consecutiveCrashes} consecutive / {dashboardData.worker.totalCrashes} total
-                                  </span>
+                                    {dashboardData.worker.consecutiveCrashes}{" " + pageText("consecutive_014477") + " "}{dashboardData.worker.totalCrashes}{" " + pageText("total_5a537e")}</span>
                                 </div>
                                 {dashboardData.worker.lastCrashAt && (
                                   <div className="flex justify-between col-span-2">
-                                    <span className="text-muted-foreground">Last Crash</span>
+                                    <span className="text-muted-foreground">{pageText("lastCrash_77bb2c")}</span>
                                     <span className="text-xs">{formatTimestamp(dashboardData.worker.lastCrashAt)}</span>
                                   </div>
                                 )}
@@ -369,7 +361,7 @@ export function PluginSettings() {
                             )}
                           </div>
                         ) : (
-                          <p className="text-sm text-muted-foreground italic">No worker process registered.</p>
+                          <p className="text-sm text-muted-foreground italic">{pageText("noWorkerProcessRegistered_793203")}</p>
                         )}
                       </div>
 
@@ -377,9 +369,7 @@ export function PluginSettings() {
 
                       <div>
                         <h3 className="text-sm font-medium mb-3 flex items-center gap-1.5">
-                          <CalendarClock className="h-3.5 w-3.5 text-muted-foreground" />
-                          Recent Job Runs
-                        </h3>
+                          <CalendarClock className="h-3.5 w-3.5 text-muted-foreground" />{pageText("recentJobRuns_778f08")}</h3>
                         {dashboardData.recentJobRuns.length > 0 ? (
                           <div className="space-y-2">
                             {dashboardData.recentJobRuns.map((run) => (
@@ -404,7 +394,7 @@ export function PluginSettings() {
                             ))}
                           </div>
                         ) : (
-                          <p className="text-sm text-muted-foreground italic">No job runs recorded yet.</p>
+                          <p className="text-sm text-muted-foreground italic">{pageText("noJobRunsRecordedYet_4e158a")}</p>
                         )}
                       </div>
 
@@ -412,9 +402,7 @@ export function PluginSettings() {
 
                       <div>
                         <h3 className="text-sm font-medium mb-3 flex items-center gap-1.5">
-                          <Webhook className="h-3.5 w-3.5 text-muted-foreground" />
-                          Recent Webhook Deliveries
-                        </h3>
+                          <Webhook className="h-3.5 w-3.5 text-muted-foreground" />{pageText("recentWebhookDeliveries_745b6d")}</h3>
                         {dashboardData.recentWebhookDeliveries.length > 0 ? (
                           <div className="space-y-2">
                             {dashboardData.recentWebhookDeliveries.map((delivery) => (
@@ -436,19 +424,16 @@ export function PluginSettings() {
                             ))}
                           </div>
                         ) : (
-                          <p className="text-sm text-muted-foreground italic">No webhook deliveries recorded yet.</p>
+                          <p className="text-sm text-muted-foreground italic">{pageText("noWebhookDeliveriesRecordedYet_fc6615")}</p>
                         )}
                       </div>
 
                       <div className="flex items-center gap-1.5 border-t border-border/50 pt-2 text-xs text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        Last checked: {new Date(dashboardData.checkedAt).toLocaleTimeString()}
+                        <Clock className="h-3 w-3" />{pageText("lastChecked_80fca1") + " "}{new Date(dashboardData.checkedAt).toLocaleTimeString()}
                       </div>
                     </>
                   ) : (
-                    <p className="text-sm text-muted-foreground">
-                      Runtime diagnostics are unavailable right now.
-                    </p>
+                    <p className="text-sm text-muted-foreground">{pageText("runtimeDiagnosticsAreUnavailableRightNow_9dd9bb")}</p>
                   )}
                 </CardContent>
               </Card>
@@ -457,10 +442,8 @@ export function PluginSettings() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-base flex items-center gap-1.5">
-                      <ActivitySquare className="h-4 w-4" />
-                      Recent Logs
-                    </CardTitle>
-                    <CardDescription>Last {recentLogs.length} log entries</CardDescription>
+                      <ActivitySquare className="h-4 w-4" />{pageText("recentLogs_030b73")}</CardTitle>
+                    <CardDescription>{pageText("last_d1c69a") + " "}{recentLogs.length}{" " + pageText("logEntries_15286a")}</CardDescription>
                   </CardHeader>
                   <CardContent>
                     <div className="max-h-64 space-y-1 overflow-y-auto font-mono text-xs">
@@ -492,17 +475,15 @@ export function PluginSettings() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-1.5">
-                    <ActivitySquare className="h-4 w-4" />
-                    Health Status
-                  </CardTitle>
+                    <ActivitySquare className="h-4 w-4" />{pageText("healthStatus_8a28b4")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {healthLoading ? (
-                    <p className="text-sm text-muted-foreground">Checking health...</p>
+                    <p className="text-sm text-muted-foreground">{pageText("checkingHealth_3847d0")}</p>
                   ) : healthData ? (
                     <div className="space-y-4 text-sm">
                       <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">Overall</span>
+                        <span className="text-muted-foreground">{pageText("overall_8a5285")}</span>
                         <Badge variant={healthData.healthy ? "default" : "destructive"}>
                           {healthData.status}
                         </Badge>
@@ -534,10 +515,10 @@ export function PluginSettings() {
                   ) : (
                     <div className="space-y-3 text-sm text-muted-foreground">
                       <div className="flex items-center justify-between">
-                        <span>Lifecycle</span>
+                        <span>{pageText("lifecycle_033df3")}</span>
                         <Badge variant={statusVariant}>{displayStatus}</Badge>
                       </div>
-                      <p>Health checks run once the plugin is ready.</p>
+                      <p>{pageText("healthChecksRunOnceThePluginIsReady_4d3ef9")}</p>
                       {plugin.lastError ? (
                         <div className="break-words rounded border border-destructive/20 bg-destructive/10 p-2 text-xs text-destructive">
                           {plugin.lastError}
@@ -550,25 +531,25 @@ export function PluginSettings() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-base">Details</CardTitle>
+                  <CardTitle className="text-base">{translateUi("interfaceCopy.details")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm text-muted-foreground">
                   <div className="flex justify-between gap-3">
-                    <span>Plugin ID</span>
+                    <span>{pageText("pluginID_c6bcef")}</span>
                     <span className="font-mono text-xs text-right">{plugin.id}</span>
                   </div>
                   <div className="flex justify-between gap-3">
-                    <span>Plugin Key</span>
+                    <span>{pageText("pluginKey_9b1b8a")}</span>
                     <span className="font-mono text-xs text-right">{plugin.pluginKey}</span>
                   </div>
                   <div className="flex justify-between gap-3">
-                    <span>NPM Package</span>
+                    <span>{pageText("npmPackage_784309")}</span>
                     <span className="max-w-(--sz-170px) truncate text-right text-xs" title={plugin.packageName}>
                       {plugin.packageName}
                     </span>
                   </div>
                   <div className="flex justify-between gap-3">
-                    <span>Version</span>
+                    <span>{translateUi("interfaceCopy.version")}</span>
                     <span className="text-right text-foreground">v{plugin.manifestJson.version ?? plugin.version}</span>
                   </div>
                 </CardContent>
@@ -577,9 +558,7 @@ export function PluginSettings() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-base flex items-center gap-1.5">
-                    <ShieldAlert className="h-4 w-4" />
-                    Permissions
-                  </CardTitle>
+                    <ShieldAlert className="h-4 w-4" />{pageText("permissions_d06d55")}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {pluginCapabilities.length > 0 ? (
@@ -591,7 +570,7 @@ export function PluginSettings() {
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-sm text-muted-foreground italic">No special permissions requested.</p>
+                    <p className="text-sm text-muted-foreground italic">{pageText("noSpecialPermissionsRequested_0154a8")}</p>
                   )}
                 </CardContent>
               </Card>
@@ -614,6 +593,7 @@ interface PluginLocalFoldersSettingsProps {
 }
 
 function PluginLocalFoldersSettings({ pluginId, companyId, declarations }: PluginLocalFoldersSettingsProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const foldersQuery = useQuery({
     queryKey: companyId
       ? queryKeys.plugins.localFolders(pluginId, companyId)
@@ -628,9 +608,7 @@ function PluginLocalFoldersSettings({ pluginId, companyId, declarations }: Plugi
 
   if (!companyId) {
     return (
-      <div className="rounded-md border border-border/60 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
-        Select an organization to configure this plugin's local folders.
-      </div>
+      <div className="rounded-md border border-border/60 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">{pageText("selectAnOrganizationToConfigureThisPluginS_4908d7")}</div>
     );
   }
 
@@ -638,7 +616,7 @@ function PluginLocalFoldersSettings({ pluginId, companyId, declarations }: Plugi
     <div className="space-y-3">
       <div className="flex items-center gap-2">
         <FolderOpen className="h-4 w-4 text-muted-foreground" />
-        <h3 className="text-sm font-medium">Local folders</h3>
+        <h3 className="text-sm font-medium">{pageText("localFolders_956318")}</h3>
       </div>
       {foldersView.kind === "error" ? (
         <QueryErrorState
@@ -650,7 +628,7 @@ function PluginLocalFoldersSettings({ pluginId, companyId, declarations }: Plugi
         />
       ) : null}
       {foldersView.kind === "loading" || foldersView.kind === "reconnecting" ? (
-        <QueryPlaceholder size="panel" label="Loading local folders" className="py-3" />
+        <QueryPlaceholder size="panel" label={pageText("loadingLocalFolders_9a61c0")} className="py-3" />
       ) : (
         <div className="space-y-3">
           {declarations.map((declaration) => (
@@ -676,6 +654,7 @@ interface PluginLocalFolderRowProps {
 }
 
 function PluginLocalFolderRow({ pluginId, companyId, declaration, status }: PluginLocalFolderRowProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const serverPath = status?.path ?? "";
   const [pathValue, setPathValue] = useState(serverPath);
@@ -735,7 +714,7 @@ function PluginLocalFolderRow({ pluginId, companyId, declaration, status }: Plug
               {declaration.folderKey}
             </Badge>
             <Badge variant={status?.healthy ? "default" : "secondary"}>
-              {status?.healthy ? "Healthy" : "Needs attention"}
+              {status?.healthy ? pageText("healthy_80ea15") : pageText("needsAttention_a12672")}
             </Badge>
           </div>
           {declaration.description ? (
@@ -745,15 +724,15 @@ function PluginLocalFolderRow({ pluginId, companyId, declaration, status }: Plug
           ) : null}
         </div>
         <Badge variant={access === "readWrite" ? "default" : "outline"}>
-          {access === "readWrite" ? "Read/write" : "Read only"}
+          {access === "readWrite" ? pageText("readWrite_8e0e74") : pageText("readOnly_601dcc")}
         </Badge>
       </div>
 
       <div className="grid gap-3 text-sm sm:grid-cols-3">
-        <FolderStatusMetric label="Configured" value={status?.configured ? "Yes" : "No"} ok={!!status?.configured} />
-        <FolderStatusMetric label="Readable" value={status?.readable ? "Yes" : "No"} ok={!!status?.readable} />
+        <FolderStatusMetric label={pageText("configured_668c5f")} value={status?.configured ? "Yes" : "No"} ok={!!status?.configured} />
+        <FolderStatusMetric label={pageText("readable_06af0a")} value={status?.readable ? "Yes" : "No"} ok={!!status?.readable} />
         <FolderStatusMetric
-          label="Writable"
+          label={pageText("writable_dd3548")}
           value={access === "read" ? "Not requested" : status?.writable ? "Yes" : "No"}
           ok={access === "read" || !!status?.writable}
         />
@@ -761,7 +740,7 @@ function PluginLocalFolderRow({ pluginId, companyId, declaration, status }: Plug
 
       {status?.path ? (
         <div className="space-y-1 text-sm">
-          <div className="text-xs font-medium text-muted-foreground">Configured path</div>
+          <div className="text-xs font-medium text-muted-foreground">{pageText("configuredPath_14c061")}</div>
           <div className="break-all rounded-md bg-muted/60 px-2 py-1.5 font-mono text-xs text-foreground">
             {status.path}
           </div>
@@ -769,9 +748,7 @@ function PluginLocalFolderRow({ pluginId, companyId, declaration, status }: Plug
       ) : null}
 
       <div className="space-y-1.5">
-        <label className="text-xs font-medium text-muted-foreground" htmlFor={`local-folder-${declaration.folderKey}`}>
-          Local folder path
-        </label>
+        <label className="text-xs font-medium text-muted-foreground" htmlFor={`local-folder-${declaration.folderKey}`}>{pageText("localFolderPath_7179be")}</label>
         <div className="flex items-center gap-2">
           <input
             id={`local-folder-${declaration.folderKey}`}
@@ -793,9 +770,7 @@ function PluginLocalFolderRow({ pluginId, companyId, declaration, status }: Plug
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
             ) : (
               <Save className="h-3.5 w-3.5" />
-            )}
-            Save
-          </Button>
+            )}{pageText("save_efc007")}</Button>
         </div>
       </div>
 
@@ -803,7 +778,7 @@ function PluginLocalFolderRow({ pluginId, companyId, declaration, status }: Plug
 
       {status?.problems?.length ? (
         <div className="space-y-2 rounded-md border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-          <div className="font-medium">Validation problems</div>
+          <div className="font-medium">{pageText("validationProblems_b97f65")}</div>
           <ul className="space-y-1">
             {status.problems.map((problem, index) => (
               <li key={`${problem.code}:${problem.path ?? ""}:${index}`}>
@@ -846,6 +821,7 @@ function FolderRequirements({
   status?: PluginLocalFolderStatus;
   declaration: PluginLocalFolderDeclaration;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const requiredDirectories = status?.requiredDirectories ?? declaration.requiredDirectories ?? [];
   const requiredFiles = status?.requiredFiles ?? declaration.requiredFiles ?? [];
   const missingDirectories = status?.missingDirectories ?? requiredDirectories;
@@ -857,14 +833,14 @@ function FolderRequirements({
   return (
     <div className="grid gap-3 text-sm md:grid-cols-2">
       <RequirementList
-        title="Required directories"
+        title={pageText("requiredDirectories_2daac2")}
         items={requiredDirectories}
         missingItems={missingDirectories}
         missingLabel="Missing directories"
         inspectionUnavailable={rootNotInspected}
       />
       <RequirementList
-        title="Required files"
+        title={pageText("requiredFiles_774382")}
         items={requiredFiles}
         missingItems={missingFiles}
         missingLabel="Missing files"
@@ -894,20 +870,18 @@ function RequirementList({
   missingLabel: string;
   inspectionUnavailable?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="space-y-2 rounded-md border border-border/60 px-3 py-2">
       <div className="flex items-center justify-between gap-2">
         <span className="text-xs font-medium text-muted-foreground">{title}</span>
         {inspectionUnavailable ? (
-          <Badge variant="secondary" className="text-(length:--text-nano)">
-            Not inspected
-          </Badge>
+          <Badge variant="secondary" className="text-(length:--text-nano)">{pageText("notInspected_0df40c")}</Badge>
         ) : missingItems.length > 0 ? (
           <Badge variant="destructive" className="text-(length:--text-nano)">
-            {missingItems.length} missing
-          </Badge>
+            {missingItems.length}{" " + pageText("missing_5a013c")}</Badge>
         ) : (
-          <Badge variant="outline" className="text-(length:--text-nano)">Present</Badge>
+          <Badge variant="outline" className="text-(length:--text-nano)">{pageText("present_4e9f7a")}</Badge>
         )}
       </div>
       {items.length > 0 ? (
@@ -931,10 +905,10 @@ function RequirementList({
           })}
         </div>
       ) : (
-        <p className="text-xs text-muted-foreground">None declared.</p>
+        <p className="text-xs text-muted-foreground">{pageText("noneDeclared_0a33e5")}</p>
       )}
       {inspectionUnavailable ? (
-        <p className="text-xs text-amber-700 dark:text-amber-300">Configured root was not inspected.</p>
+        <p className="text-xs text-amber-700 dark:text-amber-300">{pageText("configuredRootWasNotInspected_a99d47")}</p>
       ) : missingItems.length > 0 ? (
         <p className="text-xs text-destructive">{missingLabel}: {missingItems.join(", ")}</p>
       ) : null}
@@ -959,7 +933,6 @@ interface PluginConfigFormProps {
   companyId: string | null;
   schema: JsonSchemaNode;
   initialValues?: Record<string, unknown>;
-  needsInitialSave: boolean;
   isLoading?: boolean;
   /** Current plugin lifecycle status — "Test Configuration" only available when `ready`. */
   pluginStatus?: string;
@@ -974,7 +947,8 @@ interface PluginConfigFormProps {
  * Separated from PluginSettings to isolate re-render scope — only the form
  * re-renders on field changes, not the entire page.
  */
-function PluginConfigForm({ pluginId, companyId, schema, initialValues, needsInitialSave, isLoading, pluginStatus, supportsConfigTest }: PluginConfigFormProps) {
+function PluginConfigForm({ pluginId, companyId, schema, initialValues, isLoading, pluginStatus, supportsConfigTest }: PluginConfigFormProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
 
   // Form values: start with saved values, fall back to schema defaults
@@ -1014,15 +988,14 @@ function PluginConfigForm({ pluginId, companyId, schema, initialValues, needsIni
 
   // Save mutation
   const saveMutation = useMutation({
-    mutationFn: ({ pluginId, companyId, configJson }: { pluginId: string; companyId: string | null; configJson: Record<string, unknown> }) => {
+    mutationFn: (configJson: Record<string, unknown>) => {
       if (!companyId) throw new Error("Select an organization before saving plugin configuration.");
       return pluginsApi.saveConfig(pluginId, companyId, configJson);
     },
-    onSuccess: (savedConfig, { pluginId, companyId }) => {
+    onSuccess: () => {
       setSaveMessage({ type: "success", text: "Configuration saved." });
       setTestResult(null);
       if (companyId) {
-        queryClient.setQueryData(queryKeys.plugins.config(pluginId, companyId), savedConfig);
         queryClient.invalidateQueries({ queryKey: queryKeys.plugins.config(pluginId, companyId) });
       }
       // Clear success message after 3s
@@ -1066,8 +1039,8 @@ function PluginConfigForm({ pluginId, companyId, schema, initialValues, needsIni
       return;
     }
     setErrors({});
-    saveMutation.mutate({ pluginId, companyId, configJson: values });
-  }, [schema, values, saveMutation, pluginId, companyId]);
+    saveMutation.mutate(values);
+  }, [schema, values, saveMutation]);
 
   const handleTestConnection = useCallback(() => {
     // Validate before testing
@@ -1084,9 +1057,7 @@ function PluginConfigForm({ pluginId, companyId, schema, initialValues, needsIni
   if (isLoading) {
     return (
       <div className="flex items-center gap-2 text-sm text-muted-foreground py-4">
-        <Loader2 className="h-4 w-4 animate-spin" />
-        Loading configuration...
-      </div>
+        <Loader2 className="h-4 w-4 animate-spin" />{pageText("loadingConfiguration_16a13f")}</div>
     );
   }
 
@@ -1129,16 +1100,14 @@ function PluginConfigForm({ pluginId, companyId, schema, initialValues, needsIni
       <div className="flex items-center gap-2 pt-2">
         <Button
           onClick={handleSave}
-          disabled={saveMutation.isPending || (!isDirty && !needsInitialSave)}
+          disabled={saveMutation.isPending || !isDirty}
           size="sm"
         >
           {saveMutation.isPending ? (
             <>
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              Saving...
-            </>
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />{pageText("saving_ae7e88")}</>
           ) : (
-            "Save Configuration"
+            pageText("saveConfiguration_a92d90")
           )}
         </Button>
         {pluginStatus === "ready" && supportsConfigTest && (
@@ -1150,11 +1119,9 @@ function PluginConfigForm({ pluginId, companyId, schema, initialValues, needsIni
           >
             {testMutation.isPending ? (
               <>
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                Testing...
-              </>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />{pageText("testing_15ccc8")}</>
             ) : (
-              "Test Configuration"
+              pageText("testConfiguration_b3b220")
             )}
           </Button>
         )}
@@ -1199,15 +1166,15 @@ function formatRelativeTime(isoString: string): string {
   const then = new Date(isoString).getTime();
   const diffMs = now - then;
 
-  if (diffMs < 0) return "just now";
+  if (diffMs < 0) return timeText("interface:relativeNow");
   const seconds = Math.floor(diffMs / 1000);
   if (seconds < 60) return `${seconds}s ago`;
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
+  if (minutes < 60) return timeText("interface:relativeAgo_m", { value: minutes });
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 24) return timeText("interface:relativeAgo_h", { value: hours });
   const days = Math.floor(hours / 24);
-  return `${days}d ago`;
+  return timeText("interface:relativeAgo_d", { value: days });
 }
 
 /**

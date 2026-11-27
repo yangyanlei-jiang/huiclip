@@ -1,13 +1,15 @@
+import { controlText } from "@/i18n/controls";
+import { optionLabel } from "@/i18n/option-label";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { Project } from "@paperclipai/shared";
+import { projectsApi } from "../api/projects";
 import { useCompany } from "../context/CompanyContext";
 import { useDialogActions } from "../context/DialogContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
+import { queryKeys } from "../lib/queryKeys";
 import { EntityRow } from "../components/EntityRow";
-import { NavigationPinButton } from "../components/NavigationPinButton";
-import { useCoordinatorWorkspaceEnabled } from "../hooks/useCoordinatorWorkspaceEnabled";
-import { projectPinKey, usePinnedNavigation } from "../hooks/usePinnedNavigation";
 import { ProjectTile } from "../components/ProjectTile";
 import { StatusBadge } from "../components/StatusBadge";
 import { MembershipAction } from "../components/MembershipAction";
@@ -27,7 +29,6 @@ import { ProjectsToolbar, type ProjectSortField, type ProjectSortDir } from "@/c
 import { Hexagon } from "lucide-react";
 import { Lock } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { companyProjectsQuery } from "@/lib/company-projects-query";
 
 function compareProjectNames(left: Project, right: Project) {
   const nameDiff = left.name.localeCompare(right.name, undefined, { sensitivity: "base" });
@@ -71,9 +72,8 @@ function sortProjects(projects: Project[], sortField: ProjectSortField, sortDir:
 }
 
 export function Projects() {
+  const { t: pageText } = usePageTranslation("interface");
   const { selectedCompanyId } = useCompany();
-  const workspace = useCoordinatorWorkspaceEnabled();
-  const pins = usePinnedNavigation(workspace.enabled && workspace.loaded ? workspace.userId : null);
   const { openNewProject } = useDialogActions();
   const { setBreadcrumbs } = useBreadcrumbs();
   const [query, setQuery] = useState("");
@@ -81,11 +81,12 @@ export function Projects() {
   const [sortDir, setSortDir] = useState<ProjectSortDir>("asc");
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Projects" }]);
-  }, [setBreadcrumbs]);
+    setBreadcrumbs([{ label: optionLabel("Projects") }]);
+  }, [pageText, setBreadcrumbs]);
 
   const projectsQuery = useQuery({
-    ...companyProjectsQuery(selectedCompanyId!),
+    queryKey: queryKeys.projects.list(selectedCompanyId!),
+    queryFn: () => projectsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
   const { data: allProjects, isLoading } = projectsQuery;
@@ -123,7 +124,7 @@ export function Projects() {
   }, [membershipsQuery.data, sortedProjects]);
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Hexagon} message="Select an organization to view projects." />;
+    return <EmptyState icon={Hexagon} message={pageText("selectAnOrganizationToViewProjects_3dd213")} />;
   }
 
   // Keep a loaded list on screen through a failed refetch; only a real
@@ -148,20 +149,18 @@ export function Projects() {
       <ProjectsToolbar query={query} onQueryChange={setQuery} sortField={sortField} sortDir={sortDir}
         onSortChange={(field, direction) => { setSortField(field); setSortDir(direction); }} onNewProject={openNewProject} />
 
-      {pins.error && <p role="alert" className="text-sm text-destructive">{pins.error}</p>}
-
       {!isLoading && projects.length === 0 && (
         <EmptyState
           icon={Hexagon}
           graphic={<ArtifactEmptyGraphic stack />}
-          message="No projects yet."
-          action="Create project"
+          message={pageText("noProjectsYet_313557")}
+          action={optionLabel("Create project")}
           hideActionIcon
           onAction={openNewProject}
         />
       )}
 
-      {projects.length > 0 && sortedProjects.length === 0 && <p className="text-sm text-muted-foreground">No projects match your search.</p>}
+      {projects.length > 0 && sortedProjects.length === 0 && <p className="text-sm text-muted-foreground">{pageText("noProjectsMatchYourSearch_01cedd")}</p>}
 
       {sortedProjects.length > 0 && (
         <div className="space-y-6">
@@ -174,9 +173,9 @@ export function Projects() {
             return (
               <section key={label} className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-sm font-medium">{label}</h2>
+                  <h2 className="text-sm font-medium">{optionLabel(label)}</h2>
                   <span className="text-xs text-muted-foreground">
-                    {sectionProjects.length} project{sectionProjects.length === 1 ? "" : "s"}
+                    {pageText("options:projectCount", { count: sectionProjects.length })}
                   </span>
                 </div>
                 <Card className="block py-0 overflow-hidden divide-y divide-border">
@@ -193,17 +192,18 @@ export function Projects() {
                         key={project.id}
                         leading={<ProjectTile color={project.color ?? null} icon={project.icon ?? null} size="sm" />}
                         title={project.name}
-                        subtitle={project.description?.trim() || undefined}
+                        subtitle={project.description ?? undefined}
+                        reserveSubtitleSpace
                         to={projectUrl(project)}
-                        className={state === "left" ? "group min-h-14 text-foreground/55" : "group min-h-14"}
+                        className={state === "left" ? "group text-foreground/55" : "group"}
                         trailing={
                           <div className="flex items-center gap-3">
-                            {project.visibility === "private" ? <Lock className="size-4 shrink-0 text-muted-foreground" aria-label="Private project" /> : null}
+                            {project.visibility === "private" ? <Lock className="size-4 shrink-0 text-muted-foreground" aria-label={pageText("privateProject_505bbd")} /> : null}
                             <span
                               className="hidden text-xs text-muted-foreground tabular-nums sm:inline"
-                              title={`${formatNumber(project.taskCount ?? 0)} task${(project.taskCount ?? 0) === 1 ? "" : "s"}`}
+                              title={controlText("taskTotal", { count: project.taskCount ?? 0, formatted: formatNumber(project.taskCount ?? 0) })}
                             >
-                              {formatNumber(project.taskCount ?? 0)} task{(project.taskCount ?? 0) === 1 ? "" : "s"}
+                              {controlText("taskTotal", { count: project.taskCount ?? 0, formatted: formatNumber(project.taskCount ?? 0) })}
                             </span>
                             {project.budget && (
                               <span className="hidden text-xs text-muted-foreground tabular-nums sm:inline">
@@ -216,48 +216,36 @@ export function Projects() {
                               </span>
                             )}
                             <StatusBadge status={project.status} />
-                            {pins.canPin && (
-                              <NavigationPinButton
-                                pinKey={projectPinKey(project)}
-                                label={project.name}
-                                pins={pins}
-                                className="size-6 shrink-0 hover:bg-accent"
-                              />
-                            )}
-                            {workspace.loaded && !workspace.enabled && (
-                              <>
-                                <MembershipAction
-                                  state={state}
-                                  pending={joinLeavePending}
-                                  pendingState={joinLeavePending ? membershipMutation.variables?.state : null}
-                                  resourceName={project.name}
-                                  onJoin={() => membershipMutation.mutate({
-                                    resourceType: "project",
-                                    resourceId: project.id,
-                                    resourceName: project.name,
-                                    state: "joined",
-                                  })}
-                                  onLeave={() => membershipMutation.mutate({
-                                    resourceType: "project",
-                                    resourceId: project.id,
-                                    resourceName: project.name,
-                                    state: "left",
-                                  })}
-                                />
-                                <StarToggle
-                                  size="row"
-                                  starred={starred}
-                                  pending={starPending}
-                                  resourceName={project.name}
-                                  onToggle={(next) => membershipMutation.mutate({
-                                    resourceType: "project",
-                                    resourceId: project.id,
-                                    resourceName: project.name,
-                                    starred: next,
-                                  })}
-                                />
-                              </>
-                            )}
+                            <MembershipAction
+                              state={state}
+                              pending={joinLeavePending}
+                              pendingState={joinLeavePending ? membershipMutation.variables?.state : null}
+                              resourceName={project.name}
+                              onJoin={() => membershipMutation.mutate({
+                                resourceType: "project",
+                                resourceId: project.id,
+                                resourceName: project.name,
+                                state: "joined",
+                              })}
+                              onLeave={() => membershipMutation.mutate({
+                                resourceType: "project",
+                                resourceId: project.id,
+                                resourceName: project.name,
+                                state: "left",
+                              })}
+                            />
+                            <StarToggle
+                              size="row"
+                              starred={starred}
+                              pending={starPending}
+                              resourceName={project.name}
+                              onToggle={(next) => membershipMutation.mutate({
+                                resourceType: "project",
+                                resourceId: project.id,
+                                resourceName: project.name,
+                                starred: next,
+                              })}
+                            />
                           </div>
                         }
                       />

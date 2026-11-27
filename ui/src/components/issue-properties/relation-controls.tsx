@@ -1,3 +1,6 @@
+import { t as translateDynamic } from "../../i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useState, type MouseEvent } from "react";
 import type { Issue, IssueLockedStub } from "@paperclipai/shared";
 import { Link } from "@/lib/router";
@@ -32,6 +35,8 @@ export function RemovableIssueReferencePill({
   onRemove: (issueId: string) => void;
   isMobile?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const locked = isLockedIssueStub(issue);
   const issueLabel = locked
@@ -80,8 +85,8 @@ export function RemovableIssueReferencePill({
                 type="button"
                 data-mention-kind="issue"
                 className={chipClassName}
-                title={locked ? "Private task" : issue.title}
-                aria-label={`Actions for blocker ${issueLabel}`}
+                title={locked ? pageText("privateTask_fc2d31") : issue.title}
+                aria-label={translateDynamic("dynamic:actionsForBlocker", { value1: issueLabel })}
               >
                 {content}
               </button>
@@ -90,15 +95,11 @@ export function RemovableIssueReferencePill({
               {!locked && issue.identifier ? (
                 <DropdownMenuItem asChild>
                   <Link to={`/issues/${issue.identifier}`}>
-                    <ArrowUpRight className="h-4 w-4" />
-                    Visit task
-                  </Link>
+                    <ArrowUpRight className="h-4 w-4" />{pageText("visitTask_3683f8")}</Link>
                 </DropdownMenuItem>
               ) : null}
               <DropdownMenuItem variant="destructive" onSelect={openRemoveConfirmation}>
-                <X className="h-4 w-4" />
-                Remove blocker
-              </DropdownMenuItem>
+                <X className="h-4 w-4" />{pageText("removeBlocker_4d2149")}</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
@@ -120,7 +121,7 @@ export function RemovableIssueReferencePill({
                 data-mention-kind="issue"
                 className={chipClassName}
                 title={issue.title}
-                aria-label={`Task ${issueLabel}: ${issue.title}`}
+                aria-label={translateDynamic("dynamic:taskWithTitle", { value1: issueLabel, value2: issue.title })}
               >
                 {content}
               </Link>
@@ -129,7 +130,7 @@ export function RemovableIssueReferencePill({
                 data-mention-kind="issue"
                 className={chipClassName}
                 title={issue.title}
-                aria-label={`Task: ${issue.title}`}
+                aria-label={translateDynamic("dynamic:task", { value1: issue.title })}
               >
                 {content}
               </span>
@@ -140,18 +141,14 @@ export function RemovableIssueReferencePill({
       <Dialog open={isConfirmOpen} onOpenChange={setIsConfirmOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Remove blocker?</DialogTitle>
-            <DialogDescription>
-              Remove {confirmLabel} as a blocker for this task.
-            </DialogDescription>
+            <DialogTitle>{pageText("removeBlocker_2085fd")}</DialogTitle>
+            <DialogDescription>{pageText("remove_e96390") + " "}{confirmLabel}{" " + pageText("asABlockerForThisTask_7a2a4d")}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <DialogClose asChild>
-              <Button type="button" variant="outline">Cancel</Button>
+              <Button type="button" variant="outline">{translateUi("interfaceCopy.cancel")}</Button>
             </DialogClose>
-            <Button type="button" variant="destructive" onClick={confirmRemove}>
-              Remove blocker
-            </Button>
+            <Button type="button" variant="destructive" onClick={confirmRemove}>{pageText("removeBlocker_4d2149")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -168,15 +165,16 @@ export function ExpandRelationListButton({
   expanded: boolean;
   onClick: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (!expanded && hiddenCount <= 0) return null;
   return (
     <button
       type="button"
       className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
       onClick={onClick}
-      aria-label={expanded ? "Show fewer items" : `Show ${hiddenCount} more items`}
+      aria-label={expanded ? pageText("showFewerItems_82ec36") : `Show ${hiddenCount} more items`}
     >
-      {expanded ? "Show less" : `Show ${hiddenCount} more`}
+      {expanded ? pageText("showLess_4c852b") : `Show ${hiddenCount} more`}
     </button>
   );
 }

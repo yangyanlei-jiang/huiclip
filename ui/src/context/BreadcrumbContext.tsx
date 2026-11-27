@@ -1,3 +1,4 @@
+import { useTranslation } from "../i18n";
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode, type MouseEventHandler } from "react";
 
 export interface Breadcrumb {
@@ -80,6 +81,7 @@ export function buildDocumentTitle(breadcrumbs: Breadcrumb[], companyName?: stri
 }
 
 export function BreadcrumbProvider({ children, companyName }: BreadcrumbProviderProps) {
+  const { i18n } = useTranslation();
   const [breadcrumbs, setBreadcrumbsState] = useState<Breadcrumb[]>([]);
   const [breadcrumbToolbar, setBreadcrumbToolbarState] = useState<ReactNode | null>(null);
   const [breadcrumbPanelControl, setBreadcrumbPanelControlState] =
@@ -88,7 +90,8 @@ export function BreadcrumbProvider({ children, companyName }: BreadcrumbProvider
 
   const setBreadcrumbs = useCallback((crumbs: Breadcrumb[]) => {
     setBreadcrumbsState((current) => (breadcrumbsEqual(current, crumbs) ? current : crumbs));
-  }, []);
+  // Routes rebuild their translated breadcrumb labels when the active language changes.
+  }, [i18n.resolvedLanguage]);
 
   const setMobileToolbar = useCallback((node: ReactNode | null) => {
     setMobileToolbarState(node);

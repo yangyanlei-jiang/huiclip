@@ -1,3 +1,5 @@
+import { t as translateDynamic } from "../i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type {
   IssueBlockerAttention,
   IssueRecoveryAction,
@@ -78,6 +80,7 @@ function SuccessfulRunRetryNowControl({
   issueId: string;
   scheduledRetry: IssueScheduledRetry;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const retryNow = useRetryNowMutation(issueId);
   const dueAtIso = scheduledRetry.scheduledRetryAt
     ? new Date(scheduledRetry.scheduledRetryAt).toISOString()
@@ -97,7 +100,7 @@ function SuccessfulRunRetryNowControl({
         <div className="min-w-0 text-xs leading-5 text-amber-900 dark:text-amber-100">
           {retryNow.data?.outcome === "waiting" && retryNow.data.scheduledRetry?.runId === scheduledRetry.runId
             ? retryNow.data.message
-            : <>Paperclip will ask the assignee to choose the next step {scheduleLabel}. Retry now starts that follow-up immediately.</>}
+            : <>{pageText("paperclipWillAskTheAssigneeToChooseThe_2d98b6") + " "}{scheduleLabel}{pageText("retryNowStartsThatFollowUpImmediately_25946d")}</>}
         </div>
         <Button
           type="button"
@@ -110,19 +113,15 @@ function SuccessfulRunRetryNowControl({
         >
           {retryNow.isPending ? (
             <span className="inline-flex items-center gap-1.5">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
-              Retrying...
-            </span>
+              <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />{pageText("retrying_54aa30")}</span>
           ) : success ? (
             <span className="inline-flex items-center gap-1.5">
               <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
-              {retryNow.data?.outcome === "already_promoted" ? "Already promoted" : "Promoted"}
+              {retryNow.data?.outcome === "already_promoted" ? pageText("alreadyPromoted_72d0f7") : pageText("promoted_2eb0c3")}
             </span>
           ) : (
             <span className="inline-flex items-center gap-1.5">
-              <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
-              Retry now
-            </span>
+              <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />{pageText("retryNow_84ce86")}</span>
           )}
         </Button>
       </div>
@@ -151,6 +150,7 @@ function WaitingChipLink({
   blocker: IssueRelationIssueSummary;
   running?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const issuePathId = blocker.identifier ?? blocker.id;
   return (
     <IssueLinkQuicklook
@@ -161,16 +161,14 @@ function WaitingChipLink({
       <StatusGlyph
         status={blocker.status}
         size="sm"
-        title={`${waitingTaskStatusLabel(blocker.status)} status`}
+        title={translateDynamic("dynamic:status", { value1: waitingTaskStatusLabel(blocker.status) })}
       />
       <span>{blocker.identifier ?? blocker.id.slice(0, 8)}</span>
       <span className="max-w-(--sz-18rem) truncate font-sans text-(length:--text-micro) text-blue-800 dark:text-blue-200">
         {blocker.title}
       </span>
       {running ? (
-        <span className="ml-0.5 rounded-full bg-blue-500/15 px-1.5 py-0.5 text-(length:--text-nano) font-medium uppercase tracking-wide text-blue-700 dark:bg-blue-400/20 dark:text-blue-200">
-          running
-        </span>
+        <span className="ml-0.5 rounded-full bg-blue-500/15 px-1.5 py-0.5 text-(length:--text-nano) font-medium uppercase tracking-wide text-blue-700 dark:bg-blue-400/20 dark:text-blue-200">{pageText("running_3c49d9")}</span>
       ) : null}
     </IssueLinkQuicklook>
   );
@@ -205,6 +203,7 @@ function SuccessfulRunHandoffInFlightNotice({
   liveRunId?: string | null;
   assigneeAgentId?: string | null;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const shortRunId = liveRunId ? liveRunId.slice(0, 8) : null;
   return (
     <div
@@ -216,21 +215,17 @@ function SuccessfulRunHandoffInFlightNotice({
         <span className="mt-1 flex h-3.5 w-3.5 shrink-0 items-center justify-center" aria-hidden>
           <span className="h-2 w-2 animate-pulse rounded-full bg-blue-400" />
         </span>
-        <p className="min-w-0 leading-5">
-          A correction run is in progress — the agent is working. This alert returns if the run
-          stops without choosing a next step.
-          {shortRunId ? (
+        <p className="min-w-0 leading-5">{pageText("aCorrectionRunIsInProgressTheAgent_ebf400")}{shortRunId ? (
             <>
               {" "}
               {assigneeAgentId ? (
                 <Link
                   to={`/agents/${assigneeAgentId}/runs/${liveRunId}`}
                   className="font-mono underline underline-offset-2 hover:text-foreground"
-                >
-                  run {shortRunId}
+                >{pageText("run_df6ad1") + " "}{shortRunId}
                 </Link>
               ) : (
-                <span className="font-mono">run {shortRunId}</span>
+                <span className="font-mono">{pageText("run_df6ad1") + " "}{shortRunId}</span>
               )}
             </>
           ) : null}
@@ -260,6 +255,7 @@ function WaitingOnLiveWorkNotice({
   parkedBlockers: IssueRelationIssueSummary[];
   renderParkedChip: (blocker: IssueRelationIssueSummary) => ReactNode;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const steps = orderWaitingBlockers(chainBlockers, liveIds);
   const total = steps.length;
   const doneCount = steps.filter((step) => step.status === "done").length;
@@ -292,22 +288,17 @@ function WaitingOnLiveWorkNotice({
         </span>
         <div className="min-w-0 flex-1 space-y-2">
           <div className="space-y-1">
-            <p className="font-medium leading-5">Waiting on live work</p>
-            <p className="leading-5">
-              Queued behind {total} {queuedNoun} being worked in order. This task
-              resumes automatically when the chain is done. Comments still notify the
-              assignee.
-            </p>
+            <p className="font-medium leading-5">{pageText("waitingOnLiveWork_7216c2")}</p>
+            <p className="leading-5">{pageText("queuedBehind_4d2111") + " "}{total} {queuedNoun}{" " + pageText("beingWorkedInOrderThisTaskResumesAutomatically_2e4244")}</p>
           </div>
 
           <div className="space-y-1" data-testid="issue-blocked-notice-progress">
             <div className="text-xs font-medium text-blue-800 dark:text-blue-200">
-              {doneCount} of {total} done
-              {runningCount > 0 ? ` · ${runningCount} running` : null}
+              {doneCount}{" " + pageText("of_de04fa") + " "}{total}{" " + pageText("done_e5fd9c")}{runningCount > 0 ? ` · ${runningCount} running` : null}
             </div>
             <div
               role="progressbar"
-              aria-label="Blocker chain progress"
+              aria-label={pageText("blockerChainProgress_e2678f")}
               aria-valuemin={0}
               aria-valuenow={doneCount}
               aria-valuemax={total}
@@ -357,9 +348,7 @@ function WaitingOnLiveWorkNotice({
                 />
               </div>
               <div className="min-w-0 pb-0.5">
-                <span className="inline-block rounded-md border border-dashed border-blue-300/70 px-2 py-1 text-xs text-blue-800 dark:border-blue-500/40 dark:text-blue-200">
-                  This task — resumes automatically when the chain is done
-                </span>
+                <span className="inline-block rounded-md border border-dashed border-blue-300/70 px-2 py-1 text-xs text-blue-800 dark:border-blue-500/40 dark:text-blue-200">{pageText("thisTaskResumesAutomaticallyWhenTheChainIs_067d17")}</span>
               </div>
             </div>
           </div>
@@ -369,9 +358,7 @@ function WaitingOnLiveWorkNotice({
               data-testid="issue-blocked-notice-now-running"
               className="space-y-1 pt-0.5"
             >
-              <div className="text-xs font-medium text-blue-800 dark:text-blue-200">
-                Now running
-              </div>
+              <div className="text-xs font-medium text-blue-800 dark:text-blue-200">{pageText("nowRunning_9f1bf4")}</div>
               <div className="flex flex-wrap items-center gap-1.5">
                 {nowRunning.map((blocker) => (
                   <WaitingChipLink key={blocker.id} blocker={blocker} running />
@@ -386,9 +373,7 @@ function WaitingOnLiveWorkNotice({
               className="flex flex-wrap items-center gap-1.5 pt-0.5"
             >
               <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-800 dark:text-amber-200">
-                <Flag className="h-3 w-3" aria-hidden />
-                Blocked by parked work
-              </span>
+                <Flag className="h-3 w-3" aria-hidden />{pageText("blockedByParkedWork_2da68c")}</span>
               {parkedBlockers.map((blocker) => renderParkedChip(blocker))}
             </div>
           ) : null}
@@ -426,6 +411,7 @@ export function IssueBlockedNotice({
   scheduledRetry?: IssueScheduledRetry | null;
   agentName?: string | null;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (issueStatus === "done" || issueStatus === "cancelled") return null;
   // A live run on this issue means an agent is already handling it — the
   // missing-disposition complaint only applies when the issue is stuck.
@@ -553,9 +539,7 @@ export function IssueBlockedNotice({
       return (
         <span key={blocker.id} className="inline-flex max-w-full items-center gap-1.5">
           <LockedIssueChip identifier={blocker.identifier} />
-          <span className="text-(length:--text-micro) text-muted-foreground">
-            Private — you don't have access
-          </span>
+          <span className="text-(length:--text-micro) text-muted-foreground">{pageText("privateYouDonTHaveAccess_f59c04")}</span>
         </span>
       );
     }
@@ -622,37 +606,29 @@ export function IssueBlockedNotice({
         <div className="min-w-0 space-y-1.5">
           {showSuccessfulRunHandoff ? (
             <>
-              <p className="font-medium leading-5">This task still needs a next step.</p>
-              <p className="leading-5">
-                A run finished successfully, but the task is still open. Paperclip needs someone to choose
-                what happens next.
-              </p>
+              <p className="font-medium leading-5">{pageText("thisTaskStillNeedsANextStep_05414a")}</p>
+              <p className="leading-5">{pageText("aRunFinishedSuccessfullyButTheTaskIs_09afd4")}</p>
               <ul className="list-disc space-y-1 pl-5 text-xs leading-5 text-amber-900 dark:text-amber-100">
-                <li>Mark it done or cancelled.</li>
-                <li>Send it for review or ask for input.</li>
-                <li>Record what is blocking it and who owns that blocker.</li>
-                <li>Delegate follow-up work or queue a continuation.</li>
+                <li>{pageText("markItDoneOrCancelled_fc4fbd")}</li>
+                <li>{pageText("sendItForReviewOrAskForInput_0c62f7")}</li>
+                <li>{pageText("recordWhatIsBlockingItAndWhoOwns_1657b4")}</li>
+                <li>{pageText("delegateFollowUpWorkOrQueueAContinuation_5b38e6")}</li>
               </ul>
               <div className="flex flex-wrap gap-1.5 text-xs">
                 {successfulRunHandoff.sourceRunId && successfulRunHandoff.assigneeAgentId ? (
                   <Link
                     to={`/agents/${successfulRunHandoff.assigneeAgentId}/runs/${successfulRunHandoff.sourceRunId}`}
                     className="rounded-md border border-amber-300/70 bg-background/80 px-2 py-1 font-mono text-amber-950 hover:border-amber-500 hover:bg-amber-100 hover:underline dark:border-amber-500/40 dark:bg-background/40 dark:text-amber-100 dark:hover:bg-amber-500/15"
-                  >
-                    run {successfulRunHandoff.sourceRunId.slice(0, 8)}
+                  >{pageText("run_df6ad1") + " "}{successfulRunHandoff.sourceRunId.slice(0, 8)}
                   </Link>
                 ) : successfulRunHandoff.sourceRunId ? (
-                  <span className="rounded-md border border-amber-300/70 bg-background/80 px-2 py-1 font-mono text-amber-950 dark:border-amber-500/40 dark:bg-background/40 dark:text-amber-100">
-                    run {successfulRunHandoff.sourceRunId.slice(0, 8)}
+                  <span className="rounded-md border border-amber-300/70 bg-background/80 px-2 py-1 font-mono text-amber-950 dark:border-amber-500/40 dark:bg-background/40 dark:text-amber-100">{pageText("run_df6ad1") + " "}{successfulRunHandoff.sourceRunId.slice(0, 8)}
                   </span>
                 ) : null}
-                <span className="rounded-md border border-amber-300/70 bg-background/80 px-2 py-1 text-amber-900 dark:border-amber-500/40 dark:bg-background/40 dark:text-amber-100">
-                  Asked {agentName ?? "the assignee"} to choose the next step
-                </span>
+                <span className="rounded-md border border-amber-300/70 bg-background/80 px-2 py-1 text-amber-900 dark:border-amber-500/40 dark:bg-background/40 dark:text-amber-100">{pageText("asked_1bb798") + " "}{agentName ?? pageText("theAssignee_310809")}{" " + pageText("toChooseTheNextStep_af3cde")}</span>
               </div>
               {successfulRunHandoff.detectedProgressSummary ? (
-                <p className="text-xs leading-5 text-amber-800 dark:text-amber-200">
-                  Detected progress: {successfulRunHandoff.detectedProgressSummary}
+                <p className="text-xs leading-5 text-amber-800 dark:text-amber-200">{pageText("detectedProgress_7dabc9") + " "}{successfulRunHandoff.detectedProgressSummary}
                 </p>
               ) : null}
               {successfulRunRetryNow ? (
@@ -672,19 +648,18 @@ export function IssueBlockedNotice({
                 {blockers.length > 0
                   ? isStalled
                     ? stalledLeafBlockers.length > 1
-                      ? <>Work on this task is blocked by {blockerLabel}, but the chain is stalled in review without a clear next step. Resolve the stalled reviews below or remove them as blockers.</>
-                      : <>Work on this task is blocked by {blockerLabel}, but the chain is stalled in review without a clear next step. Resolve the stalled review below or remove it as a blocker.</>
+                      ? <>{pageText("workOnThisTaskIsBlockedBy_7e9d5c") + " "}{blockerLabel}{pageText("butTheChainIsStalledInReviewWithout_a2f0ad")}</>
+                      : <>{pageText("workOnThisTaskIsBlockedBy_7e9d5c") + " "}{blockerLabel}{pageText("butTheChainIsStalledInReviewWithout_690ae3")}</>
                     : reopenSuppressed
-                      ? <>A message won&rsquo;t restart this task yet — it stays blocked by {blockerLabel} until {blockers.length === 1 ? "it is" : "they are"} done, then it reopens automatically. Comments still notify {responsibleName} for questions or triage in the meantime.</>
-                      : <>Work on this task is blocked by {blockerLabel} until {blockers.length === 1 ? "it is" : "they are"} complete. Comments still notify the assignee for questions or triage.</>
-                  : <>Work on this task is blocked until someone moves it back to To do. Comments still notify the assignee for questions or triage.</>}
+                      ? <>{pageText("aMessageWonTRestartThisTaskYet_c59f70") + " "}{blockerLabel}{" " + pageText("until_b310f4") + " "}{blockers.length === 1 ? pageText("itIs_79d4a8") : pageText("theyAre_99b370")}{" " + pageText("doneThenItReopensAutomaticallyCommentsStillNotify_ddc8c4") + " "}{responsibleName}{" " + pageText("forQuestionsOrTriageInTheMeantime_d2b3ea")}</>
+                      : <>{pageText("workOnThisTaskIsBlockedBy_7e9d5c") + " "}{blockerLabel}{" " + pageText("until_b310f4") + " "}{blockers.length === 1 ? pageText("itIs_79d4a8") : pageText("theyAre_99b370")}{" " + pageText("completeCommentsStillNotifyTheAssigneeForQuestions_111fe0")}</>
+                  : <>{pageText("workOnThisTaskIsBlockedUntilSomeone_2e17f9")}</>}
               </p>
               {reopenSuppressed && reopenSuppressedLeafId ? (
                 <p
                   data-testid="issue-blocked-notice-reopen-suppressed"
                   className="text-xs font-medium leading-5 text-amber-900 dark:text-amber-100"
-                >
-                  Still blocked by{" "}
+                >{pageText("stillBlockedBy_afba82")}{" "}
                   <span className="font-mono">{reopenSuppressedLeafId}</span>
                   {reopenSuppressedLeafStatus ? <> ({reopenSuppressedLeafStatus})</> : null}
                   {reopenSuppressedOtherCount > 0
@@ -702,16 +677,12 @@ export function IssueBlockedNotice({
               ) : null}
               {showStalledRow ? (
                 <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                  <span className="text-xs font-medium text-amber-800 dark:text-amber-200">
-                    Stalled in review
-                  </span>
+                  <span className="text-xs font-medium text-amber-800 dark:text-amber-200">{pageText("stalledInReview_bfc0d8")}</span>
                   {stalledLeafBlockers.map(renderBlockerChip)}
                 </div>
               ) : terminalBlockers.length > 0 ? (
                 <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                  <span className="text-xs font-medium text-amber-800 dark:text-amber-200">
-                    Ultimately waiting on
-                  </span>
+                  <span className="text-xs font-medium text-amber-800 dark:text-amber-200">{pageText("ultimatelyWaitingOn_4f57f7")}</span>
                   {terminalBlockers.map(renderBlockerChip)}
                 </div>
               ) : null}
@@ -721,9 +692,7 @@ export function IssueBlockedNotice({
                   className="flex flex-wrap items-center gap-1.5 pt-0.5"
                 >
                   <span className="inline-flex items-center gap-1 text-xs font-medium text-amber-800 dark:text-amber-200">
-                    <Flag className="h-3 w-3" aria-hidden />
-                    Blocked by parked work
-                  </span>
+                    <Flag className="h-3 w-3" aria-hidden />{pageText("blockedByParkedWork_2da68c")}</span>
                   {parkedBlockers.map(renderBlockerChip)}
                 </div>
               ) : null}

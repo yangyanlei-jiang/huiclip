@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from "react";
 import { Apple, Monitor, Terminal } from "lucide-react";
 import {
@@ -61,6 +62,7 @@ export function PathInstructionsModal({
   open,
   onOpenChange,
 }: PathInstructionsModalProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const [platform, setPlatform] = useState<Platform>(detectPlatform);
 
   const current = instructions[platform];
@@ -69,12 +71,9 @@ export function PathInstructionsModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-base">How to get a full path</DialogTitle>
-          <DialogDescription>
-            Paste the absolute path (e.g.{" "}
-            <code className="text-xs bg-muted px-1 py-0.5 rounded">/Users/you/project</code>
-            ) into the input field.
-          </DialogDescription>
+          <DialogTitle className="text-base">{pageText("howToGetAFullPath_9a01ea")}</DialogTitle>
+          <DialogDescription>{pageText("pasteTheAbsolutePathEG_4e733f")}{" "}
+            <code className="text-xs bg-muted px-1 py-0.5 rounded">/Users/you/project</code>{pageText("intoTheInputField_977277")}</DialogDescription>
         </DialogHeader>
 
         {/* Platform tabs */}
@@ -124,6 +123,7 @@ export function PathInstructionsModal({
  * Drop-in replacement for the old showDirectoryPicker buttons.
  */
 export function ChoosePathButton({ className }: { className?: string }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -134,9 +134,7 @@ export function ChoosePathButton({ className }: { className?: string }) {
           className,
         )}
         onClick={() => setOpen(true)}
-      >
-        Choose
-      </button>
+      >{pageText("choose_78b7c9")}</button>
       <PathInstructionsModal open={open} onOpenChange={setOpen} />
     </>
   );

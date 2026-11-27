@@ -9,7 +9,7 @@ function send(message) {
 
 function sendNestedHostRequest(originalRequest, invocationId) {
   const nestedId = `nested-${nextRequestId++}`;
-  const params = originalRequest.params?.params ?? originalRequest.params?.parameters ?? {};
+  const params = originalRequest.params?.params ?? {};
   const mode = params.mode;
   const requestedCompanyId = params.requestedCompanyId;
   const hostMethod = params.hostMethod || "companies.get";
@@ -21,12 +21,6 @@ function sendNestedHostRequest(originalRequest, invocationId) {
           secretId: params.secretId || "11111111-1111-4111-8111-111111111111",
         },
         configPath: params.configPath || "apiKeyRef",
-      }
-    : hostMethod === "projects.resolveGitCredential"
-    ? {
-        companyId: requestedCompanyId,
-        projectId: originalRequest.params.projectId,
-        workspaceId: originalRequest.params.operation.source.id,
       }
     : hostMethod === "state.get"
     ? {
@@ -63,13 +57,7 @@ function sendNestedHostRequest(originalRequest, invocationId) {
     nestedRequest.paperclipInvocationId = "unknown-invocation";
   }
 
-  pendingNested.set(nestedId, {
-    id: originalRequest.id,
-    ...(hostMethod === "projects.resolveGitCredential" ? { identity: {
-      runId: originalRequest.params.runId,
-      agentId: originalRequest.params.agentId,
-    } } : {}),
-  });
+  pendingNested.set(nestedId, originalRequest.id);
   send(nestedRequest);
 }
 
@@ -83,12 +71,12 @@ rl.on("line", (line) => {
   const message = JSON.parse(line);
 
   if (message.id && pendingNested.has(message.id)) {
-    const original = pendingNested.get(message.id);
+    const originalId = pendingNested.get(message.id);
     pendingNested.delete(message.id);
     if (message.error) {
       send({
         jsonrpc: "2.0",
-        id: original.id,
+        id: originalId,
         error: message.error,
       });
       return;
@@ -96,8 +84,8 @@ rl.on("line", (line) => {
 
     send({
       jsonrpc: "2.0",
-      id: original.id,
-      result: original.identity ? { identity: original.identity, credential: message.result } : message.result,
+      id: originalId,
+      result: message.result,
     });
     return;
   }
@@ -110,13 +98,13 @@ rl.on("line", (line) => {
       id: message.id,
       result: {
         ok: true,
-        supportedMethods: ["getData", "performAction", "resourceLifecycle", "workspaceOperation", "workspacePrepare", "executeTool"],
+        supportedMethods: ["getData", "performAction", "resourceLifecycle", "workspaceOperation"],
       },
     });
     return;
   }
 
-  if (["getData", "performAction", "resourceLifecycle", "workspaceOperation", "workspacePrepare", "executeTool"].includes(method)) {
+  if (["getData", "performAction", "resourceLifecycle", "workspaceOperation"].includes(method)) {
     sendNestedHostRequest(message, message.paperclipInvocation?.id);
     return;
   }

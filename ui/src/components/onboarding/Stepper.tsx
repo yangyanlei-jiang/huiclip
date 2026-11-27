@@ -1,3 +1,5 @@
+import { adapterCopy } from "../../i18n/adapter-copy";
+import { useTranslation } from "@/i18n";
 import { cn } from "../../lib/utils";
 
 /**
@@ -107,6 +109,7 @@ export function Stepper({
   canJumpToStep?: (target: number) => boolean;
   onJumpToStep?: (target: number) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="mb-11 flex items-center justify-center gap-2">
       {Array.from({ length: total }, (_, index) => index + 1).map((segment) => {
@@ -115,7 +118,7 @@ export function Stepper({
           <button
             key={segment}
             type="button"
-            aria-label={labels[segment - 1] ?? `Step ${segment}`}
+            aria-label={labels[segment - 1] ? adapterCopy(labels[segment - 1]) : t("setup.stepNumber", { step: segment })}
             aria-current={segment === step ? "step" : undefined}
             disabled={!jumpable}
             onClick={() => jumpable && onJumpToStep?.(segment)}
@@ -134,7 +137,7 @@ export function Stepper({
       })}
       {/* Out of flow, so it neither takes a row nor picks up the gap. */}
       <span className="sr-only">
-        Step {step} of {total}
+        {t("setup.stepProgress", { step, total })}
       </span>
     </div>
   );

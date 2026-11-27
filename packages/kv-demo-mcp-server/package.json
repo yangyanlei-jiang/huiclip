@@ -13,8 +13,7 @@
   },
   "type": "module",
   "bin": {
-    "paperclip-kv-demo-mcp-server": "./dist/main.js",
-    "paperclip-tasks-demo-mcp-server": "./dist/tasks/main.js"
+    "paperclip-kv-demo-mcp-server": "./dist/main.js"
   },
   "exports": {
     ".": "./src/index.ts"
@@ -22,8 +21,7 @@
   "publishConfig": {
     "access": "public",
     "bin": {
-      "paperclip-kv-demo-mcp-server": "./dist/main.js",
-      "paperclip-tasks-demo-mcp-server": "./dist/tasks/main.js"
+      "paperclip-kv-demo-mcp-server": "./dist/main.js"
     },
     "exports": {
       ".": {

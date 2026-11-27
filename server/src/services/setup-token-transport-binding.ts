@@ -1,4 +1,3 @@
-import { assertLoginEnvironmentTarget } from "./login-environment.js";
 // The production transport binding for the Claude setup-token login session.
 //
 // The session service (`setup-token-session.ts`) drives the login flow over
@@ -37,7 +36,7 @@ import {
 import { secretService } from "./secrets.js";
 import type { environmentService } from "./environments.js";
 import type { environmentRuntimeService } from "./environment-runtime.js";
-import { buildLoginLeaseAcquireArgs, loginLeaseBoundsDeadline } from "./adapter-login-lease.js";
+import { buildLoginLeaseAcquireArgs } from "./adapter-login-lease.js";
 import type { Db } from "@paperclipai/db";
 import {
   createLoginPtyTransport,
@@ -353,7 +352,6 @@ export function buildSetupTokenLoginTransport(
 
 /** The dependencies the production sandbox provider needs. */
 export interface ProductionSetupTokenSandboxProviderDeps {
-  db?: Db;
   environments: Pick<ReturnType<typeof environmentService>, "getById" | "getLeaseById" | "releaseLease">;
   environmentRuntime: Pick<ReturnType<typeof environmentRuntimeService>, "acquireRunLease" | "getDriver">;
   /**
@@ -397,9 +395,7 @@ export function createProductionSetupTokenSandboxProvider(
 
   return {
     async acquire({ scope, deadline }) {
-      const environment = deps.db
-        ? await assertLoginEnvironmentTarget(deps.db, scope)
-        : await deps.environments.getById(scope.environmentId);
+      const environment = await deps.environments.getById(scope.environmentId);
       if (!environment) {
         log("[paperclip] Setup-token login: the selected environment is not found.");
         return failClosed();
@@ -422,15 +418,14 @@ export function createProductionSetupTokenSandboxProvider(
 
       const leaseRecord = await deps.environmentRuntime.acquireRunLease(
         buildLoginLeaseAcquireArgs({
-          browserLogin: true,
           metadata: {
             companyId: scope.companyId,
             environment,
             adapterType: scope.adapterType,
           },
-          // The optional agent selects an existing computer; credential ownership
-          // remains with the company and user.
-          targetAgentId: scope.agentId,
+          // The setup-token login is company-and-environment scoped. It carries
+          // no target agent, so the lease binds no agent.
+          targetAgentId: null,
           // Re-check the environment company binding inside the lease insert
           // transaction. The route guard ran earlier, so a managed
           // reconciliation can bind this sandbox to another company between the
@@ -454,7 +449,9 @@ export function createProductionSetupTokenSandboxProvider(
       // the deadline, the server cannot guarantee the hard stop. Release the
       // remote lease and fail closed, so the login holds no lease and leaves no
       // durable cleanup row.
-      if (!loginLeaseBoundsDeadline(leaseRecord.lease.expiresAt, deadline)) {
+      const expiresAt = leaseRecord.lease.expiresAt;
+      const expiresAtMs = expiresAt instanceof Date ? expiresAt.getTime() : Number.NaN;
+      if (!Number.isFinite(expiresAtMs) || expiresAtMs > deadline) {
         await this.release(leaseId);
         log("[paperclip] Setup-token login: the acquired lease expiry does not bound the session deadline.");
         return failClosed();
@@ -555,7 +552,6 @@ export interface LoginPtyWorkerManagerLike {
       providerLeaseId: string;
       loginCommandKey: LoginCommandKey;
       sessionHome: string;
-      expiresAt?: string;
     },
   ): Promise<LoginPtySession>;
 }
@@ -565,7 +561,6 @@ export interface LoginPtyLeaseLookup {
   getLeaseById(leaseId: string): Promise<
     | {
         providerLeaseId: string | null;
-        expiresAt?: Date | null;
         metadata: Record<string, unknown> | null | undefined;
       }
     | null
@@ -615,7 +610,7 @@ export function createWorkerBoundLoginPtyOpener(
         : {};
     const pluginId = readLeaseMetaString(metadata.pluginId);
     const driverKey =
-      readLeaseMetaString(metadata.driverKey) ?? readLeaseMetaString(metadata.provider) ?? readLeaseMetaString(metadata.driver);
+      readLeaseMetaString(metadata.provider) ?? readLeaseMetaString(metadata.driver);
     if (!providerLeaseId || !pluginId || !driverKey) {
       log("[paperclip] Setup-token login: the lease carries no sandbox worker binding.");
       throw new SetupTokenSessionError(503, SETUP_TOKEN_START_FAILED);
@@ -643,7 +638,6 @@ export function createWorkerBoundLoginPtyOpener(
         providerLeaseId,
         loginCommandKey,
         sessionHome,
-        expiresAt: lease?.expiresAt?.toISOString(),
       });
     };
   };

@@ -1,3 +1,5 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { type ComponentType, useEffect, useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -40,7 +42,6 @@ import {
 } from "./gateway-helpers";
 import { gatewaysQueryKey } from "./NewGatewayDialog";
 import { describeError } from "@/api/errors";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 type PanelKey = string;
 type ClientIcon = ComponentType<{ className?: string }>;
@@ -75,6 +76,7 @@ export function ConnectClientDialog({
   createdTokens: ToolMcpGatewayTokenCreated[];
   onTokenCreated: (token: ToolMcpGatewayTokenCreated) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const { pushToast } = useToast();
   const snippets = useMemo(() => orderedSnippets(gateway.clientSnippets ?? []), [gateway.clientSnippets]);
@@ -131,14 +133,14 @@ export function ConnectClientDialog({
       onTokenCreated(token);
       setSelectedTokenId(token.id);
       pushToast({
-        title: "Token issued",
-        body: "The copy buttons now include its full Authorization header.",
+        title: interfaceNotice("interface:tokenIssued_7007ea"),
+        body: interfaceNotice("interface:theCopyButtonsNowIncludeItsFullAuthorization_68015d"),
         tone: "success",
       });
       await queryClient.invalidateQueries({ queryKey: gatewaysQueryKey(gateway.companyId) });
     },
     onError: (error) => pushToast({
-      title: "Token was not issued",
+      title: interfaceNotice("interface:tokenWasNotIssued_7a7caf"),
       body: describeError(error).body,
       tone: "error",
     }),
@@ -147,10 +149,10 @@ export function ConnectClientDialog({
   async function copyText(value: string, label: string) {
     try {
       await copyTextToClipboard(value);
-      pushToast({ title: "Copied", body: label, tone: "success" });
+      pushToast({ title: interfaceNotice("interface:copied_8e3df4"), body: label, tone: "success" });
     } catch (error) {
       pushToast({
-        title: "Copy failed",
+        title: interfaceNotice("interface:copyFailed_bd5acb"),
         body: describeError(error).body,
         tone: "error",
       });
@@ -179,37 +181,30 @@ export function ConnectClientDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={cn("sm:max-w-2xl", ANALYTICS_MASK_CLASS)}>
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            Client snippets
-            <Tooltip>
+          <DialogTitle className="flex items-center gap-2">{pageText("clientSnippets_088b2b")}<Tooltip>
               <TooltipTrigger asChild>
-                <button type="button" aria-label="About client snippets" className="text-muted-foreground hover:text-foreground">
+                <button type="button" aria-label={pageText("aboutClientSnippets_93ed4c")} className="text-muted-foreground hover:text-foreground">
                   <HelpCircle className="h-4 w-4" />
                 </button>
               </TooltipTrigger>
-              <TooltipContent className={cn("max-w-xs text-xs", ANALYTICS_MASK_CLASS)}>
-                Give this MCP gateway configuration to your tool. It does not give it access to Paperclip or
-                skills; it only gateways calls between the client and the tools exposed here.
-              </TooltipContent>
+              <TooltipContent className="max-w-xs text-xs">{pageText("giveThisMCPGatewayConfigurationToYourTool_1bc994")}</TooltipContent>
             </Tooltip>
           </DialogTitle>
-          <DialogDescription>
-            Choose a client and copy a complete, authenticated configuration.
-          </DialogDescription>
+          <DialogDescription>{pageText("chooseAClientAndCopyACompleteAuthenticated_4f10d1")}</DialogDescription>
         </DialogHeader>
 
         <div className="flex flex-wrap items-center gap-2 border-b border-border pb-3">
-          <span className="text-xs font-medium text-muted-foreground">Authorization</span>
+          <span className="text-xs font-medium text-muted-foreground">{pageText("authorization_5e25ce")}</span>
           {availableTokens.length > 0 ? (
             <SearchableSelect<string, TokenOption>
               value={selectedTokenId}
               groups={tokenGroups}
               onValueChange={setSelectedTokenId}
-              placeholder="Issue a token"
-              searchPlaceholder="Search tokens…"
-              emptyMessage="No copyable tokens."
+              placeholder={pageText("issueAToken_5b631a")}
+              searchPlaceholder={pageText("searchTokens_db6be2")}
+              emptyMessage={pageText("noCopyableTokens_2b91aa")}
               contentWidth="auto"
               triggerClassName="h-8 w-auto max-w-xs rounded-full px-3"
               renderValue={(option) => option ? `${option.label} · ${maskedTokenLabel(option.token)}` : "Issue a token"}
@@ -222,7 +217,7 @@ export function ConnectClientDialog({
                 </span>
               )}
               createItem={{
-                render: () => <span>+ Issue a new token</span>,
+                render: () => <span>{pageText("issueANewToken_a4597c")}</span>,
                 onSelect: issueToken,
               }}
             />
@@ -235,7 +230,7 @@ export function ConnectClientDialog({
               disabled={issueTokenMutation.isPending}
               onClick={issueToken}
             >
-              {issueTokenMutation.isPending ? "Issuing…" : "Issue a token"}
+              {issueTokenMutation.isPending ? pageText("issuing_6bc09d") : pageText("issueAToken_5b631a")}
             </Button>
           )}
           {selectedToken ? (
@@ -245,22 +240,16 @@ export function ConnectClientDialog({
               size="sm"
               onClick={() => void copyText(`Authorization: Bearer ${selectedToken.token}`, "Authorization header")}
             >
-              <Copy className="mr-1 h-3.5 w-3.5" />
-              Copy header
-            </Button>
+              <Copy className="mr-1 h-3.5 w-3.5" />{pageText("copyHeader_44fe06")}</Button>
           ) : null}
         </div>
 
         {!selectedToken ? (
-          <p className="text-xs text-muted-foreground">
-            Issue a token before copying a snippet; the full <code>Authorization: Bearer …</code> header is
-            required. Existing token secrets cannot be retrieved again, so only tokens issued in this page
-            session can fill a snippet.
-          </p>
+          <p className="text-xs text-muted-foreground">{pageText("issueATokenBeforeCopyingASnippetThe_fcca40") + " "}<code>Authorization: Bearer …</code>{" " + pageText("headerIsRequiredExistingTokenSecretsCannotBe_4753f8")}</p>
         ) : null}
 
         <div className="grid gap-4 sm:grid-cols-(--gtc-10)">
-          <nav className="flex gap-1 overflow-x-auto sm:flex-col" aria-label="Clients">
+          <nav className="flex gap-1 overflow-x-auto sm:flex-col" aria-label={pageText("clients_28e22f")}>
             {snippets.map((snippet) => {
               const Icon = CLIENT_ICONS[snippet.client];
               return (
@@ -290,28 +279,24 @@ export function ConnectClientDialog({
                   : "text-muted-foreground hover:bg-muted/60",
               )}
             >
-              <LinkIcon className="h-4 w-4 shrink-0" />
-              Raw URL
-            </button>
+              <LinkIcon className="h-4 w-4 shrink-0" />{pageText("rawURL_fc97ea")}</button>
           </nav>
 
           <div className="min-w-0 space-y-3">
             {active === "raw_url" ? (
               <div className="space-y-3">
                 <div className="space-y-1.5">
-                  <div className="text-sm font-medium text-foreground">Endpoint URL</div>
+                  <div className="text-sm font-medium text-foreground">{pageText("endpointURL_65aaaa")}</div>
                   <div className="flex items-center gap-2">
                     <code className="min-w-0 flex-1 truncate rounded-md bg-muted px-3 py-2 font-mono text-xs text-muted-foreground">
                       {endpoint}
                     </code>
                     <Button variant="outline" size="sm" onClick={() => void copyText(endpoint, "Endpoint URL")}>
-                      <Copy className="mr-1 h-3.5 w-3.5" />
-                      Copy
-                    </Button>
+                      <Copy className="mr-1 h-3.5 w-3.5" />{pageText("copy_af74f7")}</Button>
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <div className="text-sm font-medium text-foreground">Authorization header</div>
+                  <div className="text-sm font-medium text-foreground">{pageText("authorizationHeader_b4e71c")}</div>
                   <code className="block truncate rounded-md bg-muted px-3 py-2 font-mono text-xs text-muted-foreground">
                     {selectedToken ? `Authorization: Bearer ${maskedTokenLabel(selectedToken)}` : "Authorization: Bearer pcgw_•••"}
                   </code>
@@ -327,9 +312,7 @@ export function ConnectClientDialog({
                     disabled={!copyConfigText}
                     onClick={() => copyConfigText && void copyText(copyConfigText, `${activeSnippet.label} config`)}
                   >
-                    <Copy className="mr-1 h-3.5 w-3.5" />
-                    Copy
-                  </Button>
+                    <Copy className="mr-1 h-3.5 w-3.5" />{pageText("copy_af74f7")}</Button>
                 </div>
                 <pre className="max-h-64 overflow-auto whitespace-pre-wrap break-words rounded-md bg-muted p-3 font-mono text-xs text-muted-foreground">
                   {displayConfigText}
@@ -341,21 +324,16 @@ export function ConnectClientDialog({
                 ) : null}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">No client snippets available for this gateway.</p>
+              <p className="text-sm text-muted-foreground">{pageText("noClientSnippetsAvailableForThisGateway_2e468e")}</p>
             )}
 
-            <p className="text-xs text-muted-foreground">
-              Treat the token like a password. Anyone holding it can call the tools this gateway allows. Revoke
-              it if it leaks.
-            </p>
+            <p className="text-xs text-muted-foreground">{pageText("treatTheTokenLikeAPasswordAnyoneHolding_10a9a3")}</p>
           </div>
         </div>
 
         <DialogFooter>
           <Button onClick={() => onOpenChange(false)}>
-            <Check className="mr-1.5 h-4 w-4" />
-            Done
-          </Button>
+            <Check className="mr-1.5 h-4 w-4" />{pageText("done_e9b450")}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

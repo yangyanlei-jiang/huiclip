@@ -46,7 +46,7 @@ export function deliveryModeDescription(mode: SecretDeliveryMode): string {
     case "env":
       return "Injected as an environment variable at run start.";
     case "api":
-      return "Fetched on demand via the run-bound agent API. Not injected as a $NAME environment variable.";
+      return "Fetched on demand via the run-bound agent API. Never written to the environment.";
     default:
       return "Provided through adapter configuration.";
   }

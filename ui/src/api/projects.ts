@@ -2,7 +2,6 @@ import type {
   Project,
   ProjectAccessMember,
   ProjectRepositoryOptions,
-  ProjectEnvironmentOptions,
   ProjectGitAuthorization,
   ProjectWorkspace,
   WorkspaceOperation,
@@ -22,7 +21,6 @@ function projectPath(id: string, companyId?: string, suffix = "") {
 }
 
 export const projectsApi = {
-  environmentOptions: (companyId: string) => api.get<ProjectEnvironmentOptions>(`/companies/${companyId}/project-environments`),
   gitAuthorization: (id: string) => api.get<ProjectGitAuthorization>(projectPath(id, undefined, "/git-authorization")),
   setGitAuthorization: (id: string, grantId: string | null) => api.put<ProjectGitAuthorization>(projectPath(id, undefined, "/git-authorization"), { grantId }),
   repositoryOptions: (companyId: string) => api.get<ProjectRepositoryOptions>(`/companies/${companyId}/project-repositories`),

@@ -1,8 +1,9 @@
-import { useMemo, useState } from "react";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { IssueDocument } from "@paperclipai/shared";
-import { ArrowUpRight, FileQuestion, Loader2 } from "lucide-react";
-import { fromMarkdown } from "mdast-util-from-markdown";
+import { FileQuestion, Loader2 } from "lucide-react";
 import { ApiError } from "@/api/client";
 import { issuesApi } from "@/api/issues";
 import { DocumentAnnotationsCountChip, IssueDocumentAnnotations } from "@/components/IssueDocumentAnnotations";
@@ -10,37 +11,9 @@ import { DocumentMarkdownBody } from "@/components/DocumentMarkdownBody";
 import { QueryErrorState, useQueryView } from "@/components/QueryView";
 import { queryKeys } from "@/lib/queryKeys";
 import { documentDisplayTitle } from "@/lib/issue-artifacts";
-import { createIssueDetailPath } from "@/lib/issueDetailBreadcrumb";
-import { Link, useLocation } from "@/lib/router";
-
-type HeadingNode = { type: string; value?: string; children?: HeadingNode[] };
-
-function headingText(node: HeadingNode): string {
-  if (node.type === "text" || node.type === "inlineCode") return node.value ?? "";
-  if (node.type === "break") return " ";
-  return node.children?.map(headingText).join("") ?? "";
-}
-
-function startsWithMatchingHeading(body: string, title: string): boolean {
-  if (!body || !title) return false;
-  const first = fromMarkdown(body).children.find((node) =>
-    node.type !== "definition" && !(node.type === "html" && /^<!--[\s\S]*-->$/.test(node.value.trim())),
-  );
-  const normalize = (value: string) => value.trim().replace(/\s+/g, " ").toLowerCase();
-  return first?.type === "heading" && normalize(headingText(first)) === normalize(title);
-}
-
-export function TaskDocumentSourceLink({ taskRef }: { taskRef: string }) {
-  return (
-    <Link to={createIssueDetailPath(encodeURIComponent(taskRef))} disableIssueQuicklook
-      className="inline-flex w-fit items-center gap-1.5 rounded-sm text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-      Open source task <ArrowUpRight className="size-4" aria-hidden />
-    </Link>
-  );
-}
+import { useLocation } from "@/lib/router";
 
 export function TaskDocumentPanel({
-  companyId,
   issueId,
   documentKey,
   initialDocument,
@@ -48,7 +21,6 @@ export function TaskDocumentPanel({
   documentIssueId,
   currentIssueId = issueId,
 }: {
-  companyId?: string;
   issueId: string;
   documentKey: string;
   initialDocument?: IssueDocument;
@@ -56,14 +28,15 @@ export function TaskDocumentPanel({
   documentIssueId?: string;
   currentIssueId?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const location = useLocation();
   const [annotationPanelOpen, setAnnotationPanelOpen] = useState(false);
   const query = useQuery<IssueDocument | null>({
-    queryKey: [...queryKeys.issues.documents(issueId), documentKey, ...(revisionId ? ["revision", revisionId] : []), ...(documentIssueId && companyId ? ["company", companyId] : [])],
+    queryKey: [...queryKeys.issues.documents(issueId), documentKey, ...(revisionId ? ["revision", revisionId] : [])],
     queryFn: async () => {
       try {
         const current = await issuesApi.getDocument(issueId, documentKey);
-        if (companyId && current.companyId !== companyId) return null;
         if (!revisionId) return current;
         const revision = await issuesApi.getDocumentRevision(issueId, documentKey, revisionId);
         return { ...current, title: revision.title, body: revision.body, format: revision.format,
@@ -77,17 +50,11 @@ export function TaskDocumentPanel({
   });
 
   const view = useQueryView(query);
-  const document = query.data;
-  const title = document ? documentDisplayTitle(document) : "";
-  const body = document?.body ?? "";
-  const hasMatchingHeading = useMemo(() => startsWithMatchingHeading(body, title), [body, title]);
 
   if (query.isLoading || view.kind === "reconnecting") {
     return (
       <div className="flex items-center gap-2 py-8 text-sm text-muted-foreground" role="status">
-        <Loader2 className="size-4 animate-spin" aria-hidden />
-        Loading document…
-      </div>
+        <Loader2 className="size-4 animate-spin" aria-hidden />{pageText("loadingDocument_622054")}</div>
     );
   }
   if (view.kind === "error") {
@@ -97,14 +64,15 @@ export function TaskDocumentPanel({
       </div>
     );
   }
+  const document = query.data;
   if (!document) {
     return (
       <div className="flex items-start gap-3 py-8 text-sm" role="status">
         <FileQuestion className="mt-0.5 size-5 shrink-0 text-muted-foreground" aria-hidden />
         <div className="space-y-1">
-          <p className="font-medium">{revisionId ? "Reviewed revision unavailable" : "Document no longer available"}</p>
+          <p className="font-medium">{revisionId ? pageText("reviewedRevisionUnavailable_1d0bac") : pageText("documentNoLongerAvailable_6a06dd")}</p>
           <p className="text-muted-foreground">
-            {revisionId ? "The exact reviewed revision could not be found. The current version has not been substituted." : "Close this tab or choose another document."}
+            {revisionId ? pageText("theExactReviewedRevisionCouldNotBeFound_a2846f") : pageText("closeThisTabOrChooseAnotherDocument_a27b24")}
           </p>
         </div>
       </div>
@@ -114,7 +82,7 @@ export function TaskDocumentPanel({
   return (
     <article className="space-y-4">
       <header className="space-y-1">
-        {!hasMatchingHeading ? <h2 className="text-lg font-semibold">{title}</h2> : null}
+        <h2 className="text-lg font-semibold">{documentDisplayTitle(document)}</h2>
         <div className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
           <span>{`Revision ${document.latestRevisionNumber ?? 1}`}</span>
           <span aria-hidden>·</span>
@@ -124,7 +92,7 @@ export function TaskDocumentPanel({
             docKey={document.key}
             panelOpen={annotationPanelOpen}
             onToggle={() => setAnnotationPanelOpen((open) => !open)}
-          /> : <span>· Reviewed version</span>}
+          /> : <span>{pageText("reviewedVersion_6c02af")}</span>}
         </div>
       </header>
       {document.body.trim() ? (
@@ -146,7 +114,7 @@ export function TaskDocumentPanel({
           </DocumentMarkdownBody>
         </IssueDocumentAnnotations>
       ) : (
-        <p className="text-sm text-muted-foreground">Document is empty.</p>
+        <p className="text-sm text-muted-foreground">{translateUi("interfaceCopy.documentIsEmpty")}</p>
       )}
     </article>
   );

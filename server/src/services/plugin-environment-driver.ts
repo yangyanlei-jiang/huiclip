@@ -29,7 +29,6 @@ import {
   readConfigValueAtPath,
   writeConfigValueAtPath,
 } from "./json-schema-secret-refs.js";
-import { pluginManifestRevision } from "./plugin-manifest-revision.js";
 import { pluginRegistryService } from "./plugin-registry.js";
 import type { PluginWorkerManager } from "./plugin-worker-manager.js";
 
@@ -134,19 +133,6 @@ export interface ReadyPluginWorkerRecovery {
   timeoutMs?: number;
 }
 
-/** Shared admission/presentation check for allocation, recovery, cleanup and PTY transport. */
-export function pluginSupportsLoginPty(
-  driver: Pick<PluginEnvironmentDriverDeclaration, "supportsLoginPty" | "creationOperationVersion">,
-  methods: readonly string[],
-  requireCredentialRead = false,
-): boolean {
-  return driver.supportsLoginPty === true && driver.creationOperationVersion === 1 && [
-    "environmentAcquireLease", "environmentInspectLease", "environmentReleaseLease",
-    "loginPtyOpen", "loginPtyInput", "loginPtyStop", "loginPtyClose",
-    ...(requireCredentialRead ? ["loginPtyReadCredential"] : []),
-  ].every(method => methods.includes(method));
-}
-
 export interface ReadyPluginEnvironmentDriver {
   pluginId: string;
   pluginKey: string;
@@ -164,7 +150,6 @@ export interface ReadyPluginEnvironmentDriver {
    * matches the acquisition guard, which also verifies the same methods live.
    */
   reusableLeaseMethodsVerified: boolean;
-  supportsCodexLogin?: boolean;
   supportsInteractiveSetup?: PluginEnvironmentDriverDeclaration["supportsInteractiveSetup"];
   interactiveSetupConnectionTypes?: PluginEnvironmentDriverDeclaration["interactiveSetupConnectionTypes"];
   supportsTemplateCapture?: PluginEnvironmentDriverDeclaration["supportsTemplateCapture"];
@@ -230,15 +215,10 @@ export async function resolvePluginEnvironmentDriverByKey(input: {
   });
 }
 
-type CachedProviderSchema = {
-  pluginId: string; revision: string; schema: Record<string, unknown> | null;
-  checkedAt: number; manifestRevision: number; lookup: number;
-};
+type CachedProviderSchema = { pluginId: string; revision: string; schema: Record<string, unknown> | null };
 const providerSchemas = new WeakMap<Db, Map<string, CachedProviderSchema>>();
 const MAX_CACHED_PROVIDER_SCHEMAS = 32;
 const MAX_CACHED_PROVIDER_SCHEMA_BYTES = 64 * 1024;
-export const PROVIDER_SCHEMA_REUSE_MS = 5_000;
-let providerSchemaLookups = 0;
 
 export async function resolvePluginSandboxProviderConfigSchema(input: {
   db: Db; driverKey: string;
@@ -246,13 +226,6 @@ export async function resolvePluginSandboxProviderConfigSchema(input: {
   const { db, driverKey } = input;
   let cache = providerSchemas.get(db);
   const cached = cache?.get(driverKey);
-  const manifestRevision = pluginManifestRevision();
-  const startedAt = Date.now();
-  const lookup = ++providerSchemaLookups;
-  if (cached && cached.manifestRevision === manifestRevision
-    && startedAt >= cached.checkedAt && startedAt - cached.checkedAt < PROVIDER_SCHEMA_REUSE_MS) {
-    return structuredClone(cached.schema);
-  }
   const unchanged = sql`coalesce(plugin_id = ${cached?.pluginId ?? null}::uuid
     and revision = ${cached?.revision ?? null}, false)`;
   const [row] = await db.execute<{
@@ -285,20 +258,15 @@ export async function resolvePluginSandboxProviderConfigSchema(input: {
     if (!cached || cached.pluginId !== row.pluginId || cached.revision !== row.revision) {
       throw new Error("Sandbox provider schema revision did not match the retained definition");
     }
-    if (cache!.get(driverKey) === cached) cache!.set(driverKey, { ...cached, checkedAt: startedAt, manifestRevision, lookup });
     return structuredClone(cached.schema);
   }
   const schema = row.configSchema && typeof row.configSchema === "object" && !Array.isArray(row.configSchema)
     ? row.configSchema as Record<string, unknown> : null;
-  const current = cache?.get(driverKey);
-  if (current && current.lookup > lookup) return schema;
   cache?.delete(driverKey);
   if (Buffer.byteLength(JSON.stringify(schema)) <= MAX_CACHED_PROVIDER_SCHEMA_BYTES) {
     if (!cache) { cache = new Map(); providerSchemas.set(db, cache); }
     if (cache.size >= MAX_CACHED_PROVIDER_SCHEMAS) cache.delete(cache.keys().next().value!);
-    cache.set(driverKey, {
-      pluginId: row.pluginId, revision: row.revision, schema: structuredClone(schema), checkedAt: startedAt, manifestRevision, lookup,
-    });
+    cache.set(driverKey, { pluginId: row.pluginId, revision: row.revision, schema: structuredClone(schema) });
   }
   return schema;
 }
@@ -355,7 +323,6 @@ export async function resolvePluginSandboxProviderDriverById(input: {
 }
 
 export async function listReadyPluginEnvironmentDrivers(input: {
-  kind?: "sandbox_provider" | "environment_driver";
   db: Db;
   workerManager?: PluginWorkerManager;
   recoverMissingWorker?: ReadyPluginWorkerRecovery;
@@ -407,7 +374,7 @@ export async function listReadyPluginEnvironmentDrivers(input: {
     );
     rows.push(
       ...(plugin.manifestJson.environmentDrivers ?? [])
-        .filter((driver) => driver.kind === (input.kind ?? "sandbox_provider"))
+        .filter((driver) => driver.kind === "sandbox_provider")
         .map((driver) => ({
           pluginId: plugin.id,
           pluginKey: plugin.pluginKey,
@@ -424,8 +391,7 @@ export async function listReadyPluginEnvironmentDrivers(input: {
           templateRefKind: driver.templateRefKind,
           templateConfigBinding: driver.templateConfigBinding,
           supportsTemplateDelete: driver.supportsTemplateDelete,
-          supportsLoginPty: driver.kind === "environment_driver" ? pluginSupportsLoginPty(driver, [...workerMethods]) : driver.supportsLoginPty,
-          supportsCodexLogin: pluginSupportsLoginPty(driver, [...workerMethods], true),
+          supportsLoginPty: driver.supportsLoginPty,
         })),
     );
   }

@@ -1,9 +1,15 @@
+import { adapterCopy } from "../i18n/adapter-copy";
+import { t as interfaceNotice } from "@/i18n";
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation } from "@/i18n";
+import { LanguageSelect } from "@/i18n/LanguageSelect";
 import type { AiConnectionLoginIntent } from "@paperclipai/shared";
 import { cancelAdapterLoginSession, cancelPendingAdapterLogin, matchesAdapterLoginTarget } from "./useAdapterLoginCancellation";
 import { useQueryView } from "@/components/QueryView";
 import type { AgentRunner, AgentRunnerChoice } from "@paperclipai/shared";
 import { needsClaudeSetupQualification, qualifyClaudeSetup } from "../lib/qualify-claude-setup";
-import { blocksAgentCreate, runOnboardingConnectionTest } from "../lib/onboarding-connection-test";
+import { runOnboardingConnectionTest } from "../lib/onboarding-connection-test";
 import { agentHarnessType, agentRunner } from "@paperclipai/shared";
 import { adaptersApi, type AdapterInfo } from "../api/adapters";
 import { healthApi } from "@/api/health";
@@ -11,7 +17,6 @@ import { describeError } from "@/api/errors";
 import { LocalProviderLoginInstructions } from "./AdapterLoginChrome";
 import { useLocalAiLogin } from "./ai-connections/useLocalAiLogin";
 import { aiConnectionsApi } from "@/api/ai-connections";
-import { cloudInferenceApi } from "@/api/cloud-inference";
 import { aiProviderForAdapter } from "./ai-connections/AiConnectionField";
 import { useConnectionModelsState } from "./ai-connections/useConnectionModels";
 import type { AiConnectionBinding } from "@paperclipai/shared";
@@ -32,7 +37,7 @@ import type {
   Environment,
   InstanceSettings,
 } from "@paperclipai/shared";
-import { AGENT_ROLES, AGENT_ROLE_LABELS, ADAPTER_AUTH_MISSING_CHECK_CODE, resolveCloudTrialModel } from "@paperclipai/shared";
+import { AGENT_ROLES, AGENT_ROLE_LABELS, ADAPTER_AUTH_MISSING_CHECK_CODE } from "@paperclipai/shared";
 import { AdapterLoginPanel, ModelDropdown } from "./AgentConfigForm";
 import {
   CONNECT_SOURCE_NAMES,
@@ -79,7 +84,8 @@ import { useCompanyListQuery } from "../api/companies-query";
 import { goalsApi } from "../api/goals";
 import { agentsApi } from "../api/agents";
 import { approvalsApi } from "../api/approvals";
-import { agentChatsApi } from "../api/agentChats";
+import { issuesApi } from "../api/issues";
+import { projectsApi } from "../api/projects";
 import { environmentsApi } from "../api/environments";
 import { instanceSettingsApi } from "../api/instanceSettings";
 import {
@@ -109,7 +115,13 @@ import { getAdapterDisplay } from "../adapters/adapter-display-registry";
 import { buildFixedClaudeOAuthBinding, CLAUDE_OAUTH_TOKEN_ENV_KEY } from "./environment-variables-editor/model";
 import { defaultCreateValues } from "./agent-config-defaults";
 import { onboardingDraftStorage, restoreOnboardingState } from "../lib/onboarding-state";
-import { selectDefaultCompanyGoalId } from "../lib/onboarding-launch";
+import {
+  buildOnboardingIssuePayload,
+  onboardingTaskTitle,
+  buildOnboardingProjectPayload,
+  selectDefaultCompanyGoalId,
+  selectReusableOnboardingProject,
+} from "../lib/onboarding-launch";
 import { buildNewAgentRuntimeConfig } from "../lib/new-agent-runtime-config";
 import { DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX } from "@paperclipai/adapter-codex-local";
 import { DEFAULT_CURSOR_LOCAL_MODEL } from "@paperclipai/adapter-cursor-local";
@@ -127,7 +139,6 @@ import { PillGuy } from "./onboarding/PillGuy";
 import { SleepingZs } from "./onboarding/SleepingZs";
 import {
   AGENT_ARC_WIZARD_STEPS,
-  ONBOARDING_STEP_LABELS,
   ONBOARDING_WIZARD_STEPS,
   Stepper,
   agentArcStepFor,
@@ -142,17 +153,11 @@ import { DEFAULT_AGENT_ROLE } from "../lib/onboarding-agent-role";
 import { capsuleHeroMotion, capsuleRoomEnter, capsuleRoomExit, heroRoomArrival, heroRoomMotion, ledeMotion, stepContentMotion, titleSwapMotion } from "./onboarding/onboarding-motion";
 import { Badge } from "@/components/ui/badge";
 import {
-  captureOnboardingStepCompleted,
-  captureOnboardingStepFailed,
-  useOnboardingAnalytics,
-} from "@/lib/analytics/onboarding-analytics";
-import {
   ArrowLeft,
   ArrowRight,
   Check,
   Loader2,
   ChevronDown,
-  Sparkles,
 } from "lucide-react";
 
 type Step = 0 | 1 | 2 | 3 | 4 | 5;
@@ -169,6 +174,19 @@ function restoreOnboardingAdapterType(savedAdapterType: unknown, provider?: unkn
   return typeof savedAdapterType === "string" && savedAdapterType !== "paperclip_runner"
     ? savedAdapterType
     : "claude_local";
+}
+
+/**
+ * True when an adapter-test result blocks a hire. A `fail` status always
+ * blocks. A `warn` or a `pass` status blocks too when a check reports
+ * `ADAPTER_AUTH_MISSING_CHECK_CODE`. That check means the agent has no
+ * working authentication, so it cannot run. A `warn` with no such check
+ * still lets the hire proceed. The wizard widened the gate for missing
+ * authentication only, not for every other warning.
+ */
+function blocksAgentCreate(result: AdapterEnvironmentTestResult): boolean {
+  if (result.status === "fail") return true;
+  return result.checks.some((check) => check.code === ADAPTER_AUTH_MISSING_CHECK_CODE);
 }
 
 /** True when `value` is a plain object, so callers can spread it as env config. */
@@ -427,6 +445,9 @@ function OnboardingWizardInner({
 }: {
   saved: Record<string, unknown> | null;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t, i18n } = useTranslation();
+  const locale = i18n.resolvedLanguage ?? i18n.language;
   const {
     onboardingOpen,
     onboardingOptions,
@@ -671,11 +692,6 @@ function OnboardingWizardInner({
     (savedKeys.subscriptions.length > 0 || (adapterType === "claude_local" && savedKeys.storedLogin.data))
       ? "subscription" : savedKeys.options.length || adapterType === "opencode_local" ? "api" : "subscription"
   );
-  const onboardingAnalytics = useOnboardingAnalytics({
-    open: effectiveOnboardingOpen,
-    step,
-    connectOutcome: credentialMode === "api" ? "api_key" : "subscription",
-  });
   const [createdCompanyPrefix, setCreatedCompanyPrefix] = useState<
     string | null
   >((saved?.createdCompanyPrefix as string) ?? null);
@@ -689,6 +705,12 @@ function OnboardingWizardInner({
   const setupSave = useRef<Promise<unknown>>(Promise.resolve());
   const [createdCompanyGoalId, setCreatedCompanyGoalId] = useState<string | null>(
     (saved?.createdCompanyGoalId as string) ?? null
+  );
+  const [createdProjectId, setCreatedProjectId] = useState<string | null>(
+    (saved?.createdProjectId as string) ?? null
+  );
+  const [createdIssueRef, setCreatedIssueRef] = useState<string | null>(
+    (saved?.createdIssueRef as string) ?? null
   );
 
   // The company the *route* last supplied, so a navigation that stops naming
@@ -728,7 +750,7 @@ function OnboardingWizardInner({
   const managedSubscriptionRef = useRef<{ companyId: string; binding: AiConnectionBinding; grantId?: string; sessionId?: string } | null>(null);
   const defaultSelectionsRef = useRef(new Map<string, { pending: Promise<unknown>; queued: number; revision: number; grantId?: string | null }>());
   const managedProvider = aiProviderForAdapter(adapterType);
-  const managedSubscriptionProvider = managedProvider === "anthropic" || managedProvider === "openai" || managedProvider === "xai" || (managedProvider === "google" && adapterType === "antigravity_runtime") ? managedProvider : undefined;
+  const managedSubscriptionProvider = managedProvider === "anthropic" || managedProvider === "openai" || managedProvider === "xai" ? managedProvider : undefined;
   function managedBindingForStep(): AiConnectionBinding | undefined {
     if (credentialMode === "api" && gatewayConnection?.companyId === createdCompanyId && gatewayConnection.adapterType === adapterType) return gatewayConnection.binding;
     const restoredBinding = restoredSetup?.companyId === createdCompanyId
@@ -799,6 +821,8 @@ function OnboardingWizardInner({
     setCreatedCompanyPrefix(null);
     setCompanyName("");
     setCreatedCompanyGoalId(null);
+    setCreatedProjectId(null);
+    setCreatedIssueRef(null);
     setCreatedAgentId(null);
     setSetupAgentId(null);
     setSetupPrepared(false);
@@ -828,9 +852,6 @@ function OnboardingWizardInner({
     if (initialStepRef.current && !resumesRouteDraft) {
       setStep(initialStepRef.current);
       setEntryStep(initialStepRef.current);
-    }
-    if (!previousRequest?.open) {
-      onboardingAnalytics.opened(initialStepRef.current && !resumesRouteDraft ? initialStepRef.current : step, step);
     }
     if (routeCompanyId) {
       // Claim ownership only when the route *introduces* a company. A route
@@ -916,7 +937,7 @@ function OnboardingWizardInner({
       // The mode, never the key: this blob is localStorage.
       credentialMode, credentialModeChoice,
       createdCompanyId, createdCompanyPrefix, createdAgentId, setupAgentId,
-      createdCompanyGoalId,
+      createdCompanyGoalId, createdProjectId, createdIssueRef,
     };
     onboardingDraftStorage.write(JSON.stringify(state));
   }, [
@@ -924,7 +945,7 @@ function OnboardingWizardInner({
     agentName, agentAppearance, agentRole, adapterType, runner, cwd, model, command, args, url,
     credentialMode, credentialModeChoice,
     createdCompanyId, createdCompanyPrefix, createdAgentId, setupAgentId,
-    createdCompanyGoalId,
+    createdCompanyGoalId, createdProjectId, createdIssueRef,
   ]);
 
   const getCapabilities = useAdapterCapabilities();
@@ -956,78 +977,6 @@ function OnboardingWizardInner({
     queryFn: () => instanceSettingsApi.getExperimental(),
     enabled: effectiveOnboardingOpen && step >= 3 && step <= 5,
   });
-  const cloudTrialInferenceEnabled = experimentalSettingsForLogin?.enableCloudTrialInference === true;
-  const { data: cloudTrialStatus } = useQuery({
-    queryKey: queryKeys.cloudInference.status(createdCompanyId ?? "__none__"),
-    queryFn: () => cloudInferenceApi.getStatus(createdCompanyId!),
-    enabled: effectiveOnboardingOpen && step === 4 && Boolean(createdCompanyId) && cloudTrialInferenceEnabled,
-  });
-  const canUseCloudTrialStarter =
-    cloudTrialInferenceEnabled &&
-    Boolean(cloudTrialStatus) &&
-    (cloudTrialStatus?.status === "not_issued" || cloudTrialStatus?.status === "active");
-  const [startingCloudTrial, setStartingCloudTrial] = useState(false);
-  const trackedTrialExposureCompaniesRef = useRef<Set<string>>(new Set());
-
-  useEffect(() => {
-    if (!effectiveOnboardingOpen || step !== 4 || !createdCompanyId) return;
-    if (trackedTrialExposureCompaniesRef.current.has(createdCompanyId)) return;
-    trackedTrialExposureCompaniesRef.current.add(createdCompanyId);
-    void cloudInferenceApi
-      .trackTelemetry(createdCompanyId, {
-        event: "onboarding_exposure",
-        surface: "onboarding_wizard",
-      })
-      .catch(() => {
-        // Best-effort analytics must never interrupt onboarding.
-      });
-  }, [effectiveOnboardingOpen, step, createdCompanyId]);
-
-  async function handleStartWithCloudTrial() {
-    if (!createdCompanyId || startingCloudTrial || loading) return;
-    setStartingCloudTrial(true);
-    setError(null);
-    try {
-      const hireName = agentName.trim() || AGENT_ROLE_LABELS[agentRole];
-      const trialModel = resolveCloudTrialModel(cloudTrialStatus?.defaultModel);
-      await setupSave.current.catch(() => {});
-      const hire = await agentsApi.hire(createdCompanyId, {
-        ...(setupAgentId ? { setupAgentId } : {}),
-        name: hireName,
-        appearance: agentAppearance,
-        role: agentRole,
-        ...(restoredSetup?.companyId === createdCompanyId ? { reportsTo: restoredSetup.reportsTo } : {}),
-        adapterType: "paperclip_runner",
-        adapterConfig: {
-          provider: "opencode",
-          model: trialModel,
-        },
-        onboardingFirstAgent: true,
-        ...(restoredSetup?.companyId === createdCompanyId && restoredSetup.defaultEnvironmentId
-          ? { defaultEnvironmentId: resolvedLoginEnvironmentId }
-          : {}),
-        runtimeConfig: {
-          ...buildNewAgentRuntimeConfig({ heartbeatEnabled: false }),
-          cloudTrialInference: true,
-        },
-      });
-      if (hire.approval) {
-        await approvalsApi.approve(
-          hire.approval.id,
-          "Approved during onboarding starter-credit setup.",
-        );
-        queryClient.invalidateQueries({ queryKey: queryKeys.approvals.list(createdCompanyId) });
-      }
-      queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(createdCompanyId) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.cloudInference.status(createdCompanyId) });
-      setCreatedAgentId(hire.agent.id);
-      setStep(5);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not start right away");
-    } finally {
-      setStartingCloudTrial(false);
-    }
-  }
   const loginEnvironmentResolution = useMemo(() => {
     try {
       return { environmentId: resolveAdapterTestEnvironmentId({
@@ -1117,7 +1066,7 @@ function OnboardingWizardInner({
     autoConnectStartedRef.current = true;
     setLoading(false);
     setAdapterEnvLoading(false);
-    setError("Configuration changed during setup. Connect again to test the current settings.");
+    setError(interfaceNotice("interface:configurationChangedDuringSetupConnectAgainToTest_27d9f4"));
   }, [claudeSetupSelectionKey]);
   const adapterSetupSelectionRef = useRef("");
   const adapterEnvErrorSelectionRef = useRef<string | null>(null);
@@ -1152,16 +1101,7 @@ function OnboardingWizardInner({
   // input here, so this gate alone only decides whether the login mechanism
   // could ever apply to the current adapter and environment.
   const localLoginHealth = useQuery({ queryKey: queryKeys.health, queryFn: healthApi.get });
-  const localAiLoginSupported = Boolean(localLoginHealth.data?.localAiLoginSupported ?? localLoginHealth.data?.deploymentMode === "local_trusted");
-  const hostedGoogleAiLoginSupported = Boolean(localLoginHealth.data?.hostedGoogleAiLoginSupported);
-  const canUseLocalLogin = Boolean(managedSubscriptionProvider) && (
-    managedSubscriptionProvider === "google"
-      ? (hostedGoogleAiLoginSupported || (resolvedLoginEnvironment?.driver === "local" && localAiLoginSupported))
-      : (resolvedLoginEnvironment?.driver === "local" && localAiLoginSupported)
-  );
-  const googleHostedRedirect: boolean | "optional" = managedSubscriptionProvider === "google" && hostedGoogleAiLoginSupported
-    ? (localAiLoginSupported ? "optional" : true)
-    : false;
+  const canUseLocalLogin = Boolean(managedSubscriptionProvider) && resolvedLoginEnvironment?.driver === "local" && (localLoginHealth.data?.localAiLoginSupported ?? localLoginHealth.data?.deploymentMode === "local_trusted");
   const localLogin = useLocalAiLogin(createdCompanyId, {
     provider: managedSubscriptionProvider ?? "anthropic", method: "subscription",
     name: `My ${CONNECT_SOURCE_NAMES[adapterType] ?? managedProvider} subscription`,
@@ -1312,14 +1252,6 @@ function OnboardingWizardInner({
   const sourceSelected =
     sourcePicked && recommendedAdapters.some((opt) => opt.type === adapterType);
 
-  const hasSavedSubscription = Boolean(savedSubscription || savedKeys.storedLogin.data ||
-    (credentialMode !== "api" && managedBindingForStep()));
-  /** Without browser login, show instructions for the selected execution environment. */
-  const connectStepHasNoSandbox =
-    credentialMode !== "api" && !canShowAdapterLogin && !authSignalUndecided;
-  const browserSignInUnavailable = connectStepHasNoSandbox && !hasSavedSubscription &&
-    localLogin.status !== "ready" && !(canUseLocalLogin && managedProvider);
-
   /**
    * Whether the connect step may advance.
    *
@@ -1340,7 +1272,7 @@ function OnboardingWizardInner({
   const restoredApiCredential = restoredSetup?.companyId === createdCompanyId
     && agentHarnessType(restoredSetup.adapterType, restoredSetup.adapterConfig) === agentHarnessType(adapterType)
     && !selectedSavedKey && (restoredSetup.adapterConfig.env as Record<string, unknown> | undefined)?.[apiKeyEnvKeyFor(adapterType)];
-  const connectStepReady = Boolean(setupPrepared || createdAgentId) && sourceSelected && !adapterEnvLoading && !savedKeys.loading && runnerDiscoveryReady && !browserSignInUnavailable && connectionModelReady;
+  const connectStepReady = Boolean(setupPrepared || createdAgentId) && sourceSelected && !adapterEnvLoading && !savedKeys.loading && runnerDiscoveryReady && connectionModelReady;
 
   useEffect(() => {
     if (step !== 4 || !createdCompanyId || !agentName.trim() || !adapterRegistryLoaded
@@ -1366,7 +1298,7 @@ function OnboardingWizardInner({
         }
       }
       const provisionalAdapter = disabledTypes.has("process") ? recommendedAdapters[0]?.type : "process";
-      if (!sourceSelected && !provisionalAdapter) throw new Error("No agent adapters are available on this instance.");
+      if (!sourceSelected && !provisionalAdapter) throw new Error(adapterCopy("No agent adapters are available on this instance."));
       const createAdapter = sourceSelected ? adapterType : provisionalAdapter!;
       if (!stillTheSameCompany(companyId)) return null;
       setSetupAgentId(id);
@@ -1419,7 +1351,7 @@ function OnboardingWizardInner({
     }).catch(cause => {
       if (!stillTheSameCompany(companyId)) return;
       setSetupError(true);
-      setError(cause instanceof Error ? cause.message : "Could not create agent setup.");
+      setError(cause instanceof Error ? cause.message : interfaceNotice("interface:couldNotCreateAgentSetup_e05dd7"));
     }).finally(() => {
       preparingSetup.current.delete(companyId);
       setSetupAttempt(attempt => attempt + 1);
@@ -1462,6 +1394,10 @@ function OnboardingWizardInner({
   const loginSubmitsBrowserCode =
     adapterCaps.login?.panelMode === "submitted_browser_code";
 
+  /** Without browser login, show instructions for the selected execution environment. */
+  const connectStepHasNoSandbox =
+    credentialMode !== "api" && !canShowAdapterLogin && !authSignalUndecided;
+
   /*
     The sequence's derived state. Space and visibility are separate throughout:
     the credential link fades on the first beat but keeps its space until the
@@ -1471,6 +1407,8 @@ function OnboardingWizardInner({
   const connectCollapsed =
     connectPhase !== "idle" && connectPhase !== "unwindRow" && sourceSelected;
   const connectProgress = sourceSelected && !setupPrepared && !createdAgentId && !setupError ? "Creating your agent…" : adapterEnvLoading ? "Testing connection…" : loading ? "Connecting…" : null;
+  const hasSavedSubscription = Boolean(savedSubscription || savedKeys.storedLogin.data ||
+    (credentialMode !== "api" && managedBindingForStep()));
   const connectHasCard = credentialMode === "api" || connectStepNeedsLogin || connectStepHasNoSandbox || Boolean(connectProgress);
   const connectCardLive =
     connectHasCard &&
@@ -1517,9 +1455,7 @@ function OnboardingWizardInner({
 
   /** A sign-in is running and has not succeeded. */
   const connectStepLoggingIn =
-    (connectStepNeedsLogin && connectPhase !== "idle" && connectPhase !== "connecting") ||
-    (sourcePicked && canUseLocalLogin && credentialMode === "subscription" && !hasSavedSubscription &&
-      !managedBindingForStep() && localLogin.status !== "ready");
+    connectStepNeedsLogin && connectPhase !== "idle" && connectPhase !== "connecting";
 
   // Detecting a credential is enough to start verification once the user has
   // chosen Claude or Codex. A saved-list refresh during that work is not a new
@@ -1614,31 +1550,31 @@ function OnboardingWizardInner({
    */
   const connectSourceLabel = CONNECT_SOURCE_NAMES[adapterType] ?? adapterType;
   const connectCta: { label: string; icon: FooterPrimaryIcon; disabled: boolean } =
-    setupError ? { label: "Retry", icon: "arrow", disabled: false }
-      : retryLogin ? { label: "Retry sign-in", icon: "arrow", disabled: false } : connectProgress
-      ? { label: adapterEnvLoading ? "Testing…" : connectProgress, icon: "spinner", disabled: true }
+    setupError ? { label: t("common.retry"), icon: "arrow", disabled: false }
+      : retryLogin ? { label: t("setup.retrySignIn"), icon: "arrow", disabled: false } : connectProgress
+      ? { label: adapterEnvLoading ? t("setup.testing") : connectProgress, icon: "spinner", disabled: true }
       : (connectPhase === "ready" || connectPhase === "waiting") && submitLoginCode
-      ? { label: "Submit code", icon: "arrow", disabled: false }
+      ? { label: t("setup.submitCode"), icon: "arrow", disabled: false }
       : connectPhase === "waiting"
-      ? { label: adapterType === "codex_local" ? "Waiting for auth…" : "Waiting for code…", icon: "spinner", disabled: true }
+      ? { label: adapterType === "codex_local" ? t("setup.waitAuth") : t("setup.waitCode"), icon: "spinner", disabled: true }
       : connectPhase === "connecting"
-        ? { label: "Connecting", icon: "spinner", disabled: true }
+        ? { label: t("setup.connecting"), icon: "spinner", disabled: true }
         : connectPhase === "ready"
           ? connectStepNeedsLogin
             ? {
-                label: `Sign in to ${connectSourceLabel}`,
+                label: t("setup.signInTo", { provider: connectSourceLabel }),
                 icon: "none",
                 disabled: !connectAuthUrl,
               }
             : {
-                label: "Connect",
+                label: t("setup.connect"),
                 icon: "arrow",
                 disabled:
-                  !connectStepReady || connectStepLoggingIn || (credentialMode === "api" && !apiKey.trim() && !selectedApiKey && !restoredApiCredential && !managedBindingForStep()),
+                  !connectStepReady || (credentialMode === "api" && !apiKey.trim() && !selectedApiKey && !restoredApiCredential && !managedBindingForStep()),
               }
           : // Nothing is chosen on arrival, and the row is what chooses. Until
             // it has been answered the button has nothing to do.
-            { label: "Next", icon: "arrow", disabled: true };
+            { label: t("common.next"), icon: "arrow", disabled: true };
 
   function unwindConnectStep() {
     localLogin.cancel();
@@ -1680,7 +1616,6 @@ function OnboardingWizardInner({
 
   function handleConnectStepPrimary() {
     if (setupError) { setSetupError(false); setSetupAttempt(value => value + 1); setError(null); return; }
-    if (browserSignInUnavailable) return;
     if (retryLogin) {
       setConnectAuthUrl(null);
       setSubmitLoginCode(null);
@@ -1914,10 +1849,11 @@ function OnboardingWizardInner({
     setSetupPrepared(false);
     setSetupError(false);
     setCreatedCompanyGoalId(null);
+    setCreatedProjectId(null);
+    setCreatedIssueRef(null);
   }
 
   function handleClose() {
-    onboardingAnalytics.dismissed(step);
     reset();
     closeOnboarding();
     // On the /onboarding route the wizard is also kept open by the route
@@ -1960,34 +1896,83 @@ function OnboardingWizardInner({
     if (companyIdNow === companyIdAtStart || companyIdNow === returnedCompanyId) {
       return true;
     }
-    setError("Organization created, but onboarding switched to another organization.");
+    setError(interfaceNotice("interface:organizationCreatedButOnboardingSwitchedToAnotherOrganization_34c2fb"));
     return false;
   }
 
-  async function handleLaunchToChat() {
+  async function handleLaunchToDashboard() {
     if (!createdCompanyId || !createdAgentId) {
-      setError(INCOMPLETE_ONBOARDING_STATE_MESSAGE);
+      setError(adapterCopy(INCOMPLETE_ONBOARDING_STATE_MESSAGE));
       return;
     }
     setLoading(true);
     setError(null);
-    captureOnboardingStepCompleted("review");
     try {
-      await agentChatsApi.startOnboarding(createdCompanyId, createdAgentId);
-      captureOnboardingStepCompleted("launch", "succeeded");
+      let goalId = createdCompanyGoalId;
+      if (!goalId) {
+        const goals = await goalsApi.list(createdCompanyId);
+        goalId = selectDefaultCompanyGoalId(goals);
+        if (stillTheSameCompany(createdCompanyId)) setCreatedCompanyGoalId(goalId);
+      }
+
+      let projectId = createdProjectId;
+      if (!projectId) {
+        const projects = await projectsApi.list(createdCompanyId);
+        const existingOnboardingProject = selectReusableOnboardingProject(projects);
+        if (existingOnboardingProject) {
+          projectId = existingOnboardingProject.id;
+        } else {
+          const project = await projectsApi.create(
+            createdCompanyId,
+            buildOnboardingProjectPayload(goalId, locale)
+          );
+          projectId = project.id;
+          queryClient.invalidateQueries({
+            queryKey: queryKeys.projects.list(createdCompanyId)
+          });
+        }
+        if (stillTheSameCompany(createdCompanyId)) setCreatedProjectId(projectId);
+      }
+
+      let issueRef = createdIssueRef;
+      if (!issueRef) {
+        const issue = await issuesApi.create(
+          createdCompanyId,
+          buildOnboardingIssuePayload({
+            title: onboardingTaskTitle(locale),
+            assigneeAgentId: createdAgentId,
+            projectId,
+            goalId
+          })
+        );
+        issueRef = issue.identifier ?? issue.id;
+        if (stillTheSameCompany(createdCompanyId)) setCreatedIssueRef(issueRef);
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.issues.list(createdCompanyId)
+        });
+      }
+
+      // Everything above is server work and stands on its own: the company has
+      // its goal, its onboarding project and its first task. What follows is
+      // this wizard finishing — selecting a company, discarding its own state
+      // and navigating. None of that is right for a customer who has moved to
+      // another company in the meantime: it would take them back, and `reset()`
+      // would discard the progress they had started there.
       if (!stillTheSameCompany(createdCompanyId)) return;
-      onboardingAnalytics.finished();
+
       const prefix = createdCompanyPrefix;
-      const agentId = createdAgentId;
-      // Route sync preserves this explicit destination over page memory.
+      // Select the new company as a route sync, not a manual switch: the
+      // explicit navigate below is the intended destination, so page-memory's
+      // "restore last page" (which falls back to /dashboard) must not fire and
+      // clobber the first-task URL. See PAP-404.
       setSelectedCompanyId(createdCompanyId, { source: "route_sync" });
       reset();
       closeOnboarding();
-      navigate(`${prefix ? `/${prefix}` : ""}/chats/${agentId}`);
+      // Drop the user straight into the first task's detail page (not the
+      // dashboard) so they land on the conversation the agent will start in.
+      navigate(prefix ? `/${prefix}/issues/${issueRef}` : `/issues/${issueRef}`);
     } catch (err) {
-      captureOnboardingStepCompleted("launch", "failed");
-      captureOnboardingStepFailed({ step: "launch", reason: "launch_failed" });
-      setError(err instanceof Error ? err.message : "Failed to open your chat. Please try again.");
+      setError(err instanceof Error ? err.message : interfaceMessage("interface:errorFailedToLaunchFirstTask"));
     } finally {
       setLoading(false);
     }
@@ -2033,19 +2018,11 @@ function OnboardingWizardInner({
       apiKeySecretRef.current = { key, companyId, envKey, binding: legacyStored.binding };
       return true;
     } catch (err) {
-      if (isCurrent()) {
-        captureOnboardingStepFailed({
-          step: "connect_model",
-          reason: "api_key_save_failed",
-          provider: managedProvider ?? adapterType,
-          method: "api_key",
-        });
-        setError(
-          err instanceof Error
-            ? `Could not store the API key: ${describeError(err).body}`
-            : "Could not store the API key.",
-        );
-      }
+      if (isCurrent()) setError(
+        err instanceof Error
+          ? t("adapter:storeKeyFailed", { detail: describeError(err).body })
+          : interfaceNotice("interface:couldNotStoreTheAPIKey_754ac3"),
+      );
       return false;
     }
   }
@@ -2095,7 +2072,7 @@ function OnboardingWizardInner({
       grantId = selected?.grantId;
     }
     if (!isCurrent()) return;
-    if (!grantId) throw new Error("Choose a subscription account in Connections, then retry setup.");
+    if (!grantId) throw new Error(adapterCopy("Choose a subscription account in Connections, then retry setup."));
     managedSubscriptionRef.current = { companyId, binding, grantId };
     await selectManagedDefault(companyId, binding.provider, grantId, isCurrent, visibleDefault);
   }
@@ -2215,7 +2192,7 @@ function OnboardingWizardInner({
       await agentsApi.update(id, JSON.parse(setupSnapshot), companyId);
     });
     void setupSave.current.catch(cause => {
-      if (stillTheSameCompany(companyId)) setError(cause instanceof Error ? cause.message : "Could not save agent setup.");
+      if (stillTheSameCompany(companyId)) setError(cause instanceof Error ? cause.message : interfaceNotice("interface:couldNotSaveAgentSetup_dc2893"));
     });
   }, [setupSnapshot, setupAgentId, createdCompanyId]);
 
@@ -2229,7 +2206,7 @@ function OnboardingWizardInner({
     if (!runnerDiscoveryReady) return null;
     if (!createdCompanyId) {
       setAdapterEnvError(
-        "Create or select an organization before testing adapter environment."
+        interfaceNotice("interface:createOrSelectAnOrganizationBeforeTestingAdapter_c2a356")
       );
       return null;
     }
@@ -2267,14 +2244,8 @@ function OnboardingWizardInner({
           managedSandboxOnly = experimentalSettings?.enableManagedSandboxOnly === true;
         } catch {
           if (!testIsCurrent()) return null;
-          captureOnboardingStepFailed({
-            step: "connect_model",
-            reason: "environment_test_failed",
-            provider: managedProvider ?? adapterType,
-            method: credentialMode === "api" ? "api_key" : "subscription",
-          });
           setAdapterEnvError(
-            "Could not load environment settings to determine which environment to test in. Retry the test.",
+            interfaceNotice("interface:couldNotLoadEnvironmentSettingsToDetermineWhich_6a626e"),
           );
           return null;
         }
@@ -2310,7 +2281,7 @@ function OnboardingWizardInner({
           const native = adapters.find(adapter => adapter.type === "paperclip_runner");
           if (!codex || (codex.defaultRunner !== "paperclip" && codex.defaultRunner !== "legacy")
             || !codex.supportedRunners?.includes(codex.defaultRunner)) {
-            throw new Error("Could not confirm Codex runner availability for this environment. Retry setup.");
+            throw new Error(adapterCopy("Could not confirm Codex runner availability for this environment. Retry setup."));
           }
           if (codex.defaultRunner !== "paperclip" && !codex?.disabled && !codex?.overriddenBuiltin
             && !native?.disabled && !native?.overriddenBuiltin) {
@@ -2320,7 +2291,7 @@ function OnboardingWizardInner({
               || typeof probe.details.leaseId !== "string" || !probe.details.leaseId) {
               throw new Error(typeof probe.details?.platformQualificationDiagnostic === "string"
                 ? probe.details.platformQualificationDiagnostic
-                : probe.summary || "The environment's platform qualification could not be confirmed. Retry the connection probe.");
+                : probe.summary || adapterCopy("The environment's platform qualification could not be confirmed. Retry the connection probe."));
             }
             const refreshed = await queryClient.fetchQuery({ queryKey: availabilityKey, staleTime: 0,
               queryFn: () => adaptersApi.list({ companyId: createdCompanyId, environmentId }, { signal }) });
@@ -2329,7 +2300,7 @@ function OnboardingWizardInner({
             const defaultRunner = refreshedCodex?.defaultRunner;
             if ((defaultRunner !== "paperclip" && defaultRunner !== "legacy")
               || !refreshedCodex?.supportedRunners?.includes(defaultRunner)) {
-              throw new Error("Could not confirm the environment's default runner. Retry setup.");
+              throw new Error(adapterCopy("Could not confirm the environment's default runner. Retry setup."));
             }
           }
         }
@@ -2363,29 +2334,15 @@ function OnboardingWizardInner({
           { signal },
         );
         if (!testIsCurrent()) return null;
-        if (blocksAgentCreate(result)) {
-          captureOnboardingStepFailed({
-            step: "connect_model",
-            reason: "environment_test_failed",
-            provider: managedProvider ?? adapterType,
-            method: credentialMode === "api" ? "api_key" : "subscription",
-          });
-        }
         setAdapterEnvResult(result);
         adapterEnvResultAppliedStoredLoginRef.current = appliedStoredClaudeLoginBinding;
         return result;
       });
     } catch (err) {
       if (!selectionIsCurrent()) return null;
-      captureOnboardingStepFailed({
-        step: "connect_model",
-        reason: "environment_test_failed",
-        provider: managedProvider ?? adapterType,
-        method: credentialMode === "api" ? "api_key" : "subscription",
-      });
       adapterEnvErrorSelectionRef.current = selection || null;
       setAdapterEnvError(
-        err instanceof Error ? err.message : "Adapter environment test failed"
+        err instanceof Error ? err.message : interfaceNotice("interface:adapterEnvironmentTestFailed_2c5244")
       );
       return null;
     } finally {
@@ -2427,7 +2384,7 @@ function OnboardingWizardInner({
       setSelectedCompanyId(company.id);
       setStep(3);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create organization");
+      setError(err instanceof Error ? err.message : interfaceMessage("interface:errorFailedToCreateOrganization"));
     } finally {
       creatingCompanyRef.current = false;
       setLoading(false);
@@ -2442,7 +2399,7 @@ function OnboardingWizardInner({
     if (!createdCompanyId) return;
     if (!setupPrepared && !createdAgentId) return;
     if (!connectionModelReady) {
-      setError("Choose a model for this gateway connection before connecting your agent.");
+      setError(interfaceNotice("interface:chooseAModelForThisGatewayConnectionBefore_1eec8b"));
       return;
     }
     const defaultSelection = defaultSelectionsRef.current.get(JSON.stringify([createdCompanyId, managedProvider]));
@@ -2469,7 +2426,7 @@ function OnboardingWizardInner({
         const selectedModelId = model.trim();
         if (!isValidOpenCodeModelId(selectedModelId)) {
           setError(
-            "OpenCode requires an explicit model in provider/model format."
+            interfaceNotice("interface:opencodeRequiresAnExplicitModelInProviderModel_55ac18")
           );
           return;
         }
@@ -2477,13 +2434,13 @@ function OnboardingWizardInner({
           setError(
             adapterModelsError instanceof Error
               ? adapterModelsError.message
-              : "Failed to load OpenCode models."
+              : interfaceMessage("interface:errorFailedToLoadOpenCodeModelsSentence")
           );
           return;
         }
         if (adapterModelsLoading || adapterModelsFetching) {
           setError(
-            "OpenCode models are still loading. Please wait and try again."
+            interfaceNotice("interface:opencodeModelsAreStillLoadingPleaseWaitAnd_feb201")
           );
           return;
         }
@@ -2491,8 +2448,8 @@ function OnboardingWizardInner({
         if (!discoveredModels.some((entry) => entry.id === selectedModelId)) {
           setError(
             discoveredModels.length === 0
-              ? "No OpenCode models discovered. Run `opencode models` and authenticate providers."
-              : `Configured OpenCode model is unavailable: ${selectedModelId}`
+              ? interfaceNotice("interface:noOpenCodeModelsDiscoveredRunOpencodeModelsAnd_ef17f9")
+              : t("adapter:openCodeUnavailable", { model: selectedModelId })
           );
           return;
         }
@@ -2522,7 +2479,7 @@ function OnboardingWizardInner({
       }
       if (credentialMode === "api" && selectedApiKey?.aiConnection?.mode === "responsible_user") {
         const grantId = selectedApiKey.id.startsWith("ai:") ? selectedApiKey.id.slice(3) : undefined;
-        if (!grantId) throw new Error("Choose a connected API account before continuing.");
+        if (!grantId) throw new Error(adapterCopy("Choose a connected API account before continuing."));
         if (!await selectManagedDefault(createdCompanyId, selectedApiKey.aiConnection.provider, grantId, isCurrent, grantId)) return;
       }
       if (credentialMode !== "api" && canUseLocalLogin && managedProvider && !managedBindingForStep() && !savedSubscription && !savedKeys.storedLogin.data) {
@@ -2536,7 +2493,7 @@ function OnboardingWizardInner({
       const existingAgent = createdAgentId ? await agentsApi.get(createdAgentId, createdCompanyId) : undefined;
       if (!isCurrent()) return;
       if (existingAgent?.runtimeConfig.aiConnection && credentialMode === "api" && selectedApiKey?.binding && !managedBinding) {
-        throw new Error("Choose a connected API account or Enter a new API key to replace this agent’s connected account.");
+        throw new Error(adapterCopy("Choose a connected API account or Enter a new API key to replace this agent’s connected account."));
       }
       const existingRunner = existingAgent && runner === "auto" && agentHarnessType(existingAgent.adapterType, existingAgent.adapterConfig) === adapterType
         ? agentRunner(existingAgent.adapterType) : undefined;
@@ -2596,9 +2553,9 @@ function OnboardingWizardInner({
           setError(
             nativeCodexError || (result.status === "fail"
               ? cloudInstance
-                ? "Paperclip couldn't finish connecting this agent. Try connecting again."
-                : "The environment test failed. Fix the reported checks before you hire this agent."
-              : "No working authentication was found. Fix the reported checks before you hire this agent."),
+                ? interfaceNotice("interface:paperclipCouldnTFinishConnectingThisAgentTry_4ff724")
+                : interfaceNotice("interface:theEnvironmentTestFailedFixTheReportedChecks_5dffa4")
+              : interfaceNotice("interface:noWorkingAuthenticationWasFoundFixTheReported_1db8ce")),
           );
           return;
         }
@@ -2703,13 +2660,7 @@ function OnboardingWizardInner({
       setStep(5);
     } catch (err) {
       if (!isCurrent()) return;
-      captureOnboardingStepFailed({
-        step: "connect_model",
-        reason: "agent_create_failed",
-        provider: managedProvider ?? adapterType,
-        method: credentialMode === "api" ? "api_key" : "subscription",
-      });
-      setError(err instanceof Error ? err.message : "Failed to create agent");
+      setError(err instanceof Error ? err.message : interfaceMessage("interface:errorFailedToCreateAgent"));
     } finally {
       if (hiringAgentRef.current === attempt) hiringAgentRef.current = null;
       if (activeClaudeQualification.current?.attempt === attempt) activeClaudeQualification.current = null;
@@ -2764,14 +2715,14 @@ function OnboardingWizardInner({
       const result = await runAdapterEnvironmentTest(configWithUnset);
       if (result?.status === "fail") {
         setError(
-          "Retried with ANTHROPIC_API_KEY unset in adapter config, but the environment test is still failing."
+          interfaceNotice("interface:retriedWithANTHROPICAPIKEYUnsetInAdapter_0f7e80")
         );
       }
     } catch (err) {
       setError(
         err instanceof Error
           ? err.message
-          : "Failed to unset ANTHROPIC_API_KEY and retry."
+          : interfaceNotice("interface:failedToUnsetANTHROPICAPIKEYAndRetry_9f84e2")
       );
     } finally {
       setUnsetAnthropicLoading(false);
@@ -2810,7 +2761,7 @@ function OnboardingWizardInner({
         (retryLogin || submitLoginCode || !connectStepLoggingIn)
       )
         handleConnectStepPrimary();
-      else if (step === 5) handleLaunchToChat();
+      else if (step === 5) handleLaunchToDashboard();
     }
   }
 
@@ -2856,7 +2807,7 @@ function OnboardingWizardInner({
   const stepHandoff = beatDelay(1) > 0;
   const heroRoomTarget = step === 1 || !arrived ? heroRoomMotion.closed : arrival && lastStep.current === entryStep ? heroRoomArrival : heroRoomMotion.open;
   const capsuleTarget = step === 1 || !arrived ? capsuleRoomExit : step === 3 && stepHandoff && lastStep.current === 1 ? capsuleRoomEnter : capsuleHeroMotion.animate;
-  const visibleError = error ?? (launchStateIncomplete ? INCOMPLETE_ONBOARDING_STATE_MESSAGE : null);
+  const visibleError = error ?? (launchStateIncomplete ? adapterCopy(INCOMPLETE_ONBOARDING_STATE_MESSAGE) : null);
 
   return (
     <Dialog
@@ -2889,6 +2840,9 @@ function OnboardingWizardInner({
               front-door choice ahead of it, and it fills the width on every
               step (the mission step's half-width split is gone). */}
           <div className="w-full flex flex-col overflow-y-auto">
+            <div className="flex justify-end px-4 pt-3">
+              <LanguageSelect />
+            </div>
             <div
               className={cn(
                 // my-auto, not items-center on the column: they look identical
@@ -2941,7 +2895,12 @@ function OnboardingWizardInner({
                 <Stepper
                   step={onboardingStepPositionFor(step)}
                   total={ONBOARDING_WIZARD_STEPS.length}
-                  labels={ONBOARDING_STEP_LABELS}
+                  labels={[
+                    t("setup.nameStep"),
+                    t("setup.firstAgent"),
+                    t("setup.connectModel"),
+                    t("setup.reviewStep"),
+                  ]}
                   canJumpToStep={(target) =>
                     canJumpToOnboardingStep({
                       targetStep: ONBOARDING_WIZARD_STEPS[target - 1]!,
@@ -2961,6 +2920,7 @@ function OnboardingWizardInner({
               {showsAgentArcStepper && (
                 <Stepper
                   step={agentArcStepFor(step)!}
+                  labels={[t("setup.firstAgent"), t("setup.connectModel"), t("setup.reviewStep")]}
                   canJumpToStep={(target) =>
                     canJumpToOnboardingStep({
                       targetStep: AGENT_ARC_WIZARD_STEPS[target - 1]!,
@@ -3030,12 +2990,12 @@ function OnboardingWizardInner({
                       title={
                         <motion.span key={step} {...titleSwapMotion} className="inline-block">
                           {step === 1
-                            ? "What is the name of your organization?"
+                            ? t("setup.organizationTitle")
                             : step === 3
-                              ? "Create your first agent"
+                              ? t("setup.firstAgent")
                               : step === 4
-                                ? "Connect a model"
-                                : "Let's get started..."}
+                                ? t("setup.connectModel")
+                                : t("setup.welcome")}
                         </motion.span>
                       }
                     />
@@ -3057,8 +3017,8 @@ function OnboardingWizardInner({
                       <p className="pt-2 text-base leading-relaxed text-muted-foreground">
                         <motion.span key={step} {...titleSwapMotion} className="inline-block">
                           {step === 4
-                            ? "Paperclip works with your subscription or API keys."
-                            : `${agentName.trim() || "Your first agent"} is ready to work!`}
+                            ? t("setup.providerNote")
+                            : t("setup.agentReady", { name: agentName.trim() || t("setup.defaultAgent") })}
                         </motion.span>
                       </p>
                     </motion.div>
@@ -3084,11 +3044,11 @@ function OnboardingWizardInner({
               {step === 1 && (
                 <motion.div key="step-1" {...stepContentMotion} exit={stepHandoff ? stepContentMotion.exit : undefined} className="mx-auto flex w-full flex-col gap-9">
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="onboarding-company-name">Name</Label>
+                    <Label htmlFor="onboarding-company-name">{t("setup.organizationName")}</Label>
                     <Input
                       id="onboarding-company-name"
                       className="h-(--sz-44px) rounded-lg border-transparent bg-muted shadow-none dark:bg-muted"
-                      placeholder="e.g. Northwind Labs"
+                      placeholder={t("setup.organizationExample")}
                       value={companyName}
                       onChange={(e) => setCompanyName(e.target.value)}
                       onKeyDown={(e) => {
@@ -3112,7 +3072,7 @@ function OnboardingWizardInner({
               {step === 3 && (
                 <motion.div key="step-3" {...stepContentMotion} exit={stepHandoff ? stepContentMotion.exit : undefined} className="mx-auto flex w-full flex-col gap-9">
                   <div className="flex flex-col gap-2">
-                    <Label htmlFor="onboarding-agent-name">Agent name</Label>
+                    <Label htmlFor="onboarding-agent-name">{t("setup.agentName")}</Label>
                     {/*
                       Filled, not outlined, and the column's full width — the
                       same field the naming step before the hand-off draws.
@@ -3125,7 +3085,7 @@ function OnboardingWizardInner({
                     <Input
                       id="onboarding-agent-name"
                       className="h-(--sz-44px) rounded-lg border-transparent bg-muted shadow-none dark:bg-muted"
-                      placeholder="e.g. Chief of staff"
+                      placeholder={t("setup.agentExample")}
                       value={agentName}
                       onChange={(e) => setAgentName(e.target.value)}
                       onKeyDown={(e) => {
@@ -3143,47 +3103,9 @@ function OnboardingWizardInner({
               {/* Step 4: Connect a model — adapter + model + env check (capsule above) */}
               {step === 4 && (
                 <motion.div key="step-4" {...stepContentMotion} exit={stepHandoff ? stepContentMotion.exit : undefined} className="space-y-8">
-                  {canUseCloudTrialStarter && connectPhase === "idle" && (
-                    <div className="rounded-xl border border-border bg-card p-4 shadow-xs space-y-3">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2">
-                            <Sparkles className="size-4 text-primary" />
-                            <span className="text-sm font-semibold text-foreground">
-                              Start right away
-                            </span>
-                            <Badge variant="secondary" className="rounded-full text-xs">
-                              {resolveCloudTrialModel(cloudTrialStatus?.defaultModel).split("/").pop() ?? "Starter"}
-                            </Badge>
-                          </div>
-                          <p className="text-xs text-muted-foreground">
-                            Try Paperclip right away without connecting an account. We’ll ask you to connect a model provider when it’s time to continue.
-                          </p>
-                        </div>
-                        <Button
-                          size="sm"
-                          onClick={handleStartWithCloudTrial}
-                          disabled={startingCloudTrial || loading}
-                          className="shrink-0"
-                        >
-                          {startingCloudTrial ? (
-                            <>
-                              <Loader2 className="size-3.5 mr-1.5 animate-spin" />
-                              Starting…
-                            </>
-                          ) : (
-                            <>
-                              Start free
-                              <ArrowRight className="size-3.5 ml-1.5" />
-                            </>
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                  )}
                   <div>
                     <ModelSourceTiles
-                      label="Model source"
+                      label={t("setup.modelSource")}
                       sources={recommendedAdapters.map((opt) => ({
                         id: opt.type,
                         label: CONNECT_SOURCE_NAMES[opt.type] ?? opt.label,
@@ -3204,21 +3126,16 @@ function OnboardingWizardInner({
                         setSourcePicked(true);
                         setAdapterType(id);
                         if (id !== adapterType) setRunner("auto");
-                        // Older drafts may already pair OpenAI with the Claude
-                        // model retained by a previous source switch.
-                        if (id !== adapterType || (id === "codex_local" && credentialMode === "subscription" && model.startsWith("claude-"))) {
+                        if (id !== adapterType) {
                           if (id === "opencode_local") setModel(DEFAULT_OPENCODE_LOCAL_MODEL);
-                          else setModel("");
+                          else if (id !== "codex_local") setModel("");
                         }
                         setConnectPhase("collapsing");
                       }}
                     />
 
                     {adapterRegistryLoaded && recommendedAdapters.length === 0 && (
-                      <p role="status" className="text-sm text-muted-foreground">
-                        Claude and Codex are unavailable on this instance. Ask an administrator to enable one,
-                        or exit setup and choose New Agent on the Agents page to use another provider.
-                      </p>
+                      <p role="status" className="text-sm text-muted-foreground">{pageText("claudeAndCodexAreUnavailableOnThisInstance_4cbc7e")}</p>
                     )}
 
                     {/* Fades on the first beat but keeps its space until the
@@ -3245,8 +3162,8 @@ function OnboardingWizardInner({
                     >
                       <div className="-ml-3 mt-1">
                         <CredentialModeLink mode={credentialMode} onChange={setCredentialMode} />
-                        {savedKeys.options.length > 0 && <p className="px-3 text-sm text-muted-foreground">{savedKeys.options.length} saved API {savedKeys.options.length === 1 ? "key available" : "keys available"}.</p>}
-                        {credentialMode === "subscription" && authSignalStatus === "present" && <p className="px-3 text-sm text-muted-foreground">An existing provider connection is available.</p>}
+                        {savedKeys.options.length > 0 && <p className="px-3 text-sm text-muted-foreground">{savedKeys.options.length}{" " + pageText("savedAPI_86d5e8") + " "}{savedKeys.options.length === 1 ? pageText("keyAvailable_7a2624") : pageText("keysAvailable_33d833")}.</p>}
+                        {credentialMode === "subscription" && authSignalStatus === "present" && <p className="px-3 text-sm text-muted-foreground">{t("setup.existingConnection")}</p>}
                       </div>
                     </motion.div>
                   </div>
@@ -3294,9 +3211,7 @@ function OnboardingWizardInner({
                       </p>
                     ) : credentialMode === "api" ? (
                       <OnboardingLoginCard
-                        instruction={hasGatewaySelection || connectionModels ? "Choose a model for your saved connection" : savedKeys.options.length ? "Choose a saved API key or enter a new one" : `Provide your ${
-                          CONNECT_SOURCE_NAMES[adapterType] ?? adapterType
-                        } API key to connect`}
+                        instruction={hasGatewaySelection || connectionModels ? t("connectModel.chooseModel") : savedKeys.options.length ? t("connectModel.chooseSaved") : t("connectModel.provide", { provider: CONNECT_SOURCE_NAMES[adapterType] ?? adapterType })}
                       >
                         {!hasGatewaySelection && <SavedProviderKeySelect {...savedKeys} disabled={loading || adapterEnvLoading} value={selectedApiKey?.id ?? ""} onChange={(id) => {
                           setGatewayConnection(undefined);
@@ -3305,9 +3220,8 @@ function OnboardingWizardInner({
                           setApiKey("");
                         }} />}
                         {!selectedApiKey && !hasGatewaySelection && !connectionModels && <OnboardingCardField
-                          label="API key"
-                          description={managedProvider ? `This will be your default ${CONNECT_SOURCE_NAMES[adapterType] ?? managedProvider} account.` : undefined}
-                          placeholder="Enter API key here"
+                          label={t("setup.apiKey")}
+                          placeholder={t("setup.apiKeyHint")}
                           masked
                           // The card is the answer to the tile just pressed, so
                           // the field is unambiguously the next thing. Carried
@@ -3320,14 +3234,13 @@ function OnboardingWizardInner({
                           }}
                           onSubmit={() => handleConnectStepPrimary()}
                         />}
+                        {managedProvider && !selectedApiKey && !hasGatewaySelection && !connectionModels && <p className="text-xs text-muted-foreground">{t("connectModel.defaultAccount", { provider: CONNECT_SOURCE_NAMES[adapterType] ?? managedProvider })}</p>}
                         {hasGatewaySelection && (gatewayLookupFailed ? <>
-                          <p role="alert" className="text-sm text-destructive">Your saved gateway connection could not be loaded. Retry to choose a model and connect your agent.</p>
-                          <Button type="button" variant="outline" disabled={loading || adapterEnvLoading} onClick={() => { void connectionModelState.refresh(); }}>
-                            Retry loading connection
-                          </Button>
+                          <p role="alert" className="text-sm text-destructive">{pageText("yourSavedGatewayConnectionCouldNotBeLoaded_505b27")}</p>
+                          <Button type="button" variant="outline" disabled={loading || adapterEnvLoading} onClick={() => { void connectionModelState.refresh(); }}>{pageText("retryLoadingConnection_41c271")}</Button>
                         </> : <p role="status" className="text-sm text-muted-foreground">{connectionModelState.refreshing
-                          ? "Loading your saved gateway connection…"
-                          : "Gateway connection saved. Choose a model, then Connect to test it and finish setting up your agent."}</p>)}
+                          ? pageText("loadingYourSavedGatewayConnection_1a96be")
+                          : pageText("gatewayConnectionSavedChooseAModelThenConnect_bb77d6")}</p>)}
                         {connectionModels && <ModelDropdown models={connectionModels.models} value={model}
                           onChange={setModel} open={modelOpen} onOpenChange={setModelOpen}
                           allowDefault={false} required groupByProvider={false}
@@ -3336,7 +3249,7 @@ function OnboardingWizardInner({
                           setGatewayConnection(undefined);
                           setSelectedSavedKey({ companyId: createdCompanyId!, envKey: apiKeyEnvKeyFor(adapterType), id: "" });
                           setModel("");
-                        }}>Use a different API key</Button>}
+                        }}>{t("setup.otherKey")}</Button>}
                       </OnboardingLoginCard>
                     ) : connectStepNeedsLogin &&
                       createdCompanyId &&
@@ -3379,7 +3292,7 @@ function OnboardingWizardInner({
                           setConnectPhase("connecting");
                         }}
                         onSubmitFailed={() => {
-                          // Only while the button still says "Connecting". The
+                          // Only while the button still says t("setup.connecting"). The
                           // panel stays mounted through Back's exit, so a failure
                           // that landed after Back restored the button and
                           // reopened the card the customer was leaving — without
@@ -3395,20 +3308,12 @@ function OnboardingWizardInner({
                             phaseBeforeSubmitRef.current === "ready" ? "ready" : "waiting",
                           );
                         }}
-                        onLoginFailed={() => {
-                          captureOnboardingStepFailed({
-                            step: "connect_model",
-                            reason: "subscription_login_failed",
-                            provider: managedProvider ?? adapterType,
-                            method: "subscription",
-                          });
-                        }}
                         onConnected={(sessionId) => {
                           if (managedSubscriptionProvider) managedSubscriptionRef.current = { companyId: createdCompanyId, binding: { provider: managedSubscriptionProvider, method: "subscription", mode: "responsible_user" }, sessionId };
                           setConnectAuthUrl(null);
                           // Not into a card the customer has left. The panel is
                           // still mounted through Back's exit, and a login that
-                          // finished there pulled the step back into "Connecting"
+                          // finished there pulled the step back into t("setup.connecting")
                           // and on into a hire they had just backed away from.
                           // The login is stored either way; what this refuses is
                           // only the step moving forward after they chose to go.
@@ -3444,14 +3349,14 @@ function OnboardingWizardInner({
                       />
                     ) : hasSavedSubscription || localLogin.status === "ready" ? null : connectStepHasNoSandbox ? (
                       canUseLocalLogin && managedProvider ? (
-                        <LocalProviderLoginInstructions adapterType={adapterType} hostedRedirect={googleHostedRedirect} login={{ ...localLogin, retry: () => { autoConnectStartedRef.current = false; setError(null); localLogin.retry(); } }} />
-                      ) : browserSignInUnavailable ? <p role="status" className="text-xs text-muted-foreground">This environment does not support browser sign-in. Go back to use an API key or choose another model.</p> : null
+                        <LocalProviderLoginInstructions adapterType={adapterType} login={{ ...localLogin, retry: () => { autoConnectStartedRef.current = false; setError(null); localLogin.retry(); } }} />
+                      ) : <p className="text-xs text-muted-foreground">{pageText("thisEnvironmentDoesNotSupportBrowserSignIn_3b15a9")}</p>
                     ) : null}
                   </motion.div>
 
                   {sourceSelected && connectCardLive && connectCardMounted && !connectProgress && credentialMode === "api" && createdCompanyId && (adapterType === "codex_local" || adapterType === "claude_local") && (
                     <details className="space-y-3">
-                      <summary className="cursor-pointer text-sm text-muted-foreground">Advanced</summary>
+                      <summary className="cursor-pointer text-sm text-muted-foreground">{t("setup.advanced")}</summary>
                       <OnboardingGatewaySetup
                         companyId={createdCompanyId} agentId={setupAgentId ?? undefined} environmentId={resolvedLoginEnvironmentId ?? undefined}
                         adapterType={adapterType} disabled={loading || adapterEnvLoading}
@@ -3490,9 +3395,7 @@ function OnboardingWizardInner({
                       )}
 
                       {runnerDiscoveryError && (
-                        <Button type="button" variant="outline" disabled={runnerDiscovery.isFetching || loginEnvironmentsFetching || loginSettingsFetching || loginPolicyFetching} onClick={() => void retryRunnerAvailability()}>
-                          Retry setup
-                        </Button>
+                        <Button type="button" variant="outline" disabled={runnerDiscovery.isFetching || loginEnvironmentsFetching || loginSettingsFetching || loginPolicyFetching} onClick={() => void retryRunnerAvailability()}>{pageText("retrySetup_f1ed13")}</Button>
                       )}
 
                       {adapterEnvResult &&
@@ -3507,7 +3410,7 @@ function OnboardingWizardInner({
                             style={{ "--sc": "var(--status-task-done)" } as CSSProperties}
                           >
                             <Check className="size-3.5 shrink-0" />
-                            <span className="font-medium">Passed</span>
+                            <span className="font-medium">{t("setup.checkPassed")}</span>
                           </div>
                           {/* Show the checks on a pass too, so the target and the
                               auth signals stay visible before the hire. */}
@@ -3519,12 +3422,8 @@ function OnboardingWizardInner({
 
                       {shouldSuggestUnsetAnthropicApiKey && (
                         <div className="rounded-md border border-amber-300/60 bg-amber-50/40 px-2.5 py-2 space-y-2">
-                          <p className="text-(length:--text-micro) text-amber-900/90 leading-relaxed">
-                            Claude failed while{" "}
-                            <span className="font-mono">ANTHROPIC_API_KEY</span>{" "}
-                            is set. You can clear it in this adapter config
-                            and retry the probe.
-                          </p>
+                          <p className="text-(length:--text-micro) text-amber-900/90 leading-relaxed">{pageText("claudeFailedWhile_0f91d5")}{" "}
+                            <span className="font-mono">ANTHROPIC_API_KEY</span>{" "}{pageText("isSetYouCanClearItInThis_091d7c")}</p>
                           <Button
                             size="sm"
                             variant="outline"
@@ -3535,15 +3434,15 @@ function OnboardingWizardInner({
                             onClick={() => void handleUnsetAnthropicApiKey()}
                           >
                             {unsetAnthropicLoading
-                              ? "Retrying..."
-                              : "Unset ANTHROPIC_API_KEY"}
+                              ? pageText("retrying_54aa30")
+                              : pageText("unsetANTHROPICAPIKEY_1ef8d3")}
                           </Button>
                         </div>
                       )}
 
                       {adapterEnvResult && adapterEnvResult.status === "fail" && localLoginHealth.isSuccess && !cloudInstance && (
                         <div className="rounded-md border border-border/70 bg-muted/20 px-2.5 py-2 text-(length:--text-micro) space-y-1.5">
-                          <p className="font-medium">Manual debug</p>
+                          <p className="font-medium">{t("setup.manualDebug")}</p>
                           <p className="text-muted-foreground font-mono break-all">
                             {adapterType === "cursor"
                               ? `${effectiveAdapterCommand} -p --mode ask --output-format json \"Respond with hello.\"`
@@ -3558,19 +3457,18 @@ function OnboardingWizardInner({
                               : `${effectiveAdapterCommand} --print - --output-format stream-json --verbose`}
                           </p>
                           <p className="text-muted-foreground">
-                            Prompt:{" "}
+                            {t("connectModel.prompt")}{" "}
                             <span className="font-mono">Respond with hello.</span>
                           </p>
                           {adapterType === "claude_local" || adapterType === "codex_local" ? (
                             <p className="text-muted-foreground">
-                              If authentication fails, connect your subscription in the browser above or use an API key.
+                              {t("connectModel.authHelp")}
                             </p>
                           ) : adapterType === "cursor" ||
                           adapterType === "gemini_local" ||
                           adapterType === "kimi_local" ||
                           adapterType === "opencode_local" ? (
-                            <p className="text-muted-foreground">
-                              If auth fails, set{" "}
+                            <p className="text-muted-foreground">{pageText("ifAuthFailsSet_d8fc54")}{" "}
                               <span className="font-mono">
                                 {adapterType === "cursor"
                                   ? "CURSOR_API_KEY"
@@ -3579,8 +3477,7 @@ function OnboardingWizardInner({
                                     : adapterType === "kimi_local"
                                       ? "KIMI_MODEL_NAME + KIMI_MODEL_API_KEY"
                                     : "OPENAI_API_KEY"}
-                              </span>{" "}
-                              in env or run{" "}
+                              </span>{" "}{pageText("inEnvOrRun_235998")}{" "}
                               <span className="font-mono">
                                 {adapterType === "cursor"
                                   ? "agent login"
@@ -3593,7 +3490,7 @@ function OnboardingWizardInner({
                               .
                             </p>
                           ) : (
-                            <p className="text-muted-foreground">If login is required, connect the provider above and retry.</p>
+                            <p className="text-muted-foreground">{pageText("ifLoginIsRequiredConnectTheProviderAbove_797115")}</p>
                           )}
                         </div>
                       )}
@@ -3605,8 +3502,8 @@ function OnboardingWizardInner({
                     <div>
                       <label className="text-xs text-muted-foreground mb-1 block">
                         {adapterType === "openclaw_gateway"
-                          ? "Gateway URL"
-                          : "Webhook URL"}
+                          ? pageText("gatewayURL_f741a7")
+                          : pageText("webhookURL_fa7517")}
                       </label>
                       <input
                         className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm font-mono outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50"
@@ -3655,23 +3552,23 @@ function OnboardingWizardInner({
                   // The prototype's cloud flow hires on this step and calls the
                   // action "Create". Here the model step sits between, so this
                   // one advances — which is exactly the distinction the
-                  // prototype's own local flow draws with "Next".
+                  // prototype's own local flow draws with t("common.next").
                   primaryLabel={
                     step === 1
-                      ? "Continue"
+                      ? t("setup.continue")
                       : step === 5
-                        ? "Get started"
+                        ? t("setup.getStarted")
                         : step === 4
                           ? connectCta.label
-                          : "Next"
+                          : t("common.next")
                   }
                   primaryIcon={step === 4 ? connectCta.icon : undefined}
                   loadingLabel={
                     step === 1
-                      ? "Creating..."
+                      ? t("setup.creating")
                       : step === 4
-                        ? "Connecting"
-                        : "Launching..."
+                        ? t("setup.connecting")
+                        : t("setup.launching")
                   }
                   // The browser-code login is finished on this screen, so the
                   // button is genuinely busy for its duration and shows it. The
@@ -3697,7 +3594,7 @@ function OnboardingWizardInner({
                     // Cmd+Enter has to do the same thing. See
                     // `handleConnectStepPrimary`.
                     else if (step === 4) handleConnectStepPrimary();
-                    else handleLaunchToChat();
+                    else handleLaunchToDashboard();
                   }}
                 />
               )}
@@ -3709,6 +3606,17 @@ function OnboardingWizardInner({
   );
 }
 
+function connectionCheckMessage(code: string, message: string) {
+  if (code !== "ai_connection_tested") return message;
+  const match = /^Tested (.+) — (your personal account|the owner’s account authorized for this agent|company-shared account)\. Responsible user: (.+)\.$/.exec(message);
+  if (!match) return message;
+  const [, name, scope, responsible] = match;
+  const scopeKey = scope === "your personal account" ? "personal" : scope === "company-shared account" ? "shared" : "owner";
+  const user = responsible === "the signed-in user" ? interfaceMessage("interface:probeActorSignedIn")
+    : responsible === "unavailable" ? interfaceMessage("interface:probeActorUnavailable") : responsible;
+  return interfaceMessage("interface:probeAccountSummary", { name, scope: interfaceMessage(`interface:probeScope_${scopeKey}`), user });
+}
+
 function AdapterEnvironmentResult({
   result,
   showHints,
@@ -3716,12 +3624,8 @@ function AdapterEnvironmentResult({
   result: AdapterEnvironmentTestResult;
   showHints: boolean;
 }) {
-  const statusLabel =
-    result.status === "pass"
-      ? "Passed"
-      : result.status === "warn"
-      ? "Warnings"
-      : "Failed";
+  const { t } = useTranslation();
+  const statusLabel = t(`connectModel.${result.status}`);
   const statusClass =
     result.status === "pass"
       ? "text-green-700 dark:text-green-300 border-green-300 dark:border-green-500/40 bg-green-50 dark:bg-green-500/10"
@@ -3744,10 +3648,13 @@ function AdapterEnvironmentResult({
             className="leading-relaxed break-words"
           >
             <span className="font-medium uppercase tracking-wide opacity-80">
-              {check.level}
+              {t(`interface:probeLevel_${check.level}`, { defaultValue: check.level })}
             </span>
             <span className="mx-1 opacity-60">·</span>
-            <span>{check.message}</span>
+            <span>{connectionCheckMessage(check.code, check.message)}</span>
+            {check.message.startsWith("paperclip_runner_binary_missing:") && (
+              <span className="block">{t("interface:probeRunnerMissingHelp")}</span>
+            )}
             {check.detail && (
               <span className="block opacity-75 break-all">
                 ({check.detail})
@@ -3755,7 +3662,7 @@ function AdapterEnvironmentResult({
             )}
             {showHints && check.hint && (
               <span className="block opacity-90 break-words">
-                Hint: {check.hint}
+                {t("connectModel.hint")} {check.hint === "Check the selected account, model access, and native runtime prerequisites, then retry." ? t("connectModel.runtimeHelp") : check.hint}
               </span>
             )}
           </div>

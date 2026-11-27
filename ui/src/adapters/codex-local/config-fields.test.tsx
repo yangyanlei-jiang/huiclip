@@ -9,7 +9,6 @@ import { beforeAll, describe, expect, it } from "vitest";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-import { sampleHarnesses } from "@/test-support/harness-availability";
 import { CodexLocalConfigFields } from "./config-fields";
 import { buildCodexRunnerConfig } from "./config-fields";
 import { buildPaperclipRunnerConfig } from "@paperclipai/adapter-codex-local/ui";
@@ -18,23 +17,22 @@ import { resolveCodexLocalCliPolicy } from "@paperclipai/adapter-codex-local";
 
 beforeAll(() => { Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true }); });
 
-async function renderMarkup(node: ReactNode, expand?: string, inspect?: (container: HTMLElement) => void | Promise<void>): Promise<string> {
+async function renderMarkup(node: ReactNode, expand?: string, inspect?: (container: HTMLElement) => void): Promise<string> {
   const container = document.createElement("div");
   document.body.appendChild(container);
   const root = createRoot(container);
-  const client = new QueryClient();
-  await act(async () => root.render(<QueryClientProvider client={client}>{node}</QueryClientProvider>));
+  await act(async () => root.render(<QueryClientProvider client={new QueryClient()}>{node}</QueryClientProvider>));
   if (expand) await act(async () => {
     container.querySelector(`[aria-label="${expand}"]`)?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
   });
-  await inspect?.(container);
+  inspect?.(container);
   const html = container.innerHTML + Array.from(document.body.children).filter(child => child !== container).map(child => child.outerHTML).join("");
   await act(async () => root.unmount());
   container.remove();
   return html;
 }
 
-async function renderRunner(config: Record<string, unknown>, expand?: string, inspectOrDot?: ((container: HTMLElement) => void) | boolean, cloud = false): Promise<string> {
+async function renderRunner(config: Record<string, unknown>, expand?: string, inspectOrDot?: ((container: HTMLElement) => void) | boolean): Promise<string> {
   const openAiDotEnabled = inspectOrDot === true;
   const inspect = typeof inspectOrDot === "function" ? inspectOrDot : undefined;
   return renderMarkup(
@@ -50,44 +48,12 @@ async function renderRunner(config: Record<string, unknown>, expand?: string, in
         mark={() => undefined}
         models={[]}
         hideInstructionsFile
-        availableHarnesses={cloud ? sampleHarnesses : undefined}
         openAiDotEnabled={openAiDotEnabled}
       />
     </TooltipProvider>,
     expand, inspect,
   );
 }
-
-it("withholds unsupported Cloud Runner providers even for an existing native agent", async () => {
-  const html = await renderRunner({ provider: "codex" }, "Harness", undefined, true);
-  expect(html).toContain("Codex");
-  expect(html).toContain("OpenCode");
-  expect(html).toContain("Grok Build");
-  for (const label of ["Claude Managed", "AWS AgentCore", "Cursor Cloud", "Antigravity"]) expect(html).not.toContain(label);
-});
-
-it("offers only released ACP profiles on Cloud", async () => {
-  const html = await renderRunner({ provider: "acpx", acpxAgent: "claude" }, "ACP agent", undefined, true);
-  expect(html).toContain("Claude");
-  expect(html).toContain("Copilot");
-  for (const label of ["Antigravity", "Kimi", "Cursor", "qualification pending"]) expect(html).not.toContain(label);
-});
-
-it("selects an allowed ACP default when deployment configuration excludes Claude", async () => {
-  const changes: Record<string, unknown> = {};
-  await renderMarkup(<TooltipProvider><CodexLocalConfigFields mode="edit" isCreate={false}
-    adapterType="paperclip_runner" values={null} set={null} config={{ provider: "codex" }}
-    eff={(_group, _field, original) => original} mark={(_group, field, value) => { changes[field] = value; }}
-    models={[]} hideInstructionsFile availableHarnesses={["copilot_runtime"]} />
-  </TooltipProvider>, "Harness", async () => {
-    const option = [...document.querySelectorAll('[role="option"]')].find(element => element.textContent?.includes("ACP agents"));
-    expect(option).toBeDefined();
-    await act(async () => option!.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true })));
-    expect(changes.provider).toBe("acpx");
-    expect(changes.acpxAgent).toBe("copilot");
-    expect(changes.model).toBe("");
-  });
-});
 
 async function selectField(container: HTMLElement, label: string, value: string) {
   const picker = container.querySelector<HTMLButtonElement>(`[aria-label="${label}"]`)!;

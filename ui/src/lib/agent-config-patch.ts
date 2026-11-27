@@ -49,14 +49,13 @@ export function buildAgentUpdatePatch(agent: Agent, overlay: AgentConfigOverlay)
     patch.replaceAdapterConfig = true;
   }
 
-  Object.assign(patch, overlay.runtime);
-
   if (
     Object.keys(overlay.heartbeat).length > 0
     || Object.keys(overlay.debug).length > 0
   ) {
-    const existingRc = (patch.runtimeConfig ?? agent.runtimeConfig ?? {}) as Record<string, unknown>;
-    const nextRuntimeConfig: Record<string, unknown> = { ...existingRc };
+    const existingRc = (agent.runtimeConfig ?? {}) as Record<string, unknown>;
+    const nextRuntimeConfig: Record<string, unknown> = (patch.runtimeConfig as Record<string, unknown> | undefined)
+      ?? { ...existingRc };
 
     if (Object.keys(overlay.heartbeat).length > 0) {
       const existingHb = (existingRc.heartbeat ?? {}) as Record<string, unknown>;
@@ -74,6 +73,10 @@ export function buildAgentUpdatePatch(agent: Agent, overlay: AgentConfigOverlay)
     }
 
     patch.runtimeConfig = nextRuntimeConfig;
+  }
+
+  if (Object.keys(overlay.runtime).length > 0) {
+    Object.assign(patch, overlay.runtime);
   }
 
   return patch;

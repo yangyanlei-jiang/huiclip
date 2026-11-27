@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { Clock3, FileDiff, GitCommit, type LucideIcon } from "lucide-react";
 import { healthApi, type HealthStatus } from "@/api/health";
@@ -78,6 +79,7 @@ function ServerInfoRow({
 }
 
 export function SidebarServerInfo() {
+  const { t: pageText } = usePageTranslation("interface");
   const experimentalQuery = useQuery({
     queryKey: queryKeys.instance.experimentalSettings,
     queryFn: () => instanceSettingsApi.getExperimental(),
@@ -123,17 +125,15 @@ export function SidebarServerInfo() {
 
   return (
     <div className="mt-2 border-t border-border pt-2">
-      <p className="px-3 pb-1 pt-1 text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
-        Server
-      </p>
+      <p className="px-3 pb-1 pt-1 text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">{pageText("server_cb0cb1")}</p>
       <ServerInfoRow
         icon={Clock3}
-        label="Last restarted"
+        label={pageText("lastRestarted_1bdb3c")}
         value={lastRestartedLabel}
         dateTime={!healthUnavailable && !isWaitingForHealth && restartedAtIsValid ? restartedAt : null}
       />
-      <ServerInfoRow icon={GitCommit} label="Running commit" value={commit} />
-      <ServerInfoRow icon={FileDiff} label="Checkout state" value={localChanges} />
+      <ServerInfoRow icon={GitCommit} label={pageText("runningCommit_e2ffd3")} value={commit} />
+      <ServerInfoRow icon={FileDiff} label={pageText("checkoutState_640ec0")} value={localChanges} />
     </div>
   );
 }

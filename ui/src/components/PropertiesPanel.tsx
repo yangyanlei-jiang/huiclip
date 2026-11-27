@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useCoordinatorWorkspaceEnabled } from "@/hooks/useCoordinatorWorkspaceEnabled";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { X } from "lucide-react";
@@ -11,6 +12,7 @@ import { SidePanelFrame, SidePanelWindowControls } from "@/components/side-panel
 import { useDesignSandbox } from "@/context/DesignSandboxContext";
 
 export function PropertiesPanel({ taskDetailLayout = false }: { taskDetailLayout?: boolean }) {
+  const { t: pageText } = usePageTranslation("interface");
   const {
     panelContent,
     panelContentMode,
@@ -38,7 +40,7 @@ export function PropertiesPanel({ taskDetailLayout = false }: { taskDetailLayout
       >
         <div className="w-80 flex-1 flex flex-col min-w-(--sz-320px) min-h-0">
           <div className="flex items-center justify-between px-4 py-2 border-b border-border">
-            <span className="text-sm font-medium">Properties</span>
+            <span className="text-sm font-medium">{pageText("properties_bc6c88")}</span>
             <Button variant="ghost" size="icon-xs" onClick={() => setPanelVisible(false)}>
               <X className="h-4 w-4" />
             </Button>
@@ -94,9 +96,6 @@ const TASK_DETAIL_DEFAULT_PANE_WIDTH = 434;
 const MIN_PANE_WIDTH = 260;
 /** ~236px sidebar + ~420px minimum center column stay usable while resizing. */
 const RESERVED_LAYOUT_WIDTH = 656;
-/** Fallback when `--sz-420px` is unavailable (e.g. non-browser test environments). */
-const MIN_CENTER_WIDTH_TOKEN = "--sz-420px";
-const MIN_CENTER_WIDTH_FALLBACK = 420;
 /** Content cap while maximized so text doesn't span the full viewport. */
 const MAXIMIZED_CONTENT_MAX_WIDTH = 840;
 /**
@@ -106,35 +105,18 @@ const MAXIMIZED_CONTENT_MAX_WIDTH = 840;
  */
 const RESTORE_FALLBACK_DELAY = 400;
 
-function readCssPxToken(tokenName: string, fallback: number): number {
+function readProposalPaneWidth(fallback: number): number {
   if (typeof window === "undefined") return fallback;
-  const tokenWidth = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue(tokenName));
+  const tokenWidth = Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--design-page-aside-width"));
   return Number.isFinite(tokenWidth) && tokenWidth > 0 ? tokenWidth : fallback;
 }
 
-function readProposalPaneWidth(fallback: number): number {
-  return readCssPxToken("--design-page-aside-width", fallback);
-}
-
-function clampPaneWidth(width: number, fittedMax: number | null = null): number {
+function clampPaneWidth(width: number): number {
   const max =
-    fittedMax ??
-    (typeof window === "undefined"
+    typeof window === "undefined"
       ? Number.POSITIVE_INFINITY
-      : Math.max(MIN_PANE_WIDTH, window.innerWidth - RESERVED_LAYOUT_WIDTH));
+      : Math.max(MIN_PANE_WIDTH, window.innerWidth - RESERVED_LAYOUT_WIDTH);
   return Math.min(Math.max(Math.round(width), MIN_PANE_WIDTH), max);
-}
-
-function measureFittedPaneMax(aside: HTMLElement | null): number | null {
-  const row = aside?.parentElement;
-  const main = row?.querySelector<HTMLElement>("#main-content");
-  if (!row || !main) return null;
-  const rowRight = row.getBoundingClientRect().right;
-  const centerLeft = main.getBoundingClientRect().left;
-  if (rowRight <= centerLeft) return null;
-  const available = Math.floor(rowRight - centerLeft);
-  const minCenterWidth = readCssPxToken(MIN_CENTER_WIDTH_TOKEN, MIN_CENTER_WIDTH_FALLBACK);
-  return Math.max(Math.min(MIN_PANE_WIDTH, available), available - minCenterWidth);
 }
 
 function readStoredPaneWidth(storageKey: string, defaultWidth: number): number {
@@ -204,6 +186,7 @@ function ResizablePropertiesPanel({
   maximizeRequested,
   clearMaximizeRequest,
 }: ResizablePropertiesPanelProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const productionPaneWidth = taskDetailLayout
     ? TASK_DETAIL_DEFAULT_PANE_WIDTH
     : DEFAULT_PANE_WIDTH;
@@ -227,30 +210,8 @@ function ResizablePropertiesPanel({
   }, [panelVisible]);
 
   const asideRef = useRef<HTMLElement | null>(null);
-  const [fittedMax, setFittedMax] = useState<number | null>(null);
-  const fittedMaxRef = useRef(fittedMax);
-  fittedMaxRef.current = fittedMax;
-  const displayWidth = fittedMax === null ? width : Math.min(width, fittedMax);
   const widthRef = useRef(width);
   widthRef.current = width;
-  const displayWidthRef = useRef(displayWidth);
-  displayWidthRef.current = displayWidth;
-
-  useLayoutEffect(() => {
-    if (!panelVisible) return;
-    const row = asideRef.current?.parentElement;
-    const main = row?.querySelector<HTMLElement>("#main-content");
-    const update = () => setFittedMax(measureFittedPaneMax(asideRef.current));
-    update();
-    window.addEventListener("resize", update);
-    const observer = (row || main) && typeof ResizeObserver !== "undefined" ? new ResizeObserver(update) : null;
-    if (row) observer?.observe(row);
-    if (main) observer?.observe(main);
-    return () => {
-      window.removeEventListener("resize", update);
-      observer?.disconnect();
-    };
-  }, [panelVisible]);
   const dragStateRef = useRef<{ pointerId: number; startX: number; startWidth: number } | null>(
     null,
   );
@@ -304,7 +265,7 @@ function ResizablePropertiesPanel({
     dragStateRef.current = {
       pointerId: event.pointerId,
       startX: event.clientX,
-      startWidth: displayWidthRef.current,
+      startWidth: widthRef.current,
     };
     previousBodyUserSelectRef.current = document.body.style.userSelect;
     document.body.style.userSelect = "none";
@@ -315,9 +276,7 @@ function ResizablePropertiesPanel({
     const drag = dragStateRef.current;
     if (drag === null || drag.pointerId !== event.pointerId) return;
     // The grip sits on the panel's LEFT border: moving left widens the panel.
-    const next = clampPaneWidth(drag.startWidth + (drag.startX - event.clientX), fittedMaxRef.current);
-    widthRef.current = next;
-    setWidth(next);
+    setWidth(clampPaneWidth(drag.startWidth + (drag.startX - event.clientX)));
   }, []);
 
   const handleGripPointerUp = useCallback(
@@ -379,7 +338,7 @@ function ResizablePropertiesPanel({
       const rowRight = row
         ? row.getBoundingClientRect().right
         : window.innerWidth - pane.rightInset;
-      return { ...pane, left: rowRight - displayWidthRef.current };
+      return { ...pane, left: rowRight - widthRef.current };
     });
     clearRestoreTimer();
     restoreTimerRef.current = window.setTimeout(finishRestore, RESTORE_FALLBACK_DELAY);
@@ -416,7 +375,7 @@ function ResizablePropertiesPanel({
         <div
           aria-hidden
           className="hidden md:block shrink-0"
-          style={{ width: panelVisible ? displayWidth : 0 }}
+          style={{ width: panelVisible ? width : 0 }}
         />
       ) : null}
       <aside
@@ -443,7 +402,7 @@ function ResizablePropertiesPanel({
                 left: fixedPane.left,
                 right: fixedPane.rightInset,
               }
-            : { width: panelVisible ? displayWidth : 0, opacity: panelVisible ? 1 : 0 }
+            : { width: panelVisible ? width : 0, opacity: panelVisible ? 1 : 0 }
         }
         onTransitionEnd={handleTransitionEnd}
       >
@@ -451,7 +410,7 @@ function ResizablePropertiesPanel({
           <div
             role="separator"
             aria-orientation="vertical"
-            aria-label="Resize panel"
+            aria-label={pageText("resizePanel_c3689b")}
             data-dragging={dragging ? "" : undefined}
             className="pane-resize-handle group absolute inset-y-0 z-10 max-w-full cursor-col-resize touch-none"
             style={{ left: -4, width: 8 }}
@@ -473,7 +432,7 @@ function ResizablePropertiesPanel({
         <div className="flex min-h-0 flex-1 overflow-hidden">
           <div
             className={cn("flex shrink-0 flex-col min-h-0", !maximized && "border-l border-border", isFixed && "w-full")}
-            style={isFixed ? undefined : { width: displayWidth, minWidth: displayWidth }}
+            style={isFixed ? undefined : { width, minWidth: width }}
           >
             <SidePanelFrame
               presentation="docked"

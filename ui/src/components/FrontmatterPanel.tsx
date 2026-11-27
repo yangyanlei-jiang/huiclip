@@ -1,3 +1,6 @@
+import { t as translateDynamic } from "../i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useMemo, useState } from "react";
 import {
   analyzeFrontmatterBlock,
@@ -225,6 +228,8 @@ export function FrontmatterPanel({
   onChange,
   className,
 }: FrontmatterPanelProps) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const isSkillFile = isSkillMarkdown(fileName);
 
   // `yamlText` is the canonical raw block — always equal to whatever we've last
@@ -339,12 +344,12 @@ export function FrontmatterPanel({
             aria-controls="frontmatter-panel-body"
           >
             {chevron}
-            <span className="text-sm font-medium">Frontmatter</span>
+            <span className="text-sm font-medium">{pageText("frontmatter_494158")}</span>
             {!open && present ? (
               <span className="truncate text-xs text-muted-foreground">{summary}</span>
             ) : null}
             {!open && !present ? (
-              <span className="text-xs text-muted-foreground">None</span>
+              <span className="text-xs text-muted-foreground">{translateUi("interfaceCopy.none")}</span>
             ) : null}
           </button>
 
@@ -355,9 +360,7 @@ export function FrontmatterPanel({
             >
               <TabsList variant="line" className="h-7">
                 {canUseFields ? (
-                  <TabsTrigger value="fields" className="px-2 py-0.5 text-xs">
-                    Fields
-                  </TabsTrigger>
+                  <TabsTrigger value="fields" className="px-2 py-0.5 text-xs">{pageText("fields_e8b685")}</TabsTrigger>
                 ) : (
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -367,16 +370,10 @@ export function FrontmatterPanel({
                           disabled
                           aria-disabled="true"
                           className="px-2 py-0.5 text-xs opacity-50"
-                        >
-                          Fields
-                        </TabsTrigger>
+                        >{pageText("fields_e8b685")}</TabsTrigger>
                       </span>
                     </TooltipTrigger>
-                    <TooltipContent className="max-w-60">
-                      Switch to YAML to edit. This frontmatter uses YAML features the form can't safely
-                      round-trip (e.g. comments, anchors, or custom ordering). Editing here keeps it
-                      byte-for-byte.
-                    </TooltipContent>
+                    <TooltipContent className="max-w-60">{pageText("switchToYAMLToEditThisFrontmatterUses_340d2e")}</TooltipContent>
                   </Tooltip>
                 )}
                 <TabsTrigger value="yaml" className="px-2 py-0.5 text-xs">
@@ -386,15 +383,13 @@ export function FrontmatterPanel({
             </Tabs>
           ) : !readOnly ? (
             <Button variant="ghost" size="sm" onClick={addFrontmatter} data-testid="add-frontmatter">
-              <Plus className="mr-1 h-3.5 w-3.5" />
-              Add frontmatter
-            </Button>
+              <Plus className="mr-1 h-3.5 w-3.5" />{pageText("addFrontmatter_805e2e")}</Button>
           ) : null}
 
           {present && effectiveMode === "fields" && warningCount > 0 ? (
             <Badge variant="outline" className="gap-1 text-amber-500" data-testid="frontmatter-warning-chip">
               <AlertTriangle className="h-3.5 w-3.5" />
-              {warningCount} {warningCount === 1 ? "issue" : "issues"}
+              {warningCount} {warningCount === 1 ? pageText("issue_00819c") : pageText("issues_890c54")}
             </Badge>
           ) : null}
         </div>
@@ -420,9 +415,7 @@ export function FrontmatterPanel({
               )}
             </div>
           ) : (
-            <div className="px-3 pb-2 text-xs text-muted-foreground">
-              This file has no frontmatter.
-            </div>
+            <div className="px-3 pb-2 text-xs text-muted-foreground">{pageText("thisFileHasNoFrontmatter_90b2b1")}</div>
           )}
         </CollapsibleContent>
       </Collapsible>
@@ -466,6 +459,7 @@ function FieldsForm({
   readOnly: boolean;
   onCommit: (form: FormModel) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const nameWarning = fieldWarning(validation, "name");
   const descriptionWarning = fieldWarning(validation, "description");
   const toolsWarning = fieldWarning(validation, "allowed-tools");
@@ -474,9 +468,7 @@ function FieldsForm({
     <div className="space-y-3 pt-1">
       {form.hasName ? (
         <div>
-          <Label htmlFor="fm-name" className="text-xs text-muted-foreground">
-            name
-          </Label>
+          <Label htmlFor="fm-name" className="text-xs text-muted-foreground">{pageText("name_6ae999")}</Label>
           <Input
             id="fm-name"
             value={form.name}
@@ -491,9 +483,7 @@ function FieldsForm({
 
       {form.hasDescription ? (
         <div>
-          <Label htmlFor="fm-description" className="text-xs text-muted-foreground">
-            description
-          </Label>
+          <Label htmlFor="fm-description" className="text-xs text-muted-foreground">{pageText("description_cb3291")}</Label>
           <Textarea
             id="fm-description"
             value={form.description}
@@ -511,13 +501,13 @@ function FieldsForm({
           <Label className="text-xs text-muted-foreground">allowed-tools</Label>
           {form.allowedTools === null ? (
             <p className="mt-1 text-xs text-amber-500">
-              {toolsWarning ?? "Expected a list — edit in YAML."}
+              {toolsWarning ?? pageText("expectedAListEditInYAML_43dd63")}
             </p>
           ) : (
             <ChipInput
               values={form.allowedTools}
               readOnly={readOnly}
-              placeholder="Add a tool…"
+              placeholder={pageText("addATool_ddfeb0")}
               onChange={(next) => onCommit({ ...form, allowedTools: next })}
             />
           )}
@@ -528,7 +518,7 @@ function FieldsForm({
         <div>
           <Label className="text-xs text-muted-foreground">metadata</Label>
           {form.metadataComplex !== null ? (
-            <p className="mt-1 text-xs text-muted-foreground">Complex value — edit in YAML.</p>
+            <p className="mt-1 text-xs text-muted-foreground">{pageText("complexValueEditInYAML_3abf05")}</p>
           ) : (
             <MetadataRows
               rows={form.metaRows}
@@ -560,7 +550,7 @@ function FieldsForm({
         ) : (
           <div key={row.id}>
             <Label className="text-xs text-muted-foreground">{row.key}</Label>
-            <p className="mt-1 text-xs text-muted-foreground">Complex value — edit in YAML.</p>
+            <p className="mt-1 text-xs text-muted-foreground">{pageText("complexValueEditInYAML_3abf05")}</p>
           </div>
         ),
       )}
@@ -577,6 +567,7 @@ function MetadataRows({
   readOnly: boolean;
   onChange: (rows: ScalarRow[]) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const update = (index: number, patch: Partial<ScalarRow>) => {
     const next = rows.slice();
     next[index] = { ...next[index]!, ...patch, edited: true };
@@ -597,10 +588,10 @@ function MetadataRows({
       {rows.map((row, index) => (
         <div key={row.id} className="flex items-center gap-1.5">
           <Input
-            aria-label={`Metadata key ${index + 1}`}
+            aria-label={translateDynamic("dynamic:metadataKey", { value1: index + 1 })}
             value={row.key}
             readOnly={readOnly}
-            placeholder="key"
+            placeholder={pageText("key_a62f22")}
             onChange={(event) => update(index, { key: event.target.value })}
             className="h-8 flex-1 font-mono text-xs"
           />
@@ -608,7 +599,7 @@ function MetadataRows({
             aria-label={`Value for ${row.key || `field ${index + 1}`}`}
             value={row.text}
             readOnly={readOnly}
-            placeholder="value"
+            placeholder={pageText("value_f32b67")}
             onChange={(event) => update(index, { text: event.target.value })}
             className="h-8 flex-1 text-xs"
           />
@@ -627,9 +618,7 @@ function MetadataRows({
       ))}
       {!readOnly ? (
         <Button variant="ghost" size="sm" onClick={add} className="text-xs">
-          <Plus className="mr-1 h-3.5 w-3.5" />
-          add field
-        </Button>
+          <Plus className="mr-1 h-3.5 w-3.5" />{pageText("addField_c4d38d")}</Button>
       ) : null}
     </div>
   );
@@ -646,6 +635,7 @@ function ChipInput({
   placeholder?: string;
   onChange: (values: string[]) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [draft, setDraft] = useState("");
 
   const commit = () => {
@@ -663,7 +653,7 @@ function ChipInput({
           {!readOnly ? (
             <button
               type="button"
-              aria-label={`Remove ${value}`}
+              aria-label={translateDynamic("dynamic:remove", { value1: value })}
               onClick={() => onChange(values.filter((_, i) => i !== index))}
               className="hover:text-foreground"
             >
@@ -686,7 +676,7 @@ function ChipInput({
             }
           }}
           onBlur={commit}
-          aria-label="Add tool"
+          aria-label={pageText("addTool_d65969")}
           className="min-w-24 flex-1 bg-transparent text-xs outline-none"
         />
       ) : null}
@@ -707,12 +697,13 @@ function YamlEditor({
   parseError: boolean;
   onChange: (value: string) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="pt-1">
       {!canReturnToFields && !parseError ? (
         <div className="mb-1.5 flex items-start gap-2 rounded-md bg-muted/40 px-2 py-1.5 text-xs text-muted-foreground">
           <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          <span>Editing raw YAML to preserve formatting the form can't reconstruct.</span>
+          <span>{pageText("editingRawYAMLToPreserveFormattingTheForm_f92342")}</span>
         </div>
       ) : null}
       <Textarea
@@ -722,11 +713,9 @@ function YamlEditor({
         rows={Math.min(12, Math.max(3, value.split("\n").length))}
         onChange={(event) => onChange(event.target.value)}
         className="font-mono text-xs"
-        aria-label="Frontmatter YAML"
+        aria-label={pageText("frontmatterYAML_fa184d")}
       />
-      <p className="mt-1 text-xs text-muted-foreground">
-        Raw YAML is the source of truth in this mode.
-      </p>
+      <p className="mt-1 text-xs text-muted-foreground">{pageText("rawYAMLIsTheSourceOfTruthIn_4271ce")}</p>
     </div>
   );
 }

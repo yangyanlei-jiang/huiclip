@@ -1,3 +1,4 @@
+import { t as translateDynamic } from "../../../i18n";
 import type { ReactNode } from "react";
 import type { To } from "react-router-dom";
 import { Link } from "@/lib/router";
@@ -93,7 +94,7 @@ export function ArtifactStackTile({ identifier, title, count, updatedAt, front, 
 export function ArtifactSingleTile({ subject, to, onClick, now }: { subject: ArtifactSubject; to?: To; onClick?: () => void; now?: Date }) {
   const name = subject.filename ?? subject.title;
   return (
-    <ArtifactTile label={`Open ${name}`} to={to} onClick={onClick} testId="artifact-v1-single-tile" caption={<ArtifactCaption title={name} identifier={subject.taskIdentifier} facts={subject.updatedAt ? [`Updated ${updatedLabel(subject.updatedAt, now)}`] : []} />}>
+    <ArtifactTile label={translateDynamic("dynamic:open", { value1: name })} to={to} onClick={onClick} testId="artifact-v1-single-tile" caption={<ArtifactCaption title={name} identifier={subject.taskIdentifier} facts={subject.updatedAt ? [`Updated ${updatedLabel(subject.updatedAt, now)}`] : []} />}>
       <ArtifactFront subject={subject} />
     </ArtifactTile>
   );

@@ -68,7 +68,12 @@ function rejectUpgrade(
   }
 }
 
-export function setupRunnerPrpWebSocketServer(server: Server): void {
+export function setupRunnerPrpWebSocketServer(
+  server: Server,
+  _options?: { readonly apiUrl: string },
+): void {
+  // Older launchers may still pass an advertised apiUrl. Only the actual
+  // bound listener can authorize native transport, including ephemeral ports.
   registerLocalRuntimeApiServer(server);
   server.on(
     "upgrade",

@@ -1,8 +1,11 @@
-import { companyProjectsQuery } from "@/lib/company-projects-query";
+import { controlText } from "@/i18n/controls";
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect } from "react";
 import { useParams } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { goalsApi } from "../api/goals";
+import { projectsApi } from "../api/projects";
 import { assetsApi } from "../api/assets";
 import { usePanel } from "../context/PanelContext";
 import { useCompany } from "../context/CompanyContext";
@@ -31,6 +34,7 @@ export function GoalPropertiesToggleButton({
   panelVisible,
   onShowProperties,
 }: GoalPropertiesToggleButtonProps) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <Button
       variant="ghost"
@@ -40,7 +44,7 @@ export function GoalPropertiesToggleButton({
         panelVisible ? "opacity-0 pointer-events-none w-0 overflow-hidden" : "opacity-100",
       )}
       onClick={onShowProperties}
-      title="Show properties"
+      title={pageText("showProperties_5248c7")}
     >
       <SlidersHorizontal className="h-4 w-4" />
     </Button>
@@ -48,6 +52,7 @@ export function GoalPropertiesToggleButton({
 }
 
 export function GoalDetail() {
+  const { t: pageText } = usePageTranslation("interface");
   const { goalId } = useParams<{ goalId: string }>();
   const { selectedCompanyId, setSelectedCompanyId } = useCompany();
   const { openNewGoal } = useDialogActions();
@@ -71,7 +76,8 @@ export function GoalDetail() {
   });
 
   const { data: allProjects } = useQuery({
-    ...companyProjectsQuery(resolvedCompanyId!, { includeArchived: true }),
+    queryKey: queryKeys.projects.list(resolvedCompanyId!, { includeArchived: true }),
+    queryFn: () => projectsApi.list(resolvedCompanyId!, { includeArchived: true }),
     enabled: !!resolvedCompanyId
   });
 
@@ -116,8 +122,8 @@ export function GoalDetail() {
 
   useEffect(() => {
     setBreadcrumbs([
-      { label: "Goals", href: "/goals" },
-      { label: goal?.title ?? goalId ?? "Goal" }
+      { label: interfaceNotice("interface:goals_48d8c6"), href: "/goals" },
+      { label: goal?.title ?? goalId ?? interfaceNotice("interface:goal_9fe00a") }
     ]);
   }, [setBreadcrumbs, goal, goalId]);
 
@@ -144,7 +150,7 @@ export function GoalDetail() {
       <div className="space-y-3">
         <div className="flex items-center gap-2">
           <span className="text-xs uppercase text-muted-foreground">
-            {goal.level}
+            {controlText("goalLevel_" + goal.level)}
           </span>
           <StatusBadge status={goal.status} />
           <div className="ml-auto">
@@ -167,7 +173,7 @@ export function GoalDetail() {
           onSave={(description) => updateGoal.mutate({ description })}
           as="p"
           className="text-sm text-muted-foreground"
-          placeholder="Add a description..."
+          placeholder={pageText("addADescription_8c1d83")}
           multiline
           imageUploadHandler={async (file) => {
             const asset = await uploadImage.mutateAsync(file);
@@ -178,11 +184,9 @@ export function GoalDetail() {
 
       <Tabs defaultValue="children">
         <TabsList>
-          <TabsTrigger value="children">
-            Sub-Goals ({childGoals.length})
+          <TabsTrigger value="children">{pageText("subGoals_505edf")}{childGoals.length})
           </TabsTrigger>
-          <TabsTrigger value="projects">
-            Projects ({linkedProjects.length})
+          <TabsTrigger value="projects">{pageText("projects_ed747d")}{linkedProjects.length})
           </TabsTrigger>
         </TabsList>
 
@@ -193,12 +197,10 @@ export function GoalDetail() {
               variant="outline"
               onClick={() => openNewGoal({ parentId: goalId })}
             >
-              <Plus className="h-3.5 w-3.5 mr-1.5" />
-              Sub Goal
-            </Button>
+              <Plus className="h-3.5 w-3.5 mr-1.5" />{pageText("subGoal_57f6d0")}</Button>
           </div>
           {childGoals.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No sub-goals.</p>
+            <p className="text-sm text-muted-foreground">{pageText("noSubGoals_29358a")}</p>
           ) : (
             <GoalTree goals={childGoals} goalLink={(g) => `/goals/${g.id}`} />
           )}
@@ -206,7 +208,7 @@ export function GoalDetail() {
 
         <TabsContent value="projects" className="mt-4">
           {linkedProjects.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No linked projects.</p>
+            <p className="text-sm text-muted-foreground">{pageText("noLinkedProjects_f0455b")}</p>
           ) : (
             <div className="border border-border">
               {linkedProjects.map((project) => (

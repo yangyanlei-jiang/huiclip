@@ -1,13 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { announcementIdSchema, type Announcement } from "@paperclipai/shared";
-import { useReturningAnnouncementUser } from "@/context/AnnouncementVisitContext";
 import { announcementsApi } from "@/api/announcements";
 import { announcementStoragePrefix, readAnnouncementDismissals, saveAnnouncementDismissal } from "@/lib/announcement-dismissals";
-import { intentionalAbortReason } from "@/lib/intentional-abort";
 
 export const ANNOUNCEMENT_SETTLE_MS = 3000;
-const CONNECTORS_ANNOUNCEMENT_ID = "2026-09-14-connectors";
-
 interface Options {
   userId: string | null;
   companyId: string | null;
@@ -17,7 +13,6 @@ interface Options {
 
 export function useAnnouncement(options: Options) {
   const { userId, enabled } = options;
-  const returningUser = useReturningAnnouncementUser(userId);
   const latest = useRef(options);
   latest.current = options;
   const [state, setState] = useState<{ userId: string; announcement: Announcement } | null>(null);
@@ -66,7 +61,7 @@ export function useAnnouncement(options: Options) {
     function suspend() {
       generation++;
       clearTimeout(settleTimer);
-      fetchController?.abort(intentionalAbortReason());
+      fetchController?.abort();
       fetchController = null;
       setState(null);
     }
@@ -83,7 +78,6 @@ export function useAnnouncement(options: Options) {
       let candidate: Announcement | null = null;
       const show = () => {
         if (!stillCurrent() || !settled || !loaded) return;
-        if (candidate?.id === CONNECTORS_ANNOUNCEMENT_ID && !returningUser) return;
         if (candidate && !readAnnouncementDismissals(userId!).has(candidate.id)
           && (!candidate.expiresAt || Date.parse(candidate.expiresAt) > Date.now())) {
           setState({ userId: userId!, announcement: candidate });
@@ -118,7 +112,7 @@ export function useAnnouncement(options: Options) {
       setState(null);
       // Invalidate any response that started before this dismissal.
       generation++;
-      fetchController?.abort(intentionalAbortReason());
+      fetchController?.abort();
       try { channel?.postMessage(id); } catch { /* Storage events are the fallback. */ }
       void sync(id, savedLocally);
     };
@@ -132,15 +126,15 @@ export function useAnnouncement(options: Options) {
       disposed = true;
       generation++;
       clearTimeout(settleTimer);
-      fetchController?.abort(intentionalAbortReason());
-      for (const controller of writes.values()) controller.abort(intentionalAbortReason());
+      fetchController?.abort();
+      for (const controller of writes.values()) controller.abort();
       channel?.close();
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("online", onOnline);
       window.removeEventListener("storage", onStorage);
       dismissRef.current = () => {};
     };
-  }, [userId, enabled, returningUser]);
+  }, [userId, enabled]);
 
   const announcement = enabled && state?.userId === userId ? state.announcement : null;
   useEffect(() => {
@@ -154,8 +148,5 @@ export function useAnnouncement(options: Options) {
     check();
     return () => clearTimeout(timer);
   }, [announcement]);
-  return {
-    announcement,
-    dismiss: useCallback((id: string) => dismissRef.current(id), []),
-  };
+  return { announcement, dismiss: useCallback((id: string) => dismissRef.current(id), []) };
 }

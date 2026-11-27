@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type { LabGroup } from "../../kit";
 import { StackFolder } from "./StackFolder";
 import { StackSingle } from "./StackSingle";
@@ -10,9 +11,10 @@ import { StackSingle } from "./StackSingle";
  * takes the row's height, so the pockets and the single tiles end level.
  */
 export function GalleryStacks({ groups }: { groups: LabGroup[] }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (groups.length === 0) {
     // The shipped empty state's copy.
-    return <p className="py-16 text-center text-sm font-medium text-foreground">No artifact stacks yet.</p>;
+    return <p className="py-16 text-center text-sm font-medium text-foreground">{pageText("noArtifactStacksYet_6af74f")}</p>;
   }
   return (
     <ul data-surface="gallery-stacks" className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">

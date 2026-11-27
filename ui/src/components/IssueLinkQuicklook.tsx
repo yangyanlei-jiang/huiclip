@@ -1,3 +1,4 @@
+import { t as plainText } from "@/i18n";
 import * as React from "react";
 import { useMemo } from "react";
 import * as RouterDom from "react-router-dom";
@@ -8,15 +9,14 @@ import { createIssueDetailPath, withIssueDetailHeaderSeed } from "@/lib/issueDet
 import {
   getIssueDetailQueryOptions,
   ISSUE_DETAIL_STALE_TIME_MS,
+  prefetchIssueDetailForNavigation,
 } from "@/lib/issueDetailCache";
-import { ISSUE_HISTORY_HOVER_PREFETCH_DELAY_MS, useIssueNavigationPrefetch } from "@/hooks/useIssueNavigationPrefetch";
 import { queryKeys } from "@/lib/queryKeys";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { StatusGlyph } from "@/components/StatusGlyph";
 import { ProjectTile } from "@/components/ProjectTile";
 import { useFlyoutAppearance } from "@/components/ui/flyout-appearance";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 /* ------------------------------------------------------------------ */
 /*  Single-flight quicklook store                                      */
@@ -212,15 +212,13 @@ export function IssueQuicklookCard({
       </RouterDom.Link>
 
       {description ? (
-        <p data-slot="task-preview-description" className={cn("text-xs leading-5 text-muted-foreground [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:4] overflow-hidden", ANALYTICS_MASK_CLASS)}>
+        <p data-slot="task-preview-description" className="text-xs leading-5 text-muted-foreground [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:4] overflow-hidden">
           {description}
         </p>
       ) : null}
     </div>
   );
 }
-
-export { ISSUE_HISTORY_HOVER_PREFETCH_DELAY_MS };
 
 export const IssueLinkQuicklook = React.forwardRef<
   HTMLAnchorElement,
@@ -245,8 +243,6 @@ export const IssueLinkQuicklook = React.forwardRef<
     onClick,
     onClickCapture,
     onMouseEnter,
-    onMouseLeave,
-    onPointerDown,
     onFocus,
     onBlur,
     onTouchStart,
@@ -366,7 +362,9 @@ export const IssueLinkQuicklook = React.forwardRef<
   });
 
   const detailPath = createIssueDetailPath(issuePathId);
-  const prefetchHandlers = useIssueNavigationPrefetch(issuePathId, issuePrefetch);
+  const handlePrefetch = React.useCallback(() => {
+    void prefetchIssueDetailForNavigation(queryClient, issuePathId, { issue: issuePrefetch });
+  }, [issuePathId, issuePrefetch, queryClient]);
   const link = (
     <RouterDom.Link
       ref={setTriggerRef}
@@ -374,34 +372,25 @@ export const IssueLinkQuicklook = React.forwardRef<
       state={prefetchedState}
       className={className}
       onMouseEnter={(event) => {
-        prefetchHandlers.onMouseEnter(event);
+        handlePrefetch();
         onMouseEnter?.(event);
       }}
-      onMouseLeave={(event) => {
-        prefetchHandlers.onMouseLeave(event);
-        onMouseLeave?.(event);
-      }}
-      onPointerDown={(event) => {
-        prefetchHandlers.onPointerDown(event);
-        onPointerDown?.(event);
-      }}
       onFocus={(event) => {
-        prefetchHandlers.onFocus(event);
+        handlePrefetch();
         openNow();
         onFocus?.(event);
       }}
       onBlur={(event) => {
-        prefetchHandlers.onBlur(event);
         // Let clicks inside the portaled quicklook content finish before closing.
         setTimeout(() => close(), 0);
         onBlur?.(event);
       }}
       onTouchStart={(event) => {
-        prefetchHandlers.onTouchStart(event);
+        handlePrefetch();
         onTouchStart?.(event);
       }}
       onClickCapture={(event) => {
-        prefetchHandlers.onClickCapture(event);
+        handlePrefetch();
         onClickCapture?.(event);
       }}
       onClick={(event) => {
@@ -422,8 +411,10 @@ export const IssueLinkQuicklook = React.forwardRef<
     <Popover open={open} onOpenChange={(next) => (next ? openNow() : close())}>
       <PopoverTrigger
         asChild
-        // The link's own hover handler warms the task; history waits for a dwell.
-        onMouseEnter={scheduleOpen}
+        onMouseEnter={() => {
+          handlePrefetch();
+          scheduleOpen();
+        }}
         onMouseLeave={close}
       >
         {link}
@@ -455,7 +446,7 @@ export const IssueLinkQuicklook = React.forwardRef<
             <div className="h-4 w-full rounded bg-accent/40" />
             <div className="h-4 w-3/4 rounded bg-accent/30" />
             {!isLoading ? (
-              <p className="text-xs text-muted-foreground">Unable to load task preview.</p>
+              <p className="text-xs text-muted-foreground">{plainText("interface:unableToLoadTaskPreview_715ffa")}</p>
             ) : null}
           </div>
         )}

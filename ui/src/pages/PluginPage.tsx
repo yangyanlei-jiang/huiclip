@@ -1,3 +1,5 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useMemo } from "react";
 import { Link, Navigate, useParams } from "@/lib/router";
 import { useQuery } from "@tanstack/react-query";
@@ -23,6 +25,7 @@ import { NotFoundPage } from "./NotFound";
  * @see doc/plugins/PLUGIN_SPEC.md §24.4 — Company-Context Plugin Page
  */
 export function PluginPage() {
+  const { t: pageText } = usePageTranslation("interface");
   const params = useParams<{
     companyPrefix?: string;
     pluginId?: string;
@@ -119,7 +122,7 @@ export function PluginPage() {
       return;
     }
     setBreadcrumbs([
-      { label: "System plugins", href: "/company/settings/instance/plugins" },
+      { label: interfaceNotice("interface:plugins_ab2e26"), href: "/company/settings/instance/plugins" },
       { label: pageSlot.pluginDisplayName },
     ]);
   }, [pageSlot, pluginRouteSplat, setBreadcrumbs, routeSidebarActive]);
@@ -130,13 +133,13 @@ export function PluginPage() {
     }
     return (
       <div className="space-y-4">
-        <p className="text-sm text-muted-foreground">Select an organization to view this page.</p>
+        <p className="text-sm text-muted-foreground">{pageText("selectAnOrganizationToViewThisPage_99d8e8")}</p>
       </div>
     );
   }
 
   if (!contributions) {
-    return <div className="text-sm text-muted-foreground">Loading…</div>;
+    return <div className="text-sm text-muted-foreground">{pageText("loading_33ce41")}</div>;
   }
 
   if (!pluginId && pluginRoutePath) {
@@ -145,9 +148,7 @@ export function PluginPage() {
     );
     if (duplicateMatches.length > 1) {
       return (
-        <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
-          Multiple plugins declare the route <code>{pluginRoutePath}</code>. Use the plugin-id route until the conflict is resolved.
-        </div>
+        <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">{pageText("multiplePluginsDeclareTheRoute_f1e74f") + " "}<code>{pluginRoutePath}</code>{pageText("useThePluginIdRouteUntilTheConflict_7be50b")}</div>
       );
     }
   }
@@ -169,9 +170,7 @@ export function PluginPage() {
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" asChild>
             <Link to={companyPrefix ? `/${companyPrefix}/dashboard` : "/dashboard"}>
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              Back
-            </Link>
+              <ArrowLeft className="h-4 w-4 mr-1" />{pageText("back_b52b36")}</Link>
           </Button>
         </div>
       )}

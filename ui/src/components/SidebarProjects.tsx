@@ -1,3 +1,6 @@
+import { t as translateDynamic } from "../i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { NavLink, useLocation } from "@/lib/router";
 import { useQuery } from "@tanstack/react-query";
@@ -16,9 +19,10 @@ import { useCompany } from "../context/CompanyContext";
 import { useDialogActions } from "../context/DialogContext";
 import { useSidebar } from "../context/SidebarContext";
 import { authApi } from "../api/auth";
+import { projectsApi } from "../api/projects";
 import { SIDEBAR_SCROLL_RESET_STATE } from "../lib/navigation-scroll";
 import { queryKeys } from "../lib/queryKeys";
-import { cn, projectRouteRef } from "../lib/utils";
+import { cn, projectRouteRef, SIDEBAR_RAIL_HIDDEN_LABEL } from "../lib/utils";
 import { useProjectOrder } from "../hooks/useProjectOrder";
 import { resourceMembershipState, useResourceMembershipMutation, useResourceMemberships } from "../hooks/useResourceMemberships";
 import { useProjectExternalObjectSummary } from "../hooks/useIssueExternalObjects";
@@ -33,6 +37,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { PluginSlotMount, usePluginSlots } from "@/plugins/slots";
 import {
   getProjectSortModeStorageKey,
@@ -43,7 +48,6 @@ import {
   writeProjectSortMode,
 } from "../lib/project-order";
 import type { Project } from "@paperclipai/shared";
-import { companyProjectsQuery } from "@/lib/company-projects-query";
 
 type ProjectSidebarSlot = ReturnType<typeof usePluginSlots>["slots"][number];
 
@@ -61,6 +65,7 @@ type ProjectItemProps = {
   isMobile: boolean;
   project: Project;
   projectSidebarSlots: ProjectSidebarSlot[];
+  rail: boolean;
   setSidebarOpen: (open: boolean) => void;
   onLeaveProject: (project: Project) => void;
   leaving?: boolean;
@@ -115,11 +120,13 @@ function ProjectItem({
   isMobile,
   project,
   projectSidebarSlots,
+  rail,
   setSidebarOpen,
   onLeaveProject,
   leaving = false,
   isDragging = false,
 }: ProjectItemProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const routeRef = projectRouteRef(project);
   const { summary: externalObjectsSummary } = useProjectExternalObjectSummary(project.id);
 
@@ -142,18 +149,33 @@ function ProjectItem({
       )}
     >
       <ProjectTile color={project.color ?? null} icon={project.icon ?? null} size="xs" />
-      <span className="flex-1 truncate">{project.name}</span>
-      {project.visibility === "private" ? <Lock className="size-3.5 shrink-0 text-muted-foreground" aria-label="Private project" /> : null}
-      <ExternalObjectStatusSummary summary={externalObjectsSummary} compact />
-      {project.pauseReason === "budget" ? <BudgetSidebarMarker title="Project paused by budget" /> : null}
+      <span className={rail ? SIDEBAR_RAIL_HIDDEN_LABEL : "flex-1 truncate"}>{project.name}</span>
+            {!rail && project.visibility === "private" ? <Lock className="size-3.5 shrink-0 text-muted-foreground" aria-label={pageText("privateProject_505bbd")} /> : null}
+      {!rail ? <ExternalObjectStatusSummary summary={externalObjectsSummary} compact /> : null}
+      {!rail && project.pauseReason === "budget" ? <BudgetSidebarMarker title={pageText("projectPausedByBudget_07dd7d")} /> : null}
     </NavLink>
   );
 
   return (
     <div className="flex flex-col gap-0.5">
       <div className="group/project relative flex items-center">
-        {link}
+        {rail ? (
+          // Anchor the tooltip to a wrapper, not the NavLink: Radix `asChild`
+          // (Slot) drops React Router's function className, which would strip
+          // `flex` off the <a> and let the in-flow label stack under the icon,
+          // growing the row. Keeping the <a> out of Slot preserves a 1:1 row
+          // height with the expanded state so the icon never moves (PAP-10676).
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="min-w-0 flex-1">{link}</div>
+            </TooltipTrigger>
+            <TooltipContent side="right">{project.name}</TooltipContent>
+          </Tooltip>
+        ) : (
+          link
+        )}
 
+        {!rail && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
@@ -165,7 +187,7 @@ function ProjectItem({
                   ? "opacity-100"
                   : "pointer-events-none opacity-0 group-hover/project:pointer-events-auto group-hover/project:opacity-100 group-focus-within/project:pointer-events-auto group-focus-within/project:opacity-100",
               )}
-              aria-label={`Open actions for ${project.name}`}
+              aria-label={translateDynamic("dynamic:openActionsFor", { value1: project.name })}
             >
               <MoreHorizontal className="h-3.5 w-3.5" />
             </Button>
@@ -179,12 +201,13 @@ function ProjectItem({
               disabled={leaving}
             >
               {leaving ? <Loader2 className="size-4 motion-safe:animate-spin" /> : <LogOut className="size-4" />}
-              <span>{leaving ? "Leaving..." : "Leave project"}</span>
+              <span>{leaving ? pageText("leaving_08f850") : pageText("leaveProject_7db1f1")}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        )}
       </div>
-      {projectSidebarSlots.length > 0 && (
+      {!rail && projectSidebarSlots.length > 0 && (
         <div className="ml-5 flex flex-col gap-0.5">
           {projectSidebarSlots.map((slot) => (
             <PluginSlotMount
@@ -235,15 +258,18 @@ function SortableProjectItem(props: ProjectItemProps) {
 }
 
 export function SidebarProjects() {
+  const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(true);
   const { selectedCompany, selectedCompanyId } = useCompany();
   const { openNewProject } = useDialogActions();
-  const { isMobile, setSidebarOpen } = useSidebar();
+  const { isMobile, setSidebarOpen, collapsed, peeking } = useSidebar();
+  const rail = collapsed && !peeking;
   const fineReorderPointer = useFineReorderPointer();
   const location = useLocation();
 
   const { data: projects } = useQuery({
-    ...companyProjectsQuery(selectedCompanyId!),
+    queryKey: queryKeys.projects.list(selectedCompanyId!),
+    queryFn: () => projectsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
   const membershipsQuery = useResourceMemberships(selectedCompanyId);
@@ -380,6 +406,7 @@ export function SidebarProjects() {
       isMobile={isMobile}
       project={project}
       projectSidebarSlots={projectSidebarSlots}
+      rail={rail}
       setSidebarOpen={setSidebarOpen}
       onLeaveProject={leaveProject}
       leaving={projectLeaving(project)}
@@ -388,7 +415,7 @@ export function SidebarProjects() {
 
   return (
     <SidebarSection
-      label="Projects"
+      label={translateUi("interfaceCopy.projects")}
       collapsible={{ open, onOpenChange: setOpen }}
       headerAction={{
         ariaLabel: "New project",
@@ -427,6 +454,7 @@ export function SidebarProjects() {
                   isMobile={isMobile}
                   project={project}
                   projectSidebarSlots={projectSidebarSlots}
+                  rail={rail}
                   setSidebarOpen={setSidebarOpen}
                   onLeaveProject={leaveProject}
                   leaving={projectLeaving(project)}

@@ -233,9 +233,9 @@ export function buildSuccessfulRunHandoffExhaustedNotice(input: {
               : issueLinkRow("Recovery issue", input.recoveryIssue),
             input.recoveryOwner
               ? agentLinkRow("Recovery owner", input.recoveryOwner)
-              : keyValueRow("Recovery owner", "Waiting for you"),
+              : keyValueRow("Recovery owner", "Board decision required"),
             agentLinkRow("Source assignee", input.sourceAssignee),
-            keyValueRow("Suggested action", "Mark the task done if it is, or press Retry to let the agent continue from the saved work"),
+            keyValueRow("Suggested action", "inspect the evidence, then retry the original owner, explicitly reassign, or record a valid issue disposition"),
           ],
         },
         {

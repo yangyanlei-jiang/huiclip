@@ -125,17 +125,10 @@ export interface Config extends StorageConfig {
   announcementsFeedUrl: string;
 }
 
-let tailscaleAddressForProcess: { address: string | undefined } | undefined;
-
 function detectTailnetBindHost(): string | undefined {
   const explicit = process.env.PAPERCLIP_TAILNET_BIND_HOST?.trim();
   if (explicit) return explicit;
 
-  tailscaleAddressForProcess ??= { address: runTailscaleAddressCommand() };
-  return tailscaleAddressForProcess.address;
-}
-
-function runTailscaleAddressCommand(): string | undefined {
   try {
     const stdout = execFileSync("tailscale", ["ip", "-4"], {
       encoding: "utf8",
@@ -210,12 +203,11 @@ export function loadConfig(override?: PaperclipConfig | null): Config {
       ? (bindFromEnvRaw as BindMode)
       : null;
   const configuredHost = process.env.HOST ?? fileConfig?.server.host ?? "127.0.0.1";
-  const configuredBind = bindFromEnv ?? fileConfig?.server.bind;
-  const bindReadsTailnetAddress = configuredBind
-    ? configuredBind === "tailnet"
-    : inferBindModeFromHost(configuredHost) === "custom";
-  const tailnetBindHost = bindReadsTailnetAddress ? detectTailnetBindHost() : undefined;
-  const bind = configuredBind ?? inferBindModeFromHost(configuredHost, { tailnetBindHost });
+  const tailnetBindHost = detectTailnetBindHost();
+  const bind =
+    bindFromEnv ??
+    fileConfig?.server.bind ??
+    inferBindModeFromHost(configuredHost, { tailnetBindHost });
   const customBindHost = process.env.PAPERCLIP_BIND_HOST ?? fileConfig?.server.customBindHost;
   const authBaseUrlModeFromEnvRaw = process.env.PAPERCLIP_AUTH_BASE_URL_MODE;
   const authBaseUrlModeFromEnv =

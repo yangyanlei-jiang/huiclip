@@ -38,7 +38,8 @@ import type {
   ClearAgentErrorResponse,
   AgentApiKeyScope,
 } from "@paperclipai/shared";
-import { api, type RequestOptions } from "./client";
+import { isUuidLike, normalizeAgentUrlKey } from "@paperclipai/shared";
+import { ApiError, api, type RequestOptions } from "./client";
 
 export interface AgentKey {
   id: string;
@@ -126,8 +127,32 @@ export const agentsApi = {
   org: (companyId: string) => api.get<OrgNode[]>(`/companies/${companyId}/org`),
   listConfigurations: (companyId: string) =>
     api.get<Record<string, unknown>[]>(`/companies/${companyId}/agent-configurations`),
-  get: (id: string, companyId?: string, options?: RequestOptions) =>
-    api.get<AgentDetail>(agentPath(id, companyId), options),
+  get: async (id: string, companyId?: string, options?: RequestOptions) => {
+    try {
+      return await api.get<AgentDetail>(agentPath(id, companyId), options);
+    } catch (error) {
+      // Backward-compat fallback: if backend shortname lookup reports ambiguity,
+      // resolve using company agent list while ignoring terminated agents.
+      if (
+        !(error instanceof ApiError) ||
+        error.status !== 409 ||
+        !companyId ||
+        isUuidLike(id)
+      ) {
+        throw error;
+      }
+
+      const urlKey = normalizeAgentUrlKey(id);
+      if (!urlKey) throw error;
+
+      const agents = await api.get<Agent[]>(`/companies/${companyId}/agents`, options);
+      const matches = agents.filter(
+        (agent) => agent.status !== "terminated" && normalizeAgentUrlKey(agent.urlKey) === urlKey,
+      );
+      if (matches.length !== 1) throw error;
+      return api.get<AgentDetail>(agentPath(matches[0]!.id, companyId), options);
+    }
+  },
   getConfiguration: (id: string, companyId?: string) =>
     api.get<import("@paperclipai/shared").AgentConfigurationResponse>(agentPath(id, companyId, "/configuration")),
   listConfigRevisions: (id: string, companyId?: string) =>
@@ -168,8 +193,6 @@ export const agentsApi = {
     data: { path: string; content: string; baseRevisionId?: string | null; baseHash?: string | null; clearLegacyPromptTemplate?: boolean },
     companyId?: string,
   ) => api.put<AgentInstructionsFileDetail>(agentPath(id, companyId, "/instructions-bundle/file"), data),
-  renameInstructionsFile: (id: string, data: { path: string; renameTo: string; content: string; baseHash: string | null }, companyId?: string) =>
-    api.put<AgentInstructionsFileDetail>(agentPath(id, companyId, "/instructions-bundle/file"), data),
   instructionCandidates: (id: string, companyId?: string) =>
     api.get<AgentInstructionCandidate[]>(agentPath(id, companyId, "/instructions-bundle/candidates")),
   resolveInstructionCandidate: (id: string, runId: string, data: ResolveAgentInstructionCandidate, companyId?: string) =>
@@ -306,7 +329,7 @@ export const agentsApi = {
   startAdapterAuthLogin: (
     companyId: string,
     type: string,
-    data: { environmentId: string; agentId?: string; ttlSeconds?: number; aiConnection?: import("@paperclipai/shared").AiConnectionLoginIntent },
+    data: { environmentId: string; ttlSeconds?: number; aiConnection?: import("@paperclipai/shared").AiConnectionLoginIntent },
   ) =>
     api.post<AdapterAuthSessionResponse>(
       `/companies/${encodeURIComponent(companyId)}/adapters/${encodeURIComponent(type)}/login-sessions`,
@@ -349,7 +372,7 @@ export const agentsApi = {
     ),
   startClaudeSetupTokenLogin: (
     companyId: string,
-    data: { environmentId: string; agentId?: string; overwrite?: ClaudeSetupTokenOverwrite; aiConnection?: import("@paperclipai/shared").AiConnectionLoginIntent },
+    data: { environmentId: string; overwrite?: ClaudeSetupTokenOverwrite; aiConnection?: import("@paperclipai/shared").AiConnectionLoginIntent },
   ) =>
     api.post<ClaudeSetupTokenSessionOwnerResponse>(
       `/companies/${encodeURIComponent(companyId)}/setup-token-login-sessions`,

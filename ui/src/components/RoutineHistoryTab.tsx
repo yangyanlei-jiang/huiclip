@@ -1,3 +1,7 @@
+import { t as interfaceNotice } from "@/i18n";
+import { t as interfaceMessage } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { History as HistoryIcon, RotateCcw, Search } from "lucide-react";
@@ -38,8 +42,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "./EmptyState";
 import { MarkdownBody } from "./MarkdownBody";
 import { Badge } from "@/components/ui/badge";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
-import { cn } from "@/lib/utils";
 
 type AgentLookup = Map<string, { id: string; name: string }>;
 type ProjectLookup = Map<string, { id: string; name: string }>;
@@ -75,6 +77,7 @@ export function RoutineHistoryTab({
   onRestoreSecretMaterials,
   onRestored,
 }: Props) {
+  const { t: pageText } = usePageTranslation("interface");
   const secretLookup = useMemo<SecretLookup>(
     () => new Map((secrets ?? []).map((secret) => [secret.id, secret])),
     [secrets],
@@ -131,8 +134,8 @@ export function RoutineHistoryTab({
       pushToast({
         title: `Restored revision ${restoredFromNumber} as revision ${newNumber}`,
         body: data.secretMaterials.length > 0
-          ? "Trigger enabled state was restored from the snapshot. New webhook secrets are available in the banner above."
-          : "Trigger enabled state was restored from the snapshot.",
+          ? interfaceNotice("interface:triggerEnabledStateWasRestoredFromTheSnapshot_c0e8dc")
+          : interfaceNotice("interface:triggerEnabledStateWasRestoredFromTheSnapshot_168c7d"),
         tone: "success",
       });
       onRestoreSecretMaterials(data);
@@ -158,7 +161,7 @@ export function RoutineHistoryTab({
     },
     onError: (error) => {
       pushToast({
-        title: "Failed to restore revision",
+        title: interfaceMessage("interface:errorFailedToRestoreRevision"),
         body: describeError(error, { action: "restore the revision" }).body,
         tone: "error",
       });
@@ -241,12 +244,9 @@ export function RoutineHistoryTab({
           <div className="space-y-2">
             <EmptyState
               icon={HistoryIcon}
-              message="No edits yet"
+              message={pageText("noEditsYet_1de647")}
             />
-            <p className="text-center text-xs text-muted-foreground">
-              Revision 1 is the only history this routine has. Saving an edit creates the first
-              additional revision.
-            </p>
+            <p className="text-center text-xs text-muted-foreground">{pageText("revision1IsTheOnlyHistoryThisRoutine_503c47")}</p>
           </div>
         ) : (
           selectedRevision && (
@@ -332,26 +332,18 @@ function HistoricalPreviewBanner({
   onRestore: () => void;
   pending: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <div className="rounded-md border border-amber-500/30 bg-amber-500/5 px-4 py-3">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
-          <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
-            Viewing revision {revisionNumber} (read-only)
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Restoring this revision creates a new revision {nextRevisionNumber} with the same content.
-            History stays append-only.
-          </p>
+          <p className="text-sm font-medium text-amber-800 dark:text-amber-200">{pageText("viewingRevision_d3e112") + " "}{revisionNumber}{" " + pageText("readOnly_761031")}</p>
+          <p className="text-xs text-muted-foreground">{pageText("restoringThisRevisionCreatesANewRevision_cc32cc") + " "}{nextRevisionNumber}{" " + pageText("withTheSameContentHistoryStaysAppendOnly_dd4824")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm" onClick={onReturn} disabled={pending}>
-            Return to current
-          </Button>
+          <Button variant="outline" size="sm" onClick={onReturn} disabled={pending}>{pageText("returnToCurrent_f12c89")}</Button>
           <Button size="sm" onClick={onRestore} disabled={pending}>
-            <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
-            Restore as new revision
-          </Button>
+            <RotateCcw className="mr-1.5 h-3.5 w-3.5" />{pageText("restoreAsNewRevision_414134")}</Button>
         </div>
       </div>
     </div>
@@ -367,6 +359,7 @@ function ConflictBanner({
   onDiscard: () => void;
   onSave: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const labels = dirtyFields.length > 0
     ? dirtyFields.map((field) => field.label)
     : ["the routine"];
@@ -375,19 +368,12 @@ function ConflictBanner({
     <div className="rounded-md border border-amber-500/30 bg-amber-500/5 px-4 py-3">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
-          <p className="text-sm font-medium text-amber-800 dark:text-amber-200">Unsaved routine edits</p>
-          <p className="text-xs text-muted-foreground">
-            You changed {fieldsText} but haven&apos;t saved yet. Save or discard before previewing or
-            restoring an older revision.
-          </p>
+          <p className="text-sm font-medium text-amber-800 dark:text-amber-200">{pageText("unsavedRoutineEdits_c20fdd")}</p>
+          <p className="text-xs text-muted-foreground">{pageText("youChanged_1c4789") + " "}{fieldsText}{" " + pageText("butHavenTSavedYetSaveOrDiscard_d5188a")}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm" onClick={onDiscard}>
-            Discard changes
-          </Button>
-          <Button size="sm" onClick={onSave}>
-            Save and continue
-          </Button>
+          <Button variant="outline" size="sm" onClick={onDiscard}>{pageText("discardChanges_fa8fc0")}</Button>
+          <Button size="sm" onClick={onSave}>{pageText("saveAndContinue_3b033f")}</Button>
         </div>
       </div>
       {dirtyFields.length > 0 && (
@@ -425,13 +411,12 @@ function RevisionList({
   onShowOlder: () => void;
   showOlder: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <aside className="space-y-1">
       <header className="flex items-center justify-between pb-2">
-        <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
-          Revisions
-        </p>
-        <span className="text-(length:--text-micro) text-muted-foreground">{totalRevisions} total</span>
+        <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">{pageText("revisions_2dba79")}</p>
+        <span className="text-(length:--text-micro) text-muted-foreground">{totalRevisions}{" " + pageText("total_5a537e")}</span>
       </header>
       {revisions.map((revision) => {
         const isSelected = revision.id === selectedRevisionId;
@@ -459,16 +444,12 @@ function RevisionList({
             data-testid={`revision-row-${revision.revisionNumber}`}
           >
             <div className="flex items-center gap-2 text-sm font-medium">
-              <span>rev {revision.revisionNumber}</span>
+              <span>{pageText("rev_03e404") + " "}{revision.revisionNumber}</span>
               {isCurrent && (
-                <Badge variant="outline" className="border-border px-1.5 text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-                  Current
-                </Badge>
+                <Badge variant="outline" className="border-border px-1.5 text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{pageText("current_4fc0e2")}</Badge>
               )}
               {revision.restoredFromRevisionId && (
-                <Badge variant="outline" className="border-amber-500/40 bg-amber-500/10 px-1.5 text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-amber-800 dark:text-amber-200">
-                  Restored
-                </Badge>
+                <Badge variant="outline" className="border-amber-500/40 bg-amber-500/10 px-1.5 text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-amber-800 dark:text-amber-200">{pageText("restored_b54d62")}</Badge>
               )}
             </div>
             <div className="text-xs text-muted-foreground truncate">
@@ -479,9 +460,7 @@ function RevisionList({
         );
       })}
       {totalRevisions > revisions.length && !showOlder && (
-        <Button variant="ghost" size="sm" className="w-full" onClick={onShowOlder}>
-          Show {totalRevisions - revisions.length} older…
-        </Button>
+        <Button variant="ghost" size="sm" className="w-full" onClick={onShowOlder}>{pageText("show_d97d1e") + " "}{totalRevisions - revisions.length}{" " + pageText("older_e3b2b5")}</Button>
       )}
     </aside>
   );
@@ -508,6 +487,8 @@ function RevisionPreview({
   restorePending: boolean;
   highlighted: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const snapshot = revision.snapshot.routine;
   const triggers = revision.snapshot.triggers;
   const currentSnapshot = currentRevision?.snapshot.routine ?? null;
@@ -576,17 +557,14 @@ function RevisionPreview({
       <header className={`${cardWrapper} p-4 space-y-2`}>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="space-y-1 min-w-0">
-            <p className="text-sm font-medium">rev {revision.revisionNumber}</p>
-            <p className="text-xs text-muted-foreground truncate">
-              Saved {relativeTime(revision.createdAt)} by {getActorLabel(revision)}
+            <p className="text-sm font-medium">{pageText("rev_03e404") + " "}{revision.revisionNumber}</p>
+            <p className="text-xs text-muted-foreground truncate">{pageText("saved_c0ae8f") + " "}{relativeTime(revision.createdAt)}{" " + pageText("by_408158") + " "}{getActorLabel(revision)}
               {revision.changeSummary ? ` · ${revision.changeSummary}` : ""}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" size="sm" onClick={onCompare}>
-              <Search className="mr-1.5 h-3.5 w-3.5" />
-              Compare with current
-            </Button>
+              <Search className="mr-1.5 h-3.5 w-3.5" />{pageText("compareWithCurrent_54049e")}</Button>
             <Button
               size="sm"
               onClick={onRestore}
@@ -602,9 +580,7 @@ function RevisionPreview({
       </header>
 
       <div className={`${cardWrapper} p-3`}>
-        <p className="pb-2 text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
-          Structured fields
-        </p>
+        <p className="pb-2 text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">{pageText("structuredFields_95d3d0")}</p>
         <div className="grid gap-3 md:grid-cols-2 divide-y md:divide-y-0 divide-border">
           {fieldRows.map((row) => (
             <div key={row.key} className="space-y-1 p-2">
@@ -612,9 +588,7 @@ function RevisionPreview({
               <p className="text-sm">
                 {row.value || <span className="text-muted-foreground">—</span>}
                 {row.differs && (
-                  <Badge variant="outline" className="ml-2 border-amber-500/40 bg-amber-500/10 px-1.5 text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-amber-800 dark:text-amber-200">
-                    differs from current
-                  </Badge>
+                  <Badge variant="outline" className="ml-2 border-amber-500/40 bg-amber-500/10 px-1.5 text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-amber-800 dark:text-amber-200">{pageText("differsFromCurrent_390f09")}</Badge>
                 )}
               </p>
             </div>
@@ -623,24 +597,21 @@ function RevisionPreview({
       </div>
 
       <div className={`${cardWrapper} p-3 space-y-2`}>
-        <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
-          Description
-        </p>
+        <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">{translateUi("interfaceCopy.description")}</p>
         <div className="rounded-md bg-background/40 p-3 text-sm leading-7">
           {snapshot.description ? (
             <MarkdownBody>{snapshot.description}</MarkdownBody>
           ) : (
-            <span className="text-muted-foreground">No description</span>
+            <span className="text-muted-foreground">{pageText("noDescription_f354c9")}</span>
           )}
         </div>
       </div>
 
       <div className={`${cardWrapper} p-3 space-y-2`}>
-        <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
-          Triggers ({triggers.length})
+        <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">{pageText("triggers_758352")}{triggers.length})
         </p>
         {triggers.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No triggers in this revision.</p>
+          <p className="text-sm text-muted-foreground">{pageText("noTriggersInThisRevision_aa68f4")}</p>
         ) : (
           <ul className="divide-y divide-border">
             {triggers.map((trigger) => (
@@ -655,29 +626,24 @@ function RevisionPreview({
                 <span
                   className={`ml-auto text-xs ${trigger.enabled ? "text-emerald-400" : "text-muted-foreground"}`}
                 >
-                  {trigger.enabled ? "enabled" : "disabled"}
+                  {trigger.enabled ? pageText("enabled_3ea3f9") : pageText("disabled_07596f")}
                 </span>
               </li>
             ))}
           </ul>
         )}
-        <p className="text-xs text-muted-foreground">
-          Webhook secrets are not stored in revisions. If a restored webhook trigger needs re-creation,
-          Paperclip mints fresh secret material at restore time.
-        </p>
+        <p className="text-xs text-muted-foreground">{pageText("webhookSecretsAreNotStoredInRevisionsIf_204a08")}</p>
       </div>
 
       {snapshot.variables.length > 0 && (
         <div className={`${cardWrapper} p-3 space-y-2`}>
-          <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
-            Variables ({snapshot.variables.length})
+          <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">{pageText("variables_70b4ff")}{snapshot.variables.length})
           </p>
           <ul className="divide-y divide-border">
             {snapshot.variables.map((variable) => (
               <li key={variable.name} className="py-2 flex items-center justify-between text-sm">
                 <span className="font-mono text-xs">{variable.name}</span>
-                <span className="text-xs text-muted-foreground">
-                  default: {formatVariableDefault(variable)}
+                <span className="text-xs text-muted-foreground">{pageText("default_71b822") + " "}{formatVariableDefault(variable)}
                 </span>
               </li>
             ))}
@@ -711,59 +677,46 @@ function RestoreConfirmDialog({
   recreatedWebhookLabels: string[];
   envDiffCounts: EnvDiffCounts;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const newRevisionNumber = currentRevisionNumber + 1;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Restore revision {target.revisionNumber}?</DialogTitle>
-          <DialogDescription>
-            This creates a new revision {newRevisionNumber} with the same content as revision{" "}
-            {target.revisionNumber}. Revisions {target.revisionNumber}–{currentRevisionNumber} stay
-            in history and are not modified.
-          </DialogDescription>
+          <DialogTitle>{pageText("restoreRevision_7d5288") + " "}{target.revisionNumber}?</DialogTitle>
+          <DialogDescription>{pageText("thisCreatesANewRevision_2fa0c2") + " "}{newRevisionNumber}{" " + pageText("withTheSameContentAsRevision_fdcd0b")}{" "}
+            {target.revisionNumber}{pageText("revisions_04ba0d") + " "}{target.revisionNumber}–{currentRevisionNumber}{" " + pageText("stayInHistoryAndAreNotModified_68a582")}</DialogDescription>
         </DialogHeader>
         <ul className="space-y-2 text-sm">
           <li className="flex items-start gap-2">
-            <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            Routine field values, variables, and schedule cron will revert.
-          </li>
+            <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />{pageText("routineFieldValuesVariablesAndScheduleCronWill_ded0c9")}</li>
           {envDiffCounts.total > 0 && (
             <li className="flex items-start gap-2">
-              <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
-              Routine secrets will revert: {formatEnvDiffCounts(envDiffCounts)}.
+              <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />{pageText("routineSecretsWillRevert_801341") + " "}{formatEnvDiffCounts(envDiffCounts)}.
             </li>
           )}
           <li className="flex items-start gap-2">
-            <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            Previous run history is preserved.
-          </li>
+            <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />{pageText("previousRunHistoryIsPreserved_d38713")}</li>
           {recreatedWebhookLabels.map((label) => (
             <li key={label} className="flex items-start gap-2 text-amber-800 dark:text-amber-200">
-              <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-amber-400" />
-              The webhook trigger {label} will be recreated with a new URL and secret. Paperclip will
-              show the secret once after restore — copy it before closing.
-            </li>
+              <span className="mt-1 inline-block h-1.5 w-1.5 rounded-full bg-amber-400" />{pageText("theWebhookTrigger_006239") + " "}{label}{" " + pageText("willBeRecreatedWithANewURLAnd_7e4cde")}</li>
           ))}
         </ul>
         <div className="space-y-1.5">
-          <Label htmlFor="restore-change-summary" className="text-xs">
-            Change summary (optional)
-          </Label>
+          <Label htmlFor="restore-change-summary" className="text-xs">{pageText("changeSummaryOptional_5ba05f")}</Label>
           <Input
             id="restore-change-summary"
             value={changeSummary}
-            placeholder="Why are you restoring? Visible in history."
+            placeholder={pageText("whyAreYouRestoringVisibleInHistory_63427f")}
             onChange={(event) => onChangeSummaryChange(event.target.value)}
           />
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pending}>
-            Cancel
-          </Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pending}>{translateUi("interfaceCopy.cancel")}</Button>
           <Button onClick={onConfirm} disabled={pending}>
             <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
-            {pending ? "Restoring…" : `Restore as revision ${newRevisionNumber}`}
+            {pending ? pageText("restoring_90190b") : `Restore as revision ${newRevisionNumber}`}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -792,6 +745,8 @@ function RoutineRevisionDiffModal({
   secrets: SecretLookup;
   onRestore: (revision: RoutineRevision) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [leftId, setLeftId] = useState<string>(initialOldRevisionId);
   const [rightId, setRightId] = useState<string>(initialNewRevisionId);
 
@@ -821,18 +776,18 @@ function RoutineRevisionDiffModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="!max-w-(--pct-90) w-full max-h-(--sz-85vh) overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle>Compare routine revisions</DialogTitle>
+          <DialogTitle>{pageText("compareRoutineRevisions_e1e6a0")}</DialogTitle>
         </DialogHeader>
         <div className="flex flex-wrap items-center gap-3">
           <RevisionPicker
-            label="Old"
+            label={translateUi("interfaceCopy.old")}
             value={leftId}
             onChange={setLeftId}
             revisions={revisions}
             tone="red"
           />
           <RevisionPicker
-            label="New"
+            label={translateUi("interfaceCopy.new")}
             value={rightId}
             onChange={setRightId}
             revisions={revisions}
@@ -841,18 +796,16 @@ function RoutineRevisionDiffModal({
         </div>
         <div className="overflow-auto flex-1 space-y-4">
           <section className="space-y-2">
-            <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
-              Field changes
-            </p>
+            <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">{pageText("fieldChanges_eb9f9b")}</p>
             {fieldChanges.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No structural field changes.</p>
+              <p className="text-sm text-muted-foreground">{pageText("noStructuralFieldChanges_f3114a")}</p>
             ) : (
               <table className="w-full text-sm border border-border rounded-md overflow-hidden">
                 <thead>
                   <tr className="text-xs uppercase tracking-wide bg-muted/30 text-muted-foreground">
-                    <th className="px-3 py-2 text-left">Field</th>
-                    <th className="px-3 py-2 text-left">Old value</th>
-                    <th className="px-3 py-2 text-left">New value</th>
+                    <th className="px-3 py-2 text-left">{pageText("field_c326a4")}</th>
+                    <th className="px-3 py-2 text-left">{pageText("oldValue_037c1b")}</th>
+                    <th className="px-3 py-2 text-left">{pageText("newValue_520d57")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -872,21 +825,15 @@ function RoutineRevisionDiffModal({
             )}
           </section>
           <section className="space-y-2">
-            <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
-              Description diff
-            </p>
+            <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">{pageText("descriptionDiff_f9b6e2")}</p>
             <DiffTable rows={descriptionDiff} />
           </section>
         </div>
         <DialogFooter className="justify-between sm:justify-between">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Close
-          </Button>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>{translateUi("interfaceCopy.close")}</Button>
           {leftIsHistorical && left && (
             <Button onClick={() => onRestore(left)}>
-              <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
-              Restore rev {left.revisionNumber} as new revision
-            </Button>
+              <RotateCcw className="mr-1.5 h-3.5 w-3.5" />{pageText("restoreRev_efd902") + " "}{left.revisionNumber}{" " + pageText("asNewRevision_e2b7b1")}</Button>
           )}
         </DialogFooter>
       </DialogContent>
@@ -907,6 +854,7 @@ function RevisionPicker({
   revisions: RoutineRevision[];
   tone: "red" | "green";
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const toneClass = tone === "red"
     ? "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-300"
     : "border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-300";
@@ -923,8 +871,7 @@ function RevisionPicker({
         className="h-8 min-w-(--sz-12rem) rounded-md border border-border/60 bg-background px-2 text-xs"
       >
         {revisions.map((revision) => (
-          <option key={revision.id} value={revision.id}>
-            rev {revision.revisionNumber} — {relativeTime(revision.createdAt)}
+          <option key={revision.id} value={revision.id}>{pageText("rev_03e404") + " "}{revision.revisionNumber} — {relativeTime(revision.createdAt)}
             {revision.changeSummary ? ` • ${revision.changeSummary}` : ""}
           </option>
         ))}
@@ -934,11 +881,13 @@ function RevisionPicker({
 }
 
 function DiffTable({ rows }: { rows: DiffRow[] }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   if (rows.length === 0) {
-    return <p className="text-sm text-muted-foreground">No description on either revision.</p>;
+    return <p className="text-sm text-muted-foreground">{pageText("noDescriptionOnEitherRevision_10af0d")}</p>;
   }
   if (rows.every((row) => row.kind === "context")) {
-    return <p className="text-sm text-muted-foreground">Descriptions are identical.</p>;
+    return <p className="text-sm text-muted-foreground">{pageText("descriptionsAreIdentical_e80c0b")}</p>;
   }
   const lineClassesByKind: Record<DiffRow["kind"], string> = {
     context: "bg-transparent",
@@ -953,10 +902,10 @@ function DiffTable({ rows }: { rows: DiffRow[] }) {
   return (
     <div className="rounded-md border border-border text-xs font-mono leading-6 overflow-hidden">
       <div className="grid grid-cols-(--gtc-1) border-b border-border/60 bg-muted/30 px-3 py-2 text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">
-        <span>Old</span>
-        <span>New</span>
+        <span>{translateUi("interfaceCopy.old")}</span>
+        <span>{translateUi("interfaceCopy.new")}</span>
         <span />
-        <span>Content</span>
+        <span>{translateUi("interfaceCopy.content")}</span>
       </div>
       {rows.map((row, index) => (
         <div
@@ -972,7 +921,7 @@ function DiffTable({ rows }: { rows: DiffRow[] }) {
           <span className="select-none px-3 text-center text-muted-foreground">
             {markerByKind[row.kind]}
           </span>
-          <pre className={cn("overflow-x-auto whitespace-pre-wrap break-words px-3 py-0 text-inherit", ANALYTICS_MASK_CLASS)}>
+          <pre className="overflow-x-auto whitespace-pre-wrap break-words px-3 py-0 text-inherit">
             {row.text.length > 0 ? row.text : " "}
           </pre>
         </div>
@@ -1005,7 +954,6 @@ function summarizeTriggerSnapshot(trigger: RoutineRevisionSnapshotTriggerV1): st
     const replay = trigger.replayWindowSec != null ? `replay ${trigger.replayWindowSec}s` : "";
     return [trigger.signingMode, replay].filter(Boolean).join(" · ");
   }
-  if (trigger.kind === "heartbeat") return "Standing check on each wake-up";
   return "API";
 }
 

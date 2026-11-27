@@ -1,3 +1,6 @@
+import { t as translateDynamic } from "../i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
 import { Dialog as DialogPrimitive } from "radix-ui";
 import { ChevronLeft, ChevronRight, Download, ExternalLink, X } from "lucide-react";
@@ -30,6 +33,8 @@ export function ImageGalleryModal({
   onIndexChange,
   returnFocusRef,
 }: ImageGalleryModalProps) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const mediaRef = useRef<HTMLImageElement | HTMLVideoElement | null>(null);
   const setMediaRef = useCallback((node: HTMLImageElement | HTMLVideoElement | null) => {
@@ -105,7 +110,7 @@ export function ImageGalleryModal({
             returnFocusRef.current?.focus({ preventScroll: true });
           } : undefined}
         >
-          <DialogPrimitive.Title className="sr-only">Image gallery</DialogPrimitive.Title>
+          <DialogPrimitive.Title className="sr-only">{pageText("imageGallery_b6081c")}</DialogPrimitive.Title>
           {/* Top bar */}
           <div className="flex items-center justify-between px-5 py-3 text-white/80 text-sm shrink-0">
             <span className="truncate max-w-(--pct-50) font-medium" title={filename}>
@@ -120,8 +125,8 @@ export function ImageGalleryModal({
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-white/50 hover:text-white transition-colors"
-                title="Open original"
-                aria-label={`Open original ${filename}`}
+                title={pageText("openOriginal_57a08f")}
+                aria-label={translateDynamic("dynamic:openOriginal", { value1: filename })}
                 onClick={(e) => e.stopPropagation()}
               >
                 <ExternalLink className="h-4.5 w-4.5" />
@@ -130,8 +135,8 @@ export function ImageGalleryModal({
                 href={attachmentDownloadPath(current)}
                 download={filename}
                 className="text-white/50 hover:text-white transition-colors"
-                title="Download"
-                aria-label={`Download ${filename}`}
+                title={pageText("download_a479c9")}
+                aria-label={translateDynamic("dynamic:download", { value1: filename })}
                 onClick={(e) => e.stopPropagation()}
               >
                 <Download className="h-4.5 w-4.5" />
@@ -140,7 +145,7 @@ export function ImageGalleryModal({
                 type="button"
                 onClick={() => onOpenChange(false)}
                 className="text-white/50 hover:text-white transition-colors"
-                title="Close"
+                title={translateUi("interfaceCopy.close")}
               >
                 <X className="h-5 w-5" />
               </button>
@@ -156,7 +161,7 @@ export function ImageGalleryModal({
                   type="button"
                   onClick={goPrev}
                   className="rounded-full bg-white/10 p-3 text-white/60 hover:text-white hover:bg-white/20 transition-colors"
-                  title="Previous"
+                  title={translateUi("interfaceCopy.previous")}
                 >
                   <ChevronLeft className="h-7 w-7" />
                 </button>
@@ -191,7 +196,7 @@ export function ImageGalleryModal({
                   type="button"
                   onClick={goNext}
                   className="rounded-full bg-white/10 p-3 text-white/60 hover:text-white hover:bg-white/20 transition-colors"
-                  title="Next"
+                  title={translateUi("interfaceCopy.next")}
                 >
                   <ChevronRight className="h-7 w-7" />
                 </button>

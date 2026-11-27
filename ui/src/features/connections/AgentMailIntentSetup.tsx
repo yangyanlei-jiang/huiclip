@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { isUuidLike } from "@paperclipai/shared";
@@ -31,6 +32,7 @@ export function AgentMailIntentSetup({ companyId, agentId, requestId, savedCrede
   onDecline(): void;
   declining?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const draftKey = `paperclip.agentmail-inline:${companyId}:${requestId}`;
   const [draft] = useState(() => readDraft(draftKey));
   const [setupRequestId, setSetupRequestId] = useState(draft?.setupRequestId ?? requestId);
@@ -96,20 +98,20 @@ export function AgentMailIntentSetup({ companyId, agentId, requestId, savedCrede
     }
   }}>
     {credentialId || inboxConnectionId
-      ? <p className="text-sm text-muted-foreground">{inboxConnectionId ? "Your inbox is ready. Continue to resume the chat." : "API key saved. Finish creating the inbox."}</p>
+      ? <p className="text-sm text-muted-foreground">{inboxConnectionId ? pageText("yourInboxIsReadyContinueToResumeThe_8bf7ea") : pageText("apiKeySavedFinishCreatingTheInbox_eaaa78")}</p>
       : <AgentMailCredentialField companyId={companyId} connectionId={selectedCredentialId}
           onConnectionChange={id => { setSelectedCredentialId(id); setApiKey(""); }}
           value={apiKey} onChange={setApiKey} disabled={setup.isPending || changeKey.isPending || declining} />}
     {credentialId && !inboxConnectionId && <Button type="button" variant="link" size="sm" className="h-auto p-0"
       disabled={setup.isPending || changeKey.isPending || declining} onClick={() => changeKey.mutate(setupRequestId)}>
-      {changeKey.isPending ? "Checking setup…" : "Change API key"}
+      {changeKey.isPending ? pageText("checkingSetup_192cc8") : pageText("changeAPIKey_f347f0")}
     </Button>}
     {changeKey.error && <p className="text-sm text-destructive" role="alert">{describeError(changeKey.error).body}</p>}
     {setup.error && <p className="text-sm text-destructive" role="alert">{describeError(setup.error).body}</p>}
     <div className="flex items-center justify-between gap-2">
-      <Button type="button" variant="ghost" disabled={setup.isPending || changeKey.isPending || declining} onClick={onDecline}>Not now</Button>
+      <Button type="button" variant="ghost" disabled={setup.isPending || changeKey.isPending || declining} onClick={onDecline}>{pageText("notNow_e45714")}</Button>
       <Button type="submit" disabled={setup.isPending || changeKey.isPending || declining || (!credentialId && !selectedCredentialId && !inboxConnectionId && !apiKey.trim())}>
-        {setup.isPending ? "Connecting…" : inboxConnectionId ? "Continue" : credentialId ? "Finish setup" : "Connect AgentMail"}
+        {setup.isPending ? pageText("connecting_fd3e79") : inboxConnectionId ? pageText("continue_2e0262") : credentialId ? pageText("finishSetup_c516d2") : pageText("connectAgentMail_db52c2")}
       </Button>
     </div>
   </form>;

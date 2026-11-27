@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useQuery } from "@tanstack/react-query";
 import { Activity } from "lucide-react";
 import { routinesApi } from "@/api/routines";
@@ -13,6 +14,7 @@ export function RoutineAuditActivity({
   companyId: string;
   routineId: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const activity = useQuery({
     queryKey: [...queryKeys.routines.activity(companyId, routineId), "audit"],
     queryFn: async () => {
@@ -32,9 +34,7 @@ export function RoutineAuditActivity({
   // the first load reads as loading, and only a real failure shows copy.
   if (activityView.kind === "loading" || activityView.kind === "reconnecting") {
     return (
-      <div className="border-y border-border py-14 text-center text-sm text-muted-foreground">
-        Loading routine activity…
-      </div>
+      <div className="border-y border-border py-14 text-center text-sm text-muted-foreground">{pageText("loadingRoutineActivity_ab513b")}</div>
     );
   }
 
@@ -51,11 +51,11 @@ export function RoutineAuditActivity({
 
   const events = activityView.data ?? [];
   if (events.length === 0) {
-    return <EmptyState icon={Activity} message="No routine activity yet." />;
+    return <EmptyState icon={Activity} message={pageText("noRoutineActivityYet_91a962")} />;
   }
 
   return (
-    <div className="border-y border-border" aria-label="Routine activity">
+    <div className="border-y border-border" aria-label={pageText("routineActivity_ef9b35")}>
       {events.map((event) => (
         <RoutineActivityRow key={event.id} event={event} />
       ))}

@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import { isDeepStrictEqual } from "node:util";
 import path from "node:path";
@@ -6,7 +5,7 @@ import { expect, type Page } from "@playwright/test";
 import { buildAgentMentionHref, buildProjectMentionHref, parseAgentMentionHref, parseProjectMentionHref } from "../../../packages/shared/src/project-mentions.js";
 import { sendChatMessage, readChatOutputDocument, type ChatIssue, type ChatRun } from "../chat-flow.js";
 import { assertChatHire, mutableIssueSnapshot } from "../chat-hardening.js";
-import { isTransientConnectionFailure } from "../connection-config.js";
+import { ConnectionFailure } from "../connection-config.js";
 import { assertHireAuditCoverage, assertHireBinding, assertHireDocument, assertHireRuns, assertHireTaskCreation, hireDelegateNames, hireResultLinkMatches, hireRunIssueId, observedHireResources, readHireConnectionChoice, type HireScope } from "./hire-delegate-evidence.js";
 import { JourneyError, type JourneyContext, type JourneyEvidence, type TargetSession } from "./types.js";
 import { sendHireHandoffMessage } from "./hire-delegate-composer.js";
@@ -70,7 +69,8 @@ export async function hireDelegateReuse(context: JourneyContext, session: Target
   const readObserved = async <T>(route: string): Promise<T> => {
     try { return await api.get<T>(route); }
     catch (error) {
-      if (isTransientConnectionFailure(error)) {
+      if (error instanceof ConnectionFailure && (error.message === "api_request_failed"
+        || /^api_status_(408|429|502|503|504)$/.test(error.message))) {
         throw new HireReadTransportError("hire_observation_transport_unavailable");
       }
       throw error;
@@ -147,8 +147,8 @@ export async function hireDelegateReuse(context: JourneyContext, session: Target
     const runs = [...canonical.values()];
     const comments = await readObserved<Row[]>(`/api/issues/${chat.id}/comments?order=asc`);
     const requestIds = comments.filter(row => row.authorUserId === context.user.id).map(row => row.id);
-    const completionRepliesReady = assertHireRuns(scope, hiredId, owned.tasks, runs, undefined, requestIds, comments, options.deadlineAt);
-    for (const run of projectedRuns) assertHireRuns(scope, hiredId, owned.tasks, [run], undefined, requestIds, comments, options.deadlineAt);
+    const completionRepliesReady = assertHireRuns(scope, hiredId, owned.tasks, runs, undefined, requestIds, comments);
+    for (const run of projectedRuns) assertHireRuns(scope, hiredId, owned.tasks, [run], undefined, requestIds, comments);
     await retain("hire-delegate-observation.json", { scope: { ...scope, connectionBinding: undefined, connectionChoice: undefined }, chat, project,
       agents: owned.agents.map(row => ({ id: row.id, name: row.name, reportsTo: row.reportsTo })), tasks: owned.tasks,
       runs: runs.map(run => ({ id: run.id, issueId: hireRunIssueId(run), agentId: run.agentId, status: run.status })) });
@@ -172,10 +172,6 @@ export async function hireDelegateReuse(context: JourneyContext, session: Target
     }
     throw new JourneyError("failed", awaitingReply ? "hire_completion_reply_missing" : "hire_chat_not_completed");
   };
-  const messageChecks: Row[] = [];
-  const bodyReceipt = (body: unknown) => typeof body === "string" ? {
-    byteSize: Buffer.byteLength(body), sha256: createHash("sha256").update(body).digest("hex"),
-  } : null;
   const turn = async (text: string, count: number, handoff?: ReturnType<typeof hireHandoffMentions>) => {
     await page.goto(chatUrl, { waitUntil: "domcontentloaded" });
     const before = await api.get<Row | null>(chatPath);
@@ -185,13 +181,7 @@ export async function hireDelegateReuse(context: JourneyContext, session: Target
     const state = await waitForIdle(count);
     const comments = await api.get<Row[]>(`/api/issues/${state.chat.id}/comments?order=asc`);
     const added = comments.filter(row => row.authorUserId === context.user.id && !prior.some(old => old.id === row.id));
-    const matches = added.length === 1 && added[0].body === text;
-    messageChecks.push({ turn: messageChecks.length + 1, expected: bodyReceipt(text), matches,
-      added: added.map(row => ({ id: row.id, body: bodyReceipt(row.body), matches: row.body === text })) });
-    // Keep the actual comparison inputs before a failed grade, without copying
-    // message bodies, private session state or credentials into this receipt.
-    await retain("hire-user-message-checks.json", { schema: "paperclip.product-journey.hire-user-messages/v1", checks: messageChecks });
-    check("hire-user-messages-stored-once", matches);
+    check("hire-user-messages-stored-once", added.length === 1 && added[0].body === text);
     return state;
   };
   await session.own({ kind: "agent", name: names.hire, journeyId: "hire-delegate-reuse" });

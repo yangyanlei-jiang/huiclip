@@ -1,3 +1,5 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { type ReactNode } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Sun } from "lucide-react";
@@ -58,7 +60,6 @@ export function AgingItemRow({
   onToggleExpand,
   onDismiss,
   onSnooze,
-  evidence,
 }: {
   item: AttentionItem;
   companyId: string;
@@ -70,9 +71,8 @@ export function AgingItemRow({
   onToggleExpand: (item: AttentionItem) => void;
   onDismiss: (item: AttentionItem) => void;
   onSnooze: (item: AttentionItem, snoozedUntil: string) => void;
-  /** The rest of this card's obligation (PAP-749 Rule 11). */
-  evidence?: readonly AttentionItem[];
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
   const idleDays = attentionIdleDays(item, now);
@@ -80,12 +80,12 @@ export function AgingItemRow({
     mutationFn: () => decisionQueuesApi.setKeep(companyId, item.sourceKind, item.subject.id, true),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.attention(companyId) });
-      pushToast({ title: "Kept on desk", body: item.subject.title ?? undefined, tone: "success" });
+      pushToast({ title: interfaceNotice("interface:keptOnDesk_836450"), body: item.subject.title ?? undefined, tone: "success" });
     },
     onError: (error) =>
       pushToast({
-        title: "Could not keep this decision",
-        body: error instanceof Error ? error.message : "Please try again.",
+        title: interfaceNotice("interface:couldNotKeepThisDecision_b9f674"),
+        body: error instanceof Error ? error.message : interfaceNotice("interface:pleaseTryAgain_83a6fd"),
         tone: "error",
       }),
   });
@@ -93,8 +93,7 @@ export function AgingItemRow({
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between gap-2 px-1">
-        <span className="text-(length:--text-nano) text-muted-foreground">
-          Idle {idleDays} {idleDays === 1 ? "day" : "days"}
+        <span className="text-(length:--text-nano) text-muted-foreground">{pageText("idle_cc1ebd") + " "}{idleDays} {idleDays === 1 ? pageText("day_a2620c") : pageText("days_5548ae")}
         </span>
         <Button
           type="button"
@@ -106,7 +105,7 @@ export function AgingItemRow({
         >
           {keep.isPending && <Loader2 className="h-3 w-3 animate-spin" />}
           <Sun className="h-3.5 w-3.5" />
-          {item.keep ? "Kept" : "Keep on desk"}
+          {item.keep ? pageText("kept_727edd") : pageText("keepOnDesk_eee9a3")}
         </Button>
       </div>
       <AttentionQueueRow
@@ -120,7 +119,6 @@ export function AgingItemRow({
         agents={agents}
         showTriage
         currentUserId={currentUserId}
-        evidence={evidence}
       />
     </div>
   );

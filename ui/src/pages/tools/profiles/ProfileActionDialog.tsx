@@ -1,5 +1,7 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { AlertTriangle } from "lucide-react";
-import type { ToolProfileListItem } from "@paperclipai/shared";
+import type { ToolProfileWithDetails } from "@paperclipai/shared";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -22,13 +24,15 @@ export function ProfileActionDialog({
   onDelete,
 }: {
   kind: ProfileActionDialogKind | null;
-  profile: Pick<ToolProfileListItem, "summary"> | null;
+  profile: ToolProfileWithDetails | null;
   pending: boolean;
   onClose: () => void;
   onArchive: () => void;
   onRestore: () => void;
   onDelete: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   if (!kind || !profile) return null;
 
   const defaultDeleteBlocked = kind === "delete" && profile.summary.isCompanyDefault;
@@ -65,11 +69,11 @@ export function ProfileActionDialog({
         {defaultDeleteBlocked ? (
           <div className="flex gap-3 rounded-lg border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-            <span>Choose another access profile and make it the organization default first.</span>
+            <span>{pageText("chooseAnotherAccessProfileAndMakeItThe_47181a")}</span>
           </div>
         ) : null}
         <DialogFooter>
-          <Button variant="ghost" onClick={onClose}>Cancel</Button>
+          <Button variant="ghost" onClick={onClose}>{translateUi("interfaceCopy.cancel")}</Button>
           <Button
             variant={kind === "delete" ? "destructive" : "default"}
             disabled={pending || defaultDeleteBlocked}

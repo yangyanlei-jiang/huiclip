@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useCopyAction } from "@/lib/use-copy-action";
@@ -44,6 +45,7 @@ function saveSession(key: string, value: unknown) {
  * one file, one dev guard, trivial to strip out later.
  */
 export function TweakPanel() {
+  const { t: pageText } = usePageTranslation("interface");
   const [pos, setPos] = useState<{ x: number; y: number }>(() =>
     loadSession(POS_KEY, { x: 24, y: 24 }),
   );
@@ -139,14 +141,14 @@ export function TweakPanel() {
         onPointerUp={onHeaderPointerUp}
       >
         <GripHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
-        <span>Motion tweak panel</span>
+        <span>{pageText("motionTweakPanel_60e156")}</span>
         <div className="ml-auto flex items-center gap-1">
-          <button type="button" title="Reset all" onClick={resetAll} className="rounded p-0.5 hover:bg-accent">
+          <button type="button" title={pageText("resetAll_a21b0f")} onClick={resetAll} className="rounded p-0.5 hover:bg-accent">
             <RotateCcw className="h-3.5 w-3.5" />
           </button>
           <button
             type="button"
-            title={minimized ? "Expand" : "Minimize"}
+            title={minimized ? pageText("expand_9869e5") : pageText("minimize_1c5b76")}
             onClick={() => setMinimized((m) => !m)}
             className="rounded p-0.5 hover:bg-accent"
           >
@@ -209,9 +211,7 @@ export function TweakPanel() {
               onClick={buildExport}
               className="flex flex-1 items-center justify-center gap-1 rounded border border-border px-2 py-1 text-xs hover:bg-accent"
             >
-              <Copy className="h-3.5 w-3.5" />
-              Copy as @theme
-            </button>
+              <Copy className="h-3.5 w-3.5" />{pageText("copyAsTheme_c55d8c")}</button>
           </div>
 
           {exportText ? (
@@ -229,10 +229,10 @@ export function TweakPanel() {
               {/* Focusing the box copies it silently; say so, or the click looks inert. */}
               <p className="mt-1 text-(length:--text-nano) text-muted-foreground" aria-live="polite">
                 {exportCopy.copied
-                  ? "Copied to clipboard"
+                  ? pageText("copiedToClipboard_0e7383")
                   : exportCopy.failed
-                    ? "Copy failed — select the text and copy it manually"
-                    : "Click the box to copy"}
+                    ? pageText("copyFailedSelectTheTextAndCopyIt_a5eb10")
+                    : pageText("clickTheBoxToCopy_f560fd")}
               </p>
             </>
           ) : null}

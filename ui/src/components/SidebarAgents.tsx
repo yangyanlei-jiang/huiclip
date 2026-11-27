@@ -1,5 +1,8 @@
+import { t as interfaceNotice } from "@/i18n";
+import { t as translateDynamic } from "../i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { usePrimaryAgentPresentation } from "@/components/primary-agent/PrimaryAgentPresentation";
-import { isWaitingToStart } from "../lib/agent-queue-wait";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "@/lib/router";
@@ -28,7 +31,7 @@ import { heartbeatsApi } from "../api/heartbeats";
 import { instanceSettingsApi } from "../api/instanceSettings";
 import { SIDEBAR_SCROLL_RESET_STATE } from "../lib/navigation-scroll";
 import { queryKeys } from "../lib/queryKeys";
-import { cn, agentRouteRef, agentUrl } from "../lib/utils";
+import { cn, agentRouteRef, agentUrl, SIDEBAR_RAIL_HIDDEN_LABEL } from "../lib/utils";
 import { useAgentOrder } from "../hooks/useAgentOrder";
 import {
   isStarred,
@@ -58,6 +61,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { Agent } from "@paperclipai/shared";
 
 /**
@@ -115,6 +119,7 @@ function SidebarAgentItem({
   leaving,
   onLeaveAgent,
   onPauseResume,
+  rail,
   runCount,
   setSidebarOpen,
   builtInStatus,
@@ -130,6 +135,7 @@ function SidebarAgentItem({
   leaving: boolean;
   onLeaveAgent: (agent: Agent) => void;
   onPauseResume: (agent: Agent, action: "pause" | "resume") => void;
+  rail: boolean;
   runCount: number;
   setSidebarOpen: (open: boolean) => void;
   builtInStatus?: BuiltInAgentStatus;
@@ -137,6 +143,7 @@ function SidebarAgentItem({
   onToggleStar?: (agent: Agent, starred: boolean) => void;
   starPending?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const routeRef = agentRouteRef(agent);
   const href = activeTab ? `${agentUrl(agent)}/${activeTab}` : agentUrl(agent);
   const editHref = `${agentUrl(agent)}/configuration`;
@@ -154,6 +161,13 @@ function SidebarAgentItem({
         ? "Invalid org chain"
       : pauseResumeLabel;
   const showBuiltInLifecycle = builtInStatus === "needs_setup" || builtInStatus === "pending_approval";
+  const trailingLabel = [
+    showBuiltInLifecycle ? `Built-in agent ${builtInStatus.replace(/_/g, " ")}` : null,
+    hasInvalidOrgChain ? "Invalid reporting chain" : null,
+  ].filter(Boolean).join(", ") || undefined;
+
+  // C11 (DECISION-SHEET.md): the row itself is a SidebarNavItem, so agent rows
+  // share the nav-row chrome (type, active state, rail tooltip, live dot).
   const navItem = (
     <SidebarNavItem
       to={href}
@@ -173,16 +187,22 @@ function SidebarAgentItem({
           <span className="ml-1 flex shrink-0 items-center gap-1">
             {showBuiltInLifecycle ? <BuiltInLifecycleChip status={builtInStatus} compact /> : null}
             {hasInvalidOrgChain ? (
-              <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" aria-label="Invalid reporting chain" />
+              <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" aria-label={pageText("invalidReportingChain_720f9d")} />
             ) : null}
           </span>
         ) : undefined
       }
+      trailingLabel={trailingLabel}
       liveAccessory={
-        agent.pauseReason === "budget" ? <BudgetSidebarMarker title="Agent paused by budget" /> : undefined
+        agent.pauseReason === "budget" ? <BudgetSidebarMarker title={pageText("agentPausedByBudget_ddfc8f")} /> : undefined
       }
     />
   );
+
+  // Rail: the star/menu overlays are hidden, so render the nav item bare (it
+  // supplies its own rail tooltip) and let it fill the column like every other
+  // rail row.
+  if (rail) return navItem;
 
   return (
     <div className="group/agent relative flex items-center">
@@ -214,7 +234,7 @@ function SidebarAgentItem({
                 ? "opacity-100"
                 : "pointer-events-none opacity-0 group-hover/agent:pointer-events-auto group-hover/agent:opacity-100 group-focus-within/agent:pointer-events-auto group-focus-within/agent:opacity-100",
             )}
-            aria-label={`Open actions for ${agent.name}`}
+            aria-label={translateDynamic("dynamic:openActionsFor", { value1: agent.name })}
           >
             <MoreHorizontal className="h-3.5 w-3.5" />
           </Button>
@@ -234,7 +254,7 @@ function SidebarAgentItem({
                 ) : (
                   <Star className={cn("size-4", starred && "fill-amber-500 text-amber-500")} />
                 )}
-                <span>{starred ? "Remove from starred" : "Star agent"}</span>
+                <span>{starred ? pageText("removeFromStarred_93e94f") : pageText("starAgent_f58763")}</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
             </>
@@ -247,7 +267,7 @@ function SidebarAgentItem({
               }}
             >
               <Pencil className="size-4" />
-              <span>Edit agent</span>
+              <span>{pageText("editAgent_8e424a")}</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
@@ -257,7 +277,7 @@ function SidebarAgentItem({
               onPauseResume(agent, isPaused ? "resume" : "pause");
             }}
             disabled={pauseResumeDisabled}
-            title={isBudgetPaused ? "Agent was paused by budget limits" : undefined}
+            title={isBudgetPaused ? pageText("agentWasPausedByBudgetLimits_05f15b") : undefined}
           >
             {isPaused ? <PlayCircle className="size-4" /> : <PauseCircle className="size-4" />}
             <span>{pauseResumeDisabledLabel}</span>
@@ -271,7 +291,7 @@ function SidebarAgentItem({
             disabled={leaving}
           >
             {leaving ? <Loader2 className="size-4 motion-safe:animate-spin" /> : <LogOut className="size-4" />}
-            <span>{leaving ? "Leaving..." : "Leave agent"}</span>
+            <span>{leaving ? pageText("leaving_08f850") : pageText("leaveAgent_992390")}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -280,6 +300,8 @@ function SidebarAgentItem({
 }
 
 export function SidebarAgents({ streamlined = false }: { streamlined?: boolean } = {}) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [open, setOpen] = useState(true);
   const [pendingAgentIds, setPendingAgentIds] = useState<Set<string>>(() => new Set());
   const [liveLingerVersion, setLiveLingerVersion] = useState(0);
@@ -288,7 +310,8 @@ export function SidebarAgents({ streamlined = false }: { streamlined?: boolean }
   const { selectedCompanyId } = useCompany();
   const primary = usePrimaryAgentPresentation(selectedCompanyId);
   const { openNewAgent } = useDialogActions();
-  const { isMobile, setSidebarOpen } = useSidebar();
+  const { isMobile, setSidebarOpen, collapsed, peeking } = useSidebar();
+  const rail = collapsed && !peeking;
   const { pushToast } = useToastActions();
   const location = useLocation();
 
@@ -343,17 +366,18 @@ export function SidebarAgents({ streamlined = false }: { streamlined?: boolean }
 
   const liveCountByAgent = useMemo(() => {
     const counts = new Map<string, number>();
-    // "N live" counts work that started; queued runs only wait for a slot.
     for (const run of liveRuns ?? []) {
-      if (isWaitingToStart(run)) continue;
       counts.set(run.agentId, (counts.get(run.agentId) ?? 0) + 1);
     }
     return counts;
   }, [liveRuns]);
-  const liveAgentIds = useMemo(
-    () => new Set((liveRuns ?? []).map((run) => run.agentId)),
-    [liveRuns],
-  );
+  const liveAgentIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const [agentId, count] of liveCountByAgent) {
+      if (count > 0) ids.add(agentId);
+    }
+    return ids;
+  }, [liveCountByAgent]);
 
   const visibleAgents = useMemo(() => {
     const filtered = (agents ?? []).filter(
@@ -522,14 +546,14 @@ export function SidebarAgents({ streamlined = false }: { streamlined?: boolean }
         queryClient.invalidateQueries({ queryKey: queryKeys.agents.detail(agentRouteRef(agent)) }),
       ]);
       pushToast({
-        title: action === "pause" ? "Agent paused" : "Agent resumed",
+        title: action === "pause" ? interfaceNotice("interface:agentPaused_6cbb08") : interfaceNotice("interface:agentResumed_f35cc6"),
         body: agent.name,
         tone: "success",
       });
     },
     onError: (error, { agent, action }) => {
       pushToast({
-        title: action === "pause" ? "Could not pause agent" : "Could not resume agent",
+        title: action === "pause" ? interfaceNotice("interface:couldNotPauseAgent_5ce826") : interfaceNotice("interface:couldNotResumeAgent_6bc7fa"),
         body: error instanceof Error ? error.message : agent.name,
         tone: "error",
       });
@@ -608,6 +632,7 @@ export function SidebarAgents({ streamlined = false }: { streamlined?: boolean }
       leaving={agentLeaving(agent)}
       onLeaveAgent={leaveAgent}
       onPauseResume={(targetAgent, action) => pauseResumeAgent.mutate({ agent: targetAgent, action })}
+      rail={rail}
       runCount={liveCountByAgent.get(agent.id) ?? 0}
       setSidebarOpen={setSidebarOpen}
       builtInStatus={builtInStatusByAgentId.get(agent.id)}
@@ -619,7 +644,7 @@ export function SidebarAgents({ streamlined = false }: { streamlined?: boolean }
 
   return (
     <SidebarSection
-      label="Agents"
+      label={translateUi("interfaceCopy.agents")}
       collapsible={{ open, onOpenChange: setOpen }}
       headerAction={{
         ariaLabel: "New agent",
@@ -646,18 +671,27 @@ export function SidebarAgents({ streamlined = false }: { streamlined?: boolean }
       {showSeeAllLink && (() => {
         // Deliberately NOT a SidebarNavItem: this is a quiet muted affordance
         // (plain Link) that must not adopt nav-row active-route highlighting.
-        return (
+        const seeAllLink = (
           <Link
             to="/agents/all"
             state={SIDEBAR_SCROLL_RESET_STATE}
+            aria-label={rail ? pageText("seeAllAgents_76fea4") : undefined}
             onClick={() => {
               if (isMobile) setSidebarOpen(false);
             }}
             className="flex items-center gap-2.5 mx-2 rounded-lg px-2 py-1.5 pointer-coarse:py-1 text-(length:--text-compact) font-medium text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
           >
             <Users className="shrink-0 h-4 w-4" />
-            <span>See all agents</span>
+            <span className={rail ? SIDEBAR_RAIL_HIDDEN_LABEL : undefined}>{translateUi("interfaceCopy.seeAllAgents")}</span>
           </Link>
+        );
+        return rail ? (
+          <Tooltip>
+            <TooltipTrigger asChild>{seeAllLink}</TooltipTrigger>
+            <TooltipContent side="right">{translateUi("interfaceCopy.seeAllAgents")}</TooltipContent>
+          </Tooltip>
+        ) : (
+          seeAllLink
         );
       })()}
     </SidebarSection>

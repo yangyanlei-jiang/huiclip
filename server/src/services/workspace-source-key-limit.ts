@@ -1,1 +1,0 @@
-export const WORKSPACE_SOURCE_KEY_LIMIT = 512;

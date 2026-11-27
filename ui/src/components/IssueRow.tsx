@@ -1,8 +1,11 @@
+import { t as translateDynamic } from "../i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { requiresExecutionReconciliation } from "@paperclipai/shared";
 import { useState, type CSSProperties, type ReactNode } from "react";
 import type { ExternalObjectSummary, Issue, IssueRecoveryAction } from "@paperclipai/shared";
 import { Link } from "@/lib/router";
-import { Archive, ArchiveRestore, Flag, CircleAlert } from "lucide-react";
+import { Archive, Flag, CircleAlert } from "lucide-react";
 import {
   createIssueDetailPath,
   rememberIssueDetailLocationState,
@@ -81,7 +84,6 @@ export interface IssueRowProps {
   onMarkRead?: () => void;
   onArchive?: () => void;
   archiveDisabled?: boolean;
-  archiveAction?: IssueRowArchiveAction;
   className?: string;
   /** Pointer entered the row (used by list keyboard nav to track hover). */
   onMouseEnter?: () => void;
@@ -96,32 +98,21 @@ export interface IssueRowProps {
   showDivider?: boolean;
 }
 
-export type IssueRowArchiveAction = {
-  archived: boolean;
-  disabled?: boolean;
-  onClick: () => void;
-};
-
 export function InboxArchiveButton({
   onArchive,
   disabled,
   compact = false,
-  archived = false,
-  iconOnly = false,
 }: {
   onArchive: () => void;
   disabled?: boolean;
   compact?: boolean;
-  archived?: boolean;
-  iconOnly?: boolean;
 }) {
-  const label = archived ? "Restore from archive" : "Archive";
-  const Icon = archived ? ArchiveRestore : Archive;
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   return (
     <button
       type="button"
       data-slot="icon-button"
-      data-task-archive=""
       onClick={(event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -135,15 +126,12 @@ export function InboxArchiveButton({
       }}
       disabled={disabled}
       className={cn(
-        "inline-flex shrink-0 items-center justify-center gap-1.5 rounded-md text-xs font-medium text-muted-foreground transition-opacity hover:bg-accent hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100 disabled:pointer-events-none disabled:opacity-30",
-        iconOnly ? "size-7 sm:pointer-fine:opacity-0" : compact ? "h-5 px-2 py-0 opacity-0" : "px-2 py-1 opacity-0",
+        "inline-flex shrink-0 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100 disabled:pointer-events-none disabled:opacity-30",
+        compact ? "h-5 py-0" : "py-1",
       )}
-      aria-label={label}
-      title={iconOnly ? label : undefined}
+      aria-label={translateUi("interfaceCopy.archive")}
     >
-      <Icon className="size-3.5" aria-hidden />
-      {iconOnly ? null : label}
-    </button>
+      <Archive className="h-3.5 w-3.5" />{pageText("archive_2621c6")}</button>
   );
 }
 
@@ -180,13 +168,13 @@ export function IssueRow({
   onMarkRead,
   onArchive,
   archiveDisabled,
-  archiveAction,
   className,
   onMouseEnter,
   treeGuides = 0,
   chevronInGuide = false,
   showDivider = false,
 }: IssueRowProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const visibleColumns = useTaskListColumns();
   const { hoveredCell, onMouseMove: handleCellHover, clearHoveredCell } = useCellMarqueeHover();
   const [titleFocused, setTitleFocused] = useState(false);
@@ -216,7 +204,7 @@ export function IssueRow({
         "inline-flex h-4 w-4 items-center justify-center rounded-full transition-colors",
         selected ? "hover:bg-muted/80" : "hover:bg-blue-500/20",
       )}
-      aria-label="Mark as read"
+      aria-label={pageText("markAsRead_c1ee86")}
     >
       <span
         className={cn(
@@ -247,20 +235,9 @@ export function IssueRow({
     <Badge variant="outline"
       data-testid="issue-row-parked-blocker"
       className="[&>svg]:size-2.5 ml-1.5 gap-0.5 border-amber-500/60 bg-amber-500/15 text-(length:--text-nano) text-amber-700 dark:text-amber-300"
-      title="Blocked by parked work — at least one assigned blocker is in backlog and will not wake its assignee."
+      title={pageText("blockedByParkedWorkAtLeastOneAssigned_1230f7")}
     >
-      <Flag className="h-2.5 w-2.5" aria-hidden />
-      Blocked by parked work
-    </Badge>
-  ) : null;
-
-  const personalArchiveControl = archiveAction ? (
-    <InboxArchiveButton
-      iconOnly
-      archived={archiveAction.archived}
-      disabled={archiveAction.disabled}
-      onArchive={archiveAction.onClick}
-    />
+      <Flag className="h-2.5 w-2.5" aria-hidden />{pageText("blockedByParkedWork_2da68c")}</Badge>
   ) : null;
 
   if (presentation === "task") {
@@ -276,7 +253,7 @@ export function IssueRow({
             disableIssueQuicklook
             issuePrefetch={issue}
             onClickCapture={() => rememberIssueDetailLocationState(issuePathId, detailState)}
-            aria-label={`Open task ${identifier} (${statusLabel})`}
+            aria-label={translateDynamic("dynamic:openTaskCount", { value1: identifier, value2: statusLabel })}
             className="task-row-status-link"
             data-slot="task-row-status"
           >
@@ -309,7 +286,7 @@ export function IssueRow({
           refreshed && "task-row-link",
         )}
       >
-        <span className="sr-only">Open {identifier}: {issue.title}</span>
+        <span className="sr-only">{pageText("open_cf9b77") + " "}{identifier}: {issue.title}</span>
       </Link>
     );
     return (
@@ -412,7 +389,7 @@ export function IssueRow({
                   {recoveryIndicator ? (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span tabIndex={0} aria-label="Task recovery status" className="relative z-10 inline-flex text-muted-foreground sm:hidden">
+                        <span tabIndex={0} aria-label={pageText("taskRecoveryStatus_15714b")} className="relative z-10 inline-flex text-muted-foreground sm:hidden">
                           <CircleAlert className="h-4 w-4" />
                         </span>
                       </TooltipTrigger>
@@ -469,14 +446,6 @@ export function IssueRow({
               </>
             )}
           </span>
-          {personalArchiveControl ? (
-            <span
-              role={refreshed && columnValues ? "cell" : undefined}
-              className={refreshed && columnValues ? "absolute end-2 top-1/2 -translate-y-1/2" : "shrink-0 self-center"}
-            >
-              {personalArchiveControl}
-            </span>
-          ) : null}
         </div>
       </HoveredCellContext.Provider>
     );
@@ -518,7 +487,7 @@ export function IssueRow({
           "absolute inset-0 rounded-lg no-underline text-inherit focus-visible:z-10 focus-visible:outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-ring",
         )}
       >
-        <span className="sr-only">Open {identifier}: {issue.title}</span>
+        <span className="sr-only">{pageText("open_cf9b77") + " "}{identifier}: {issue.title}</span>
       </Link>
       <span className="flex shrink-0 items-center gap-1 pt-px sm:hidden">
         {mobileLeading ?? <StatusIcon {...taskStatusIconProps(issue)} size="md" className={selectedStatusClass} />}
@@ -627,7 +596,6 @@ export function IssueRow({
           ) : null}
         </span>
       ) : null}
-      {personalArchiveControl ? <span className="shrink-0 self-center sm:order-4">{personalArchiveControl}</span> : null}
       {showUnreadDot ? (
         // Inbox rows reserve a mobile gutter on both read and unread rows. The
         // full control stays inside overflow-clipping row containers while its

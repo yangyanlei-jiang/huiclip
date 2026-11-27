@@ -56,7 +56,7 @@ export function createMessageResourceAdmission(db: Db, options: { ensureResource
               .select({ status: chatEndpoints.status })
               .from(chatEndpoints)
               .where(eq(chatEndpoints.id, endpoint.id))
-              .for("no key update")
+              .for("update")
               .then((rows) => rows[0] ?? null);
             if (!currentEndpoint) throw notFound("Chat endpoint not found");
             const enabledResourceCount = await tx

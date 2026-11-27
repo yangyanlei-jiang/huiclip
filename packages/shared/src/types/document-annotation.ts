@@ -1,7 +1,6 @@
 import type {
   DocumentAnnotationAnchorConfidence,
   DocumentAnnotationAnchorState,
-  DocumentAnnotationCommentReactionName,
   DocumentAnnotationThreadStatus,
   IssueCommentAuthorType,
   IssueThreadInteractionContinuationPolicy,
@@ -102,22 +101,8 @@ export interface DocumentAnnotationComment {
   authorUserId: string | null;
   createdByRunId: string | null;
   issueCommentId?: string | null;
-  reactions?: DocumentAnnotationCommentReactionSummary[];
   createdAt: Date;
   updatedAt: Date;
-}
-
-export interface DocumentAnnotationCommentReactionActor {
-  actorType: "agent" | "user";
-  agentId: string | null;
-  userId: string | null;
-}
-
-export interface DocumentAnnotationCommentReactionSummary {
-  reaction: DocumentAnnotationCommentReactionName;
-  count: number;
-  reactedByMe: boolean;
-  actors: DocumentAnnotationCommentReactionActor[];
 }
 
 export interface DocumentAnnotationAnchorRemapSnapshot {

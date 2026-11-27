@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { hunkLabel } from "./diff-lines";
@@ -52,6 +53,7 @@ export function TaskChatDiffView({
   previewLines?: number;
   className?: string;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [showAll, setShowAll] = useState(false);
   const visible = showAll ? lines : lines.slice(0, previewLines);
   const hidden = lines.length - visible.length;
@@ -101,7 +103,7 @@ export function TaskChatDiffView({
                       line.kind === "context" ? "text-muted-foreground" : "text-foreground",
                     )}
                   >
-                    <span className="sr-only">{line.kind === "add" ? "Added: " : line.kind === "remove" ? "Removed: " : ""}</span>
+                    <span className="sr-only">{line.kind === "add" ? pageText("added_0ae84a") + " " : line.kind === "remove" ? pageText("removed_c33165") + " " : ""}</span>
                     {line.text || " "}
                   </td>
                 </tr>
@@ -117,11 +119,10 @@ export function TaskChatDiffView({
               type="button"
               className="text-foreground underline-offset-2 hover:underline"
               onClick={() => setShowAll(true)}
-            >
-              Show {hidden} more {hidden === 1 ? "line" : "lines"}
+            >{pageText("show_d97d1e") + " "}{hidden}{" " + pageText("more_e7c95b") + " "}{hidden === 1 ? pageText("line_264f39") : pageText("lines_8525aa")}
             </button>
           ) : null}
-          {truncated && hidden === 0 ? <span>Diff shortened for display.</span> : null}
+          {truncated && hidden === 0 ? <span>{pageText("diffShortenedForDisplay_4eae5d")}</span> : null}
         </div>
       ) : null}
     </div>

@@ -6,7 +6,6 @@ import {
   CODEX_BLOCK_TOOL_NAME,
 } from "../../contracts/codex.js";
 import { validatePrpStructuredRunResult } from "../../protocol/replay-contract.js";
-import { prpSemanticResultConflictMessage } from "../../contracts/completion-result.js";
 import type { CodexRpcServerRequest } from "./app-server-transport.js";
 import {
   boundedCodexValue,
@@ -236,7 +235,9 @@ async function handleServerRequestBody(
       }
       const admission = admitResult(state, validation.result, callId, turnId);
       if (admission === "conflict") {
-        return rejectedToolCall(prpSemanticResultConflictMessage(state.result));
+        return rejectedToolCall(
+          "A different semantic result was already committed.",
+        );
       }
       return {
         success: true,

@@ -519,7 +519,7 @@ describe("buildPaperclipTaskMarkdown", () => {
     });
 
     expect(acceptedConfirmation).toContain(
-      "Implement the accepted plan on this issue.",
+      "Implement the accepted plan on this issue when the work is small and cohesive.",
     );
     expect(acceptedConfirmation).not.toContain("Make the plan only.");
   });
@@ -538,7 +538,7 @@ describe("buildPaperclipTaskMarkdown", () => {
 
     expect(acceptedConfirmation).toContain("Accepted plan directive:");
     expect(acceptedConfirmation).toContain(
-      "Implement the accepted plan on this issue.",
+      "Implement the accepted plan on this issue when the work is small and cohesive.",
     );
     expect(acceptedConfirmation).not.toContain("- Work mode: \"planning\"");
   });
@@ -646,7 +646,7 @@ describe("buildPaperclipTaskMarkdown", () => {
     });
 
     expect(commentWake).toContain("Update the plan only. Do not write code or perform implementation work.");
-    expect(commentWake).not.toContain("Implement the accepted plan on this issue.");
+    expect(commentWake).not.toContain("Create child issues from the approved plan only");
   });
 });
 

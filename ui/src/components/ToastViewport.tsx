@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { AgentAvatar } from "./AgentAvatar";
 import { deriveInitials } from "./Identity";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -11,7 +12,6 @@ import {
   type ToastTone,
 } from "../context/ToastContext";
 import { cn } from "../lib/utils";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 const toneClasses: Record<ToastTone, string> = {
   info: "border-sky-300 bg-sky-50 text-sky-900 dark:border-sky-500/25 dark:bg-sky-950/60 dark:text-sky-100",
@@ -34,6 +34,7 @@ function AnimatedToast({
   toast: ToastItem;
   onDismiss: (id: string) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -62,7 +63,7 @@ function AnimatedToast({
         ) : (
           <span className={cn("mt-1 h-2 w-2 shrink-0 rounded-full", toneDotClasses[toast.tone])} />
         )}
-        <div className={cn("min-w-0 flex-1", ANALYTICS_MASK_CLASS)}>
+        <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold leading-5">{toast.title}</p>
           {toast.body && (
             <p className="mt-1 text-xs leading-4 opacity-70">
@@ -93,7 +94,7 @@ function AnimatedToast({
         </div>
         <button
           type="button"
-          aria-label="Dismiss notification"
+          aria-label={pageText("dismissNotification_dc83cd")}
           onClick={() => onDismiss(toast.id)}
           className="mt-0.5 shrink-0 rounded p-1 opacity-50 hover:bg-black/10 hover:opacity-100 dark:hover:bg-white/10"
         >

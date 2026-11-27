@@ -31,7 +31,6 @@ import { companyRoutes } from "../routes/companies.js";
 import { buildOpenApiSpec } from "../routes/openapi.js";
 import { registerTimelineReceiptBoundaryCases } from "./helpers/work-timeline-receipt-cases.js";
 import { normalizeTimelineWindow, workTimelineService } from "../services/work-timeline.js";
-import { uniqueIssuePrefix } from "./helpers/issue-prefix.js";
 
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
@@ -101,7 +100,7 @@ describeEmbeddedPostgres("work timeline aggregation", () => {
     await db.insert(companies).values({
       id: companyId,
       name: "Timeline Co",
-      issuePrefix: uniqueIssuePrefix("T"),
+      issuePrefix: `T${randomUUID().replace(/-/g, "").slice(0, 4).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
     await db.insert(authUsers).values({
@@ -368,7 +367,7 @@ describeEmbeddedPostgres("work timeline aggregation", () => {
     await db.insert(companies).values({
       id: otherCompanyId,
       name: "Other Timeline Co",
-      issuePrefix: uniqueIssuePrefix("O"),
+      issuePrefix: `O${randomUUID().replace(/-/g, "").slice(0, 4).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
     await db.insert(agents).values({

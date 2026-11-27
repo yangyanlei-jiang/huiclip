@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { configFieldsForSection } from "../config-sections";
 import type { AdapterConfigFieldsProps } from "../types";
 import {
@@ -34,9 +35,10 @@ export function ProcessConfigFields({
   eff,
   mark,
 }: AdapterConfigFieldsProps) {
+  const { t: pageText } = usePageTranslation("interface");
   return configFieldsForSection(section, (
     <>
-      <Field configSection="advanced" label="Command" hint={help.command}>
+      <Field configSection="advanced" label={pageText("command_890189")} hint={help.command}>
         <DraftInput
           value={
             isCreate
@@ -50,10 +52,10 @@ export function ProcessConfigFields({
           }
           immediate
           className={inputClass}
-          placeholder="e.g. node, python"
+          placeholder={pageText("eGNodePython_8c90a4")}
         />
       </Field>
-      <Field configSection="advanced" label="Args (comma-separated)" hint={help.args}>
+      <Field configSection="advanced" label={pageText("argsCommaSeparated_fb37ab")} hint={help.args}>
         <DraftInput
           value={
             isCreate
@@ -71,7 +73,7 @@ export function ProcessConfigFields({
           }
           immediate
           className={inputClass}
-          placeholder="e.g. script.js, --flag"
+          placeholder={pageText("eGScriptJsFlag_74f81c")}
         />
       </Field>
     </>

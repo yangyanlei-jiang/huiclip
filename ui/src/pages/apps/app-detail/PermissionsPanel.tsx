@@ -1,5 +1,8 @@
+import { t as interfaceNotice } from "@/i18n";
+import { t as translateDynamic } from "../../../i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { AgentAvatar } from "@/components/AgentAvatar";
-import { memo, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Ban, Check, FlaskConical, Loader2, RefreshCw, Search, ShieldQuestion } from "lucide-react";
 import type { Agent, ToolCatalogEntry, ToolConnectionCapabilities } from "@paperclipai/shared";
 import { useSearchParams } from "@/lib/router";
@@ -13,16 +16,7 @@ import { cn } from "@/lib/utils";
 import { type InstallState } from "@/lib/tool-installs";
 import { QuarantinedActionsReview } from "./SetupPanel";
 import { ActionTestDialog } from "./ActionTestDialog";
-import { ACTION_PAGE_SIZE } from "./constants";
-import { ProviderToolIcon } from "@/components/ProviderToolIcon";
-import { actionLabel } from "./action-permissions";
-
-/** Action rows without a provider icon show none, as before. */
-function NoIcon() {
-  return null;
-}
 import type { AccessDraft, AppDetailSectionProps } from "./types";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 type ActionPermission = "off" | "ask" | "allowed";
 type ActionKindFilter = "all" | "read" | "write";
@@ -123,28 +117,27 @@ function AgentAccessSection({
   disabled: boolean;
   onSave: (next: AccessDraft) => void;
 }) {
-  const liveAgents = useMemo(() => agents.filter((agent) => agent.status !== "terminated"), [agents]);
+  const { t: pageText } = usePageTranslation("interface");
+  const liveAgents = agents.filter((agent) => agent.status !== "terminated");
   const canManage = capabilities?.canConfigure ?? false;
   const editableAgentIds = capabilities?.editableAgentIds;
-  const selectableAgents = useMemo(() => {
-    if (!editableAgentIds) return liveAgents;
-    const editable = new Set(editableAgentIds);
-    return liveAgents.filter((agent) => editable.has(agent.id));
-  }, [editableAgentIds, liveAgents]);
+  const selectableAgents = editableAgentIds
+    ? liveAgents.filter((agent) => editableAgentIds.includes(agent.id))
+    : liveAgents;
   const selectedAgents = liveAgents.filter((agent) => access.agentIds.has(agent.id));
   const requiredAgentIds = install.agentIds;
 
   return (
     <section className="space-y-4 border-t border-border pt-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold text-foreground">Which agents can use this connection?</h2>
-        {disabled ? <span className="text-xs text-muted-foreground">Saving…</span> : null}
+        <h2 className="text-sm font-semibold text-foreground">{pageText("whichAgentsCanUseThisConnection_158d1a")}</h2>
+        {disabled ? <span className="text-xs text-muted-foreground">{pageText("saving_56a228")}</span> : null}
       </div>
 
       {canManage ? (
         <div className="space-y-3">
           <RadioCardGroup
-            ariaLabel="Which agents can use this connection"
+            ariaLabel={interfaceNotice("interface:whichAgentsCanUseThisConnection_d56d22")}
             value={access.mode}
             disabled={disabled}
             className="sm:grid-cols-2"
@@ -180,7 +173,7 @@ function AgentAccessSection({
               triggerLabel={access.agentIds.size === 0
                 ? "Choose agents"
                 : `${access.agentIds.size} ${access.agentIds.size === 1 ? "agent" : "agents"} selected`}
-              emptyMessage="You cannot edit any agents yet."
+              emptyMessage={pageText("youCannotEditAnyAgentsYet_bdf6ad")}
               isAgentDisabled={(agent) => requiredAgentIds.has(agent.id)}
               getDescription={(agent) => requiredAgentIds.has(agent.id) ? "Required by this connection's install setting" : agent.title}
               onChange={(agentIds) => onSave({
@@ -191,9 +184,9 @@ function AgentAccessSection({
           ) : null}
         </div>
       ) : access.mode === "all" ? (
-        <p className="text-sm text-muted-foreground">Any agent can use this connection.</p>
+        <p className="text-sm text-muted-foreground">{pageText("anyAgentCanUseThisConnection_008159")}</p>
       ) : selectedAgents.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No agents can use this connection.</p>
+        <p className="text-sm text-muted-foreground">{pageText("noAgentsCanUseThisConnection_a33896")}</p>
       ) : (
         <div className="space-y-0.5">
           {selectedAgents.map((agent) => (
@@ -241,28 +234,31 @@ export function ActionsSection({
   onReviewQuarantined: (enabledIds: string[]) => void;
   onRefreshActions: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const [query, setQuery] = useState("");
   const [kindFilter, setKindFilter] = useState<ActionKindFilter>("all");
   const [showPermissionChangeWarning, setShowPermissionChangeWarning] = useState(false);
+  const byName = (a: ToolCatalogEntry, b: ToolCatalogEntry) =>
+    (a.title ?? a.toolName).localeCompare(b.title ?? b.toolName);
   const sortedRead = useMemo(() => [...readOnly].sort(byName), [readOnly]);
   const sortedWrite = useMemo(() => [...canChange].sort(byName), [canChange]);
-  const needle = query.trim().toLowerCase();
-  const visibleRead = useMemo(() => kindFilter === "write" ? [] : sortedRead.filter(entry => matchesAction(entry, needle)), [kindFilter, needle, sortedRead]);
-  const visibleWrite = useMemo(() => kindFilter === "read" ? [] : sortedWrite.filter(entry => matchesAction(entry, needle)), [kindFilter, needle, sortedWrite]);
-  const setPermission = useCallback((ids: string[], next: ActionPermission) => {
-    setShowPermissionChangeWarning(true);
-    onSetPermission(ids, next);
-  }, [onSetPermission]);
+  const matches = (entry: ToolCatalogEntry) => {
+    const needle = query.trim().toLowerCase();
+    if (!needle) return true;
+    return (entry.title ?? entry.toolName).toLowerCase().includes(needle)
+      || (entry.description ?? "").toLowerCase().includes(needle);
+  };
+  const visibleRead = kindFilter === "write" ? [] : sortedRead.filter(matches);
+  const visibleWrite = kindFilter === "read" ? [] : sortedWrite.filter(matches);
   const visibleCount = visibleRead.length + visibleWrite.length;
 
   return (
-    <TooltipProvider>
     <section className="space-y-6 border-t border-border pt-8">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-lg font-semibold text-foreground">Actions</h2>
+        <h2 className="text-lg font-semibold text-foreground">{pageText("actions_c3cd63")}</h2>
         {canConfigure ? (
           <div className="flex items-center gap-2">
-            {disabled ? <span className="text-xs text-muted-foreground">Saving…</span> : null}
+            {disabled ? <span className="text-xs text-muted-foreground">{pageText("saving_56a228")}</span> : null}
             <Button
               variant="outline"
               size="sm"
@@ -273,9 +269,7 @@ export function ActionsSection({
                 <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
               ) : (
                 <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
-              )}
-              Refresh actions
-            </Button>
+              )}{pageText("refreshActions_cd6518")}</Button>
           </div>
         ) : null}
       </div>
@@ -299,30 +293,26 @@ export function ActionsSection({
           <div className="relative min-w-(--sz-12rem) flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              aria-label="Find an action"
-              placeholder="Find an action…"
+              aria-label={pageText("findAnAction_7f56d2")}
+              placeholder={pageText("findAnAction_7c227d")}
               className="pl-9"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
           </div>
-          <FilterChip label={`All ${readOnly.length + canChange.length}`} active={kindFilter === "all"} onClick={() => setKindFilter("all")} />
-          <FilterChip label={`Read ${readOnly.length}`} active={kindFilter === "read"} onClick={() => setKindFilter("read")} />
-          <FilterChip label={`Write ${canChange.length}`} active={kindFilter === "write"} onClick={() => setKindFilter("write")} />
+          <FilterChip label={translateDynamic("dynamic:all", { value1: readOnly.length + canChange.length })} active={kindFilter === "all"} onClick={() => setKindFilter("all")} />
+          <FilterChip label={translateDynamic("dynamic:read", { value1: readOnly.length })} active={kindFilter === "read"} onClick={() => setKindFilter("read")} />
+          <FilterChip label={translateDynamic("dynamic:write", { value1: canChange.length })} active={kindFilter === "write"} onClick={() => setKindFilter("write")} />
         </div>
-        <p className="text-xs text-muted-foreground">{visibleCount} matches · sorted A–Z</p>
+        <p className="text-xs text-muted-foreground">{visibleCount}{" " + pageText("matchesSortedAZ_92814d")}</p>
       </div>
 
       {visibleCount === 0 ? (
-        <div className="py-6 text-center text-sm text-muted-foreground">
-          No actions match “{query}”. Clear the search to see them all.
-        </div>
+        <div className="py-6 text-center text-sm text-muted-foreground">{pageText("noActionsMatch_0b6026")}{query}{pageText("clearTheSearchToSeeThemAll_eac283")}</div>
       ) : (
         <div className="space-y-6">
           <ActionGroup
-            key={`read:${needle}:${kindFilter}`}
-            kind="read"
-            title={`Read (${visibleRead.length})`}
+            title={translateDynamic("dynamic:readCount", { value1: visibleRead.length })}
             actions={visibleRead}
             connectionId={connectionId}
             appName={appName}
@@ -331,12 +321,13 @@ export function ActionsSection({
             disabled={disabled}
             focusId={focusId}
             canConfigure={canConfigure}
-            onSetPermission={setPermission}
+            onSetPermission={(ids, next) => {
+              setShowPermissionChangeWarning(true);
+              onSetPermission(ids, next);
+            }}
           />
           <ActionGroup
-            key={`write:${needle}:${kindFilter}`}
-            kind="write"
-            title={`Write (${visibleWrite.length})`}
+            title={translateDynamic("dynamic:writeCount", { value1: visibleWrite.length })}
             actions={visibleWrite}
             connectionId={connectionId}
             appName={appName}
@@ -345,12 +336,14 @@ export function ActionsSection({
             disabled={disabled}
             focusId={focusId}
             canConfigure={canConfigure}
-            onSetPermission={setPermission}
+            onSetPermission={(ids, next) => {
+              setShowPermissionChangeWarning(true);
+              onSetPermission(ids, next);
+            }}
           />
         </div>
       )}
     </section>
-    </TooltipProvider>
   );
 }
 
@@ -372,18 +365,7 @@ function FilterChip({ label, active, onClick }: { label: string; active: boolean
   );
 }
 
-
-function byName(a: ToolCatalogEntry, b: ToolCatalogEntry) {
-  return actionLabel(a).localeCompare(actionLabel(b));
-}
-
-function matchesAction(entry: ToolCatalogEntry, needle: string) {
-  return !needle || actionLabel(entry).toLowerCase().includes(needle)
-    || (entry.description ?? "").toLowerCase().includes(needle);
-}
-
 function ActionGroup({
-  kind,
   title,
   actions,
   connectionId,
@@ -395,7 +377,6 @@ function ActionGroup({
   canConfigure,
   onSetPermission,
 }: {
-  kind: "read" | "write";
   title: string;
   actions: ToolCatalogEntry[];
   connectionId: string;
@@ -407,10 +388,7 @@ function ActionGroup({
   canConfigure: boolean;
   onSetPermission: (ids: string[], next: ActionPermission) => void;
 }) {
-  const [visibleLimit, setVisibleLimit] = useState(ACTION_PAGE_SIZE);
-  const visibleActions = actions.slice(0, visibleLimit);
-  const focusedAction = focusId ? actions.find(action => action.id === focusId) : undefined;
-  if (focusedAction && !visibleActions.includes(focusedAction)) visibleActions.push(focusedAction);
+  const { t: pageText } = usePageTranslation("interface");
   if (actions.length === 0) return null;
   const groupValue = (() => {
     const first = actionPermission(actions[0]!.id, enabledIds, askFirstIds);
@@ -427,9 +405,9 @@ function ActionGroup({
           // connection's writes is one choice rather than one per action;
           // per-row overrides stay underneath.
           <label className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span className="sr-only">{`Set every action in ${title}`}</span>
+            <span className="sr-only">{translateDynamic("dynamic:setEveryActionIn", { value1: title })}</span>
             <select
-              aria-label={`Set every action in ${title}`}
+              aria-label={translateDynamic("dynamic:setEveryActionIn", { value1: title })}
               value={groupValue}
               disabled={disabled}
               onChange={(event) => {
@@ -440,7 +418,7 @@ function ActionGroup({
               }}
               className="h-7 rounded-md border border-input bg-background px-2 text-xs text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
             >
-              {groupValue === "" ? <option value="">Mixed</option> : null}
+              {groupValue === "" ? <option value="">{pageText("mixed_c0dcb8")}</option> : null}
               {PERMISSION_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>{`Set all: ${option.label}`}</option>
               ))}
@@ -449,7 +427,7 @@ function ActionGroup({
         ) : null}
       </div>
       <div className="divide-y divide-border">
-        {visibleActions.map((action) => (
+        {actions.map((action) => (
           <ActionRow
             key={action.id}
             action={action}
@@ -463,11 +441,6 @@ function ActionGroup({
           />
         ))}
       </div>
-      {visibleLimit < actions.length ? (
-        <Button type="button" variant="outline" size="sm" className="mt-3" onClick={() => setVisibleLimit(limit => limit + ACTION_PAGE_SIZE)}>
-          Show more {kind} actions
-        </Button>
-      ) : null}
     </div>
   );
 }
@@ -483,7 +456,7 @@ const PERMISSION_OPTIONS: Array<{
   { value: "allowed", label: "Allowed", description: "Runs without approval.", icon: Check },
 ];
 
-const ActionRow = memo(function ActionRow({
+function ActionRow({
   action,
   connectionId,
   appName,
@@ -502,9 +475,10 @@ const ActionRow = memo(function ActionRow({
   canConfigure: boolean;
   onSetPermission: (ids: string[], next: ActionPermission) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const rowRef = useRef<HTMLDivElement | null>(null);
   const [testOpen, setTestOpen] = useState(false);
-  const title = actionLabel(action);
+  const title = action.title ?? action.toolName;
 
   useEffect(() => {
     if (focused) rowRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -522,16 +496,13 @@ const ActionRow = memo(function ActionRow({
       >
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            {action.icons?.length ? (
-              <ProviderToolIcon icons={action.icons} fallback={NoIcon} className="h-4 w-4 shrink-0" testId="app-action-icon" />
-            ) : null}
             <span className="text-sm font-medium text-foreground">{title}</span>
             {/* PAP-659 C7: the gate is only as good as the classifier, so say
                 what each action was classified as. A misfiled tool is then one
                 glance to spot and one click to move. */}
             <span
               className="rounded-full border border-border px-1.5 py-px text-xs font-medium uppercase tracking-wide text-muted-foreground"
-              title={`Paperclip classified this action as ${action.riskLevel}`}
+              title={translateDynamic("dynamic:paperclipClassifiedThisActionAs", { value1: action.riskLevel })}
             >
               {action.riskLevel}
             </span>
@@ -542,6 +513,7 @@ const ActionRow = memo(function ActionRow({
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {canConfigure ? (
+            <TooltipProvider>
               <div
                 role="radiogroup"
                 aria-label={`${title} permission`}
@@ -570,34 +542,33 @@ const ActionRow = memo(function ActionRow({
                         <Icon className="h-3.5 w-3.5" />
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent className={ANALYTICS_MASK_CLASS} side="top">
+                    <TooltipContent side="top">
                       <span className="font-medium">{option.label}</span> — {option.description}
                     </TooltipContent>
                   </Tooltip>
                 );
               })}
               </div>
+            </TooltipProvider>
           ) : (
             <span className="text-sm text-muted-foreground">
               {PERMISSION_OPTIONS.find((option) => option.value === value)?.label}
             </span>
           )}
           <Button type="button" size="sm" variant="outline" onClick={() => setTestOpen(true)}>
-            <FlaskConical className="mr-1.5 h-3.5 w-3.5" />
-            Test
-          </Button>
+            <FlaskConical className="mr-1.5 h-3.5 w-3.5" />{pageText("test_640ab2")}</Button>
         </div>
       </div>
-      {testOpen ? <ActionTestDialog
+      <ActionTestDialog
         connectionId={connectionId}
         appName={appName}
         entry={action}
         open={testOpen}
         onOpenChange={setTestOpen}
-      /> : null}
+      />
     </>
   );
-});
+}
 
 function actionPermission(
   id: string,

@@ -1,6 +1,9 @@
+import { t as interfaceNotice } from "@/i18n";
+import { optionLabel } from "@/i18n/option-label";
+import { t as translateDynamic } from "../i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { PrimaryAgentIndicator } from "@/components/primary-agent/PrimaryAgentPresentation";
 import { AgentBulkRoster } from "@/components/agents/AgentBulkRoster";
-import { AgentRosterFilters, useAgentRosterFilters } from "@/components/agents/AgentRosterFilters";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import { Link, useNavigate, useLocation } from "@/lib/router";
@@ -133,9 +136,9 @@ function describeEnvironment(
 
 function describeMissingEnvironment(environmentId: string): EnvironmentDescriptor {
   return {
-    label: "Unknown environment",
+    label: translateDynamic("dynamic:unknownEnvironment"),
     detail: environmentId.slice(0, 8),
-    title: `Unknown environment - ${environmentId}`,
+    title: translateDynamic("dynamic:unknownEnvironmentId", { id: environmentId }),
   };
 }
 
@@ -153,10 +156,10 @@ function resolveAgentEnvironment(
     : describeMissingEnvironment(environmentId);
 }
 
-function filterOrgTree(nodes: OrgNode[], tab: FilterTab, builtInAgentIds: Set<string>, matchingIds?: Set<string>): OrgNode[] {
+function filterOrgTree(nodes: OrgNode[], tab: FilterTab, builtInAgentIds: Set<string>): OrgNode[] {
   return nodes
     .reduce<OrgNode[]>((acc, node) => {
-      const filteredReports = filterOrgTree(node.reports, tab, builtInAgentIds, matchingIds);
+      const filteredReports = filterOrgTree(node.reports, tab, builtInAgentIds);
       // Hidden agents (terminated / pending_approval) never render as a row, but
       // any visible reports are promoted so the tree doesn't lose live agents.
       if (HIDDEN_AGENT_STATUSES.has(node.status)) {
@@ -166,7 +169,7 @@ function filterOrgTree(nodes: OrgNode[], tab: FilterTab, builtInAgentIds: Set<st
       const nodeMatches = tab === "builtin"
         ? builtInAgentIds.has(node.id)
         : matchesFilter(node.status, tab);
-      if ((nodeMatches && (!matchingIds || matchingIds.has(node.id))) || filteredReports.length > 0) {
+      if (nodeMatches || filteredReports.length > 0) {
         acc.push({ ...node, reports: filteredReports });
       }
       return acc;
@@ -175,6 +178,7 @@ function filterOrgTree(nodes: OrgNode[], tab: FilterTab, builtInAgentIds: Set<st
 }
 
 export function Agents() {
+  const { t: pageText } = usePageTranslation("interface");
   const { selectedCompanyId } = useCompany();
   const { openNewAgent } = useDialogActions();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -216,7 +220,6 @@ export function Agents() {
     enabled: !!selectedCompanyId,
   });
   const { data: agents, isLoading } = agentsQuery;
-  const rosterFilters = useAgentRosterFilters(selectedCompanyId, agents);
   const agentsView = useQueryView(agentsQuery);
 
   const { data: orgTree } = useQuery({
@@ -300,7 +303,7 @@ export function Agents() {
   }, [agents, environmentsById, environmentCapabilities, instanceSettings?.defaultEnvironmentId]);
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Agents" }]);
+    setBreadcrumbs([{ label: interfaceNotice("interface:agents_64acf7") }]);
   }, [setBreadcrumbs]);
 
   useEffect(() => {
@@ -310,7 +313,7 @@ export function Agents() {
   }, [navigate, requestedTab]);
 
   if (!selectedCompanyId) {
-    return <EmptyState icon={Bot} message="Select a company to view agents." />;
+    return <EmptyState icon={Bot} message={pageText("selectACompanyToViewAgents_d78737")} />;
   }
 
   // Keep a loaded list on screen through a failed refetch; only a real
@@ -330,8 +333,8 @@ export function Agents() {
     );
   }
 
-  const filtered = filterAgents(agents ?? [], tab, builtInAgentIds).filter(rosterFilters.matches);
-  const filteredOrg = filterOrgTree(orgTree ?? [], tab, builtInAgentIds, rosterFilters.activeCount ? new Set(filtered.map(agent => agent.id)) : undefined);
+  const filtered = filterAgents(agents ?? [], tab, builtInAgentIds);
+  const filteredOrg = filterOrgTree(orgTree ?? [], tab, builtInAgentIds);
   const environmentDataLoading = environmentsEnabled && environments === undefined;
   const showEnvironmentColumn = environmentsEnabled && (environments === undefined || environments.length > 1);
   const resolveRenderedEnvironment = (agentId: string) => (
@@ -362,9 +365,7 @@ export function Agents() {
               size="xs"
               variant="outline"
               onClick={() => setConfigureState(builtInState)}
-            >
-              Set up
-            </Button>
+            >{pageText("setUp_a5041f")}</Button>
           </span>
         )}
       </>
@@ -382,11 +383,11 @@ export function Agents() {
         titleClassName="flex-1"
         titleTextClassName="whitespace-normal break-words xl:truncate xl:whitespace-nowrap"
         subtitleClassName="whitespace-normal break-words xl:truncate xl:whitespace-nowrap"
-        subtitle={`${roleLabels[agent.role] ?? agent.role}${agent.title ? ` - ${agent.title}` : ""}`}
+        subtitle={`${roleLabels[agent.role] ? optionLabel(roleLabels[agent.role]) : agent.role}${agent.title ? ` - ${agent.title}` : ""}`}
         to={agentUrl(agent)}
         className="agent-roster-identity group py-3"
         leading={hasInvalidOrgChain ? (
-          <AlertTriangle className="h-3.5 w-3.5 text-amber-500" aria-label="Invalid reporting chain" />
+          <AlertTriangle className="h-3.5 w-3.5 text-amber-500" aria-label={pageText("invalidReportingChain_720f9d")} />
         ) : (
           <AgentAvatar agent={agent} size={32} />
         )}
@@ -397,7 +398,7 @@ export function Agents() {
             {showEnvironmentColumn && <span className="text-xs text-muted-foreground" title={resolveRenderedEnvironment(agent.id).title}>
               {resolveRenderedEnvironment(agent.id).label} · {resolveRenderedEnvironment(agent.id).detail}
             </span>}
-            {agent.lastHeartbeatAt && <span className="text-xs text-muted-foreground" title="Last heartbeat">{relativeTime(agent.lastHeartbeatAt)}</span>}
+            {agent.lastHeartbeatAt && <span className="text-xs text-muted-foreground" title={pageText("lastHeartbeat_aac4b5")}>{relativeTime(agent.lastHeartbeatAt)}</span>}
           </div>
         )}
       />
@@ -423,15 +424,15 @@ export function Agents() {
         <div className="flex items-center gap-2">
           {/* View toggle */}
           {!forceListView && (
-            <div className="flex items-center border border-border" role="group" aria-label="View mode">
+            <div className="flex items-center border border-border" role="group" aria-label={pageText("viewMode_1b3603")}>
               <button
                 className={cn(
                   "p-1.5 transition-colors",
                   effectiveView === "list" ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent/50"
                 )}
                 onClick={() => setView("list")}
-                title="List view"
-                aria-label="List view"
+                title={pageText("listView_694bbd")}
+                aria-label={pageText("listView_694bbd")}
                 aria-pressed={effectiveView === "list"}
               >
                 <List className="h-3.5 w-3.5" />
@@ -442,8 +443,8 @@ export function Agents() {
                   effectiveView === "org" ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent/50"
                 )}
                 onClick={() => setView("org")}
-                title="Org chart view"
-                aria-label="Org chart view"
+                title={pageText("orgChartView_dfd2b1")}
+                aria-label={pageText("orgChartView_dfd2b1")}
                 aria-pressed={effectiveView === "org"}
               >
                 <GitBranch className="h-3.5 w-3.5" />
@@ -451,18 +452,18 @@ export function Agents() {
             </div>
           )}
           <Button size="sm" variant="outline" onClick={openNewAgent}>
-            <Plus className="h-3.5 w-3.5 mr-1.5" />
-            New Agent
-          </Button>
+            <Plus className="h-3.5 w-3.5 mr-1.5" />{pageText("newAgent_94c537")}</Button>
         </div>
       </div>
 
-      <AgentRosterFilters {...rosterFilters} count={filtered.length} />
+      {filtered.length > 0 && (
+        <p className="text-xs text-muted-foreground">{filtered.length}{" " + pageText("agent_0608c4")}{filtered.length !== 1 ? "s" : ""}</p>
+      )}
 
       {agents && agents.length === 0 && (
         <EmptyState
           icon={Bot}
-          message="Create your first agent to get started."
+          message={pageText("createYourFirstAgentToGetStarted_71ba80")}
           action="New Agent"
           onAction={openNewAgent}
         />
@@ -471,7 +472,7 @@ export function Agents() {
       {/* List view */}
       {effectiveView === "list" && agents && agents.length > 0 && (
         <AgentBulkRoster key={selectedCompanyId} companyId={selectedCompanyId}
-          agents={agents}
+          agents={agents.filter(agent => !HIDDEN_AGENT_STATUSES.has(agent.status))}
           visibleAgents={filtered} renderAgent={renderAgentRow} renderStatus={renderAgentStatus} />
       )}
 
@@ -498,15 +499,11 @@ export function Agents() {
       )}
 
       {effectiveView === "org" && orgTree && orgTree.length > 0 && filteredOrg.length === 0 && (
-        <p className="text-sm text-muted-foreground text-center py-8">
-          No agents match the selected filters.
-        </p>
+        <p className="text-sm text-muted-foreground text-center py-8">{pageText("noAgentsMatchTheSelectedStatus_436e26")}</p>
       )}
 
       {effectiveView === "org" && orgTree && orgTree.length === 0 && (
-        <p className="text-sm text-muted-foreground text-center py-8">
-          No organizational hierarchy defined.
-        </p>
+        <p className="text-sm text-muted-foreground text-center py-8">{pageText("noOrganizationalHierarchyDefined_10490f")}</p>
       )}
       {configureState && selectedCompanyId && (
         <Suspense fallback={null}>
@@ -545,6 +542,7 @@ function OrgTreeNode({
   builtInByAgentId: Map<string, BuiltInAgentState>;
   onConfigureBuiltIn: (state: BuiltInAgentState) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const agent = agentMap.get(node.id);
   const builtInState = builtInByAgentId.get(node.id);
   const showBuiltInLifecycle = builtInState?.status === "needs_setup" || builtInState?.status === "pending_approval";
@@ -557,7 +555,7 @@ function OrgTreeNode({
         className="group flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-accent/50 transition-colors w-full text-left no-underline text-inherit"
       >
         {hasInvalidOrgChain ? (
-          <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" aria-label="Invalid reporting chain" />
+          <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" aria-label={pageText("invalidReportingChain_720f9d")} />
         ) : (
           <AgentAvatar agent={agent ?? node} size={24} />
         )}
@@ -568,7 +566,7 @@ function OrgTreeNode({
           <div className="min-w-(--sz-7rem) truncate">
             <span className="text-sm font-medium">{node.name}</span>
             <span className="text-xs text-muted-foreground ml-2">
-              {roleLabels[node.role] ?? node.role}
+              {roleLabels[node.role] ? optionLabel(roleLabels[node.role]) : node.role}
               {agent?.title ? ` - ${agent.title}` : ""}
             </span>
           </div>
@@ -582,9 +580,7 @@ function OrgTreeNode({
                     e.stopPropagation();
                   }}
                 >
-                  <Button size="xs" variant="outline" onClick={() => onConfigureBuiltIn(builtInState)}>
-                    Set up
-                  </Button>
+                  <Button size="xs" variant="outline" onClick={() => onConfigureBuiltIn(builtInState)}>{pageText("setUp_a5041f")}</Button>
                 </span>
               )}
             </div>
@@ -708,6 +704,7 @@ function LiveRunIndicator({
   runId: string;
   liveCount: number;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <Link
       to={`/agents/${agentRef}/runs/${runId}`}
@@ -718,8 +715,7 @@ function LiveRunIndicator({
         <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
         <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
       </span>
-      <span className="text-(length:--text-micro) font-medium text-blue-600 dark:text-blue-400">
-        Live{liveCount > 1 ? ` (${liveCount})` : ""}
+      <span className="text-(length:--text-micro) font-medium text-blue-600 dark:text-blue-400">{pageText("live_65c821")}{liveCount > 1 ? ` (${liveCount})` : ""}
       </span>
     </Link>
   );

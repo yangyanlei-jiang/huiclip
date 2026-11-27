@@ -10,10 +10,11 @@ import { queryKeys } from "@/lib/queryKeys";
 
 let detachedClient: QueryClient | null = null;
 
-/** Default-off visibility gate for experimental chat connectors; does not pause existing provider delivery. */
+/** Independent default-off visibility gates; these do not pause existing provider delivery. */
 export function useChatConnectorsEnabled(): {
   enabled: boolean;
   loaded: boolean;
+  githubEnabled: boolean;
 } {
   const contextClient = useContext(QueryClientContext);
   const query = useQuery(
@@ -27,11 +28,12 @@ export function useChatConnectorsEnabled(): {
   const { data, isFetched } = query;
   const view = useQueryView(query);
   if (!contextClient)
-    return { enabled: false, loaded: true };
-  // Derive the gate from data, not `isError`: cached settings stay visible while a
+    return { enabled: false, githubEnabled: false, loaded: true };
+  // Derive the gates from data, not `isError`: cached settings stay visible while a
   // refetch is failing; only a no-data failure reports `loaded` without the flag.
   return {
     enabled: view.kind !== "error" && data?.enableChatConnectors === true,
+    githubEnabled: view.kind !== "error" && data?.enableGitHubReviewBots === true,
     loaded: isFetched,
   };
 }
@@ -40,11 +42,12 @@ export function useChatConnectorsEnabled(): {
 export function chatProviderVisible(
   provider: string | null | undefined,
   chatEnabled: boolean,
+  githubEnabled: boolean,
 ) {
   return (
     provider === "agentmail" ||
-    provider === "github" ||
-    provider === "github-code-review-bot" ||
-    chatEnabled
+    (provider === "github" || provider === "github-code-review-bot"
+      ? githubEnabled
+      : chatEnabled)
   );
 }

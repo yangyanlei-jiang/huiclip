@@ -1,9 +1,3 @@
-import { retrySlackFormAcknowledgement } from "./chat-channels/slack/form-retry.js";
-import { createSlackFormConnectorAccess, registerSlackFormWorkOwner, reconcilePendingSlackFormWork, stageSlackFormOwnerConfiguration } from "./chat-channels/slack/form-owner.js";
-import { createSlackFormDeliveryOwner } from "./chat-channels/slack/form-delivery.js";
-import { createSlackFormPublicationStage } from "./chat-channels/slack/form-publication.js";
-import { withSlackCloudAcceptedAt, SlackCloudReceiptError } from "./chat-channels/slack/cloud-event.js";
-import { currentSlackFormOwnerBinding, withSlackFormSubmissionEvidence } from "./chat-channels/slack/cloud-forms.js";
 import { githubReviewCheckService } from "./chat-github-checks.js";
 import { createSlackCloudEventIngress } from "./chat-channels/slack/cloud-ingress.js";
 import { createSlackCloudEnrollment, stageSlackCloudEnrollmentIntent, registerSlackCloudEnrollmentOwner } from "./chat-channels/slack/cloud-enrollment.js";
@@ -850,30 +844,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
   }
 
   const withCredentialMutationLease = chatCredentialMutationLease(db, options);
-  const slackForms = createSlackFormConnectorAccess();
-  const handleSlackFormReceipt = createSlackFormDeliveryOwner(db, {
-    connector: slackForms.connector, protocol: slackForms.protocol, withCredentialMutationLease, resolveCredentials,
-    webhookUrl: publicId => `${getWebhookPublicBaseUrl()}/api/chat-webhooks/${publicId}/slack`,
-    handleWebhook: (publicId, request, generation, acceptedAt) => withSlackCloudAcceptedAt(request, acceptedAt,
-      () => handleWebhook(publicId, "slack", request, { slackCloudGeneration: generation })),
-  });
-  const unregisterSlackFormWork = registerSlackFormWorkOwner(db, now => reconcilePendingSlackFormWork(db, {
-    identity: slackForms.identity(), protocol: slackForms.protocol, connector: slackForms.connector,
-    resolveBotToken: async endpointId => {
-      const record = await endpointRecord(endpointId);
-      if (!record || record.endpoint.provider !== "slack") throw new SlackCloudReceiptError("form_endpoint_custody_missing", "attention");
-      return withCredentialMutationLease(record.endpoint, async lease => {
-        const credentials = await resolveCredentials(record.endpoint, db, ["botToken"]);
-        await lease.assertOwned();
-        if (!credentials.botToken) throw new SlackCloudReceiptError("form_bot_credential_unavailable", "attention");
-        return credentials.botToken;
-      });
-    },
-    report: (reason, actionId) => logger.warn({ reason, actionId }, "Slack form custody requires attention"),
-  }, now));
   const unregisterSlackCloudIngress = createSlackCloudEventIngress(db, {
-    connectorIdentity: () => slackForms.identity() ?? undefined,
-    handleFormReceipt: handleSlackFormReceipt,
     withCredentialMutationLease, resolveCredentials, runtimeGeneration: endpoint => runtimeGeneration(endpoint.setup),
     handleWebhook: (publicId, provider, request, generation) => handleWebhook(publicId, provider, request, { slackCloudGeneration: generation }),
   });
@@ -2650,10 +2621,10 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
               thread,
             })
           : Promise.resolve()),
-        // Slack shows the working state through the Agents & AI Apps session
-        // status (agents.sessions.setStatus, set from the publication's
-        // progressState in chat-channels/slack/session-status.ts) and the
-        // coalesced lifecycle reply below, so no separate typing indicator.
+        // Slack implements this through assistant.threads.setStatus, which
+        // requires assistant:write. The least-privilege Paperclip manifest
+        // deliberately does not request that scope; the coalesced lifecycle
+        // reply below is the visible working state instead.
         endpoint.provider === "slack"
           ? Promise.resolve()
           : thread.startTyping("Working…"),
@@ -3051,11 +3022,12 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       const response = await handleGitHubWebhookEvent(endpoint, request, endpointRuntime, runtimeContext);
       if (response) return response;
     }
-    const invokeWebhook = () => endpointRuntime.handleWebhook(request, undefined, githubResponseDeadlineAt ?? undefined,
-      provider === "telegram" ? serviceReceivedAtMs : undefined);
-    const response = provider === "slack"
-      ? await withSlackFormSubmissionEvidence(request, endpoint.id, currentSlackFormOwnerBinding({ ...endpoint.setup }) !== null, invokeWebhook)
-      : await invokeWebhook();
+    const response = await endpointRuntime.handleWebhook(
+      request,
+      undefined,
+      githubResponseDeadlineAt ?? undefined,
+      provider === "telegram" ? serviceReceivedAtMs : undefined,
+    );
     let lifecyclePayload: unknown = null;
     if (response.ok) {
       try {
@@ -3446,21 +3418,14 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       : null;
   }
 
-  const slackCloudEnrollment = createSlackCloudEnrollment(db, { resolveCredentials, runtimeGeneration,
-    onCommitted: async (tx, values) => { await stageSlackFormOwnerConfiguration(tx, values.endpointId, values.active, values.subject,
-      { instanceId: values.instanceId, environment: values.environment }); },
-  });
+  const slackCloudEnrollment = createSlackCloudEnrollment(db, { resolveCredentials, runtimeGeneration });
   const unregisterSlackCloudEnrollment = registerSlackCloudEnrollmentOwner(db, async endpointId => {
     const record = await endpointRecord(endpointId);
     if (!record) throw new Error("Slack enrollment endpoint is absent");
     await withCredentialMutationLease(record.endpoint, lease => slackCloudEnrollment(endpointId, undefined, lease));
   });
   const { configure, configureWithCredentialLease, runtimeConfig } = createChatConfiguration(db, {
-    stageConfigurationEffects: async (tx, endpointId, actorUserId) => {
-      await stageSlackCloudEnrollmentIntent(tx, endpointId, actorUserId);
-      const identity = slackForms.identity();
-      if (identity) await stageSlackFormOwnerConfiguration(tx, endpointId, false, actorUserId ?? "", identity);
-    },
+    stageConfigurationEffects: stageSlackCloudEnrollmentIntent,
     endpointRecord, get, withCredentialMutationLease, getWebhookPublicBaseUrl, invalidateRuntime,
     nativeBotIdentityMatches, assertNativeBotIdentityAvailable, isNativeBotIdentityUniqueViolation, nativeBotIdentityConflict,
     legacyGitHubLabelsMatchVerifiedCredentials, normalizedCredentials, verifyCredentials,
@@ -3528,7 +3493,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     get publicationTransportPreparationBarrier() { return options.publicationTransportPreparationBarrier; },
   });
   const publicationWorker = createChatPublicationWorker(db, {
-    prepareSlackFormPublication: createSlackFormPublicationStage(db),
     CAPABILITIES, authorizeRetainedChatSourcePublication, claimPublicationTransportAuthorization,
     closeProgressToReplace, commitTaskControlCompletion, currentTaskControlPayload, endpointRecord,
     ensureDurablePublicationTransport, finalizePublicationFailure, hasCommittedTaskControlCompletion,
@@ -3546,7 +3510,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     redactError, CONFIRMATION_WAKEUP_RETRY_BACKOFF_MS, get heartbeat() { return options.heartbeat; },
   });
   const { handleAction, handleModalSubmit, reconcileTerminalConfirmationActions, registerTerminalConfirmationWork } = createChatInteractionCallbacks(db, {
-    withCredentialMutationLease,
     heartbeat: options.heartbeat,
     CAPABILITIES, MAX_ERROR_TEXT, actionThreadMatchesConversation, nonDirectDestinationAllowed, sameTeamsThreadIdentity,
     ensurePrincipal, endpointRecord, runtimeCallbackRecord, runtimeCallbackEndpoint,
@@ -3600,11 +3563,6 @@ return {
     configure,
     inspectPhoton,
     test,
-    retrySlackFormReceipt: async (endpointId: string, actionId: string, management?: ConnectionManagementContext) => {
-      if (!management) throw forbidden("Connection management authority is required");
-      return retrySlackFormAcknowledgement(db, { companyId: management.resource.companyId, endpointId, actionId,
-        identity: slackForms.identity, management });
-    },
     finishSlackSetup: (endpointId: string, userId: string, managementContext?: ConnectionManagementContext) => test(endpointId, { optionalSlackTestForUser: userId }, managementContext),
     setupTestStatus,
     handleWebhook,
@@ -3676,7 +3634,6 @@ return {
       voice.unregisterAgentTools();
       unregisterGitHubCloudIngress();
       unregisterSlackCloudIngress();
-      unregisterSlackFormWork();
       unregisterSlackCloudEnrollment();
       unregisterCommittedResponseAuthority();
       await Promise.allSettled([...publicationEndpointTasks.values()]);

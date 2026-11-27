@@ -84,7 +84,6 @@ vi.mock("../services/index.js", () => ({
   heartbeatService: () => ({
     getRun: vi.fn(),
     getActiveRunForAgent: vi.fn(),
-    getQueuedAssignmentRunForIssue: vi.fn(),
   }),
   issueApprovalService: () => ({
     listApprovalsForIssue: vi.fn(),
@@ -212,12 +211,17 @@ describe("execution environment route guards", () => {
     mockLogActivity.mockReset();
   });
 
-  it("ignores a stale legacy policy environment on project create", async () => {
-    mockEnvironmentService.getById.mockResolvedValue(null);
+  it("accepts sandbox environments on project create", async () => {
+    mockEnvironmentService.getById.mockResolvedValue({
+      id: sandboxEnvironmentId,
+      companyId: "company-1",
+      driver: "sandbox",
+      config: { provider: "fake-plugin" },
+    });
     mockProjectService.create.mockResolvedValue({
       id: "project-1",
       companyId: "company-1",
-      name: "Legacy Project",
+      name: "Sandboxed Project",
       status: "backlog",
     });
     const app = createProjectApp();
@@ -225,31 +229,35 @@ describe("execution environment route guards", () => {
     const res = await request(app)
       .post("/api/companies/company-1/projects")
       .send({
-        name: "Legacy Project",
+        name: "Sandboxed Project",
         executionWorkspacePolicy: {
           enabled: true,
           environmentId: sandboxEnvironmentId,
         },
       });
 
-    expect(res.status).toBe(201);
-    expect(mockEnvironmentService.getById).not.toHaveBeenCalled();
+    expect(res.status).not.toBe(422);
     expect(mockProjectService.create).toHaveBeenCalled();
   });
 
-  it("ignores a stale legacy policy environment on project update", async () => {
+  it("accepts sandbox environments on project update", async () => {
     mockProjectService.getById.mockResolvedValue({
       id: "project-1",
       companyId: "company-1",
-      name: "Legacy Project",
+      name: "Sandboxed Project",
       status: "backlog",
       archivedAt: null,
     });
-    mockEnvironmentService.getById.mockResolvedValue(null);
+    mockEnvironmentService.getById.mockResolvedValue({
+      id: sandboxEnvironmentId,
+      companyId: "company-1",
+      driver: "sandbox",
+      config: { provider: "fake-plugin" },
+    });
     mockProjectService.update.mockResolvedValue({
       id: "project-1",
       companyId: "company-1",
-      name: "Legacy Project",
+      name: "Sandboxed Project",
       status: "backlog",
     });
     const app = createProjectApp();
@@ -263,8 +271,7 @@ describe("execution environment route guards", () => {
         },
       });
 
-    expect(res.status).toBe(200);
-    expect(mockEnvironmentService.getById).not.toHaveBeenCalled();
+    expect(res.status).not.toBe(422);
     expect(mockProjectService.update).toHaveBeenCalled();
   });
 

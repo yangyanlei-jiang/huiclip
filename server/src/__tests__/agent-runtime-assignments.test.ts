@@ -15,7 +15,6 @@ import { toolAccessService } from "../services/tool-access.js";
 import { createToolGatewayService } from "../services/tool-gateway.js";
 import { connectionIntentService } from "../services/connection-intents.js";
 import { aiConnectionService } from "../services/ai-connections.js";
-import { invalidateInstanceSettingsCache } from "../services/instance-settings-cache.js";
 
 vi.mock("../services/subscription-refresh.js", () => ({ refreshSubscriptionConnection: vi.fn().mockResolvedValue(undefined) }));
 
@@ -171,9 +170,8 @@ describeDatabase("connection assignment synchronization", () => {
     await pluginAgentRuntimeState(db, pluginId, companyId, agentId);
     const before = (await events()).length;
     await db.update(instanceSettings).set({ experimental: { enableChatConnectors: true } });
-    invalidateInstanceSettingsCache();
     expect(await events()).toHaveLength(before + 2);
-    expect((await pluginAgentRuntimeState(db, pluginId, companyId, agentId))!.connectionAssignments.features).toEqual({ publicMcp: true, chatConnectors: true });
+    expect((await pluginAgentRuntimeState(db, pluginId, companyId, agentId))!.connectionAssignments.features).toEqual({ publicMcp: false, chatConnectors: true });
   });
   it("refreshes acknowledged runtime state after managed feature overlays change across restarts", async () => {
     await pluginAgentRuntimeState(db, pluginId, companyId, agentId);
@@ -193,7 +191,7 @@ describeDatabase("connection assignment synchronization", () => {
       const delivery = registerPluginLifecycleDelivery(coordinator, db, { call, isRunning: () => true, onConfigApplied: () => () => {} } as never, new EventEmitter() as never);
       try {
         await delivery.ready;
-        await vi.waitFor(() => expect(snapshots).toEqual(Array(2).fill({ publicMcp: true, chatConnectors: enabled })), { timeout: 5000 });
+        await vi.waitFor(() => expect(snapshots).toEqual(Array(2).fill({ publicMcp: enabled, chatConnectors: enabled })), { timeout: 5000 });
         await vi.waitFor(async () => expect(await inbox.list(companyId, 100, undefined, ["agent_runtime"])).toEqual([]), { timeout: 5000 });
         expect(await events()).toHaveLength(before + 2);
       } finally { await delivery.dispose(); await coordinator.stop(); }

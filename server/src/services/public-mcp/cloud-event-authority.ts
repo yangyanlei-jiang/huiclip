@@ -2,6 +2,7 @@ import {z} from "zod";
 import type {Db} from "@paperclipai/db";
 import {getCloudRuntimeIdentity} from "../cloud-runtime-identity.js";
 import {paperclipCloudConnectorConfigFromEnv} from "../paperclip-cloud-connector.js";
+import {instanceSettingsService} from "../instance-settings.js";
 import {readIdleMcpClientMirror} from "./idle-client-mirror.js";
 import {McpEventError} from "./event-webhooks.js";
 import type {PublicMcpConfig} from "./oauth.js";
@@ -19,7 +20,8 @@ export async function cloudEventValidationOrigin(db:Db,config:PublicMcpConfig,ce
   if(parsed.data.transport===undefined)return centralOrigin;
   const identity=currentTenantEventOrigin(config),connector=paperclipCloudConnectorConfigFromEnv();
   if(!centralOrigin||!connector)throw new McpEventError(-32602,"The hosted subscription authority is unavailable.");
-  const proof=await readIdleMcpClientMirror(db,{enabled:true,origin:identity.canonicalOrigin,authorizationOrigin:config.authorizationOrigin,instanceId:connector.instanceId,managedStackId:identity.stackId,budget:{beforeRead:async()=>{},check:()=>{}}});
+  const feature=await instanceSettingsService(db).getExperimentalReadOnly();
+  const proof=await readIdleMcpClientMirror(db,{enabled:feature.enablePublicMcp,origin:identity.canonicalOrigin,authorizationOrigin:config.authorizationOrigin,instanceId:connector.instanceId,managedStackId:identity.stackId,budget:{beforeRead:async()=>{},check:()=>{}}});
   if(proof.blocked)throw new McpEventError(-32602,"The hosted subscription authority is being reconciled.");
   return identity.canonicalOrigin;
 }

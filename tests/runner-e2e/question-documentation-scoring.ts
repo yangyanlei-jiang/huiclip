@@ -1,5 +1,4 @@
 import type { ContinuationCheckpoint } from "./continuation-scoring.js";
-import { includesSubmittedReference } from "./submitted-reference.js";
 
 type Row = Record<string, any>;
 const questions = (checkpoint?: ContinuationCheckpoint): Row[] =>
@@ -62,7 +61,7 @@ export function gradeQuestionDocumentation(checkpoints: ContinuationCheckpoint[]
     },
     {
       id: "both-answers-in-output",
-      passed: Boolean(final?.documents.some(d => d.key !== "plan" && includesSubmittedReference(d.body, marker) && /\bafternoon\b/i.test(d.body))),
+      passed: Boolean(final?.documents.some(d => d.key !== "plan" && d.body.includes(marker) && /\bafternoon\b/i.test(d.body))),
       detail: "The saved note must use both the selected time and the literal reference supplied in the text answer.",
     },
   ];

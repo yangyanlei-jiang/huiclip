@@ -1,12 +1,36 @@
-import type { ReactNode } from "react";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { createContext, useContext, type ReactNode } from "react";
 import { NavLink } from "@/lib/router";
-import type { IssueNavigationPrefetchHandlers } from "@/hooks/useIssueNavigationPrefetch";
 import { SIDEBAR_SCROLL_RESET_STATE } from "../lib/navigation-scroll";
-import { cn } from "../lib/utils";
+import { cn, SIDEBAR_RAIL_HIDDEN_LABEL } from "../lib/utils";
 import { useSidebar } from "../context/SidebarContext";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { TruncatedText } from "./TruncatedText";
+
+/**
+ * Forces the full-label (non-rail) presentation for any `SidebarNavItem`
+ * rendered beneath it, regardless of the global `useSidebar().collapsed` state.
+ *
+ * Contextual takeover routes replace the global navigation inside the same
+ * sidebar shell. The user's saved global collapse preference can still be
+ * `collapsed=true`, so this provider keeps contextual navigation readable
+ * without mutating that preference.
+ */
+const SidebarNavExpandedContext = createContext(false);
+
+export function SidebarNavExpandedProvider({ children }: { children: ReactNode }) {
+  return (
+    <SidebarNavExpandedContext.Provider value={true}>
+      {children}
+    </SidebarNavExpandedContext.Provider>
+  );
+}
+
+export function useSidebarNavExpanded() {
+  return useContext(SidebarNavExpandedContext);
+}
 
 interface SidebarNavItemProps {
   to: string;
@@ -15,7 +39,7 @@ interface SidebarNavItemProps {
   /**
    * Pre-rendered icon element for rows whose icon isn't a plain Lucide
    * component (e.g. the agent rows' `AgentIcon`). Takes precedence over `icon`;
-   * the caller supplies a 16px icon to fit the shared navigation slot.
+   * the caller owns its sizing/color classes.
    */
   iconNode?: ReactNode;
   end?: boolean;
@@ -23,6 +47,10 @@ interface SidebarNavItemProps {
   labelClassName?: string;
   badge?: number;
   badgeTone?: "default" | "danger" | "warning";
+  /**
+   * Accessible noun for the numeric badge when collapsed to the rail, where the
+   * count is rendered as a dot (e.g. `badgeLabel="unread"` → "Inbox, 28 unread").
+   */
   badgeLabel?: string;
   textBadge?: string;
   textBadgeTone?: "default" | "amber";
@@ -35,10 +63,10 @@ interface SidebarNavItemProps {
   active?: boolean;
   /** Rendered after the label, before the right-aligned status cluster. */
   trailing?: ReactNode;
+  /** Accessible text for `trailing` status content, surfaced in the collapsed rail (where `trailing` is hidden). */
+  trailingLabel?: string;
   /** Rendered inside the right-aligned status cluster, before the live dot. */
   liveAccessory?: ReactNode;
-  /** Extra link handlers, such as a task's open-intent prefetch. */
-  linkHandlers?: Partial<IssueNavigationPrefetchHandlers>;
 }
 
 export function SidebarNavItem({
@@ -58,20 +86,42 @@ export function SidebarNavItem({
   liveCount,
   active,
   trailing,
+  trailingLabel,
   liveAccessory,
-  linkHandlers,
 }: SidebarNavItemProps) {
-  const { isMobile, setSidebarOpen } = useSidebar();
+  const { t: pageText } = usePageTranslation("interface");
+  const { isMobile, setSidebarOpen, collapsed, peeking } = useSidebar();
+  // A contextual takeover forces full labels even when the saved global app
+  // sidebar preference is collapsed.
+  const forceExpanded = useSidebarNavExpanded();
+  // The icon-only rail presentation only applies when pinned collapsed and not
+  // peeking; a peek/expanded panel — or a contextual takeover — restores
+  // the full label + badge.
+  const rail = collapsed && !peeking && !forceExpanded;
+
   const hasBadge = badge != null && badge > 0;
   const hasLive = liveCount != null && liveCount > 0;
-  const showIconSlot = Boolean(iconNode || Icon || alert);
+  const showIconSlot = Boolean(iconNode || Icon || alert || (rail && (hasLive || hasBadge)));
 
-  return (
+  // Accessible text equivalent for the collapsed dot indicator. The visible
+  // label is `sr-only` in the rail, so the count must be surfaced here.
+  const railStatusText = hasLive
+    ? `${liveCount} live`
+    : hasBadge
+      ? `${badge}${badgeLabel ? ` ${badgeLabel}` : ""}`
+      : alert
+        ? "attention needed"
+        : undefined;
+  const railAriaLabel = !rail || (!railStatusText && !trailingLabel)
+    ? undefined
+    : `${label}${railStatusText ? `, ${railStatusText}` : ""}${trailingLabel ? `, ${trailingLabel}` : ""}`;
+
+  const link = (
     <NavLink
       to={to}
       state={SIDEBAR_SCROLL_RESET_STATE}
       end={end}
-      {...linkHandlers}
+      aria-label={railAriaLabel}
       onClick={() => { if (isMobile) setSidebarOpen(false); }}
       className={({ isActive }) =>
         cn(
@@ -79,7 +129,7 @@ export function SidebarNavItem({
           // the sidebar edges, rounded-lg matches the card anchor, px-2 gives
           // the icon breathing room inside the pill. Rows with hover menus
           // (agents/projects) reserve extra right padding via className.
-          "flex items-center gap-2.5 mx-2 rounded-lg px-2 py-1.5 pointer-coarse:py-1 text-left text-(length:--text-compact) font-medium transition-colors",
+          "flex items-center gap-2.5 mx-2 rounded-lg px-2 py-1.5 pointer-coarse:py-1 text-(length:--text-compact) font-medium transition-colors",
           (active ?? isActive)
             ? "bg-sidebar-accent text-sidebar-accent-foreground"
             : "text-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
@@ -88,7 +138,7 @@ export function SidebarNavItem({
       }
     >
       {showIconSlot ? (
-        <span data-slot="sidebar-nav-icon" className="relative flex size-4 shrink-0 items-center justify-center">
+        <span data-slot="sidebar-nav-icon" className="relative shrink-0">
           {iconNode ?? (Icon ? <Icon className="h-4 w-4" /> : null)}
           {alert && (
             <span
@@ -97,11 +147,32 @@ export function SidebarNavItem({
               aria-hidden="true"
             />
           )}
+          {/* Collapsed rail: numeric badge / live count collapse to a dot on the
+              icon. The icon markup is untouched so it stays pixel-aligned. */}
+          {rail && !alert && hasLive && (
+            <span className="absolute -right-0.5 -top-0.5 flex h-2 w-2" aria-hidden="true">
+              <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-blue-600 dark:bg-blue-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-600 dark:bg-blue-400 shadow-(--shadow-sidebar-icon-badge)" />
+            </span>
+          )}
+          {rail && !alert && !hasLive && hasBadge && (
+            <span
+              className={cn(
+                "absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full shadow-(--shadow-sidebar-icon-badge)",
+                badgeTone === "danger"
+                  ? "bg-red-600"
+                  : badgeTone === "warning"
+                    ? "bg-amber-500"
+                    : "bg-primary",
+              )}
+              aria-hidden="true"
+            />
+          )}
         </span>
       ) : null}
-      <TruncatedText className={cn("min-w-0 flex-1 truncate", labelClassName)}>{label}</TruncatedText>
-      {trailing}
-      {textBadge && (
+      <TruncatedText className={rail ? SIDEBAR_RAIL_HIDDEN_LABEL : cn("min-w-0 flex-1 truncate", labelClassName)}>{label}</TruncatedText>
+      {!rail && trailing}
+      {!rail && textBadge && (
         <Badge variant="ghost"
           className={cn(
             "ml-auto px-1.5 text-(length:--text-nano) leading-none",
@@ -113,7 +184,7 @@ export function SidebarNavItem({
           {textBadge}
         </Badge>
       )}
-      {(hasLive || liveAccessory) && (
+      {!rail && (hasLive || liveAccessory) && (
         <span className="ml-auto flex shrink-0 items-center gap-1.5 whitespace-nowrap">
           {liveAccessory}
           {hasLive && (
@@ -122,12 +193,12 @@ export function SidebarNavItem({
                 <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-blue-600 dark:bg-blue-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-600 dark:bg-blue-400" />
               </span>
-              <span className="text-(length:--text-micro) font-medium text-blue-600 dark:text-blue-400">{liveCount} live</span>
+              <span className="text-(length:--text-micro) font-medium text-blue-600 dark:text-blue-400">{liveCount}{" " + pageText("live_98aadb")}</span>
             </>
           )}
         </span>
       )}
-      {hasBadge && (
+      {!rail && hasBadge && (
         <Badge variant="ghost"
           aria-label={badgeLabel ? `${badge} ${badgeLabel}` : undefined}
           className={cn(
@@ -143,5 +214,22 @@ export function SidebarNavItem({
         </Badge>
       )}
     </NavLink>
+  );
+
+  if (!rail) return link;
+
+  // The tooltip wraps a plain block element rather than the NavLink directly:
+  // Radix `asChild` (Slot) drops React Router's *function* className, which would
+  // strip `flex` off the <a> and render it as a block — the in-flow label would
+  // then stack under the icon and the row would grow. Anchoring the tooltip to a
+  // wrapper keeps the <a> rendering normally (flex), so the row stays 1:1 with
+  // the expanded state and the icon never moves (PAP-10676).
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div>{link}</div>
+      </TooltipTrigger>
+      <TooltipContent side="right">{label}</TooltipContent>
+    </Tooltip>
   );
 }

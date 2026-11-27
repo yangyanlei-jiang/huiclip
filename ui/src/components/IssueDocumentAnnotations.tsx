@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { Profiler, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import type { Agent, DocumentAnnotationThreadWithComments, IssueDocument } from "@paperclipai/shared";
@@ -396,6 +397,7 @@ export function DocumentAnnotationsCountChip({
   panelOpen,
   onToggle,
 }: DocumentAnnotationsCountChipProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const annotationsQuery = useQuery({
     queryKey: target?.kind === "routine"
       ? queryKeys.routines.documentAnnotations(target.routineId, target.documentKey, "all")
@@ -434,7 +436,7 @@ export function DocumentAnnotationsCountChip({
       <MessageSquare className="h-3 w-3" aria-hidden="true" />
       <span className="tabular-nums">{openCount}</span>
       <span className="hidden sm:inline">
-        {openCount === 1 ? "comment" : "comments"}
+        {openCount === 1 ? pageText("comment_118a99") : pageText("comments_5b17a6")}
       </span>
     </Button>
   );

@@ -10,7 +10,6 @@ import { readIdleAgentTimerSchedule } from "./heartbeat/idle-timer-schedule.js";
 import { readIdlePluginJobSchedule } from "./plugin-job-idle-schedule.js";
 import { readIdleProviderTraceSchedule } from "./provider-trace-idle-schedule.js";
 import { readIdleGitHubGrantContinuity } from "./tool-access/github-grant-continuity.js";
-import { readIdleGoogleTechnicalInformationSchedule } from "./tool-access/connections/google-technical-information.js";
 
 const processGeneration = randomUUID();
 export class IdleDeadlineInspectionBudgetExceeded extends Error {}
@@ -52,7 +51,7 @@ const generation = (state: unknown) => createHash("sha256").update(JSON.stringif
 
 export function composeIdleDeadlineProof(hold: { ownerId: string; expiresAt: number }, options: IdleDeadlineProofOptions,
   snapshots: { timers: IdleDeadlineSnapshot; jobs: IdleDeadlineSnapshot; traces: IdleDeadlineSnapshot;
-    github: IdleDeadlineSnapshot & { connectionIds: string[] }; google?: IdleDeadlineSnapshot }): IdleDeadlineProof {
+    github: IdleDeadlineSnapshot & { connectionIds: string[] } }): IdleDeadlineProof {
   const inspected = { ...snapshots, ...(options.mcp ? { mcp: options.mcp } : {}) };
   if (!Number.isFinite(options.now) || options.verifiedCapability?.deadlineCatalog !== IDLE_DEADLINE_CATALOG || !hold.ownerId
     || !Number.isFinite(hold.expiresAt) || hold.expiresAt <= options.now
@@ -95,9 +94,7 @@ export async function readIdleDeadlineProof(tx: Pick<Db, "select">, hold: { owne
     if (traces.blocked) return { blocked: true };
     const github = await readIdleGitHubGrantContinuity(guarded, options.now, budget.check);
     budget.check();
-    const google = await readIdleGoogleTechnicalInformationSchedule(guarded, options.now);
-    budget.check();
-    const proof = composeIdleDeadlineProof(hold, options, { timers, jobs, traces, github, google });
+    const proof = composeIdleDeadlineProof(hold, options, { timers, jobs, traces, github });
     budget.check();
     return proof;
   } catch (error) {

@@ -1,3 +1,7 @@
+import { t as interfaceNotice } from "@/i18n";
+import { t as translateDynamic } from "../../i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowDown, ArrowUp, ExternalLink, Loader2, MoreHorizontal, Plus, Search, Trash2, X } from "lucide-react";
@@ -26,8 +30,6 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AiConnectionUsagePanel } from "./AiConnectionUsagePanel";
 import { AI_PROVIDERS, aiMethodLabel } from "./model";
-import { cn } from "@/lib/utils";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
 
 const configOf = ({ name, enabled, members, mode, thresholdPercent }: AiConnectionPoolConfig): AiConnectionPoolConfig => ({ name, enabled, members, mode, thresholdPercent });
 const emptyConfig = (): AiConnectionPoolConfig => ({ name: "AI connection pool", enabled: false, members: [], mode: "round_robin", thresholdPercent: 90 });
@@ -41,10 +43,13 @@ function memberOf(account: AiManagedConnectionSummary): AiConnectionPoolMember {
 
 /** Native connector surface shared by all plugins implementing the pool contract. */
 export function AiConnectionPoolConnector({ pluginKey, connection }: { pluginKey: string; connection?: ToolConnection }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { selectedCompanyId } = useCompany();
-  return selectedCompanyId ? <PoolConnector key={`${selectedCompanyId}:${connection?.id ?? pluginKey}`} companyId={selectedCompanyId} pluginKey={pluginKey} connection={connection} /> : <p>Select a company to continue.</p>;
+  return selectedCompanyId ? <PoolConnector key={`${selectedCompanyId}:${connection?.id ?? pluginKey}`} companyId={selectedCompanyId} pluginKey={pluginKey} connection={connection} /> : <p>{pageText("selectACompanyToContinue_66024b")}</p>;
 }
 function PoolConnector({ companyId, pluginKey, connection }: { companyId: string; pluginKey: string; connection?: ToolConnection }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const navigate = useNavigate();
   const client = useQueryClient();
   const { pushToast } = useToast();
@@ -82,13 +87,13 @@ function PoolConnector({ companyId, pluginKey, connection }: { companyId: string
     }
   }, [poolsQuery.data, connection, editing, pluginKey, canManage]);
   useEffect(() => {
-    setBreadcrumbs([{ label: "Plugins", href: "/apps" }, { label: connection ? draft.name : "Add a connection pool" }]);
+    setBreadcrumbs([{ label: interfaceNotice("interface:connectors_4b1e95"), href: "/apps" }, { label: connection ? draft.name : interfaceNotice("interface:addAConnectionPool_5851c0") }]);
     return () => setBreadcrumbs([]);
   }, [connection, draft.name, setBreadcrumbs]);
   useEffect(() => {
     if (!editing || !canManage) return;
     let alive = true;
-    void aiConnectionPoolsApi.inspect(companyId, editing.id).then(value => { if (alive) setInspection(value); }).catch(() => { if (alive) setInspectionError("Usage unavailable."); });
+    void aiConnectionPoolsApi.inspect(companyId, editing.id).then(value => { if (alive) setInspection(value); }).catch(() => { if (alive) setInspectionError(interfaceNotice("interface:usageUnavailable_b6ab3d")); });
     return () => { alive = false; };
   }, [companyId, editing, canManage]);
   async function invalidate() {
@@ -105,7 +110,7 @@ function PoolConnector({ companyId, pluginKey, connection }: { companyId: string
       const saved = await aiConnectionPoolsApi.save(companyId, { pluginKey, ...(editing ? { id: editing.id, expectedRevision: editing.revision } : {}), config });
       setEditing(saved); setDraft(configOf(saved)); setRenaming(false);
       await invalidate();
-      pushToast({ title: connection ? "Connection pool saved" : "Connection pool created", tone: "success" });
+      pushToast({ title: connection ? interfaceNotice("interface:connectionPoolSaved_05711c") : interfaceNotice("interface:connectionPoolCreated_5f9f28"), tone: "success" });
       if (!connection) navigate(`/apps/${saved.id}/permissions`);
     } catch (cause) { setError(describeError(cause).body); }
     finally { setBusy(false); }
@@ -123,20 +128,20 @@ function PoolConnector({ companyId, pluginKey, connection }: { companyId: string
   // Loaded data stays on screen through a transient refetch failure; only a real failure replaces the pool.
   const failedViews = [accountsView, poolsView, galleryView].filter(view => view.kind === "error");
   const reconnecting = [accountsView, poolsView, galleryView].some(view => view.kind === "reconnecting");
-  if (accountsQuery.data && !canManage) return <p role="alert" className="text-sm text-muted-foreground">A connection manager can view and edit connection pools.</p>;
+  if (accountsQuery.data && !canManage) return <p role="alert" className="text-sm text-muted-foreground">{pageText("aConnectionManagerCanViewAndEditConnection_f8bae5")}</p>;
   if (failedViews.length > 0) return <QueryErrorState error={failedViews[0]!.error} action="load connections" onRetry={() => failedViews.forEach(view => view.retry())} retrying={failedViews.some(view => view.isFetching)} />;
-  if (accountsQuery.isPending || poolsQuery.isPending || galleryQuery.isPending || reconnecting || (connection && !editing && poolsQuery.data?.some(pool => pool.id === connection.id))) return <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />Loading connections…</p>;
-  if (connection && !editing) return <p role="alert">This connection pool is no longer available.</p>;
+  if (accountsQuery.isPending || poolsQuery.isPending || galleryQuery.isPending || reconnecting || (connection && !editing && poolsQuery.data?.some(pool => pool.id === connection.id))) return <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />{pageText("loadingConnections_e2e03e")}</p>;
+  if (connection && !editing) return <p role="alert">{pageText("thisConnectionPoolIsNoLongerAvailable_b8a3c2")}</p>;
   const name = entry?.name ?? "AI connection pool";
   const logoEntry = entry ?? aiConnectionRouterAppDefinition(pluginKey, { name, description: "Use existing AI connections." });
-  const orderedMembers = <ol aria-label="Connection order" className="divide-y divide-border rounded-lg border border-border">
+  const orderedMembers = <ol aria-label={pageText("connectionOrder_282b36")} className="divide-y divide-border rounded-lg border border-border">
     {draft.members.map((member, index) => {
       const account = accounts.find(account => account.id === member.binding.connectionId && account.grantId === member.binding.grantId);
       const provider = AI_PROVIDERS[member.binding.provider];
       return <li key={member.id} className="flex items-center gap-3 px-4 py-3">
         <span className="w-4 text-center text-xs text-muted-foreground">{index + 1}</span>
         <AppLogo name={provider.name} logoUrl={provider.logo} size={32} />
-        <div className="min-w-0 flex-1"><p className={cn("truncate text-sm font-medium", ANALYTICS_MASK_CLASS)}>{account?.name ?? "Connection unavailable"}</p><p className="text-xs text-muted-foreground">{account ? aiMethodLabel(account.provider, account.method) : "Restore access to this connection."}</p>{connection && draft.mode === "usage_aware" && account && <details className="mt-2 text-xs text-muted-foreground"><summary className="cursor-pointer">Usage</summary><div className="pt-3">{inspectionError ? <p role="status">{inspectionError}</p> : <AiConnectionUsagePanel account={account} cachedOnly observation={inspection[member.id]?.usage} />}</div></details>}</div>
+        <div className="min-w-0 flex-1"><p className="truncate text-sm font-medium">{account?.name ?? pageText("connectionUnavailable_ff33d2")}</p><p className="text-xs text-muted-foreground">{account ? aiMethodLabel(account.provider, account.method) : pageText("restoreAccessToThisConnection_cb471e")}</p>{connection && draft.mode === "usage_aware" && account && <details className="mt-2 text-xs text-muted-foreground"><summary className="cursor-pointer">{pageText("usage_0bb186")}</summary><div className="pt-3">{inspectionError ? <p role="status">{inspectionError}</p> : <AiConnectionUsagePanel account={account} cachedOnly observation={inspection[member.id]?.usage} />}</div></details>}</div>
         <div className="flex shrink-0 items-center gap-1">
           <Button type="button" variant="ghost" size="icon-sm" disabled={disabled || index === 0} aria-label={`Move ${account?.name ?? "connection"} up`} onClick={() => move(index, -1)}><ArrowUp className="size-4" /></Button>
           <Button type="button" variant="ghost" size="icon-sm" disabled={disabled || index === draft.members.length - 1} aria-label={`Move ${account?.name ?? "connection"} down`} onClick={() => move(index, 1)}><ArrowDown className="size-4" /></Button>
@@ -144,53 +149,55 @@ function PoolConnector({ companyId, pluginKey, connection }: { companyId: string
         </div>
       </li>;
     })}
-    {draft.members.length === 0 && <li className="px-4 py-6 text-sm text-muted-foreground">Add a connection to get started.</li>}
+    {draft.members.length === 0 && <li className="px-4 py-6 text-sm text-muted-foreground">{pageText("addAConnectionToGetStarted_55d3e0")}</li>}
   </ol>;
   return <div className={connection ? "space-y-6" : "mx-auto max-w-2xl"}>
     {connection ? <div className="flex items-start justify-between gap-4">
       <AppDetailHeader appName={draft.name} connection={connection} logoEntry={logoEntry} brandKey={logoEntry.slug} allowRemoteLogo canRename={!disabled} status={editing?.enabled ? { label: "Connected", tone: "connected" } : { label: "Paused", tone: "paused" }} actionCount={null} renaming={renaming} nameDraft={nameDraft} renamePending={disabled} onNameDraftChange={setNameDraft} onRenameStart={() => { if (!disabled) { setNameDraft(draft.name); setRenaming(true); } }} onRenameCancel={() => setRenaming(false)} onRenameSubmit={value => void save({ ...draft, name: value })} />
-      <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon-sm" aria-label="Manage connection pool"><MoreHorizontal className="size-4" /></Button></DropdownMenuTrigger><DropdownMenuContent className={ANALYTICS_MASK_CLASS} align="end"><DropdownMenuItem variant="destructive" disabled={busy || !canManage} onSelect={() => { setError(""); setRemoving(true); }}><Trash2 />Remove connection</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
-    </div> : <StepHeader title="Add a connection pool" subtitle={step === 0 ? "Choose connections you already use." : "New tasks rotate in this order."} step="connect" activeIndex={step} labels={["Connections", "Order"]} appIdentity={{ name, logoUrl: logoEntry.branding.logoUrl }} />}
-    {unavailable && <p role="alert" className="text-sm text-destructive">{entry?.availability?.reason ?? "Enable the connection pool plugin in Plugins."}</p>}
-    {!canManage && <p role="alert" className="text-sm text-muted-foreground">A connection manager can edit this pool.</p>}
+      <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon-sm" aria-label={pageText("manageConnectionPool_61cbc2")}><MoreHorizontal className="size-4" /></Button></DropdownMenuTrigger><DropdownMenuContent align="end"><DropdownMenuItem variant="destructive" disabled={busy || !canManage} onSelect={() => { setError(""); setRemoving(true); }}><Trash2 />{pageText("removeConnection_7312a3")}</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
+    </div> : <StepHeader title={pageText("addAConnectionPool_5851c0")} subtitle={step === 0 ? "Choose connections you already use." : "New tasks rotate in this order."} step="connect" activeIndex={step} labels={["Connections", "Order"]} appIdentity={{ name, logoUrl: logoEntry.branding.logoUrl }} />}
+    {unavailable && <p role="alert" className="text-sm text-destructive">{entry?.availability?.reason ?? pageText("enableTheConnectionPoolPluginInPlugins_be78d5")}</p>}
+    {!canManage && <p role="alert" className="text-sm text-muted-foreground">{pageText("aConnectionManagerCanEditThisPool_b9e239")}</p>}
     {error && !removing && <p role="alert" className="text-sm text-destructive">{error}</p>}
-    {!connection && step === 0 ? <ConnectionPicker accounts={accounts} selected={draft.members} disabled={disabled} onChange={members => setDraft({ ...draft, members })} onRefresh={() => void accountsQuery.refetch()} /> : <div className={cn("space-y-4", ANALYTICS_MASK_CLASS)}>
-      {connection && <div className="flex items-center justify-between gap-3"><h2 className="text-sm font-semibold">Connections</h2><Button variant="outline" size="sm" disabled={disabled} onClick={() => { setPickerMembers(draft.members); setPickerOpen(true); }}><Plus className="size-4" />Add connections</Button></div>}
+    {!connection && step === 0 ? <ConnectionPicker accounts={accounts} selected={draft.members} disabled={disabled} onChange={members => setDraft({ ...draft, members })} onRefresh={() => void accountsQuery.refetch()} /> : <div className="space-y-4">
+      {connection && <div className="flex items-center justify-between gap-3"><h2 className="text-sm font-semibold">{translateUi("interfaceCopy.connections")}</h2><Button variant="outline" size="sm" disabled={disabled} onClick={() => { setPickerMembers(draft.members); setPickerOpen(true); }}><Plus className="size-4" />{pageText("addConnections_024e7b")}</Button></div>}
       {orderedMembers}
-      <p className="text-xs text-muted-foreground">{connection ? "Order changes apply to new tasks." : "Created paused. Enable it when you’re ready."}</p>
+      <p className="text-xs text-muted-foreground">{connection ? pageText("orderChangesApplyToNewTasks_1f719d") : pageText("createdPausedEnableItWhenYouReReady_3cbf00")}</p>
       {connection && <>
-        <label className="flex items-center gap-2 text-sm"><Checkbox checked={draft.enabled} disabled={disabled} onCheckedChange={checked => setDraft({ ...draft, enabled: checked === true })} />Enable this pool</label>
-        <details className="rounded-lg border border-border"><summary className="cursor-pointer px-4 py-3 text-sm font-medium">Advanced</summary><fieldset disabled={disabled} className="space-y-4 border-t border-border p-4">
-          <label className="flex items-center gap-2 text-sm"><Checkbox checked={draft.mode === "usage_aware"} onCheckedChange={checked => setDraft({ ...draft, mode: checked ? "usage_aware" : "round_robin" })} />Skip connections near their usage limit</label>
-          {draft.mode === "usage_aware" && <label className="flex items-center gap-3 text-sm">Skip at<Input className="w-20" aria-label="Usage threshold" type="number" min={1} max={100} step={1} value={draft.thresholdPercent} onChange={event => setDraft({ ...draft, thresholdPercent: Number(event.target.value) })} />% usage</label>}
-          {draft.members.map((member, index) => <div key={member.id} className="space-y-2"><p className={cn("text-sm font-medium", ANALYTICS_MASK_CLASS)}>{accounts.find(account => account.id === member.binding.connectionId)?.name ?? "Connection unavailable"}</p><div className="grid gap-3 sm:grid-cols-2"><label className="space-y-1 text-xs text-muted-foreground">Model<Input aria-label={`Model for connection ${index + 1}`} value={member.profile.model} onChange={event => setDraft({ ...draft, members: draft.members.map(row => row.id === member.id ? { ...row, profile: { ...row.profile, model: event.target.value } } : row) })} /></label><label className="space-y-1 text-xs text-muted-foreground">Effort (optional)<Input aria-label={`Effort for connection ${index + 1}`} value={member.profile.effort ?? ""} onChange={event => { const { effort: _old, ...profile } = member.profile; setDraft({ ...draft, members: draft.members.map(row => row.id === member.id ? { ...row, profile: { ...profile, ...(event.target.value.trim() ? { effort: event.target.value.trim() } : {}) } } : row) }); }} /></label></div></div>)}
+        <label className="flex items-center gap-2 text-sm"><Checkbox checked={draft.enabled} disabled={disabled} onCheckedChange={checked => setDraft({ ...draft, enabled: checked === true })} />{pageText("enableThisPool_d8cbb7")}</label>
+        <details className="rounded-lg border border-border"><summary className="cursor-pointer px-4 py-3 text-sm font-medium">{translateUi("interfaceCopy.advanced")}</summary><fieldset disabled={disabled} className="space-y-4 border-t border-border p-4">
+          <label className="flex items-center gap-2 text-sm"><Checkbox checked={draft.mode === "usage_aware"} onCheckedChange={checked => setDraft({ ...draft, mode: checked ? "usage_aware" : "round_robin" })} />{pageText("skipConnectionsNearTheirUsageLimit_0b98e5")}</label>
+          {draft.mode === "usage_aware" && <label className="flex items-center gap-3 text-sm">{pageText("skipAt_4c0140")}<Input className="w-20" aria-label={pageText("usageThreshold_d8dde3")} type="number" min={1} max={100} step={1} value={draft.thresholdPercent} onChange={event => setDraft({ ...draft, thresholdPercent: Number(event.target.value) })} />{pageText("usage_33725d")}</label>}
+          {draft.members.map((member, index) => <div key={member.id} className="space-y-2"><p className="text-sm font-medium">{accounts.find(account => account.id === member.binding.connectionId)?.name ?? pageText("connectionUnavailable_ff33d2")}</p><div className="grid gap-3 sm:grid-cols-2"><label className="space-y-1 text-xs text-muted-foreground">{pageText("model_68c2cc")}<Input aria-label={translateDynamic("dynamic:modelForConnection", { value1: index + 1 })} value={member.profile.model} onChange={event => setDraft({ ...draft, members: draft.members.map(row => row.id === member.id ? { ...row, profile: { ...row.profile, model: event.target.value } } : row) })} /></label><label className="space-y-1 text-xs text-muted-foreground">{pageText("effortOptional_95ec6f")}<Input aria-label={translateDynamic("dynamic:effortForConnection", { value1: index + 1 })} value={member.profile.effort ?? ""} onChange={event => { const { effort: _old, ...profile } = member.profile; setDraft({ ...draft, members: draft.members.map(row => row.id === member.id ? { ...row, profile: { ...profile, ...(event.target.value.trim() ? { effort: event.target.value.trim() } : {}) } } : row) }); }} /></label></div></div>)}
         </fieldset></details>
         <section aria-labelledby="pool-used-by" className="space-y-3">
-          <h2 id="pool-used-by" className="text-sm font-semibold">Used by</h2>
-          {agentsQuery.isPending || agentsView.kind === "reconnecting" ? <p role="status" className="text-sm text-muted-foreground">Loading agents…</p>
+          <h2 id="pool-used-by" className="text-sm font-semibold">{translateUi("interfaceCopy.usedBy")}</h2>
+          {agentsQuery.isPending || agentsView.kind === "reconnecting" ? <p role="status" className="text-sm text-muted-foreground">{pageText("loadingAgents_aa8e27")}</p>
             : agentsView.kind === "error" ? <QueryErrorState size="inline" error={agentsQuery.error} action="load agents" onRetry={agentsView.retry} retrying={agentsView.isFetching} />
             : usingAgents.length ? <ul className="flex flex-wrap gap-x-6 gap-y-3">{usingAgents.map(agent => <li key={agent.id} className="min-w-0 max-w-full"><Link to={`/agents/${agent.id}`} className="inline-flex max-w-full rounded-sm hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><AgentIdentity agent={agent} /></Link></li>)}</ul>
-            : <p className="text-sm text-muted-foreground">No agents yet.</p>}
+            : <p className="text-sm text-muted-foreground">{pageText("noAgentsYet_62561f")}</p>}
         </section>
       </>}
     </div>}
     <div className="mt-6 flex items-center justify-between gap-3 border-t border-border pt-4">
-      <Button variant="ghost" disabled={busy} onClick={() => connection ? navigate("/apps") : step ? setStep(0) : navigate("/apps")}>{!connection && step ? "Back" : "Cancel"}</Button>
-      <Button disabled={disabled || draft.members.length === 0 || !Number.isInteger(draft.thresholdPercent) || draft.thresholdPercent < 1 || draft.thresholdPercent > 100} onClick={() => !connection && step === 0 ? setStep(1) : void save()}>{busy && <Loader2 className="size-4 animate-spin" />}{busy ? "Saving…" : connection ? "Save changes" : step ? "Create pool" : "Continue"}</Button>
+      <Button variant="ghost" disabled={busy} onClick={() => connection ? navigate("/apps") : step ? setStep(0) : navigate("/apps")}>{!connection && step ? pageText("back_b52b36") : pageText("cancel_77dfd2")}</Button>
+      <Button disabled={disabled || draft.members.length === 0 || !Number.isInteger(draft.thresholdPercent) || draft.thresholdPercent < 1 || draft.thresholdPercent > 100} onClick={() => !connection && step === 0 ? setStep(1) : void save()}>{busy && <Loader2 className="size-4 animate-spin" />}{busy ? pageText("saving_56a228") : connection ? pageText("saveChanges_179359") : step ? pageText("createPool_2fcd36") : pageText("continue_2e0262")}</Button>
     </div>
-    <Dialog open={pickerOpen} onOpenChange={setPickerOpen}><DialogContent className={cn("sm:max-w-2xl", ANALYTICS_MASK_CLASS)}><DialogHeader><DialogTitle>Add connections</DialogTitle><DialogDescription>Choose connections you already use.</DialogDescription></DialogHeader><ConnectionPicker accounts={accounts} selected={pickerMembers} disabled={disabled} onChange={setPickerMembers} onRefresh={() => void accountsQuery.refetch()} /><div className="flex items-center justify-between gap-3"><Button variant="ghost" onClick={() => setPickerOpen(false)}>Cancel</Button><Button onClick={() => { setDraft({ ...draft, members: pickerMembers }); setPickerOpen(false); }}>Done</Button></div></DialogContent></Dialog>
-    <AlertDialog open={removing} onOpenChange={open => { if (!busy) setRemoving(open); }}><AlertDialogContent className={ANALYTICS_MASK_CLASS}><AlertDialogHeader><AlertDialogTitle className={ANALYTICS_MASK_CLASS}>Remove {draft.name}?</AlertDialogTitle><AlertDialogDescription>The connections in this pool are kept.</AlertDialogDescription></AlertDialogHeader>{error && <p role="alert" className="text-sm text-destructive">{error}</p>}<AlertDialogFooter className="sm:justify-between"><AlertDialogCancel disabled={busy}>Cancel</AlertDialogCancel><AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={busy} onClick={event => { event.preventDefault(); void remove(); }}>{busy ? "Removing…" : "Remove connection"}</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
+    <Dialog open={pickerOpen} onOpenChange={setPickerOpen}><DialogContent className="sm:max-w-2xl"><DialogHeader><DialogTitle>{pageText("addConnections_024e7b")}</DialogTitle><DialogDescription>{pageText("chooseConnectionsYouAlreadyUse_568f5b")}</DialogDescription></DialogHeader><ConnectionPicker accounts={accounts} selected={pickerMembers} disabled={disabled} onChange={setPickerMembers} onRefresh={() => void accountsQuery.refetch()} /><div className="flex items-center justify-between gap-3"><Button variant="ghost" onClick={() => setPickerOpen(false)}>{translateUi("interfaceCopy.cancel")}</Button><Button onClick={() => { setDraft({ ...draft, members: pickerMembers }); setPickerOpen(false); }}>{translateUi("interfaceCopy.done")}</Button></div></DialogContent></Dialog>
+    <AlertDialog open={removing} onOpenChange={open => { if (!busy) setRemoving(open); }}><AlertDialogContent><AlertDialogHeader><AlertDialogTitle>{pageText("remove_e96390") + " "}{draft.name}?</AlertDialogTitle><AlertDialogDescription>{pageText("theConnectionsInThisPoolAreKept_044b77")}</AlertDialogDescription></AlertDialogHeader>{error && <p role="alert" className="text-sm text-destructive">{error}</p>}<AlertDialogFooter className="sm:justify-between"><AlertDialogCancel disabled={busy}>{translateUi("interfaceCopy.cancel")}</AlertDialogCancel><AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" disabled={busy} onClick={event => { event.preventDefault(); void remove(); }}>{busy ? pageText("removing_579d7e") : pageText("removeConnection_7312a3")}</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
   </div>;
 }
 function ConnectionPicker({ accounts, selected, disabled, onChange, onRefresh }: { accounts: AiManagedConnectionSummary[]; selected: AiConnectionPoolMember[]; disabled: boolean; onChange: (members: AiConnectionPoolMember[]) => void; onRefresh: () => void }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [search, setSearch] = useState("");
   const filtered = accounts.filter(account => `${account.name} ${AI_PROVIDERS[account.provider].name}`.toLowerCase().includes(search.toLowerCase()));
-  return <div className={cn("space-y-4", ANALYTICS_MASK_CLASS)}>
-    <div className="relative"><Search className="pointer-events-none absolute left-3 top-3 size-4 text-muted-foreground" /><Input aria-label="Search connections" placeholder="Search connections…" value={search} onChange={event => setSearch(event.target.value)} className="pl-9" /></div>
+  return <div className="space-y-4">
+    <div className="relative"><Search className="pointer-events-none absolute left-3 top-3 size-4 text-muted-foreground" /><Input aria-label={pageText("searchConnections_757c73")} placeholder={pageText("searchConnections_8a2153")} value={search} onChange={event => setSearch(event.target.value)} className="pl-9" /></div>
     <div className="max-h-80 overflow-y-auto rounded-lg border border-border divide-y divide-border">
-      {filtered.map(account => { const existing = selected.find(member => member.binding.connectionId === account.id); const checked = existing?.binding.grantId === account.grantId; return <label key={account.grantId} className="flex cursor-pointer items-center gap-3 px-4 py-3 hover:bg-accent/50"><Checkbox checked={checked} disabled={disabled || (!checked && (account.status !== "connected" || Boolean(existing)))} onCheckedChange={value => onChange(value ? [...selected, memberOf(account)] : selected.filter(member => member.binding.connectionId !== account.id))} aria-label={account.name} /><AppLogo name={AI_PROVIDERS[account.provider].name} logoUrl={AI_PROVIDERS[account.provider].logo} size={32} /><span className="min-w-0 flex-1"><span className={cn("block truncate text-sm font-medium", ANALYTICS_MASK_CLASS)}>{account.name}</span><span className="block text-xs text-muted-foreground">{aiMethodLabel(account.provider, account.method)} · {account.ownership === "shared" ? "Shared" : "Personal"}</span></span>{account.status !== "connected" && <span className="text-xs text-muted-foreground">Needs attention</span>}</label>; })}
-      {filtered.length === 0 && <p className="px-4 py-6 text-sm text-muted-foreground">{accounts.length ? "No matching connections." : "No AI connections yet."}</p>}
+      {filtered.map(account => { const existing = selected.find(member => member.binding.connectionId === account.id); const checked = existing?.binding.grantId === account.grantId; return <label key={account.grantId} className="flex cursor-pointer items-center gap-3 px-4 py-3 hover:bg-accent/50"><Checkbox checked={checked} disabled={disabled || (!checked && (account.status !== "connected" || Boolean(existing)))} onCheckedChange={value => onChange(value ? [...selected, memberOf(account)] : selected.filter(member => member.binding.connectionId !== account.id))} aria-label={account.name} /><AppLogo name={AI_PROVIDERS[account.provider].name} logoUrl={AI_PROVIDERS[account.provider].logo} size={32} /><span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium">{account.name}</span><span className="block text-xs text-muted-foreground">{aiMethodLabel(account.provider, account.method)} · {account.ownership === "shared" ? pageText("shared_50d0d8") : pageText("personal_40f073")}</span></span>{account.status !== "connected" && <span className="text-xs text-muted-foreground">{pageText("needsAttention_a12672")}</span>}</label>; })}
+      {filtered.length === 0 && <p className="px-4 py-6 text-sm text-muted-foreground">{accounts.length ? pageText("noMatchingConnections_18bc2c") : pageText("noAIConnectionsYet_c1b724")}</p>}
     </div>
-    <div className="flex items-center justify-between gap-3 text-sm"><Link to="/apps" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground">Connect a new account<ExternalLink className="size-3.5" /></Link><Button variant="ghost" size="sm" onClick={onRefresh}>Refresh</Button></div>
+    <div className="flex items-center justify-between gap-3 text-sm"><Link to="/apps" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground">{pageText("connectANewAccount_2693b3")}<ExternalLink className="size-3.5" /></Link><Button variant="ghost" size="sm" onClick={onRefresh}>{translateUi("interfaceCopy.refresh")}</Button></div>
   </div>;
 }

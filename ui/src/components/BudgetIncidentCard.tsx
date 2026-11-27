@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from "react";
 import type { BudgetIncident } from "@paperclipai/shared";
 import { AlertOctagon, AlertTriangle, ArrowUpRight, PauseCircle } from "lucide-react";
@@ -36,6 +37,7 @@ export function BudgetIncidentCard({
   onKeepPaused: () => void;
   isMutating?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const isWarning = incident.thresholdType === "soft";
   const [draftAmount, setDraftAmount] = useState(
     centsInputValue(isWarning
@@ -54,7 +56,7 @@ export function BudgetIncidentCard({
               <div className={isWarning
                 ? "text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-amber-700 dark:text-amber-200"
                 : "text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-red-700/90 dark:text-red-200/80"}>
-                {incident.scopeType} {isWarning ? "budget warning" : "hard stop"}
+                {incident.scopeType} {isWarning ? pageText("budgetWarning_d88aed") : pageText("hardStop_75aecd")}
               </div>
               <Badge variant={incident.status === "resolved" ? "outline" : "secondary"}>
                 {stateLabel}
@@ -82,25 +84,21 @@ export function BudgetIncidentCard({
         {isWarning ? (
           <div className="flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-950/90 dark:text-amber-50/90">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-            <div>
-              Spending crossed the warning threshold. This warning does not pause work.
-            </div>
+            <div>{pageText("spendingCrossedTheWarningThresholdThisWarningDoes_577ab4")}</div>
           </div>
         ) : (
           <div className="flex items-start gap-2 rounded-xl border border-red-400/20 bg-red-500/10 px-3 py-2 text-sm text-red-950/90 dark:text-red-50/90">
             <PauseCircle className="mt-0.5 h-4 w-4 shrink-0" />
             <div>
               {incident.scopeType === "project"
-                ? "Project execution is paused. New work in this project will not start until you resolve the budget incident."
-                : "This scope is paused. New heartbeats will not start until you resolve the budget incident."}
+                ? pageText("projectExecutionIsPausedNewWorkInThis_c177f0")
+                : pageText("thisScopeIsPausedNewHeartbeatsWillNot_137905")}
             </div>
           </div>
         )}
 
         <div className="rounded-xl border border-border/60 bg-background/60 p-3">
-          <label className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">
-            New budget (USD)
-          </label>
+          <label className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">{pageText("newBudgetUSD_ff83d4")}</label>
           <div className="mt-2 flex flex-col gap-3 sm:flex-row">
             <Input
               value={draftAmount}
@@ -116,19 +114,17 @@ export function BudgetIncidentCard({
               }}
             >
               <ArrowUpRight className="h-4 w-4" />
-              {isMutating ? "Applying..." : isWarning ? "Raise budget" : "Raise budget & resume"}
+              {isMutating ? pageText("applying_b8f8bc") : isWarning ? pageText("raiseBudget_adc08c") : pageText("raiseBudgetResume_dccc26")}
             </Button>
           </div>
           {parsed !== null && parsed <= incident.amountObserved ? (
-            <p className="mt-2 text-xs text-red-700 dark:text-red-200/80">
-              The new budget must exceed current observed spend.
-            </p>
+            <p className="mt-2 text-xs text-red-700 dark:text-red-200/80">{pageText("theNewBudgetMustExceedCurrentObservedSpend_ac7101")}</p>
           ) : null}
         </div>
 
         <div className="flex justify-end">
           <Button variant="ghost" className="text-muted-foreground" disabled={isMutating} onClick={onKeepPaused}>
-            {isWarning ? "Dismiss warning" : "Keep paused"}
+            {isWarning ? pageText("dismissWarning_a3da6a") : pageText("keepPaused_de12f7")}
           </Button>
         </div>
       </CardContent>

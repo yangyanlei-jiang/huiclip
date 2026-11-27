@@ -29,7 +29,6 @@ function assertSameOAuthActor(
   if (!expected.actorType || !expected.actorId) {
     throw forbidden(
       "OAuth sign-in state is not bound to an authenticated board session",
-      { code: "oauth_session_mismatch" },
     );
   }
   if (
@@ -38,13 +37,11 @@ function assertSameOAuthActor(
   ) {
     throw forbidden(
       "OAuth sign-in must be completed by the user who started it",
-      { code: "oauth_session_mismatch" },
     );
   }
   if (expected.sessionId && expected.sessionId !== actual.sessionId) {
     throw forbidden(
       "OAuth sign-in must be completed from the same authenticated session",
-      { code: "oauth_session_mismatch" },
     );
   }
 }
@@ -78,9 +75,9 @@ async function validateOAuthState(
       .where(eq(toolOauthStates.state, state))
       .limit(1);
     if (!stateRow)
-      throw badRequest("OAuth state was not found or has already been used", { code: "oauth_state_missing" });
+      throw badRequest("OAuth state was not found or has already been used");
     if (stateRow.expiresAt.getTime() <= Date.now())
-      throw badRequest("OAuth state has expired", { code: "oauth_state_expired" });
+      throw badRequest("OAuth state has expired");
     if (stateRow.subjectUserId) {
       if (
         actor?.actorType !== "user" ||
@@ -88,7 +85,6 @@ async function validateOAuthState(
       ) {
         throw forbidden(
           "OAuth callback user does not match the requested subject",
-      { code: "oauth_session_mismatch" },
         );
       }
     } else {
@@ -112,7 +108,7 @@ async function consumeOAuthState(
       .where(eq(toolOauthStates.state, state))
       .returning();
     if (!consumed)
-      throw badRequest("OAuth state was not found or has already been used", { code: "oauth_state_missing" });
+      throw badRequest("OAuth state was not found or has already been used");
     return consumed;
   }
 

@@ -7,7 +7,6 @@ import {
   isRememberableCompanyPath,
   sanitizeRememberedPathForCompany,
 } from "../lib/company-page-memory";
-import { useCompanyHomePath } from "./useCompanyHomePath";
 
 const STORAGE_KEY = "paperclip.companyPaths";
 
@@ -29,14 +28,12 @@ function saveCompanyPath(companyId: string, path: string) {
 
 /**
  * Remembers the last visited page per company and navigates to it on company switch.
- * Falls back to the company home (see `lib/company-home`) if no page was
- * previously visited for a company.
+ * Falls back to /dashboard if no page was previously visited for a company.
  */
 export function useCompanyPageMemory() {
   const { companies, selectedCompanyId, selectedCompany, selectionSource } = useCompany();
   const location = useLocation();
   const navigate = useNavigate();
-  const { path: homePath } = useCompanyHomePath();
   const prevCompanyId = useRef<string | null>(selectedCompanyId);
   const rememberedPathOwnerCompanyId = useMemo(
     () =>
@@ -73,11 +70,10 @@ export function useCompanyPageMemory() {
         const targetPath = sanitizeRememberedPathForCompany({
           path: paths[selectedCompanyId],
           companyPrefix: selectedCompany.issuePrefix,
-          homePath,
         });
         navigate(`/${selectedCompany.issuePrefix}${targetPath}`, { replace: true });
       }
     }
     prevCompanyId.current = selectedCompanyId;
-  }, [selectedCompany, selectedCompanyId, selectionSource, navigate, homePath]);
+  }, [selectedCompany, selectedCompanyId, selectionSource, navigate]);
 }

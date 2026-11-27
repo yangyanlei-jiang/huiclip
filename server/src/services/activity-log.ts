@@ -1,4 +1,3 @@
-import { isDashboardActivity } from "./responsibility-privacy.js";
 import { notifyActiveRunSilence } from "./live-run-recovery-notifications.js";
 import { DELIVERY_QUEUES, notifyDeliveryWork } from "./delivery-work-notifications.js";
 import { beginRunPhase } from "./execution-preparation-timing.js";
@@ -153,21 +152,15 @@ export async function resolveResponsibleUserIdForActivity(db: Db, input: LogActi
 export function publishActivity(publication: ActivityPublication) {
   const finish = beginRunPhase("execution.realtime");
   try {
-    if (isDashboardActivity(publication.payload.entityType)) {
-      // The company bus carries only an invalidation. Each viewer fetches their own data.
-      publishLiveEvent({
-        companyId: publication.companyId,
-        type: "activity.logged",
-        payload: { action: "responsibility.dashboard_changed", entityType: "responsibility" },
-      });
-      return;
-    }
-    publishLiveEvent({
-      companyId: publication.companyId,
-      type: "activity.logged",
-      payload: publication.payload,
-    });
-    if (publication.pluginEvent) publishPluginDomainEvent(publication.pluginEvent);
+  publishLiveEvent({
+    companyId: publication.companyId,
+    type: "activity.logged",
+    payload: publication.payload,
+  });
+  if (publication.pluginEvent) publishPluginDomainEvent(publication.pluginEvent);
+  } catch (error) {
+    finish(true);
+    throw error;
   } finally { finish(); }
 }
 

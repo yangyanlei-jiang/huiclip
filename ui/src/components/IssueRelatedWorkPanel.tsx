@@ -1,11 +1,12 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import type { IssueRelatedWorkItem, IssueRelatedWorkSummary } from "@paperclipai/shared";
 import { IssueReferencePill } from "./IssueReferencePill";
 import { ExternalObjectPill } from "./ExternalObjectPill";
 import type { IssueExternalObjectGroup } from "../hooks/useIssueExternalObjects";
 import { externalObjectToneSeverity } from "../lib/external-objects";
 import { Badge } from "@/components/ui/badge";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
-import { cn } from "@/lib/utils";
 
 type GroupedSource = {
   label: string;
@@ -100,6 +101,8 @@ function ExternalObjectsSection({
   isError: boolean;
   onRetry?: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   // Severity-first sort with most-recently-changed as the secondary sort.
   const sorted = [...groups].sort((a, b) => {
     const aTone = externalObjectToneSeverity(a.pill.statusCategory ? a.group.object?.statusTone ?? null : null);
@@ -113,31 +116,24 @@ function ExternalObjectsSection({
   return (
     <section className="space-y-3 rounded-lg border border-border p-3">
       <div className="space-y-1">
-        <h3 className="text-sm font-semibold">External objects</h3>
-        <p className="text-xs text-muted-foreground">
-          Remote work referenced from this issue — pull requests, deployments, tickets in other systems, and more.
-        </p>
+        <h3 className="text-sm font-semibold">{pageText("externalObjects_d84952")}</h3>
+        <p className="text-xs text-muted-foreground">{pageText("remoteWorkReferencedFromThisIssuePullRequests_c062f8")}</p>
       </div>
 
       {isError ? ( // query-error-ok: set only for a real failure (useIssueExternalObjects keeps data through outages)
-        <p className="text-xs text-muted-foreground">
-          Couldn't load external objects.{" "}
+        <p className="text-xs text-muted-foreground">{pageText("couldnTLoadExternalObjects_4728cc")}{" "}
           {onRetry ? (
             <button
               type="button"
               onClick={onRetry}
               className="text-primary underline-offset-2 hover:underline"
-            >
-              Retry
-            </button>
+            >{translateUi("interfaceCopy.retry")}</button>
           ) : null}
         </p>
       ) : isLoading ? (
-        <p className="text-xs text-muted-foreground">Loading external objects…</p>
+        <p className="text-xs text-muted-foreground">{pageText("loadingExternalObjects_136090")}</p>
       ) : sorted.length === 0 ? (
-        <p className="text-xs text-muted-foreground">
-          This issue does not reference any external objects yet.
-        </p>
+        <p className="text-xs text-muted-foreground">{pageText("thisIssueDoesNotReferenceAnyExternalObjects_7d33a6")}</p>
       ) : (
         <ul className="-mx-1 flex flex-col">
           {sorted.map(({ pill, mentionCount, sourceLabels, group }) => {
@@ -149,7 +145,7 @@ function ExternalObjectsSection({
               >
                 <ExternalObjectPill object={pill} sourceCount={mentionCount} sourceSummary={sourceLabels.join(", ")} />
                 {pill.displayTitle ? (
-                  <span className={cn("min-w-0 flex-1 truncate text-sm text-muted-foreground", ANALYTICS_MASK_CLASS)}>
+                  <span className="min-w-0 flex-1 truncate text-sm text-muted-foreground">
                     {pill.displayTitle}
                   </span>
                 ) : null}
@@ -187,16 +183,17 @@ export function IssueRelatedWorkPanel({
   externalObjectsError?: boolean;
   onRetryExternalObjects?: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const outbound = relatedWork?.outbound ?? [];
   const inbound = relatedWork?.inbound ?? [];
 
   return (
     <div className="space-y-3">
       <Section
-        title="References"
-        description="Other tasks this task currently points at in its title, description, comments, or documents."
+        title={pageText("references_5d20d0")}
+        description={pageText("otherTasksThisTaskCurrentlyPointsAtIn_d1ed18")}
         items={outbound}
-        emptyLabel="This task does not reference any other tasks yet."
+        emptyLabel={interfaceNotice("interface:thisTaskDoesNotReferenceAnyOtherTasks_045e33")}
       />
       {externalObjectsEnabled ? (
         <ExternalObjectsSection
@@ -207,10 +204,10 @@ export function IssueRelatedWorkPanel({
         />
       ) : null}
       <Section
-        title="Referenced by"
-        description="Other tasks that currently point at this task."
+        title={pageText("referencedBy_023201")}
+        description={pageText("otherTasksThatCurrentlyPointAtThisTask_c7e217")}
         items={inbound}
-        emptyLabel="No other tasks reference this task yet."
+        emptyLabel={interfaceNotice("interface:noOtherTasksReferenceThisTaskYet_19a385")}
       />
     </div>
   );

@@ -9,7 +9,6 @@ import { normalizeAcpxPermission } from "./acp-permission-adapter.js";
 import { cursorToolIdentity } from "./cursor-plan-tool-identity.js";
 import { createCursorToolEvidence } from "./cursor-tool-evidence.js";
 import { validateAcpxRichEvent } from "./profile-extensions.js";
-import { createAcpxPermissionReplyConfirmations } from "./interaction-delivery.js";
 
 const rawIds = ["native\u0000tool", "native\u007ftool", "native\u0085tool", "tool/1", "x".repeat(161), "safe-tool-1"];
 // Synthetic protocol fixture, not a claim about the unretained paid wire bytes.
@@ -42,15 +41,12 @@ it.each(["tool-first", "permission-first"])("real ACPX streams Cursor tool origi
   const replies: unknown[] = [];
   const fields: Array<Record<string, string>> = [];
   let promptSettled = false;
-  // Mirrors the runtime adapter: the exact outbound reply proves delivery.
-  const confirmations = createAcpxPermissionReplyConfirmations();
   const evidence = createCursorToolEvidence({ sessionId: "native", turnId: "turn", workingDirectory: cwd, active: () => true,
     emit: event => { validateAcpxRichEvent(event); fields.push(Object.fromEntries((event.payload.details as Array<{ name: string; value: string }>).map(field => [field.name, field.value]))); },
   });
   const runtime = createAcpRuntime({ cwd, agentRegistry: createAgentRegistry({ overrides: { cursor: "fixture" } }), sessionStore: createRuntimeStore({ stateDir: join(cwd, "state") }), permissionMode: "approve-reads",
     spawnAgent: () => { const child = spawn(process.execPath, ["-e", peer], { cwd, env: { ORDER: order }, stdio: ["pipe", "pipe", "pipe"] }); children.push(child); return child; },
     onAcpMessage: (direction, value) => {
-      confirmations.observe(direction, value);
       const message = value as { id?: number; result?: { outcome?: unknown } };
       if (direction === "outbound" && message.result?.outcome) replies.push(structuredClone(message));
     },
@@ -59,14 +55,12 @@ it.each(["tool-first", "permission-first"])("real ACPX streams Cursor tool origi
       const normalized = normalizeAcpxPermission(request, { provider: "cursor" });
       const delivered = evidence.permission(request, `request-${pending.length}`, normalized.choices.map(choice => choice.key));
       const gate = Promise.withResolvers<void>();
-      const reply = confirmations.bind(request, context.signal);
-      pending.push({ request, before, release: gate.resolve, delivery: reply.delivery });
+      pending.push({ request, before, release: gate.resolve, delivery: context.responseDelivery });
       await gate.promise;
       const decision = normalized.resolve({ action: "decline" });
       // Delivery is observed outside this callback; waiting here would deadlock
       // the ACP response writer that must receive the callback result first.
-      void reply.delivery.then(() => delivered?.(decision.outcome));
-      reply.select(decision);
+      void context.responseDelivery?.then(() => delivered?.(decision.outcome));
       return decision;
     },
   });

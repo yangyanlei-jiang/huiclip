@@ -43,8 +43,7 @@ function safeLineNumber(value: string): number | null {
     : null;
 }
 
-/** A Markdown link target as a local path and line (file:// decoded), or null for another scheme. */
-export function localTarget(rawTarget: string): { target: string; line: number | null } | null {
+function localTarget(rawTarget: string): { target: string; line: number | null } | null {
   let target = rawTarget.trim();
   if (target.startsWith("<") && target.endsWith(">")) target = target.slice(1, -1);
   if (/^[a-z][a-z0-9+.-]*:/i.test(target) && !target.startsWith("file:")) return null;
@@ -68,8 +67,7 @@ export function localTarget(rawTarget: string): { target: string; line: number |
   return target.length === 0 ? null : { target, line };
 }
 
-/** `target` as a `/`-separated path inside `root`, or null when it is outside. */
-export function workspaceRelativePath(root: string, target: string): string | null {
+function workspaceRelativePath(root: string, target: string): string | null {
   const candidate = relative(root, target);
   if (
     !candidate ||

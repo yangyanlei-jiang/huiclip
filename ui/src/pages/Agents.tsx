@@ -1,10 +1,13 @@
+import { optionLabel } from "@/i18n/option-label";
+import { t as translateDynamic } from "../i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation } from "@/i18n";
 import { PrimaryAgentIndicator } from "@/components/primary-agent/PrimaryAgentPresentation";
 import { AgentBulkRoster } from "@/components/agents/AgentBulkRoster";
-import { AgentRosterFilters, useAgentRosterFilters } from "@/components/agents/AgentRosterFilters";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { AgentChatPin, useAgentChatPins } from "@/components/AgentChatPin";
 import { useAgentChatEnabled } from "../hooks/useAgentChatEnabled";
-import { useState, useEffect, useMemo, useRef, lazy, Suspense } from "react";
+import { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import { Link, useNavigate, useLocation } from "@/lib/router";
 import { useQuery } from "@tanstack/react-query";
 import { agentsApi, type OrgNode } from "../api/agents";
@@ -27,7 +30,6 @@ import { PageSkeleton } from "../components/PageSkeleton";
 import { QueryErrorState, useQueryView } from "../components/QueryView";
 import { OrgChart } from "./OrgChart";
 import { relativeTime, cn, agentRouteRef, agentUrl } from "../lib/utils";
-import type { OrgChartActions } from "../components/OrgChartControls";
 import { AgentsToolbar } from "../components/AgentsToolbar";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -148,9 +150,9 @@ function describeEnvironment(
 
 function describeMissingEnvironment(environmentId: string): EnvironmentDescriptor {
   return {
-    label: "Unknown environment",
+    label: translateDynamic("dynamic:unknownEnvironment"),
     detail: environmentId.slice(0, 8),
-    title: `Unknown environment - ${environmentId}`,
+    title: translateDynamic("dynamic:unknownEnvironmentId", { id: environmentId }),
   };
 }
 
@@ -192,15 +194,10 @@ export function filterOrgTree(nodes: OrgNode[], tab: FilterTab, builtInAgentIds:
 export type AgentsView = "list" | "org";
 
 export function Agents({ initialView = "list" }: { initialView?: AgentsView } = {}) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t } = useTranslation();
   const agentChatPins = useAgentChatPins();
   const [query, setQuery] = useState("");
-  const chartActionsRef = useRef<OrgChartActions | null>(null);
-  const chartActions = useMemo<OrgChartActions>(() => ({
-    zoomIn: () => chartActionsRef.current?.zoomIn(),
-    zoomOut: () => chartActionsRef.current?.zoomOut(),
-    fit: () => chartActionsRef.current?.fit(),
-  }), []);
-  const [orgControlsContainer, setOrgControlsContainer] = useState<HTMLDivElement | null>(null);
   const agentChat = useAgentChatEnabled();
   const { selectedCompanyId } = useCompany();
   const { openNewAgent } = useDialogActions();
@@ -211,14 +208,13 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
   const { enabled: streamlinedUiEnabled } = useStreamlinedUiEnabled();
   const pathSegment = location.pathname.split("/").pop() ?? "all";
   const requestedTab: FilterTab = isFilterTab(pathSegment) ? pathSegment : "all";
-  const previewTasks = import.meta.env.DEV && new URLSearchParams(location.search).get("orgTasks") === "demo";
-  const [view, setView] = useState<AgentsView>(() => previewTasks ? "org" : streamlinedUiEnabled ? initialView : "org");
+  const [view, setView] = useState<AgentsView>(() => streamlinedUiEnabled ? initialView : "org");
   const forceListView = !streamlinedUiEnabled && isMobile;
   const effectiveView: AgentsView = forceListView ? "list" : view;
 
   useEffect(() => {
-    setView(previewTasks ? "org" : streamlinedUiEnabled ? initialView : "org");
-  }, [initialView, streamlinedUiEnabled, previewTasks]);
+    setView(streamlinedUiEnabled ? initialView : "org");
+  }, [initialView, streamlinedUiEnabled]);
 
   const { data: instanceSettings } = useQuery({
     queryKey: queryKeys.instance.settings,
@@ -249,7 +245,6 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
     enabled: !!selectedCompanyId,
   });
   const { data: agents, isLoading } = agentsQuery;
-  const rosterFilters = useAgentRosterFilters(selectedCompanyId, agents);
   const agentsView = useQueryView(agentsQuery);
 
   const { data: orgTree } = useQuery({
@@ -327,8 +322,8 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
   }, [agents, environmentsById, environmentCapabilities, instanceSettings?.defaultEnvironmentId]);
 
   useEffect(() => {
-    setBreadcrumbs([{ label: "Agents" }]);
-  }, [setBreadcrumbs]);
+    setBreadcrumbs([{ label: t("nav.agents") }]);
+  }, [setBreadcrumbs, t]);
 
   useEffect(() => {
     if (requestedTab !== "all") {
@@ -336,15 +331,8 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
     }
   }, [navigate, requestedTab]);
 
-  const eligibleAgents = useMemo(() => (agents ?? []).filter(agent => !HIDDEN_AGENT_STATUSES.has(agent.status)), [agents]);
-  const filtered = useMemo(() => filterAgents(eligibleAgents, tab, builtInAgentIds, query)
-    .filter(rosterFilters.matches), [eligibleAgents, tab, builtInAgentIds, query, rosterFilters.matches]);
-  // Keep hierarchy placement stable while search/filter only changes card emphasis.
-  const visibleOrg = useMemo(() => filterOrgTree(orgTree ?? [], "all", builtInAgentIds), [orgTree, builtInAgentIds]);
-  const matchingAgentIds = useMemo(() => new Set(filtered.map(agent => agent.id)), [filtered]);
-
   if (!selectedCompanyId) {
-    return <EmptyState icon={Bot} message="Select an organization to view agents." />;
+    return <EmptyState icon={Bot} message={t("agents.selectOrg")} />;
   }
 
   // Keep a loaded list on screen through a failed refetch; only a real
@@ -364,6 +352,8 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
     );
   }
 
+  const filtered = filterAgents(agents ?? [], tab, builtInAgentIds, query);
+  const filteredOrg = filterOrgTree(orgTree ?? [], tab, builtInAgentIds, query.trim() ? new Set(filtered.map(agent => agent.id)) : undefined);
   const environmentDataLoading = environmentsEnabled && environments === undefined;
   const showEnvironmentColumn = environmentsEnabled && (environments === undefined || environments.length > 1);
   const resolveRenderedEnvironment = (agentId: string) => (
@@ -393,7 +383,7 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
               variant="outline"
               onClick={() => setConfigureState(builtInState)}
             >
-              Set up
+              {t("agents.setup")}
             </Button>
           </span>
         )}
@@ -407,11 +397,11 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
         titleClassName="agent-pin-text flex-1"
         titleTextClassName="truncate"
         subtitleClassName="truncate"
-        subtitle={`${roleLabels[agent.role] ?? agent.role}${agent.title ? ` - ${agent.title}` : ""}`}
+        subtitle={`${roleLabels[agent.role] ? optionLabel(roleLabels[agent.role]) : agent.role}${agent.title ? ` - ${agent.title}` : ""}`}
         to={agentUrl(agent)}
         className="agent-roster-identity group py-3 group-hover/agent-pin:bg-accent/50 group-focus-within/agent-pin:bg-accent/50"
         leading={hasInvalidOrgChain ? (
-          <AlertTriangle className="h-3.5 w-3.5 text-amber-500" aria-label="Invalid reporting chain" />
+          <AlertTriangle className="h-3.5 w-3.5 text-amber-500" aria-label={pageText("invalidReportingChain_720f9d")} />
         ) : (
           <AgentAvatar agent={agent} size={32} />
         )}
@@ -422,7 +412,7 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
             {showEnvironmentColumn && <span className="text-xs text-muted-foreground" title={resolveRenderedEnvironment(agent.id).title}>
               {resolveRenderedEnvironment(agent.id).label} · {resolveRenderedEnvironment(agent.id).detail}
             </span>}
-            {agent.lastHeartbeatAt && <span className="text-xs text-muted-foreground" title="Last heartbeat">{relativeTime(agent.lastHeartbeatAt)}</span>}
+            {agent.lastHeartbeatAt && <span className="text-xs text-muted-foreground" title={t("agents.lastHeartbeat")}>{relativeTime(agent.lastHeartbeatAt)}</span>}
           </div>
         )}
       />
@@ -446,22 +436,19 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
 
   return (
     <div className={cn(
-      "agents-surface flex flex-col gap-4 @container",
-      effectiveView === "org" && "agents-org-surface h-full min-h-0",
+      "flex flex-col gap-4 @container",
+      effectiveView === "org" && "h-full min-h-0",
     )}>
-      <div className={effectiveView === "org" ? "agents-org-toolbar" : undefined}>
-        <AgentsToolbar orgActions={visibleOrg.length ? chartActions : undefined} orgControlsRef={setOrgControlsContainer} query={query} onQueryChange={setQuery} view={effectiveView} onViewChange={setView}
-          hideViewToggle={forceListView} onNewAgent={openNewAgent}
-          filters={<AgentRosterFilters {...rosterFilters} count={filtered.length} compact />} />
-      </div>
+      <AgentsToolbar query={query} onQueryChange={setQuery} view={effectiveView} onViewChange={setView}
+        hideViewToggle={forceListView} onNewAgent={openNewAgent} />
 
-      <div className={cn("min-h-0 space-y-4", effectiveView === "org" && "agents-org-content flex flex-1 flex-col")}>
+      <div className={cn("min-h-0 space-y-4", effectiveView === "org" && "flex flex-1 flex-col")}>
 
       {agents && agents.length === 0 && (
         <EmptyState
           icon={Bot}
-          message="Create your first agent to get started."
-          action="New Agent"
+          message={t("agents.first")}
+          action={t("agents.new")}
           onAction={openNewAgent}
         />
       )}
@@ -469,7 +456,7 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
       {/* List view */}
       {effectiveView === "list" && agents && agents.length > 0 && (
         <AgentBulkRoster key={selectedCompanyId} companyId={selectedCompanyId}
-          agents={eligibleAgents}
+          agents={agents.filter(agent => !HIDDEN_AGENT_STATUSES.has(agent.status))}
           visibleAgents={filtered} renderAgent={renderAgentRow} renderStatus={renderAgentStatus}
           renderChat={agentChat.enabled ? agent => (
             // Use Radix's standard hover delay, isolated from the app's instant provider.
@@ -479,14 +466,12 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
                   <button
                     type="button"
                     className="inline-flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover/agent-row:opacity-100 focus-visible:opacity-100"
-                    aria-label={`Chat with ${agent.name}`}
+                    aria-label={translateDynamic("dynamic:chatWith", { value1: agent.name })}
                     onClick={() => navigate(`/chats/${agentRouteRef(agent)}`)}
                   >
-                    <MessagesSquare className="size-3.5" aria-hidden />
-                    Chat
-                  </button>
+                    <MessagesSquare className="size-3.5" aria-hidden />{pageText("chat_2ced57")}</button>
                 </TooltipTrigger>
-                <TooltipContent>chat with this agent</TooltipContent>
+                <TooltipContent>{t("agents.chat")}</TooltipContent>
               </Tooltip>
             </TooltipPrimitive.Provider>
           ) : undefined} />
@@ -495,14 +480,16 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
 
 
       {/* Org chart view */}
-      {effectiveView === "org" && visibleOrg.length > 0 && (
-        <OrgChart embedded actionsRef={chartActionsRef} controlsContainer={orgControlsContainer} orgTree={visibleOrg} agents={agents ?? []} matchingAgentIds={query.trim() || rosterFilters.activeCount ? matchingAgentIds : undefined} />
+      {effectiveView === "org" && filteredOrg.length > 0 && (
+        <OrgChart embedded orgTree={filteredOrg} agents={agents ?? []} />
+      )}
+
+      {effectiveView === "org" && orgTree && orgTree.length > 0 && filteredOrg.length === 0 && (
+        <p className="text-sm text-muted-foreground text-center py-8">{pageText("noAgentsMatchYourSearchAndSelectedStatus_f10065")}</p>
       )}
 
       {effectiveView === "org" && orgTree && orgTree.length === 0 && (
-        <p className="text-sm text-muted-foreground text-center py-8">
-          No organizational hierarchy defined.
-        </p>
+        <p className="text-sm text-muted-foreground text-center py-8">{pageText("noOrganizationalHierarchyDefined_10490f")}</p>
       )}
       {configureState && selectedCompanyId && (
         <Suspense fallback={null}>
@@ -542,6 +529,8 @@ function OrgTreeNode({
   builtInByAgentId: Map<string, BuiltInAgentState>;
   onConfigureBuiltIn: (state: BuiltInAgentState) => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t } = useTranslation();
   const agent = agentMap.get(node.id);
   const builtInState = builtInByAgentId.get(node.id);
   const showBuiltInLifecycle = builtInState?.status === "needs_setup" || builtInState?.status === "pending_approval";
@@ -554,7 +543,7 @@ function OrgTreeNode({
         className="group flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-accent/50 transition-colors w-full text-left no-underline text-inherit"
       >
         {hasInvalidOrgChain ? (
-          <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" aria-label="Invalid reporting chain" />
+          <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-500" aria-label={pageText("invalidReportingChain_720f9d")} />
         ) : (
           <AgentAvatar agent={agent ?? node} size={24} />
         )}
@@ -565,7 +554,7 @@ function OrgTreeNode({
           <div className="min-w-(--sz-7rem) truncate">
             <span className="text-sm font-medium">{node.name}</span>
             <span className="text-xs text-muted-foreground ml-2">
-              {roleLabels[node.role] ?? node.role}
+              {roleLabels[node.role] ? optionLabel(roleLabels[node.role]) : node.role}
               {agent?.title ? ` - ${agent.title}` : ""}
             </span>
           </div>
@@ -580,7 +569,7 @@ function OrgTreeNode({
                   }}
                 >
                   <Button size="xs" variant="outline" onClick={() => onConfigureBuiltIn(builtInState)}>
-                    Set up
+                    {t("agents.setup")}
                   </Button>
                 </span>
               )}
@@ -705,6 +694,7 @@ function LiveRunIndicator({
   runId: string;
   liveCount: number;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <Link
       to={`/agents/${agentRef}/runs/${runId}`}
@@ -715,8 +705,7 @@ function LiveRunIndicator({
         <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
         <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
       </span>
-      <span className="text-(length:--text-micro) font-medium text-blue-600 dark:text-blue-400">
-        Live{liveCount > 1 ? ` (${liveCount})` : ""}
+      <span className="text-(length:--text-micro) font-medium text-blue-600 dark:text-blue-400">{pageText("live_65c821")}{liveCount > 1 ? ` (${liveCount})` : ""}
       </span>
     </Link>
   );

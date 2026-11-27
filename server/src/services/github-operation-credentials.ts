@@ -10,7 +10,7 @@ import {
   type Db,
 } from "@paperclipai/db";
 import { forbidden } from "../errors.js";
-import { captureRunCompletionIdentity, captureRunIdentity, type RunIdentityContext } from "./run-identity.js";
+import { captureRunIdentity, type RunIdentityContext } from "./run-identity.js";
 import {
   buildGitAuthInvocation,
   resolveManagedGitHubCredential,
@@ -29,13 +29,10 @@ export type GitHubCredentialSummary = {
   authenticationMode?: "managed" | "host" | "anonymous";
 };
 
-type GitHubCredentialRun = Pick<typeof heartbeatRuns.$inferSelect,
-  "id" | "companyId" | "agentId" | "nativeIssueId" | "contextSnapshot">;
-
 /** A raw GitHub token cannot enforce the low-trust read-only tool boundary. */
 async function allowsGitHubCredentialExport(
   db: Db,
-  run: GitHubCredentialRun,
+  run: typeof heartbeatRuns.$inferSelect,
 ) {
   const issueId =
     run.contextSnapshot?.issueId ??
@@ -130,26 +127,6 @@ export async function resolveGitHubOperationCredentials(
 ) {
   const { run, context } = await captureRunIdentity(db, input, { readScope: "github_credentials" });
   if (!context) throw forbidden("This run predates managed GitHub credentials");
-  return resolveCapturedGitHubCredentials(db, run, context);
-}
-
-export async function resolveGitHubCompletionCredentials(
-  db: Db,
-  input: { companyId: string; issueId: string; runId: string },
-) {
-  const [source] = await db.select({ agentId: heartbeatRuns.agentId })
-    .from(heartbeatRuns).where(and(eq(heartbeatRuns.id, input.runId), eq(heartbeatRuns.companyId, input.companyId),
-    eq(heartbeatRuns.nativeIssueId, input.issueId))).limit(1);
-  if (!source) throw forbidden("GitHub completion requires the bound task run");
-  const { run, context } = await captureRunCompletionIdentity(db, { ...input, agentId: source.agentId });
-  if (!run.activeIdentityContextId && !context) return { status: "absent" as const, env: {} as Record<string, string> };
-  if (!context || context.companyId !== run.companyId || context.status !== "accepted") {
-    throw forbidden("GitHub completion requires the run's accepted identity");
-  }
-  return resolveCapturedGitHubCredentials(db, run, context);
-}
-
-async function resolveCapturedGitHubCredentials(db: Db, run: GitHubCredentialRun, context: RunIdentityContext) {
   let summary: GitHubCredentialSummary;
   let env: Record<string, string> = {};
   // A sponsored guest's responsible person is an internal accountability field,
@@ -174,10 +151,10 @@ async function resolveCapturedGitHubCredentials(db: Db, run: GitHubCredentialRun
     const resolved = await resolveManagedGitHubCredential(
       db,
       secretService(db),
-      run.companyId,
+      input.companyId,
       {
-        agentId: run.agentId,
-        heartbeatRunId: run.id,
+        agentId: input.agentId,
+        heartbeatRunId: input.runId,
         allowStandingDelegation: false,
         responsibleUserId:
           context?.cause === "company_default"

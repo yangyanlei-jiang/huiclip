@@ -1,0 +1,22 @@
+name: HuiClip 中文社区反馈
+description: 报告社区分支的界面、文档或本地安装问题
+body:
+  - type: input
+    id: version
+    attributes:
+      label: 版本与提交
+      description: 填写 HuiClip 版本或分支提交，并注明操作系统。
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 复现步骤与结果
+      description: 说明页面或命令、预期结果和实际结果。
+    validations:
+      required: true
+  - type: textarea
+    id: artifacts
+    attributes:
+      label: 脱敏截图或日志
+      description: 请移除令牌、私有组织信息、客户内容和机器路径。

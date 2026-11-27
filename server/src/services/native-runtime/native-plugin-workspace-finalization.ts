@@ -8,10 +8,9 @@ export async function inspectPluginWorkspaceForFinalization(
   workspace: typeof executionWorkspaces.$inferSelect,
   agentId: string,
   runId: string,
-  placement?: Pick<Parameters<typeof finalizePluginWorkspace>[3], "taskLease" | "plan">,
 ): Promise<Record<string, unknown> | null> {
   if (workspace.providerType === "plugin") {
-    const inspection = await finalizePluginWorkspace(db, workers, workspace, { agentId, runId, ...placement });
+    const inspection = await finalizePluginWorkspace(db, workers, workspace, { agentId, runId });
     if (workspace.strategyType === "git_worktree"
       && (!workspace.branchName || inspection.branchName !== workspace.branchName)) {
       throw new Error("plugin_workspace_branch_mismatch");

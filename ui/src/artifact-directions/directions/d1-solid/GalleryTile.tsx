@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { cn } from "@/lib/utils";
 import type { LabArtifact } from "../../kit";
 import { actionName, externalProps, type SolidAction } from "./actions";
@@ -40,6 +41,7 @@ function Ghost({ action, artifact }: { action: SolidAction; artifact: LabArtifac
 }
 
 export function GalleryTile({ artifact }: { artifact: LabArtifact }) {
+  const { t: pageText } = usePageTranslation("interface");
   const { primary, secondary } = galleryActions(artifact);
   const PrimaryIcon = primary.icon;
   return (
@@ -56,7 +58,7 @@ export function GalleryTile({ artifact }: { artifact: LabArtifact }) {
             <MetaLine artifact={artifact} className="truncate" />
             <span className={cn(META_TEXT, "flex min-w-0 text-(--solid-meta)")}>
               <time dateTime={artifact.updatedAt} className="shrink-0">
-                <span className="sr-only">Last edited </span>
+                <span className="sr-only">{pageText("lastEdited_7e2f47") + " "}</span>
                 {shortStamp(artifact.updatedLabel)}
               </time>
               <MetaDot />

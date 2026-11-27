@@ -89,14 +89,13 @@ export function AgentMetricTile({
   );
 }
 
-export function AgentChip({ tone = "neutral", mono, children, className }: { tone?: "neutral" | "danger"; mono?: boolean; children: ReactNode; className?: string }) {
+export function AgentChip({ tone = "neutral", mono, children }: { tone?: "neutral" | "danger"; mono?: boolean; children: ReactNode }) {
   return (
     <span
       className={cn(
         "inline-flex h-5 items-center gap-1 rounded-md px-1.5 text-xs leading-4",
         mono && "font-mono",
         tone === "danger" ? "bg-destructive/10 text-destructive" : "bg-(--agent-detail-tile-chip) text-muted-foreground",
-        className,
       )}
     >
       {children}

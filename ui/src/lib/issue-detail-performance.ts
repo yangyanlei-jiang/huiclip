@@ -1,5 +1,3 @@
-import { useSyncExternalStore } from "react";
-
 export const ISSUE_DETAIL_NAVIGATE_MARK = "issue-detail:navigate";
 export const ISSUE_DETAIL_HEADER_PAINT_MARK = "issue-detail:header-paint";
 export const ISSUE_DETAIL_CONTENT_PAINT_MARK = "issue-detail:content-paint";
@@ -7,24 +5,6 @@ export const ISSUE_DETAIL_HEADER_MEASURE = "issue-detail:navigate→header-paint
 export const ISSUE_DETAIL_CONTENT_MEASURE = "issue-detail:navigate→content-paint";
 
 let issueDetailNavigationGeneration = 0;
-// The paint time of the current navigation's content, for the page-load
-// measurement (`usePageContentReady`); null until it paints.
-let contentPaintedAt: number | null = null;
-const contentPaintListeners = new Set<() => void>();
-
-function notifyContentPaint(): void {
-  for (const listener of contentPaintListeners) listener();
-}
-
-function subscribeContentPaint(listener: () => void): () => void {
-  contentPaintListeners.add(listener);
-  return () => contentPaintListeners.delete(listener);
-}
-
-/** `performance.now()` when the current task's content painted, or null. */
-export function useIssueDetailContentPaintedAt(): number | null {
-  return useSyncExternalStore(subscribeContentPaint, () => contentPaintedAt, () => null);
-}
 const readinessGates = ["issue", "comments", "interactions", "attachments", "work-products", "activity", "linked-runs", "runtime", "plan", "transcripts", "history"] as const;
 type ReadinessGate = typeof readinessGates[number];
 const readinessState = new Map<ReadinessGate, boolean>();
@@ -42,10 +22,6 @@ function supportsPerformanceMarks(): boolean {
 
 export function beginIssueDetailNavigation(): void {
   issueDetailNavigationGeneration += 1;
-  if (contentPaintedAt !== null) {
-    contentPaintedAt = null;
-    notifyContentPaint();
-  }
   if (!supportsPerformanceMarks()) return;
 
   performance.clearMarks(ISSUE_DETAIL_NAVIGATE_MARK);
@@ -90,10 +66,6 @@ export function scheduleIssueDetailPaintMeasure(
       }
       performance.mark(markName);
       performance.measure(measureName, ISSUE_DETAIL_NAVIGATE_MARK, markName);
-      if (markName === ISSUE_DETAIL_CONTENT_PAINT_MARK) {
-        contentPaintedAt = performance.now();
-        notifyContentPaint();
-      }
     });
   });
 }

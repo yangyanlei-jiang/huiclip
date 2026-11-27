@@ -1,0 +1,254 @@
+{
+  "descriptions": {
+    "1password": "读取和管理已授权保险库中的条目和密钥。",
+    "agentmail": "为智能体分配电子邮箱，并将每段邮件对话作为任务处理。",
+    "airtable": "连接由 Airtable 托管的 MCP 服务。",
+    "anthropic": "使用权限受限的密钥访问 Anthropic API。",
+    "api-key-generic": "使用提供商的密钥连接 API。",
+    "arcade": "使用 Arcade MCP 连接提供的工具。",
+    "asana": "连接由 Asana 托管的 MCP 服务。",
+    "bedrock": "使用 Bedrock API 密钥和 AWS 区域，通过 Amazon Bedrock 访问 Claude。",
+    "beehiiv": "连接由 beehiiv 托管的 MCP 服务。",
+    "bitly": "连接由 Bitly 托管的 MCP 服务。",
+    "box": "连接由 Box 托管的 MCP 服务。",
+    "braintrust": "查看 AI 跟踪记录，管理评估数据集和评分器，并运行 Braintrust 评估。",
+    "brex": "连接由 Brex 托管的 MCP 服务。",
+    "browser-use-cloud": "委派浏览器任务，并在 Paperclip 中实时查看执行过程。",
+    "calendly": "查看 Calendly 活动类型和可预约时段，并执行支持的预约操作。",
+    "candid": "连接由 Candid 托管的 MCP 服务。",
+    "chat-completions-api": "将兼容的执行工具连接到支持 Chat Completions 的提供商或网关。",
+    "clickhouse": "连接由 ClickHouse 托管的 MCP 服务。",
+    "clickup": "通过官方 MCP 服务搜索 ClickUp 工作区，管理任务、文档和对话。",
+    "cloudflare": "连接由 Cloudflare 托管的 MCP 服务。",
+    "cloudinary": "连接由 Cloudinary 托管的 MCP 服务。",
+    "coda": "连接由 Coda 托管的 MCP 服务。",
+    "cognee": "根据文档和对话构建可共享的图记忆，并按需检索。",
+    "composio": "通过 Composio Connect 查找和使用已连接的应用。",
+    "context7": "搜索公开的软件库文档，获取最新代码示例。",
+    "daytona": "管理 Daytona 沙箱、文件、命令、Git、快照、存储卷和账号资源。",
+    "discord": "在 Discord 中与智能体对话，发起或继续处理 Paperclip 任务。",
+    "ditto": "搜索和复用已批准的产品文案，按照风格指南编辑和翻译文本。",
+    "egnyte": "连接由 Egnyte 托管的 MCP 服务。",
+    "embat": "连接由 Embat 托管的 MCP 服务。",
+    "enterpret": "围绕客户反馈提问，获取附有来源的原文引述。",
+    "exa": "使用 Exa 搜索公开网页并阅读来源页面。",
+    "executor": "使用 Executor MCP 连接提供的工具。",
+    "firecrawl": "使用 Firecrawl 搜索、抓取和解析公开网页。",
+    "fireflies": "搜索会议转录，阅读摘要和待办事项，并关联会议相关的例行任务。",
+    "gauge": "跟踪 AI 回答如何提及你的品牌，研究关键词和流量，并运行内容工作流。",
+    "github-code-review-bot": "让智能体审查拉取请求，并回应 GitHub 上的提及。",
+    "github": "连接 GitHub 仓库，或为 GitHub Copilot 智能体进行身份验证。",
+    "gmail": "搜索和阅读 Gmail 邮件并创建草稿，无需启用邮件发送权限。",
+    "google-calendar": "读取日历并管理 Google 日历中的活动。",
+    "google-chat": "搜索和阅读 Google Chat 对话，并发送消息。",
+    "google-docs": "读取和更新 Google 文档。",
+    "google-drive": "在 Google 云端硬盘中搜索、读取、创建和复制文件。",
+    "google-people": "通过 Google People API 搜索联系人和目录中的个人资料。",
+    "google-sheets": "读取和更新 Google 表格。",
+    "google-slides": "读取和更新 Google 幻灯片。",
+    "google-workspace-search": "通过一个只读的 Google Workspace 工具搜索 Gmail、云端硬盘、日历和 Chat。",
+    "google-workspace": "使用同一 Google 账号连接 Gmail、云端硬盘、文档、表格、幻灯片和日历。",
+    "google": "为智能体连接 Google Antigravity 账号或 Gemini API 密钥。",
+    "gsc-wizard": "读取已连接站点的 Google Search Console、Bing 站长工具和分析数据。",
+    "honcho": "记住对话并检索对话参与方的相关信息。",
+    "hugging-face": "连接由 Hugging Face 托管的 MCP 服务。",
+    "imessage-photon": "使用 Photon Cloud 从 Apple 信息联系 Paperclip 智能体。Pro 支持私信，专用号码还支持群聊。",
+    "jira": "连接由 Jira 托管的 MCP 服务。",
+    "kernel": "连接由 Kernel 托管的 MCP 服务。",
+    "klaviyo": "查看 Klaviyo 营销活动的表现，准备变更并提交审阅。",
+    "linear": "创建、更新和查看 Linear 工单。",
+    "local-falcon": "连接由 Local Falcon 托管的 MCP 服务。",
+    "local": "使用智能体执行环境中的本地模型服务。",
+    "make": "连接由 Make 托管的 MCP 服务。",
+    "manufact": "连接由 Manufact 托管的 MCP 服务。",
+    "mem0": "记住偏好、对话、事件和智能体状态。",
+    "messages-api": "将兼容的执行工具连接到支持 Anthropic Messages 的提供商或网关。",
+    "microsoft-teams": "在 Microsoft Teams 中与智能体对话，发起或继续处理 Paperclip 任务。",
+    "miro": "连接由 Miro 托管的 MCP 服务。",
+    "mixpanel": "连接由 Mixpanel 托管的 MCP 服务。",
+    "monday": "在 monday.com 中查看和管理看板及工作项。",
+    "neon": "在 Neon 中管理 Postgres 项目和分支，运行 SQL 并查看数据库结构。",
+    "netlify": "连接由 Netlify 托管的 MCP 服务。",
+    "notion": "读取和更新 Notion 工作区中的页面。",
+    "oauth-generic": "使用自己的 OAuth 客户端连接提供商。",
+    "openai": "为智能体连接 OpenAI 账号。",
+    "openrouter": "为智能体连接 OpenRouter 账号。",
+    "oreilly": "连接由 O'Reilly 托管的 MCP 服务。",
+    "pagerduty": "连接由 PagerDuty 托管的 MCP 服务。",
+    "paperclip-notebook": "通过 Paperclip Cloud 账号发布、查找和分享报告、文件及交互式页面。",
+    "parallel-search": "使用 Parallel 搜索公开网页并提取来源页面。",
+    "planetscale": "连接由 PlanetScale 托管的 MCP 服务。",
+    "posthog": "通过 PostHog 托管的 MCP 服务分析产品用量、错误、功能开关和实验。",
+    "postman": "连接由 Postman 托管的 MCP 服务。",
+    "railway": "查看服务和日志，部署应用，并在 Railway 容器中运行命令。",
+    "razorpay": "连接由 Razorpay 托管的 MCP 服务。",
+    "resend": "连接由 Resend 托管的 MCP 服务。",
+    "responses-api": "将兼容的执行工具连接到支持 OpenAI Responses 的提供商或网关，包括 Emissary。",
+    "sanity": "连接由 Sanity 托管的 MCP 服务。",
+    "sentry": "调查错误、发布情况及生产环境问题。",
+    "shopify": "搜索商店的商品和政策，并管理购物车。",
+    "similarweb": "连接由 Similarweb 托管的 MCP 服务。",
+    "slack": "为智能体提供 Slack 工具，或直接从 Slack 发起和继续处理 Paperclip 任务。",
+    "speko": "通过实验性的托管语音连接，与 Paperclip 智能体通话。",
+    "stripe": "连接由 Stripe 托管的 MCP 服务。",
+    "supabase": "创建 Supabase 项目，部署边缘函数，管理数据库，并配置应用身份验证和 API。",
+    "superagent": "审查安全发现，启动红队评估报告，并在智能体采用内容和软件包前为其评分。",
+    "supermemory": "搜索和保存共享记忆、文档及个人资料。",
+    "tavily": "通过 Tavily 托管的 MCP 服务搜索公开网页并提取页面内容。",
+    "telegram": "在 Telegram 中与智能体对话，发起或继续处理 Paperclip 任务。",
+    "telem": "使用一个 API 密钥，通过多个搜索提供商搜索和阅读网页。",
+    "ticket-tailor": "连接由 Ticket Tailor 托管的 MCP 服务。",
+    "ticktick": "连接由 TickTick 托管的 MCP 服务。",
+    "todoist": "连接由 Todoist 托管的 MCP 服务。",
+    "unikraft": "管理 Unikraft Cloud 实例、服务、存储卷、镜像、证书和自动扩缩容，以及沙箱中的命令和文件。",
+    "vercel": "部署网站，并配置 Vercel 团队中的项目、环境变量和域名。",
+    "webflow": "连接由 Webflow 托管的 MCP 服务。",
+    "windsor-ai": "通过 Windsor.ai 查询已连接的营销、分析、客户关系管理和数据仓库数据。",
+    "wix": "连接由 Wix 托管的 MCP 服务。",
+    "xai": "为智能体连接 Grok 账号。",
+    "xero": "连接由 Xero 托管的 MCP 服务。",
+    "youcom": "连接由 You.com 托管的 MCP 服务。",
+    "zapier": "通过 Zapier 账号访问数千款应用。",
+    "zep": "检索时序图记忆和已获授权的业务上下文。"
+  },
+  "actions": {
+    "Open": "打开",
+    "Manage": "管理",
+    "Set up": "设置",
+    "Connect": "连接",
+    "Add key": "添加密钥",
+    "Add connection pool": "添加连接池",
+    "Add connection": "添加连接",
+    "Add account": "添加账号",
+    "Unavailable": "不可用"
+  },
+  "card": {
+    "installed": "已安装",
+    "all": "全部",
+    "filters": "应用筛选条件",
+    "assistantName": "助手连接（MCP）",
+    "assistantSummary": "通过 Codex、Claude、OpenCode 或其他助手使用你的 Paperclip 组织。",
+    "assistantLoading": "正在检查你的连接状态…",
+    "customTitle": "连接自己的工具",
+    "customSummary": "添加自定义 MCP 服务，或粘贴已有配置。",
+    "customDescription": "为此组织配置的自定义连接器。"
+  },
+  "nativeChat": {
+    "speko": "通过实验性浏览器语音功能与智能体对话。",
+    "agentmail": "为智能体分配电子邮箱，并将每段邮件对话作为任务处理。",
+    "imessage-photon": "使用专用 Photon 号码，通过 Apple 信息联系智能体并分享照片。",
+    "slack": "通过 Slack 频道和私信与智能体对话。",
+    "github-code-review-bot": "让智能体审查拉取请求，并回应 GitHub 上的提及。",
+    "discord": "通过 Discord 频道、讨论串和私信与智能体对话。",
+    "microsoft-teams": "通过 Teams 频道和对话与智能体交流。",
+    "telegram": "通过 Telegram 私信、群组和话题与智能体对话。"
+  },
+  "assistantAction": "{{action}}助手连接（MCP）",
+  "chatVia": "通过 {{name}} 与智能体对话。",
+  "curated": {
+    "zapier": {
+      "tagline": "通过智能体连接团队已在使用的 9,000 多款应用。",
+      "short": "通过智能体访问 9,000 多款应用。"
+    },
+    "github": {
+      "tagline": "查看代码和拉取请求，评论议题。",
+      "short": "查看代码和拉取请求，评论议题。"
+    },
+    "slack": {
+      "tagline": "在团队频道中收发消息。",
+      "short": "在你的频道中收发消息。"
+    },
+    "notion": {
+      "tagline": "查看和更新工作区页面。",
+      "short": "查看和更新工作区页面。"
+    },
+    "railway": {
+      "tagline": "检查服务、阅读日志并管理部署。",
+      "short": "连接 Railway 以管理部署、查看日志和访问容器。"
+    },
+    "posthog": {
+      "tagline": "查看产品用量、错误、功能开关和实验。",
+      "short": "使用 PostHog 登录。可以按需固定项目和设置访问控制。"
+    },
+    "ditto": {
+      "tagline": "复用已经批准的产品文案，遵循团队风格指南。",
+      "short": "使用 Ditto 登录。API 密钥可选。"
+    },
+    "gauge": {
+      "tagline": "跟踪 AI 回答中的品牌提及，并运行内容工作流。",
+      "short": "使用 Gauge 登录并选择组织。API 密钥可选。"
+    },
+    "neon": {
+      "tagline": "管理 Postgres 项目、分支和查询。",
+      "short": "使用 Neon 登录。可以按需固定项目和启用只读模式。"
+    },
+    "superagent": {
+      "tagline": "审查安全发现并执行红队检查。",
+      "short": "使用 Superagent API 密钥连接。计费工具和涉及破坏性操作的工具仍受操作策略约束。"
+    },
+    "linear": {
+      "tagline": "创建、更新和查看工单。",
+      "short": "创建、更新和查看工单。"
+    },
+    "google-sheets": {
+      "tagline": "读取和更新选定的电子表格。",
+      "short": "读取电子表格或更新你选择的文件。"
+    },
+    "gmail": {
+      "tagline": "阅读邮件并创建草稿，供你审阅。",
+      "short": "阅读邮件并创建草稿，供你审阅。"
+    },
+    "google-drive": {
+      "tagline": "在云端硬盘中查找、读取和创建文件。",
+      "short": "在云端硬盘中查找、读取和创建文件。"
+    },
+    "google-docs": {
+      "tagline": "读取和更新文档。",
+      "short": "读取和更新文档。"
+    },
+    "google-slides": {
+      "tagline": "读取和更新演示文稿。",
+      "short": "读取和更新演示文稿。"
+    },
+    "google-calendar": {
+      "tagline": "查看日历并管理活动。",
+      "short": "查看日历并管理活动。"
+    },
+    "google-chat": {
+      "tagline": "阅读对话并发送消息。",
+      "short": "阅读对话并发送消息。"
+    },
+    "google-people": {
+      "tagline": "查找联系人和目录中的人员。",
+      "short": "查找联系人和目录中的人员。"
+    },
+    "google-workspace-search": {
+      "tagline": "搜索你的 Google 工作区。",
+      "short": "搜索你的 Google 工作区。"
+    },
+    "hubspot": {
+      "tagline": "查找联系人并更新交易阶段。",
+      "short": "查找联系人并更新交易阶段。"
+    },
+    "intercom": {
+      "tagline": "阅读和回复客户对话。",
+      "short": "阅读和回复客户对话。"
+    },
+    "figma": {
+      "tagline": "读取文件并在画框上发表评论。",
+      "short": "读取文件并在画框上发表评论。"
+    },
+    "stripe": {
+      "tagline": "查看客户、发票和付款信息。",
+      "short": "查看客户、发票和付款信息。"
+    },
+    "context7": {
+      "tagline": "查询软件库的最新文档。",
+      "short": "查询软件库的最新文档。"
+    },
+    "generic": {
+      "tagline": "允许智能体访问此应用。",
+      "short": "允许智能体访问此应用。"
+    }
+  }
+}

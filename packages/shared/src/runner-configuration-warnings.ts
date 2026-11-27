@@ -1,5 +1,5 @@
 export interface AgentConfigurationWarning {
-  code: "runner_option_ignored" | "protected_environment_variable";
+  code: "runner_option_ignored";
   field: string;
   message: string;
 }

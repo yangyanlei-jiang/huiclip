@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Copy, ExternalLink, Loader2 } from "lucide-react";
@@ -8,8 +9,6 @@ import { Button } from "@/components/ui/button";
 import { useQueryView } from "@/components/QueryView";
 import { copyTextToClipboard } from "@/lib/clipboard";
 import { queryKeys } from "@/lib/queryKeys";
-import { ANALYTICS_MASK_CLASS } from "@/lib/analytics/privacy";
-import { cn } from "@/lib/utils";
 
 export function SlackIdentityStep({ endpointId, command, testStartedAt, onConnected, onSaveExit }: {
   endpointId: string;
@@ -18,6 +17,7 @@ export function SlackIdentityStep({ endpointId, command, testStartedAt, onConnec
   onConnected: () => void;
   onSaveExit: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   const client = useQueryClient();
   const [copied, setCopied] = useState(false);
   const [copyError, setCopyError] = useState(false);
@@ -51,53 +51,49 @@ export function SlackIdentityStep({ endpointId, command, testStartedAt, onConnec
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-bold">Connect your Slack account</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Send this command in Slack so we can identify your account. It won&apos;t start agent work.
-        </p>
+        <h1 className="text-xl font-bold">{pageText("connectYourSlackAccount_640634")}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{pageText("sendThisCommandInSlackSoWeCan_d0eb51")}</p>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-3">
         <code className="text-sm">{connectCommand}</code>
         <Button variant="ghost" size="sm" onClick={() => {
           void copyTextToClipboard(connectCommand).then(() => { setCopied(true); setCopyError(false); }, () => setCopyError(true));
-        }}><Copy className="size-4" />{copied ? "Copied" : "Copy command"}</Button>
+        }}><Copy className="size-4" />{copied ? pageText("copied_8e3df4") : pageText("copyCommand_a8e104")}</Button>
       </div>
-      {copyError && <p role="alert" className="text-sm text-destructive">Couldn&apos;t copy the command. Select and copy it above.</p>}
+      {copyError && <p role="alert" className="text-sm text-destructive">{pageText("couldnTCopyTheCommandSelectAndCopy_2f9f9f")}</p>}
       <p className="text-sm">
-        <a href="https://app.slack.com/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">Open Slack <ExternalLink className="inline size-3" /></a>, send the command in your workspace, then return here.
-      </p>
+        <a href="https://app.slack.com/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{pageText("openSlack_eec851") + " "}<ExternalLink className="inline size-3" /></a>{pageText("sendTheCommandInYourWorkspaceThenReturn_5e88e0")}</p>
       {identitiesView.kind === "error" ? (
-        <p role="alert" className="text-sm text-destructive">Couldn&apos;t check for your Slack account. We&apos;ll keep trying.</p>
+        <p role="alert" className="text-sm text-destructive">{pageText("couldnTCheckForYourSlackAccountWe_e7df82")}</p>
       ) : candidates.length === 0 ? (
-        <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />Waiting for your connect command…</p>
+        <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />{pageText("waitingForYourConnectCommand_b58907")}</p>
       ) : (
         <div className={`space-y-3 rounded-lg border p-4 ${linkedToMe
           ? "border-(--status-task-done)/30 bg-(--status-task-done)/10"
           : "border-(--status-task-todo)/30 bg-(--status-task-todo)/10"}`}>
-          <p className="text-sm">Choose your Slack account below to link it to <strong>{userLabel ?? "your Paperclip account"}</strong>. Only confirm an account that belongs to you. Future messages will use your Paperclip permissions.</p>
+          <p className="text-sm">{pageText("chooseYourSlackAccountBelowToLinkIt_8318bc") + " "}<strong>{userLabel ?? pageText("yourPaperclipAccount_456506")}</strong>{pageText("onlyConfirmAnAccountThatBelongsToYou_c13950")}</p>
           {candidates.map((identity) => {
             const mine = identity.status === "linked" && identity.paperclipUserId === userId;
             return (
               <div key={identity.principalId} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-3">
-                <div className={cn("min-w-0", ANALYTICS_MASK_CLASS)}>
+                <div className="min-w-0">
                   <p className="text-sm font-medium">{identity.externalLabel}</p>
                   <p className="text-xs text-muted-foreground">{identity.externalDetail}</p>
                 </div>
-                {mine ? <p role="status" className="flex items-center gap-2 text-sm"><CheckCircle2 className="size-4 text-(--status-task-done)" />Linked to you</p>
-                  : identity.status === "linked" ? <p className="text-sm text-muted-foreground">Linked to {identity.paperclipUserLabel ?? "another Paperclip account"}</p>
+                {mine ? <p role="status" className="flex items-center gap-2 text-sm"><CheckCircle2 className="size-4 text-(--status-task-done)" />{pageText("linkedToYou_572a13")}</p>
+                  : identity.status === "linked" ? <p className="text-sm text-muted-foreground">{pageText("linkedTo_e7ca9e") + " "}{identity.paperclipUserLabel ?? pageText("anotherPaperclipAccount_fbf870")}</p>
                   : <Button variant="outline" disabled={!userId || link.isPending} onClick={() => link.mutate(identity.principalId)} aria-label={`Link ${identity.externalLabel} to my Paperclip account`}>
-                    {link.isPending && link.variables === identity.principalId && <Loader2 className="size-4 animate-spin" />}This is my Slack account
-                  </Button>}
+                    {link.isPending && link.variables === identity.principalId && <Loader2 className="size-4 animate-spin" />}{pageText("thisIsMySlackAccount_1ecf72")}</Button>}
               </div>
             );
           })}
         </div>
       )}
-      {!userId && !session.isPending && !health.isPending && sessionView.kind !== "reconnecting" && healthView.kind !== "reconnecting" && <p role="alert" className="text-sm text-destructive">Sign in to Paperclip to link your Slack account. Refresh this page after signing in.</p>}
-      {link.error ? <p role="alert" className="text-sm text-destructive">Couldn&apos;t link your account. Check that you are a member of this company and try again.</p> : null}
+      {!userId && !session.isPending && !health.isPending && sessionView.kind !== "reconnecting" && healthView.kind !== "reconnecting" && <p role="alert" className="text-sm text-destructive">{pageText("signInToPaperclipToLinkYourSlack_b24c91")}</p>}
+      {link.error ? <p role="alert" className="text-sm text-destructive">{pageText("couldnTLinkYourAccountCheckThatYou_1fc4d3")}</p> : null}
       <div className="flex items-center justify-between gap-3">
-        <Button variant="ghost" className="text-muted-foreground" onClick={onSaveExit}>Save &amp; exit</Button>
-        {linkedToMe && <Button onClick={onConnected}>Continue to message test</Button>}
+        <Button variant="ghost" className="text-muted-foreground" onClick={onSaveExit}>{pageText("saveExit_fc5599")}</Button>
+        {linkedToMe && <Button onClick={onConnected}>{pageText("continueToMessageTest_311517")}</Button>}
       </div>
     </div>
   );

@@ -1,3 +1,5 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
 import type { FeedbackDataSharingPreference, FeedbackVoteValue } from "@paperclipai/shared";
 import { Button } from "@/components/ui/button";
@@ -30,6 +32,8 @@ export function OutputFeedbackButtons({
   rightSlot?: React.ReactNode;
   inline?: boolean;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const [pendingVote, setPendingVote] = useState<{
     vote: FeedbackVoteValue;
     reason?: string;
@@ -123,9 +127,7 @@ export function OutputFeedbackButtons({
           className={cn(visibleVote === "up" && "border-green-600/50 bg-green-500/10 text-green-700")}
           onClick={() => handleVote("up")}
         >
-          <ThumbsUp className="mr-1.5 h-3.5 w-3.5" />
-          Helpful
-        </Button>
+          <ThumbsUp className="mr-1.5 h-3.5 w-3.5" />{pageText("helpful_45e36d")}</Button>
         <Button
           type="button"
           size="sm"
@@ -134,18 +136,16 @@ export function OutputFeedbackButtons({
           className={cn(visibleVote === "down" && "border-amber-600/50 bg-amber-500/10 text-amber-800")}
           onClick={() => handleVote("down")}
         >
-          <ThumbsDown className="mr-1.5 h-3.5 w-3.5" />
-          Needs work
-        </Button>
+          <ThumbsDown className="mr-1.5 h-3.5 w-3.5" />{pageText("needsWork_eafabc")}</Button>
         {rightSlot ? <div className="ml-auto">{rightSlot}</div> : null}
       </div>
       {collectingDownvoteReason ? (
         <div className="mt-2 rounded-md border border-border/60 bg-accent/20 p-3">
-          <div className="mb-2 text-sm font-medium">What could have been better?</div>
+          <div className="mb-2 text-sm font-medium">{pageText("whatCouldHaveBeenBetter_2de6ce")}</div>
           <Textarea
             value={downvoteReason}
             onChange={(event) => setDownvoteReason(event.target.value)}
-            placeholder="Add a short note"
+            placeholder={pageText("addAShortNote_9cd96b")}
             className="min-h-20 resize-y bg-background"
             disabled={disabled || isSaving}
           />
@@ -160,9 +160,7 @@ export function OutputFeedbackButtons({
                 setDownvoteReason("");
                 setDownvoteAllowSharing(undefined);
               }}
-            >
-              Dismiss
-            </Button>
+            >{pageText("dismiss_70afe9")}</Button>
             <Button
               type="button"
               size="sm"
@@ -174,7 +172,7 @@ export function OutputFeedbackButtons({
                 });
               }}
             >
-              {isSaving ? "Saving..." : "Save note"}
+              {isSaving ? pageText("saving_ae7e88") : pageText("saveNote_d69ca0")}
             </Button>
           </div>
         </div>
@@ -191,34 +189,21 @@ export function OutputFeedbackButtons({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Save your feedback sharing preference</DialogTitle>
-            <DialogDescription>
-              Choose whether voted AI outputs can be shared with Paperclip Labs. This
-              answer becomes the default for future thumbs up and thumbs down votes.
-            </DialogDescription>
+            <DialogTitle>{pageText("saveYourFeedbackSharingPreference_c8511f")}</DialogTitle>
+            <DialogDescription>{pageText("chooseWhetherVotedAIOutputsCanBeShared_ca14bb")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3 text-sm text-muted-foreground">
-            <p>
-              This vote is always saved locally.
-            </p>
-            <p>
-              Choose <span className="font-medium text-foreground">Always allow</span> to share
-              this vote and future voted AI outputs. Choose{" "}
-              <span className="font-medium text-foreground">Don't allow</span> to keep this vote
-              and future votes local.
-            </p>
-            <p>
-              You can change this later in Settings &gt; General.
-            </p>
+            <p>{pageText("thisVoteIsAlwaysSavedLocally_680abb")}</p>
+            <p>{pageText("choose_78b7c9") + " "}<span className="font-medium text-foreground">{translateUi("interfaceCopy.alwaysAllow")}</span>{" " + pageText("toShareThisVoteAndFutureVotedAI_10139e")}{" "}
+              <span className="font-medium text-foreground">{pageText("donTAllow_63da96")}</span>{" " + pageText("toKeepThisVoteAndFutureVotesLocal_8f9fdc")}</p>
+            <p>{pageText("youCanChangeThisLaterInSettingsGeneral_1558d3")}</p>
             {termsUrl ? (
               <a
                 href={termsUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex text-sm text-foreground underline underline-offset-4"
-              >
-                Read our terms of service
-              </a>
+              >{pageText("readOurTermsOfService_8a15a6")}</a>
             ) : null}
           </div>
           <DialogFooter>
@@ -238,7 +223,7 @@ export function OutputFeedbackButtons({
                 );
               }}
             >
-              {isSaving ? "Saving..." : "Don't allow"}
+              {isSaving ? pageText("saving_ae7e88") : pageText("donTAllow_63da96")}
             </Button>
             <Button
               type="button"
@@ -258,7 +243,7 @@ export function OutputFeedbackButtons({
                 );
               }}
             >
-              {isSaving ? "Saving..." : "Always allow"}
+              {isSaving ? pageText("saving_ae7e88") : pageText("alwaysAllow_41325d")}
             </Button>
           </DialogFooter>
         </DialogContent>

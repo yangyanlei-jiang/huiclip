@@ -1,6 +1,5 @@
 import express from "express";
 import request from "supertest";
-import { getTableName } from "drizzle-orm";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const AGENT_ACTOR_ID = "11111111-1111-4111-8111-111111111111";
@@ -38,7 +37,6 @@ const mockHeartbeatService = vi.hoisted(() => ({
   reportRunActivity: vi.fn(async () => undefined),
   getRun: vi.fn(async () => null),
   getActiveRunForAgent: vi.fn(async () => null),
-  getQueuedAssignmentRunForIssue: vi.fn(async () => null),
   cancelRun: vi.fn(async () => null),
 }));
 
@@ -158,28 +156,15 @@ function agentActor(): Actor {
   };
 }
 
+// Minimal chainable/thenable db stub: any query resolves to an empty row set.
+// Run containment is mocked because this suite targets assignee invokability.
 function stubDb(): any {
   const query: any = {};
   for (const method of ["select", "from", "where", "innerJoin", "leftJoin", "orderBy", "limit", "groupBy", "for"]) {
     query[method] = () => query;
   }
   query.then = (resolve: (rows: unknown[]) => unknown) => Promise.resolve(resolve([]));
-  return { select: () => ({ from: (table: Parameters<typeof getTableName>[0]) => {
-    const name = getTableName(table);
-    if (name !== "issues" && name !== "agents") return query;
-    const rows = async () => name === "issues"
-      ? [await mockIssueService.getById()].filter(Boolean)
-      : Object.entries(agentStatusById).map(([id, status]) => ({ id, status, companyId: "company-1", permissions: null }));
-    const result = {
-      where: () => result,
-      orderBy: () => result,
-      limit: () => result,
-      for: () => result,
-      then: (resolve: (rows: unknown[]) => unknown, reject?: (reason: unknown) => unknown) =>
-        rows().then(resolve, reject),
-    };
-    return result;
-  } }) };
+  return { select: () => query };
 }
 
 function createApp(actor: Actor) {
@@ -270,7 +255,7 @@ describe("issue assignee invokability guard", () => {
       .patch(`/api/issues/${existing.id}`)
       .send({ assigneeAgentId: IDLE_AGENT_ID });
 
-    expect(res.status, JSON.stringify(res.body)).toBe(200);
+    expect(res.status).toBe(200);
     expect(mockIssueService.update).toHaveBeenCalled();
   });
 
@@ -284,7 +269,7 @@ describe("issue assignee invokability guard", () => {
       .patch(`/api/issues/${existing.id}`)
       .send({ assigneeAgentId: PAUSED_AGENT_ID });
 
-    expect(res.status, JSON.stringify(res.body)).toBe(200);
+    expect(res.status).toBe(200);
     expect(mockIssueService.update).toHaveBeenCalled();
   });
 });

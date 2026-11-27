@@ -1,3 +1,5 @@
+import { t as translateDynamic } from "../../i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   Check,
@@ -12,7 +14,6 @@ import type {
 } from "@paperclipai/adapter-utils";
 import type { MentionOption } from "@/components/MarkdownEditor";
 import { DecisionCardFooter } from "@/components/DecisionCardFooter";
-import { NeedsYouPanel } from "@/components/coordinator/NeedsYouCardKit";
 import { MarkdownBody } from "@/components/MarkdownBody";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,8 +48,6 @@ export interface QuestionFormProps {
   footerSlot?: ReactNode;
   id: string;
   presentation?: "default" | "decision";
-  /** A decision card's ask already is this (single) question's prompt. */
-  promptStated?: boolean;
   questionSet: PaperclipQuestionSet;
   initialResponse?: PaperclipQuestionResponse | null;
   implicitCustomAnswer?: boolean;
@@ -138,6 +137,7 @@ function SelectOption({
   disabled: boolean;
   onClick: () => void;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <button
       type="button"
@@ -179,9 +179,7 @@ function SelectOption({
         <span className="flex flex-wrap items-center gap-1.5 text-sm font-medium leading-5 text-foreground">
           <span>{label}</span>
           {recommended ? (
-            <span className="rounded-sm bg-background/70 px-1.5 py-0.5 text-(length:--text-micro) font-medium text-muted-foreground">
-              Recommended
-            </span>
+            <span className="rounded-sm bg-background/70 px-1.5 py-0.5 text-(length:--text-micro) font-medium text-muted-foreground">{pageText("recommended_9ef937")}</span>
           ) : null}
         </span>
         {description ? (
@@ -201,6 +199,7 @@ export function QuestionResponseSummary({
   questionSet: PaperclipQuestionSet;
   response: PaperclipQuestionResponse;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
   return (
     <dl className="grid gap-2 text-sm">
       {questionSet.questions.map((question) => {
@@ -228,7 +227,7 @@ export function QuestionResponseSummary({
               </span>
             </dt>
             <dd className="mt-0.5 text-foreground">
-              {values.length > 0 ? values.join(", ") : "No answer"}
+              {values.length > 0 ? values.join(", ") : pageText("noAnswer_a9c16d")}
             </dd>
           </div>
         );
@@ -247,7 +246,6 @@ function QuestionFormForRequest({
   footerSlot,
   id,
   presentation = "default",
-  promptStated = false,
   questionSet,
   initialResponse,
   implicitCustomAnswer = false,
@@ -258,6 +256,7 @@ function QuestionFormForRequest({
   onSubmit,
   onCancel,
 }: QuestionFormProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const takeoverActions = useTaskChatComposerTakeoverActions();
   // A provider default is an editable draft only. An existing response or
   // saved draft, including an explicitly cleared value, always wins. State
@@ -300,7 +299,7 @@ function QuestionFormForRequest({
   const [inputUploading, setInputUploading] = useState(false);
   const [error, setError] = useState<FormError | null>(null);
   const [attemptedQuestions, setAttemptedQuestions] = useState<Record<string, boolean>>({});
-  const promptRef = useRef<HTMLDivElement>(null);
+  const promptRef = useRef<HTMLParagraphElement>(null);
   const previousPage = useRef(page);
 
   useEffect(() => {
@@ -335,9 +334,7 @@ function QuestionFormForRequest({
   );
   if (!question)
     return (
-      <p className="text-sm text-muted-foreground">
-        No answerable questions were provided.
-      </p>
+      <p className="text-sm text-muted-foreground">{pageText("noAnswerableQuestionsWereProvided_2f3db0")}</p>
     );
   const answer = answers[question.id] ?? {};
   const selected = answer.selectedOptionIds ?? [];
@@ -388,8 +385,7 @@ function QuestionFormForRequest({
   }
 
   function toggleCustom() {
-    if (disabled || working || inputUploading) return;
-    const active = !multiple || !isCustomActive;
+    const active = !isCustomActive;
     setCustomActive((current) => ({ ...current, [question.id]: active }));
     updateAnswer({
       ...answer,
@@ -427,7 +423,6 @@ function QuestionFormForRequest({
       });
       if (draftKey) clearDraft(draftKey);
     } catch (cause) {
-      if (cause instanceof DOMException && cause.name === "AbortError") return;
       setError({
         message:
           cause instanceof Error
@@ -481,26 +476,26 @@ function QuestionFormForRequest({
     questionSet.questions.length > 1 ? (
       <nav
         className="flex shrink-0 items-center gap-1"
-        aria-label="Question pagination"
+        aria-label={pageText("questionPagination_c13113")}
       >
         <Button
           type="button"
           size="icon-xs"
           variant="ghost"
-          aria-label="Previous question"
+          aria-label={pageText("previousQuestion_365a52")}
           disabled={disabled || working != null || page === 0}
           onClick={() => setPage((current) => current - 1)}
         >
           <ChevronLeft aria-hidden />
         </Button>
         <span className="min-w-10 text-center tabular-nums">
-          {page + 1} of {questionSet.questions.length}
+          {page + 1}{" " + pageText("of_de04fa") + " "}{questionSet.questions.length}
         </span>
         <Button
           type="button"
           size="icon-xs"
           variant="ghost"
-          aria-label="Next question"
+          aria-label={pageText("nextQuestion_2cc42c")}
           // The arrows browse; they do not validate. A send that finds an
           // earlier answer missing returns to that question (see submit).
           disabled={disabled || working != null || isLastPage}
@@ -525,155 +520,6 @@ function QuestionFormForRequest({
     }
     void submit();
   }
-  // A Needs You decision card puts the question in its inset panel under the
-  // card's ask, numbered when there are several (PAP-775).
-  const decision = presentation === "decision";
-  const body = <>
-      {questionSet.description ? (
-        <div
-          role="region"
-          aria-label="Question context"
-          tabIndex={0}
-          className={cn("max-h-96 overflow-auto text-muted-foreground", decision ? "text-xs" : "mb-3 text-sm")}
-        >
-          <MarkdownBody mediaMode="reference" linkIssueReferences={false}>{questionSet.description}</MarkdownBody>
-        </div>
-      ) : null}
-      {question.answerMode === "text" && !decision ? (
-        <div className="mb-2 flex items-center gap-3 text-xs text-muted-foreground">
-          {question.answerMode === "text" ? <span>Write an answer</span> : null}
-        </div>
-      ) : null}
-      {pagination ? (
-        takeoverActions ? (
-          <TaskChatComposerTakeoverControls>
-            {pagination}
-          </TaskChatComposerTakeoverControls>
-        ) : (
-          <div className={cn("flex justify-end text-xs text-muted-foreground", !decision && "mb-2")}>
-            {pagination}
-          </div>
-        )
-      ) : null}
-      <div>
-        {question.header && !decision ? (
-          <p className="mb-1 text-xs font-medium text-muted-foreground">
-            {question.header}
-          </p>
-        ) : null}
-        <div ref={promptRef} tabIndex={-1} className={cn("leading-5", decision ? "text-(length:--text-compact)" : "text-sm", decision && promptStated && "sr-only")}>
-          <div id={`${id}-${question.id}-prompt`} className="flex items-start gap-1 font-medium text-foreground">
-            {decision && questionSet.questions.length > 1 ? <span>{page + 1}.</span> : null}
-            <MarkdownBody mediaMode="reference" linkIssueReferences={false} className={cn("min-w-0", decision && "text-(length:--text-compact)")}>{question.prompt}</MarkdownBody>
-          </div>
-          {decision ? <span aria-hidden className="text-muted-foreground"> · {question.required ? "Required" : "Optional"}</span> : null}
-        </div>
-        {question.helpText ? (
-          <p className="mt-1 text-xs leading-4 text-muted-foreground">
-            {question.helpText}
-          </p>
-        ) : null}
-      </div>
-      {question.answerMode === "text" ? (
-        <div className={decision ? undefined : "mt-3"}>
-          <TaskChatRichInput
-            questionAnswer
-            ariaLabelledBy={`${id}-${question.id}-prompt`}
-            testId="question-text-answer-composer"
-            value={answer.text ?? ""}
-            disabled={disabled || working != null}
-            onChange={(value) => updateAnswer({ text: value })}
-            placeholder={decision ? "Add context for the agent…" : "Write your answer"}
-            imageUploadHandler={imageUploadHandler}
-            mentions={mentions}
-            autoFocus={!decision}
-            onUploadingChange={setInputUploading}
-            onSubmit={() => {
-              progressOrSubmit();
-            }}
-            attachAriaLabel={`Attach image to answer for ${question.prompt}`}
-          />
-        </div>
-      ) : (
-        <div
-          className={cn("grid gap-1.5", !decision && "mt-3")}
-          role={multiple ? "group" : "radiogroup"}
-          aria-labelledby={`${id}-${question.id}-prompt`}
-        >
-          {(question.options?.length ?? 0) > 8 ? (
-            <label className="relative mb-1 block">
-              <Search
-                className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"
-                aria-hidden
-              />
-              <Input
-                value={filters[question.id] ?? ""}
-                onChange={(event) =>
-                  setFilters((current) => ({
-                    ...current,
-                    [question.id]: event.target.value,
-                  }))
-                }
-                placeholder="Filter choices"
-                aria-label={`Filter choices for ${question.prompt}`}
-                className="pl-8"
-              />
-            </label>
-          ) : null}
-          {visibleOptions.map((option) => (
-            <SelectOption
-              key={option.id}
-              id={`${id}-${question.id}-${option.id}`}
-              label={option.label}
-              description={option.description}
-              recommended={option.recommended}
-              selected={selected.includes(option.id)}
-              multiple={multiple}
-              disabled={disabled || working != null}
-              onClick={() => toggleOption(option.id)}
-            />
-          ))}
-          {allowsCustom ? (
-            <div className="space-y-1.5">
-              <SelectOption
-                id={`${id}-${question.id}-custom`}
-                label={question.customAnswer?.label ?? "Other"}
-                selected={isCustomActive}
-                multiple={multiple}
-                disabled={disabled || working != null}
-                onClick={toggleCustom}
-              />
-              {isCustomActive ? (
-                <TaskChatRichInput
-                  questionAnswer
-                  ariaLabelledBy={`${id}-${question.id}-prompt`}
-                  testId="question-other-answer-composer"
-                  value={answer.customText ?? ""}
-                  placeholder={
-                    question.customAnswer?.placeholder ?? "Type your answer"
-                  }
-                  disabled={disabled || working != null}
-                  onChange={(value) =>
-                    updateAnswer({ ...answer, customText: value })
-                  }
-                  autoFocus
-                  imageUploadHandler={imageUploadHandler}
-                  mentions={mentions}
-                  onUploadingChange={setInputUploading}
-                  onSubmit={() => {
-                    progressOrSubmit();
-                  }}
-                  attachAriaLabel={`Attach image to other answer for ${question.prompt}`}
-                />
-              ) : null}
-            </div>
-          ) : null}
-        </div>
-      )}
-      {currentError && attemptedQuestions[question.id] ? (
-        <p role="alert" className="mt-2 text-xs text-destructive">{currentError}</p>
-      ) : null}
-  </>;
   return (
     <div
       key={question.id}
@@ -698,7 +544,152 @@ function QuestionFormForRequest({
         toggleOption(option.id);
       }}
     >
-      {decision ? <NeedsYouPanel>{body}</NeedsYouPanel> : body}
+      {questionSet.description ? (
+        <div
+          role="region"
+          aria-label={pageText("questionContext_88ea61")}
+          tabIndex={0}
+          className="mb-3 max-h-96 overflow-auto text-sm text-muted-foreground"
+        >
+          <MarkdownBody mediaMode="reference" linkIssueReferences={false}>{questionSet.description}</MarkdownBody>
+        </div>
+      ) : null}
+      {question.answerMode === "text" && presentation !== "decision" ? (
+        <div className="mb-2 flex items-center gap-3 text-xs text-muted-foreground">
+          {question.answerMode === "text" ? <span>{pageText("writeAnAnswer_41ca9f")}</span> : null}
+        </div>
+      ) : null}
+      {pagination ? (
+        takeoverActions ? (
+          <TaskChatComposerTakeoverControls>
+            {pagination}
+          </TaskChatComposerTakeoverControls>
+        ) : (
+          <div className="mb-2 flex justify-end text-xs text-muted-foreground">
+            {pagination}
+          </div>
+        )
+      ) : null}
+      <div>
+        {question.header && presentation !== "decision" ? (
+          <p className="mb-1 text-xs font-medium text-muted-foreground">
+            {question.header}
+          </p>
+        ) : null}
+        <p
+          ref={promptRef}
+          tabIndex={-1}
+          id={`${id}-${question.id}-prompt`}
+          data-decision-prompt={presentation === "decision" ? true : undefined}
+          className={presentation === "decision" ? "text-lg font-medium leading-relaxed text-foreground" : "text-sm font-medium leading-5 text-foreground"}
+        >
+          {question.prompt}
+        </p>
+        {question.helpText ? (
+          <p className="mt-1 text-xs leading-4 text-muted-foreground">
+            {question.helpText}
+          </p>
+        ) : null}
+      </div>
+      {question.answerMode === "text" ? (
+        <div className="mt-3">
+          <TaskChatRichInput
+            questionAnswer
+            ariaLabelledBy={`${id}-${question.id}-prompt`}
+            testId="question-text-answer-composer"
+            value={answer.text ?? ""}
+            disabled={disabled || working != null}
+            onChange={(value) => updateAnswer({ text: value })}
+            placeholder={pageText("writeYourAnswer_9a32a2")}
+            imageUploadHandler={imageUploadHandler}
+            mentions={mentions}
+            autoFocus
+            onUploadingChange={setInputUploading}
+            onSubmit={() => {
+              progressOrSubmit();
+            }}
+            attachAriaLabel={`Attach image to answer for ${question.prompt}`}
+          />
+        </div>
+      ) : (
+        <div
+          className="mt-3 grid gap-1.5"
+          role={multiple ? "group" : "radiogroup"}
+          aria-labelledby={`${id}-${question.id}-prompt`}
+        >
+          {(question.options?.length ?? 0) > 8 ? (
+            <label className="relative mb-1 block">
+              <Search
+                className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"
+                aria-hidden
+              />
+              <Input
+                value={filters[question.id] ?? ""}
+                onChange={(event) =>
+                  setFilters((current) => ({
+                    ...current,
+                    [question.id]: event.target.value,
+                  }))
+                }
+                placeholder={pageText("filterChoices_3298e1")}
+                aria-label={translateDynamic("dynamic:filterChoicesFor", { value1: question.prompt })}
+                className="pl-8"
+              />
+            </label>
+          ) : null}
+          {visibleOptions.map((option) => (
+            <SelectOption
+              key={option.id}
+              id={`${id}-${question.id}-${option.id}`}
+              label={option.label}
+              description={option.description}
+              recommended={option.recommended}
+              selected={selected.includes(option.id)}
+              multiple={multiple}
+              disabled={disabled || working != null}
+              onClick={() => toggleOption(option.id)}
+            />
+          ))}
+          {allowsCustom ? (
+            <div className="space-y-1.5">
+              <SelectOption
+                id={`${id}-${question.id}-custom`}
+                label={question.customAnswer?.label ?? pageText("other_6e6a6f")}
+                selected={isCustomActive}
+                multiple={multiple}
+                disabled={disabled || working != null}
+                onClick={toggleCustom}
+              />
+              {isCustomActive ? (
+                <TaskChatRichInput
+                  questionAnswer
+                  ariaLabelledBy={`${id}-${question.id}-prompt`}
+                  testId="question-other-answer-composer"
+                  value={answer.customText ?? ""}
+                  placeholder={
+                    question.customAnswer?.placeholder ?? pageText("typeYourAnswer_2dd63e")
+                  }
+                  disabled={disabled || working != null}
+                  onChange={(value) =>
+                    updateAnswer({ ...answer, customText: value })
+                  }
+                  autoFocus
+                  imageUploadHandler={imageUploadHandler}
+                  mentions={mentions}
+                  onUploadingChange={setInputUploading}
+                  onSubmit={() => {
+                    progressOrSubmit();
+                  }}
+                  attachAriaLabel={`Attach image to other answer for ${question.prompt}`}
+                />
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      )}
+      {currentError && attemptedQuestions[question.id] ? (
+        <p role="alert" className="mt-2 text-xs text-destructive">{currentError}</p>
+      ) : null}
       <div aria-live="assertive">
         {errorMessage ? (
           <div className="mt-2 rounded-sm border border-destructive/60 bg-destructive/10 px-2.5 py-2 text-sm text-destructive">
@@ -718,9 +709,7 @@ function QuestionFormForRequest({
             >
               {working === "cancel" ? (
                 <Loader2 aria-hidden className="h-4 w-4 animate-spin" />
-              ) : null}{" "}
-              Cancel
-            </Button>
+              ) : null}{" "}{pageText("cancel_77dfd2")}</Button>
           ) : null}
           {!question.required ? (
             <Button
@@ -729,9 +718,7 @@ function QuestionFormForRequest({
               variant="outline"
               disabled={busy}
               onClick={skipQuestion}
-            >
-              Skip
-            </Button>
+            >{pageText("skip_3da474")}</Button>
           ) : null}
           <Button
             type="button"
@@ -742,7 +729,7 @@ function QuestionFormForRequest({
             {working === "submit" ? (
               <Loader2 aria-hidden className="h-4 w-4 animate-spin" />
             ) : null}
-            {isLastPage ? (questionSet.submitLabel ?? "Submit answers") : "Next"}
+            {isLastPage ? (questionSet.submitLabel ?? pageText("submitAnswers_988c41")) : pageText("next_bc9819")}
           </Button>
         </div>
       </DecisionCardFooter>

@@ -1,3 +1,4 @@
+import { useTranslation as usePageTranslation } from "@/i18n";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import type { LabArtifact } from "../../kit";
@@ -53,8 +54,9 @@ function Section({ section, children }: { section: PanelSection; children: React
 }
 
 export function PanelBody({ artifacts }: { artifacts: LabArtifact[] }) {
+  const { t: pageText } = usePageTranslation("interface");
   if (artifacts.length === 0) {
-    return <p className="px-1 py-6 text-sm text-muted-foreground">No artifacts yet. Work products, documents, and agent-produced files will appear here.</p>;
+    return <p className="px-1 py-6 text-sm text-muted-foreground">{pageText("noArtifactsYetWorkProductsDocumentsAndAgent_35c17e")}</p>;
   }
   return (
     <div data-solid="panel-body" className="flex flex-col gap-5">

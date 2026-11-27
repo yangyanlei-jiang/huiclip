@@ -18,15 +18,14 @@ vi.mock("./onboarding-first-task.js", async () => {
   }) };
 });
 
-type Entry = "beta-welcome" | "first-run" | "portfolio" | "create-form";
+type Entry = "first-run" | "portfolio" | "create-form";
 type Control = { role: string; name: string; scope?: string; fill?(value: string): void; click?(): void; select?(value: string): void };
 
 /** Visible control contracts only; no browser, Cloud API, or provider is started. */
-function fixture(entry: Entry, options: { legacyRunnerPicker?: boolean; intentFailure?: boolean; qualificationFailure?: boolean; traceFailure?: boolean } = {}) {
+function fixture(entry: Entry, options: { intentFailure?: boolean; qualificationFailure?: boolean; traceFailure?: boolean } = {}) {
   let stage: string = entry, name = "", apiMode = false, source = false, advanced = false, runnerOpen = false;
   let modelsOpen = false, model = "", runner = "", saved = false, hired = false;
   const fields: Record<string, string> = {}, events: string[] = [];
-  let hasCodex = false, intendsFeedback = false;
   const gateway = { baseUrl: "https://owned-gateway.example.test/v1", model: "gpt-5.4-mini", apiKey: "synthetic-test-key" };
   const connection = { id: "connection", name: "My owned-gateway.example.test", provider: "openai", method: "api_key", status: "connected" };
   const create = () => {
@@ -35,11 +34,6 @@ function fixture(entry: Entry, options: { legacyRunnerPicker?: boolean; intentFa
     events.push("create:workspace"); stage = "agent";
   };
   const controls = (): Control[] => {
-    if (stage === "beta-welcome") return [
-      { role: "checkbox", name: "OpenAI Codex", click() { hasCodex = true; } },
-      { role: "checkbox", name: "I intend to provide feedback on the Paperclip closed beta.", click() { intendsFeedback = true; } },
-      { role: "button", name: "Continue", click() { expect(hasCodex && intendsFeedback).toBe(true); stage = "first-run"; } },
-    ];
     if (stage === "portfolio") return [{ role: "link", name: "Create a new organization", click() { stage = "create-form"; } }];
     if (stage === "first-run" || stage === "create-form") return [
       { role: "textbox", name: stage === "first-run" ? "Name" : "Organization name", fill(value) { name = value; } },
@@ -56,7 +50,7 @@ function fixture(entry: Entry, options: { legacyRunnerPicker?: boolean; intentFa
       { role: "button", name: apiMode ? "Use subscription instead" : "Use API key instead", click() { apiMode = !apiMode; } },
       { role: "radio", name: apiMode ? "OpenAI API key" : "OpenAI Subscription", click() { source = true; } },
     ];
-    if (source && apiMode && (advanced || options.legacyRunnerPicker)) result.push({ role: "button", name: "Use a custom gateway", click() { stage = "gateway"; } });
+    if (source && apiMode) result.push({ role: "button", name: "Use a custom gateway", click() { stage = "gateway"; } });
     if (stage === "gateway") {
       result.push({ role: "dialog", name: "Custom gateway connection" });
       for (const field of ["Provider URL", "API key", ...(modelsOpen ? ["Model IDs"] : [])]) result.push({
@@ -70,9 +64,9 @@ function fixture(entry: Entry, options: { legacyRunnerPicker?: boolean; intentFa
     }
     if (saved) result.push({ role: "combobox", name: "Model", select(value) { expect(value).toBe(gateway.model); model = value; } });
     if (source) result.push({ role: "summary", name: "Advanced", click() { advanced = true; } });
-    if (advanced && options.legacyRunnerPicker) result.push({ role: "button", name: "Runner", click() { runnerOpen = true; } });
+    if (advanced) result.push({ role: "button", name: "Runner", click() { runnerOpen = true; } });
     if (runnerOpen) result.push({ role: "option", name: "Paperclip Runner (default)", click() { runner = "paperclip"; runnerOpen = false; } });
-    if (saved && model && (!options.legacyRunnerPicker || runner)) result.push({ role: "button", name: "Connect", click() {
+    if (saved && model && runner) result.push({ role: "button", name: "Connect", click() {
       expect(events).toContain("qualified"); events.push("paid:connect"); hired = true;
     } });
     return result;
@@ -83,7 +77,6 @@ function fixture(entry: Entry, options: { legacyRunnerPicker?: boolean; intentFa
     or(other: { resolve(): Control[] }) { return locator(() => [...resolve(), ...other.resolve()]); },
     resolve,
     async isVisible() { return resolve().length > 0; },
-    async check() { const control = resolve()[0]; if (control?.role !== "checkbox" || !control.click) throw new Error("No visible checkbox"); control.click(); },
     async fill(value: string) { const control = resolve()[0]; if (!control?.fill) throw new Error("No visible text field"); control.fill(value); },
     async click() { const control = resolve()[0]; if (!control?.click) throw new Error("No visible action"); events.push(`click:${control.name}`); control.click(); },
     async selectOption(value: string) { const control = resolve()[0]; if (!control?.select) throw new Error("No visible native model picker"); control.select(value); },
@@ -141,19 +134,13 @@ describe("Cloud onboarding visible controls", () => {
     expect(f.input.evidence.checks.map(check => check.id)).toEqual(["fresh-workspace", "ui-connection-and-native-agent"]);
     expect(f.events).not.toContain("native:verified");
   });
-  it.each(["beta-welcome", "first-run", "portfolio", "create-form"] as const)("creates from %s with intent before dispatch and qualification before paid Connect", async entry => {
+  it.each(["first-run", "portfolio", "create-form"] as const)("creates from %s with intent before dispatch and qualification before paid Connect", async entry => {
     const f = fixture(entry);
     const result = await cloudOnboarding(f.input);
     expect(result.startingState).toBe("onboarding");
     expect(f.events.indexOf("intent:workspace")).toBeLessThan(f.events.indexOf("create:workspace"));
     expect(f.events.indexOf("intent:connection")).toBeLessThan(f.events.indexOf("save:connection"));
     expect(f.events.indexOf("qualified")).toBeLessThan(f.events.indexOf("paid:connect"));
-    expect(f.events).toContain("native:verified");
-  });
-  it("can still choose the native runner on tenants with a separate runner picker", async () => {
-    const f = fixture("first-run", { legacyRunnerPicker: true });
-    await cloudOnboarding(f.input);
-    expect(f.events).toContain("click:Paperclip Runner (default)");
     expect(f.events).toContain("native:verified");
   });
   it("does not dispatch workspace creation without durable ownership", async () => {

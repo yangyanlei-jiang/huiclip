@@ -1,3 +1,6 @@
+import { t as translateDynamic } from "../../i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
+import { useTranslation as useUiTranslation } from "@/i18n";
 import { TextAttachmentContext } from "@/context/TextAttachmentContext";
 import { useContext, useEffect, useMemo, useRef, useState, type ComponentProps, type ReactNode } from "react";
 import { ArtifactUploadContent, type ArtifactUploadEntry } from "@/components/artifacts/ArtifactUploadControls";
@@ -153,6 +156,8 @@ function MarkdownWorkProductRow({
   openRequestId?: number;
   face?: ArtifactFace;
 }) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const openTextAttachment = useContext(TextAttachmentContext);
   const [expanded, setExpanded] = useState(false);
   const [annotationPanelOpen, setAnnotationPanelOpen] = useState(false);
@@ -208,9 +213,7 @@ function MarkdownWorkProductRow({
   let expandedBody: React.ReactNode;
   if (tooLarge) {
     expandedBody = (
-      <p className="text-sm text-muted-foreground">
-        This Markdown file is too large to preview. Use Raw or Download instead.
-      </p>
+      <p className="text-sm text-muted-foreground">{pageText("thisMarkdownFileIsTooLargeToPreview_e04d45")}</p>
     );
   } else if (reviewDoc) {
     expandedBody =
@@ -230,15 +233,15 @@ function MarkdownWorkProductRow({
           <MarkdownBody>{reviewDoc.body}</MarkdownBody>
         </IssueDocumentAnnotations>
       ) : (
-        <p className="text-sm text-muted-foreground">Document is empty.</p>
+        <p className="text-sm text-muted-foreground">{translateUi("interfaceCopy.documentIsEmpty")}</p>
       );
   } else if (ensure.isError) {
     expandedBody = (
       <div className="flex flex-col items-start gap-1.5">
         <p className="text-sm text-muted-foreground">
           {unsupportedError
-            ? "This file can't be previewed as Markdown. Use Raw or Download instead."
-            : "Preview failed to load."}
+            ? pageText("thisFileCanTBePreviewedAsMarkdown_ae520b")
+            : pageText("previewFailedToLoad_265122")}
         </p>
         {!unsupportedError ? (
           <button
@@ -248,15 +251,13 @@ function MarkdownWorkProductRow({
               ensure.reset();
               ensure.mutate();
             }}
-          >
-            Retry
-          </button>
+          >{translateUi("interfaceCopy.retry")}</button>
         ) : null}
       </div>
     );
   } else {
     expandedBody = (
-      <p className="text-sm text-muted-foreground">Preparing preview…</p>
+      <p className="text-sm text-muted-foreground">{pageText("preparingPreview_312e7b")}</p>
     );
   }
 
@@ -282,8 +283,8 @@ function MarkdownWorkProductRow({
                 <button
                   type="button"
                   onClick={() => openTextAttachment(metadata.attachmentId, metadata.originalFilename ?? workProduct.title)}
-                  aria-label={`Open in tab: ${workProduct.title}`}
-                  title="Open in tab"
+                  aria-label={translateDynamic("dynamic:openInTab", { value1: workProduct.title })}
+                  title={pageText("openInTab_081787")}
                   className={face ? ROW_ACTION_CLASS : "shrink-0 px-1.5 py-1.5 text-muted-foreground hover:text-foreground"}
                 >
                   <FileText className="h-3 w-3" />
@@ -293,16 +294,16 @@ function MarkdownWorkProductRow({
                 href={metadata.openPath}
                 target="_blank"
                 rel="noreferrer"
-                aria-label={`Open raw ${workProduct.title}`}
-                title="Open raw"
+                aria-label={translateDynamic("dynamic:openRaw", { value1: workProduct.title })}
+                title={pageText("openRaw_5cb935")}
                 className={face ? ROW_ACTION_CLASS : "shrink-0 px-1.5 py-1.5 text-muted-foreground hover:text-foreground"}
               >
                 <ExternalLink className="h-3 w-3" />
               </a>
               <a
                 href={metadata.downloadPath}
-                aria-label={`Download ${workProduct.title}`}
-                title="Download"
+                aria-label={translateDynamic("dynamic:download", { value1: workProduct.title })}
+                title={pageText("download_a479c9")}
                 className={face ? ROW_ACTION_CLASS : "shrink-0 py-1.5 pr-2 pl-0.5 text-muted-foreground hover:text-foreground"}
               >
                 <Download className="h-3 w-3" />
@@ -352,6 +353,7 @@ function DocumentRow({
   onOpen?: () => void;
   face?: ArtifactFace;
 }) {
+  const { t: translateUi } = useUiTranslation();
   const [expanded, setExpanded] = useState(false);
   const [annotationPanelOpen, setAnnotationPanelOpen] = useState(false);
   const headerRef = useRef<HTMLDivElement | null>(null);
@@ -412,7 +414,7 @@ function DocumentRow({
               <MarkdownBody>{doc.body}</MarkdownBody>
             </IssueDocumentAnnotations>
           ) : (
-            <p className="text-sm text-muted-foreground">Document is empty.</p>
+            <p className="text-sm text-muted-foreground">{translateUi("interfaceCopy.documentIsEmpty")}</p>
           )}
         </div>
       ) : null}
@@ -435,6 +437,8 @@ export function IssuePropertiesArtifactsTab({
   onOpenDocument,
   uploadState,
 }: IssuePropertiesArtifactsTabProps) {
+  const { t: pageText } = usePageTranslation("interface");
+  const { t: translateUi } = useUiTranslation();
   const { enabled: v1 } = useArtifactsV1Enabled();
   const documentAuthoring = documentEditor !== undefined;
   const {
@@ -564,23 +568,17 @@ export function IssuePropertiesArtifactsTab({
   const loadError = attachmentsError || productsError || documentsError;
   const loading = attachmentsPending || productsPending || documentsPending;
   const feedback = loadError ? (
-    <div role="alert" className="px-1 py-3 text-sm text-muted-foreground">
-      Some artifacts could not be loaded.
-      <button
+    <div role="alert" className="px-1 py-3 text-sm text-muted-foreground">{pageText("someArtifactsCouldNotBeLoaded_6e9211")}<button
         className="ml-2 underline"
         onClick={() => {
           void refetchAttachments();
           void refetchProducts();
           void refetchDocuments();
         }}
-      >
-        Retry
-      </button>
+      >{translateUi("interfaceCopy.retry")}</button>
     </div>
   ) : loading ? (
-    <p role="status" className="px-1 py-3 text-sm text-muted-foreground">
-      Loading artifacts…
-    </p>
+    <p role="status" className="px-1 py-3 text-sm text-muted-foreground">{pageText("loadingArtifacts_344c46")}</p>
   ) : null;
 
   const withUploads = (content: ReactNode, empty = false) => {
@@ -608,10 +606,7 @@ export function IssuePropertiesArtifactsTab({
       return withUploads(null);
     }
     return withUploads(
-      <div className="px-1 py-6 text-sm text-muted-foreground">
-        No artifacts yet. Work products, documents, and agent-produced files
-        will appear here.
-      </div>,
+      <div className="px-1 py-6 text-sm text-muted-foreground">{pageText("noArtifactsYetWorkProductsDocumentsAndAgent_35c17e")}</div>,
       true,
     );
   }

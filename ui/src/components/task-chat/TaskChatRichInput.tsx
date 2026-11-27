@@ -1,3 +1,5 @@
+import { t as interfaceNotice } from "@/i18n";
+import { useTranslation as usePageTranslation } from "@/i18n";
 import { useEffect, useRef, useState } from "react";
 import { ImagePlus, Loader2 } from "lucide-react";
 import {
@@ -41,6 +43,7 @@ export function TaskChatRichInput({
   showImageAttachControls = false,
   questionAnswer = false,
 }: TaskChatRichInputProps) {
+  const { t: pageText } = usePageTranslation("interface");
   const editorRef = useRef<MarkdownEditorRef>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadCountRef = useRef(0);
@@ -69,7 +72,7 @@ export function TaskChatRichInput({
       setUploadError(
         error instanceof Error
           ? error.message
-          : "The image could not be uploaded.",
+          : interfaceNotice("interface:theImageCouldNotBeUploaded_2e1e01"),
       );
       throw error;
     } finally {
@@ -134,10 +137,8 @@ export function TaskChatRichInput({
               <Loader2 aria-hidden className="h-3.5 w-3.5 animate-spin" />
             ) : (
               <ImagePlus aria-hidden className="h-3.5 w-3.5" />
-            )}
-            Attach image
-          </Button>
-          <span>or drop/paste an image into the note</span>
+            )}{pageText("attachImage_92c6d9")}</Button>
+          <span>{pageText("orDropPasteAnImageIntoTheNote_c9d85e")}</span>
         </div>
       ) : null}
       {uploadError ? (
